@@ -1,7 +1,23 @@
 #include <iostream>
 #include "coap.h"
+#include "memory.h"
+#include "string.h"
 
 int main() {
     std::cout << "Hello, World!" << std::endl;
+    typedef moducom::coap::Memory memory_t;
+    memory_t memory;
+
+    memory_t::handle_t handle = memory.allocate(10);
+
+    int* int_ptr = memory.lock<int>(handle);
+
+    *int_ptr = 4;
+
+    memory.unlock(handle);
+    memory.free(handle);
+
+    moducom::std::string str("Hello World");
+
     return 0;
 }
