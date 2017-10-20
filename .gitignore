@@ -30,3 +30,7 @@
 *.exe
 *.out
 *.app
+
+# CLion specific
+cmake-build-debug/
+**/.idea/workspace.xml
