@@ -20,6 +20,11 @@ public:
     /// @param size size in bytes of memory chunk to allocate
     /// @return
     handle_t allocate(size_t size);
+    /// Allocate a block of memory, but don't lock it yet
+    /// @param data data to copy into newly allocated block
+    /// @param size size in bytes of memory chunk to allocate
+    /// @return
+    handle_t allocate(const void* data, size_t size);
 
     /// frees an unlocked memory handle
     /// @param handle memory handle to free
@@ -45,6 +50,50 @@ public:
     size_t available();
 
     static Memory default_pool;
+
+    class SmartHandle
+    {
+    protected:
+        const handle_t handle;
+        Memory& memory;
+
+    public:
+        SmartHandle(handle_t handle, Memory& memory) :
+                handle(handle),
+                memory(memory)
+        {}
+
+        template <class T>
+        T* lock() { return memory.lock<T>(handle); }
+
+        void unlock() { memory.unlock(handle); }
+
+        void resize(size_t new_size)
+        {
+            memory.resize(handle, new_size);
+        }
+    };
+
+    class SmartHandleAutoAllocate : public SmartHandle
+    {
+    public:
+        SmartHandleAutoAllocate(const void* data, size_t size, Memory& memory)
+                : SmartHandle(memory.allocate(data, size), memory)
+        {
+
+        }
+
+        SmartHandleAutoAllocate(size_t size, Memory& memory)
+                : SmartHandle(memory.allocate(size), memory)
+        {
+
+        }
+
+        ~SmartHandleAutoAllocate()
+        {
+            memory.free(handle);
+        }
+    };
 };
 
 }}
