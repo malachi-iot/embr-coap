@@ -3,7 +3,7 @@
 #include "memory.h"
 #include "string.h"
 
-int main() {
+int main_old() {
     std::cout << "Hello, World!" << std::endl;
     typedef moducom::coap::Memory memory_t;
     memory_t memory;
