@@ -19,5 +19,16 @@ int main() {
 
     moducom::std::string str("Hello World");
 
+    str += ": you nut";
+
+    // copy constructor test
+    moducom::std::string str2(str);
+
+    moducom::std::string str3 = str2 + "!";
+
+    char output[128];
+
+    str3.populate(output);
+
     return 0;
 }

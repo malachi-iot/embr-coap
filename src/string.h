@@ -21,14 +21,23 @@ class string {
 
     // TODO: make this smart enough to not allocate memory until someone actually
     // changes the string
+    // TODO: Make final decision about +1 for trailing null or not, or make it a
+    // traits kinda thing
+protected:
+    string(const memory_t::SmartHandle& handle, size_t size) :
+            handle(handle),
+            size(size) {}
 public:
     string(const char* src, memory_t& pool = memory_t::default_pool) :
+            size(strlen(src)),
+            // FIX: somehow size isn't assigned and have to use strlen(src) again
             handle(pool.allocate(src, strlen(src) + 1), pool)
     {
     }
 
-    // Do this differently for C++ with the && move technique
-    string(const string& copy_from) : handle(copy_from.handle)
+    // TODO: Do also && move operation for C++11
+    string(const string& copy_from) :
+            handle(copy_from.handle, size)
     {
 
     }
@@ -59,8 +68,14 @@ public:
 
     inline string operator +(const char *src)
     {
+        // FIX: Not yet working!
+        size_t src_len = strlen(src);
+        memory_t::SmartHandle new_handle =
+                handle.append_into_new_experimental(src, size, src_len);
+        string new_str(new_handle, size + src_len);
         /*
-        string new_str()
+        string new_str(*this);
+
         size_t src_len = strlen(src);
         handle.resize(size + src_len + 1);
         */
