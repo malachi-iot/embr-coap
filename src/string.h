@@ -95,7 +95,17 @@ public:
         inline operator T* () { return ptr; }
     };
 
-    typedef auto_locking_ptr<char> auto_ptr_t;
+    class auto_ptr_t : public auto_locking_ptr<char>
+    {
+    public:
+        auto_ptr_t(memory_t::SmartHandle& handle) : auto_locking_ptr<char>(handle)
+        {
+        }
+
+        auto_ptr_t(string& s) : auto_locking_ptr<char>(s.handle)
+        {
+        }
+    };
 
 
 #ifndef FEATURE_STRING_SIZE_FIELD

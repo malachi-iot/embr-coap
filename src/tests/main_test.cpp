@@ -3,13 +3,30 @@
 //
 
 #define CATCH_CONFIG_MAIN
-#include <catch.hpp>
+#include <iostream>
 #include "../string.h"
 
-std::ostream& operator<<(std::ostream& os, moducom::std::string value)
+// https://github.com/philsquared/Catch/issues/531
+std::ostream& operator<<(std::ostream& os, moducom::std::string& value)
 {
+    moducom::std::string::auto_ptr_t s(value);
+
+    os << s;
+
     return os;
 }
+
+namespace Catch {
+
+std::string toString(moducom::std::string &value)
+{
+    moducom::std::string::auto_ptr_t s(value);
+
+    return std::string(s);
+}
+}
+
+#include <catch.hpp>
 
 #define STATIC_STR1  "Test1"
 #define STATIC_STR2  "Followed by this"
@@ -25,7 +42,7 @@ TEST_CASE("String tests", "[strings]")
     REQUIRE(str2 == STATIC_STR1 STATIC_STR2);
 
     str2 += " ";
-    str2 += 4;
+    str2 += 5;
 
     REQUIRE(str2 == STATIC_STR1 STATIC_STR2 " 4");
 }
