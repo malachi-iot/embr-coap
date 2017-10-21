@@ -30,7 +30,7 @@ int main_old() {
 
     str3.populate(output);
 
-    std::cout << "And again: " << str3.lock() << std::endl;
+    std::cout << "And again: " << output << std::endl;
 
     return 0;
 }

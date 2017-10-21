@@ -26,7 +26,7 @@ class string {
 protected:
     string(const memory_t::SmartHandle& handle, size_t size) :
             handle(handle),
-            size(size) {}
+            size(size + 1) {}
 public:
     string(const char* src, memory_t& pool = memory_t::default_pool) :
             size(strlen(src)),
@@ -99,15 +99,31 @@ public:
 
     typedef auto_locking_ptr<char> auto_ptr_t;
 
+    /*
+    auto_ptr_t get_auto_ptr_experimental()
+    {
+        auto_ptr_t temp(handle);
+
+        ((char*)temp)[size] = 0;
+    }*/
+
     bool operator ==(const char* src)
     {
         auto_ptr_t str(handle);
+        char* _str = str;
 
-        return strcmp(str, src) == 0;
+        _str[size - 1] = 0;
+
+        return strcmp(_str, src) == 0;
     }
 
-    inline char* lock() { return handle.lock<char>(); }
-    inline void unlock() { handle.unlock(); }
+
+    /*
+    inline char* lock()
+    {
+        return handle.lock<char>();
+    }
+    inline void unlock() { handle.unlock(); } */
 };
 
 }}

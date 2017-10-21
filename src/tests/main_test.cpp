@@ -17,9 +17,9 @@ TEST_CASE("String tests", "[strings]")
 
     moducom::std::string str2 = str + STATIC_STR2;
 
-    const char* test = str2.lock();
+    //moducom::std::string::auto_ptr_t str2_auto = str2.get_auto_ptr_experimental();
 
-    //REQUIRE(str2 == STATIC_STR1 STATIC_STR2);
+    REQUIRE(str2 == STATIC_STR1 STATIC_STR2);
 
-    str2.unlock();
+    //str2.unlock();
 }
