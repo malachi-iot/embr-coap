@@ -6,11 +6,27 @@
 #define SRC_MEMORYPOOL_H
 
 #include <stdint.h>
+#include <stdlib.h>
+
+
+// TODO: find "most" standardized version of this
+#ifdef __CPP11__
+#define OVERRIDE override
+#else
+#define OVERRIDE
+#endif
 
 namespace moducom { namespace coap {
 
+class IMemoryPool
+{
+public:
+    virtual int allocate(size_t size) = 0;
+    virtual bool free(int handle) = 0;
+};
+
 template <int page_size = 32, uint8_t page_count = 128>
-class MemoryPool
+class MemoryPool : public IMemoryPool
 {
     enum TierEnum
     {
@@ -22,7 +38,16 @@ class MemoryPool
     uint8_t pages[page_count][page_size];
 
 public:
+    virtual int allocate(size_t size) OVERRIDE { return -1; }
+    virtual bool free(int handle) OVERRIDE { return false; }
+};
 
+
+class MemoryPoolAggregator : public IMemoryPool
+{
+public:
+    virtual int allocate(size_t size) OVERRIDE { return -1; }
+    virtual bool free(int handle) OVERRIDE { return false; }
 };
 
 }}

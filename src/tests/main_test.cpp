@@ -5,6 +5,7 @@
 #define CATCH_CONFIG_MAIN
 #include <iostream>
 #include "../string.h"
+#include "../MemoryPool.h"
 
 // https://github.com/philsquared/Catch/issues/531
 std::ostream& operator<<(std::ostream& os, moducom::std::string& value)
@@ -45,4 +46,6 @@ TEST_CASE("String tests", "[strings]")
     str2 += 5;
 
     REQUIRE(str2 == STATIC_STR1 STATIC_STR2 " 4");
+
+    moducom::coap::IMemoryPool* pool = new moducom::coap::MemoryPool<>();
 }
