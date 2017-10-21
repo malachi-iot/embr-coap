@@ -69,19 +69,10 @@ public:
 
     inline string operator +(const char *src) const
     {
-        // FIX: Not yet working!
         size_t src_len = strlen(src);
         memory_t::SmartHandle new_handle =
                 handle.append_into_new_experimental(src, size, src_len);
-        string new_str(new_handle, size + src_len);
-        /*
-        string new_str(*this);
-
-        size_t src_len = strlen(src);
-        handle.resize(size + src_len + 1);
-        */
-
-        return new_str;
+        return string (new_handle, size + src_len);
     }
 
 
