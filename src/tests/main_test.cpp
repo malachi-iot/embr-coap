@@ -10,5 +10,5 @@ TEST_CASE("String tests", "[strings]")
 {
     moducom::std::string str("Test1");
 
-    //REQUIRE(str == "Test1");
+    REQUIRE(str == "Test1");
 }

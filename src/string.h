@@ -84,8 +84,39 @@ public:
         return new_str;
     }
 
-    inline const char* lock() { return handle.lock<char>(); }
-    inline const void unlock() { handle.unlock(); }
+
+    // experimental
+    template <class T>
+    class auto_locking_ptr
+    {
+        memory_t::SmartHandle& handle;
+        T* ptr;
+
+    public:
+        auto_locking_ptr(memory_t::SmartHandle handle) : handle(handle)
+        {
+            ptr = handle.lock<T>();
+        }
+
+        ~auto_locking_ptr()
+        {
+            handle.unlock();
+        }
+
+        inline operator T* () { return ptr; }
+    };
+
+    typedef auto_locking_ptr<char> auto_ptr_t;
+
+    bool operator ==(const char* src)
+    {
+        auto_ptr_t str(handle);
+
+        return strcmp(str, src) == 0;
+    }
+
+    inline char* lock() { return handle.lock<char>(); }
+    inline void unlock() { handle.unlock(); }
 };
 
 }}
