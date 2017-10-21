@@ -30,5 +30,7 @@ int main() {
 
     str3.populate(output);
 
+    std::cout << "And again: " << str3.lock() << std::endl;
+
     return 0;
 }

@@ -34,3 +34,4 @@
 # CLion specific
 cmake-build-debug/
 **/.idea/workspace.xml
+**/.idea/vcs.xml

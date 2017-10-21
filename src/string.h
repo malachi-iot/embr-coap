@@ -37,7 +37,8 @@ public:
 
     // TODO: Do also && move operation for C++11
     string(const string& copy_from) :
-            handle(copy_from.handle, size)
+            handle(copy_from.handle, copy_from.size),
+            size(copy_from.size)
     {
 
     }
@@ -66,7 +67,7 @@ public:
         return *this;
     }
 
-    inline string operator +(const char *src)
+    inline string operator +(const char *src) const
     {
         // FIX: Not yet working!
         size_t src_len = strlen(src);
@@ -79,7 +80,12 @@ public:
         size_t src_len = strlen(src);
         handle.resize(size + src_len + 1);
         */
+
+        return new_str;
     }
+
+    inline const char* lock() { return handle.lock<char>(); }
+    inline const void unlock() { handle.unlock(); }
 };
 
 }}

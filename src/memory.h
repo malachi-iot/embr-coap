@@ -6,6 +6,7 @@
 #define SRC_MEMORY_H
 
 #include <stdlib.h>
+#include <stdint.h>
 #include <string.h>
 
 namespace moducom { namespace coap {
@@ -94,7 +95,7 @@ public:
 
         SmartHandle append_into_new_experimental(const void* append_data,
                                                  size_t current_size,
-                                                 size_t append_size)
+                                                 size_t append_size) const
         {
             //handle_t new_data_handle = memory.allocate(current_size + append_size);
             handle_t new_data_handle =
@@ -102,7 +103,7 @@ public:
                                 current_size + append_size,
                                 current_size);
 
-            void* new_data = memory.lock(new_data_handle);
+            uint8_t* new_data = memory.lock<uint8_t>(new_data_handle);
 
             memcpy(new_data + current_size, append_data, append_size);
 
