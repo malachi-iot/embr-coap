@@ -9,6 +9,10 @@
 #include <string.h>
 #include <stdint.h>
 
+#define FEATURE_TOSTRING_STDIO
+#ifdef FEATURE_TOSTRING_STDIO
+#include <stdio.h>
+#endif
 
 
 namespace moducom { namespace std {
@@ -70,60 +74,6 @@ public:
 
     }
 
-    // experimental.  Safer than leaving string locked open and
-    // I imagine 95% of the time this is the operation the caller
-    // ultimately wants also
-    void populate(char* output)
-    {
-        char* input = handle.lock<char>();
-
-#ifdef FEATURE_STRING_SIZE_FIELD
-        memcpy(output, input, size);
-        output[size] = 0;
-#else
-        strcpy(output, input);
-#endif
-
-        handle.unlock();
-    }
-
-    string& operator += (const char* src)
-    {
-        size_t src_len = strlen(src);
-#ifndef FEATURE_STRING_SIZE_FIELD
-        // TODO: optimize this somehow
-        char* dest = lock();
-        size_t size = strlen(dest);
-        unlock();
-        handle.resize(size + src_len + 1);
-        dest = lock();
-        strcat(dest, src);
-#else
-        handle.resize(size + src_len + 1);
-        char* dest = handle.lock<char>();
-        memcpy(dest + size, src, src_len);
-        size += src_len;
-#endif
-        unlock();
-        return *this;
-    }
-
-    inline string operator +(const char *src)
-    {
-        size_t src_len = strlen(src);
-#ifndef FEATURE_STRING_SIZE_FIELD
-        size_t size = strlen(lock());
-#endif
-        memory_t::SmartHandle new_handle =
-                handle.append_into_new_experimental(src, size, src_len);
-        return string (new_handle
-#ifdef FEATURE_STRING_SIZE_FIELD
-                , size + src_len
-#endif
-        );
-    }
-
-
     // experimental
     template <class T>
     class auto_locking_ptr
@@ -147,6 +97,66 @@ public:
 
     typedef auto_locking_ptr<char> auto_ptr_t;
 
+
+#ifndef FEATURE_STRING_SIZE_FIELD
+    size_t length()
+    {
+        char* str = lock();
+        size_t len = strlen(str);
+        unlock();
+        return len;
+    }
+#endif
+
+    // experimental.  Safer than leaving string locked open and
+    // I imagine 95% of the time this is the operation the caller
+    // ultimately wants also
+    void populate(char* output)
+    {
+        auto_ptr_t input(handle);
+
+#ifdef FEATURE_STRING_SIZE_FIELD
+        memcpy(output, input, size);
+        output[size] = 0;
+#else
+        strcpy(output, input);
+#endif
+    }
+
+    string& operator += (const char* src)
+    {
+        size_t src_len = strlen(src);
+#ifndef FEATURE_STRING_SIZE_FIELD
+        // TODO: optimize this somehow
+        size_t size = length();
+        handle.resize(size + src_len + 1);
+        strcat(lock(), src);
+#else
+        handle.resize(size + src_len + 1);
+        char* dest = handle.lock<char>();
+        memcpy(dest + size, src, src_len);
+        size += src_len;
+#endif
+        unlock();
+        return *this;
+    }
+
+    inline string operator +(const char *src)
+    {
+        size_t src_len = strlen(src);
+#ifndef FEATURE_STRING_SIZE_FIELD
+        size_t size = length();
+#endif
+        memory_t::SmartHandle new_handle =
+                handle.append_into_new_experimental(src, size, src_len + 1);
+        return string (new_handle
+#ifdef FEATURE_STRING_SIZE_FIELD
+                , size + src_len + 1
+#endif
+        );
+    }
+
+
     /*
     auto_ptr_t get_auto_ptr_experimental()
     {
@@ -169,4 +179,18 @@ public:
 };
 
 }}
+
+#ifdef FEATURE_TOSTRING_STDIO
+inline moducom::std::string& operator += (moducom::std::string& s, int value)
+{
+    char buffer[10];
+
+    sprintf(buffer, "%d", value);
+
+    s += buffer;
+
+    return s;
+}
+#endif
+
 #endif //SRC_STRING_H
