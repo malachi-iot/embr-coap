@@ -39,7 +39,9 @@ public:
     {
         Direct = 0,
         Indexed = 1,
-        Compact = 2
+        Compact = 2,
+        Indexed2 = 3
+        // Compact2 would be like the linked-list version I was working on before, but might have to carry handle info along too
     };
 
     virtual int allocate(size_t size) = 0;
@@ -91,6 +93,39 @@ struct PACKED MemoryPoolDescriptor
 
             right.set_uninitialized();
         }
+    };
+
+
+    struct PACKED Index2Handle
+    {
+        /// which page this handle points to.  0 is reserved always for system handle
+        /// descriptor area, and therefore is repurposed as an "inactive" indicator
+        uint8_t page;
+
+        bool is_active() const { return page != 0; }
+
+        struct PACKED PageData
+        {
+            bool locked : 1;
+            bool allocated : 1;
+
+            /// # of utilized pages valid values from 1-255
+            uint8_t size;
+
+            /// Initialize an active but unlocked and unallocated
+            /// page
+            PageData(uint8_t size)
+            {
+                locked = false;
+                allocated = false;
+                this->size = size;
+            }
+
+            PageData(const PageData& copy_from)
+            {
+                *this = copy_from;
+            }
+        };
     };
 
 
@@ -209,6 +244,123 @@ public:
         return handle;
     }*/
 };
+
+
+struct PACKED MemoryPoolIndexed2HandlePage : MemoryPoolHandlePage
+{
+    typedef MemoryPoolDescriptor::Index2Handle handle_t;
+    typedef IMemoryPool::handle_opaque_t handle_opaque_t;
+
+private:
+    handle_t indexedHandle[];
+
+public:
+    const handle_t& get_descriptor(uint8_t handle) const
+    {
+        return indexedHandle[handle];
+    }
+
+    /// initialize with total byte count of page_size
+    /// @param blank_page Page 1 from memory pool - note this should *already* have its size field initialized
+    void initialize(size_t page_size, handle_t::PageData* blank_page)
+    {
+        page_size -= sizeof(MemoryPoolHandlePage);
+
+        // NOTE: Just a formality, don't need to do a sizeof since it's exactly one byte
+        // doing it anyway cuz should optimize out and saves us if we do have to increase
+        // size of handle_t
+        for(int i = 1; i < page_size / sizeof(handle_t); i++)
+        {
+            indexedHandle[i].page = 0;
+        }
+
+        indexedHandle[0].page = 1;
+
+        blank_page->allocated = false;
+        blank_page->locked = false;
+    }
+
+
+    uint8_t get_page(uint8_t handle) const
+    {
+        return get_descriptor(handle).page;
+    }
+
+    size_t get_approximate_header_size() const
+    {
+        return 2 ^ (size_t) header.size;
+    }
+
+    handle_opaque_t get_first_inactive_handle() const
+    {
+        // always reflects more elements than are actually
+        // present to optimize lookups in large page sizes
+        // (remember each handle we can ascertain as active
+        // by itself - by it being page == 0 or not)
+        const size_t size_approximate = get_approximate_header_size();
+
+        for(int i = 0; i < size_approximate; i++)
+        {
+            if(!get_descriptor(i).is_active())
+                return i;
+        }
+
+        return IMemoryPool::invalid_handle;
+    }
+
+    /**!
+     * Scouring through active and unallocated handles, find one whose minimum size meets our requirement
+     * Does a best-fit match
+     * @param minimum
+     * @param pages
+     * @param page_size
+     * @param page_data
+     * @return
+     */
+    handle_opaque_t  get_unallocated_handle(size_t minimum, uint8_t* pages, size_t page_size, handle_t::PageData** page_data)
+    {
+        const size_t size_approximate = get_approximate_header_size();
+        handle_t::PageData* candidate = NULLPTR;
+        int candidate_index;
+
+        for(int i = 0; i < size_approximate; i++)
+        {
+            const handle_t& descriptor = get_descriptor(i);
+
+            if(descriptor.is_active())
+            {
+                handle_t::PageData* p = reinterpret_cast<handle_t::PageData*>(
+                        pages + (page_size * descriptor.page));
+
+                if(!p->allocated && p->size >= minimum)
+                {
+                    if(candidate != NULLPTR)
+                    {
+                        if(p->size < candidate->size)
+                        {
+                            candidate = p;
+                            candidate_index = i;
+                        }
+                    }
+                    else
+                    {
+                        candidate = p;
+                        candidate_index = i;
+                    }
+                }
+            }
+        }
+
+        if(candidate == NULLPTR) return IMemoryPool::invalid_handle;
+
+        *page_data = candidate;
+
+        return candidate_index;
+    }
+
+};
+
+
 
 template <size_t page_size = 32, uint8_t page_count = 128>
 class MemoryPool : public IMemoryPool

@@ -53,6 +53,4 @@ TEST_CASE("String tests", "[strings]")
     str2 += 4;
 
     REQUIRE(str2 == STATIC_STR1 STATIC_STR2 " 4");
-
-    moducom::coap::IMemoryPool* pool = new moducom::coap::MemoryPool<>();
 }
