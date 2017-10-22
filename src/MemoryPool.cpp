@@ -29,7 +29,7 @@ MemoryPoolIndexedHandlePage::handle_t* MemoryPoolIndexedHandlePage::get_first_un
     {
         handle_t& descriptor = indexedHandle[i];
 
-        if(!descriptor.allocated)
+        if(!descriptor.allocated && descriptor.is_initialized())
         {
             *index = i;
             return &descriptor;

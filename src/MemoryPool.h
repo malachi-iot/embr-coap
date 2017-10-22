@@ -22,6 +22,9 @@
 
 #define PACKED __attribute__ ((packed))
 
+// TODO: Make this generate log warnings or something
+#define ASSERT(expected, actual)
+
 namespace moducom { namespace coap {
 
 class IMemoryPool
@@ -56,15 +59,38 @@ struct PACKED MemoryPoolDescriptor
     // Next page also has is a memory pool descriptor
     bool followup: 1;
 
-    struct IndexedHandle
+    struct PACKED IndexedHandle
     {
         /// Is the memory on the page allocated or free
         bool allocated : 1;
         /// What page in the pool does this handle point to
-        uint8_t page : 7;
+        uint8_t page;
         /// how many pages large this handle is
         /// @name test
-        uint8_t size;
+        uint8_t size : 7;
+
+        void set_uninitialized()
+        {
+            allocated = false;
+            size = 0;
+        }
+
+        bool is_initialized()
+        {
+            return size > 0;
+        }
+
+        /// Combine this + another contiguous free handles into this one handle
+        void combine(IndexedHandle& right)
+        {
+            ASSERT(false, allocated);
+            ASSERT(false, right.allocated);
+            ASSERT(right.page, page size);
+
+            size += right.size;
+
+            right.set_uninitialized();
+        }
     };
 
 
@@ -119,7 +145,8 @@ public:
         return total;
     }
 
-    // Get first unallocated handle or nullptr if all present handles are allocated
+    /// Get first unallocated handle or nullptr if all present handles are allocated
+    /// NOTE: this skips uninitialized handles
     handle_t* get_first_unallocated_handle(size_t total, handle_opaque_t* index);
 
     // Get first unallocated handle or -1 if all present handles are allocated
@@ -145,6 +172,21 @@ public:
         return &indexedHandle[header.size++];
     }
 
+    void free(handle_opaque_t handle)
+    {
+        indexedHandle[handle].allocated = false;
+    }
+
+    /// Compact two adjacent and contiguous free handles into specified handle
+    /// @param handle left side/first of two free handles
+    void combine_adjacent(handle_opaque_t handle)
+    {
+        handle_t& left = indexedHandle[handle];
+        handle_t& right = indexedHandle[handle + 1];
+
+        left.combine(right);
+    }
+
     /// acquires a handle for allocation, but doesn't allocate it yet
     /// differs from get_first_unallocated_handle in that it will create a new handle if
     /// necessary
@@ -168,7 +210,7 @@ public:
     }*/
 };
 
-template <int page_size = 32, uint8_t page_count = 128>
+template <size_t page_size = 32, uint8_t page_count = 128>
 class MemoryPool : public IMemoryPool
 {
     uint8_t pages[page_count][page_size];
@@ -249,7 +291,16 @@ public:
         return invalid_handle;
     }
 
-    virtual bool free(handle_opaque_t handle) OVERRIDE { return false; }
+    virtual bool free(handle_opaque_t handle) OVERRIDE
+    {
+        typedef MemoryPoolIndexedHandlePage pool_t;
+
+        pool_t* sys_page = (pool_t*)pages[0];
+
+        sys_page->free(handle);
+
+        return true;
+    }
 
     virtual bool expand(handle_opaque_t handle, size_t size) OVERRIDE
     {
