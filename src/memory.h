@@ -78,7 +78,7 @@ public:
         /// \param smartHandle
         SmartHandle(const SmartHandle& smartHandle, size_t size) :
                 handle(smartHandle.memory.copy(smartHandle.handle, size)),
-                memory(memory)
+                memory(smartHandle.memory)
         {
 
         }

@@ -82,7 +82,7 @@ public:
         T* ptr;
 
     public:
-        auto_locking_ptr(memory_t::SmartHandle handle) : handle(handle)
+        auto_locking_ptr(memory_t::SmartHandle& handle) : handle(handle)
         {
             ptr = handle.lock<T>();
         }

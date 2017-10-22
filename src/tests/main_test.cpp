@@ -17,17 +17,21 @@ std::ostream& operator<<(std::ostream& os, moducom::std::string& value)
     return os;
 }
 
+#include <catch.hpp>
+
 namespace Catch {
 
-std::string toString(moducom::std::string &value)
+template<> struct StringMaker<moducom::std::string>
 {
-    moducom::std::string::auto_ptr_t s(value);
+    static std::string convert(moducom::std::string const& value)
+    {
+        moducom::std::string::auto_ptr_t s((moducom::std::string&) value);
+        
+        return std::string(s);
+    }
+};
 
-    return std::string(s);
 }
-}
-
-#include <catch.hpp>
 
 #define STATIC_STR1  "Test1"
 #define STATIC_STR2  "Followed by this"

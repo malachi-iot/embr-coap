@@ -326,6 +326,8 @@ public:
             // b) move this allocated memory to a new space which fits the expanded size
             // c) compact operation and attempt a) and b) again
         }
+
+        return false;
     }
 
     virtual void shrink(handle_opaque_t handle, size_t size) OVERRIDE
