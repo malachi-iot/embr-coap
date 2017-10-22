@@ -53,10 +53,14 @@ struct PACKED MemoryPoolDescriptor
     IMemoryPool::TierEnum tier : 3;
     // Number of handles in this page
     uint8_t size: 4;
+    // Next page also has is a memory pool descriptor
+    bool followup: 1;
 
     struct IndexedHandle
     {
+        /// Is the memory on the page allocated or free
         bool allocated : 1;
+        /// What page in the pool does this handle point to
         uint8_t page : 7;
         /// how many pages large this handle is
         /// @name test
@@ -80,8 +84,14 @@ struct PACKED MemoryPoolHandlePage
 struct PACKED MemoryPoolIndexedHandlePage : MemoryPoolHandlePage
 {
     typedef MemoryPoolDescriptor::IndexedHandle handle_t;
+    typedef IMemoryPool::handle_opaque_t handle_opaque_t;
 
+private:
     handle_t indexedHandle[];
+
+public:
+    // initialize with total page_count available to free_page
+    void initialize(uint8_t free_page, uint8_t page_count);
 
     const handle_t& get_descriptor(uint8_t handle) const
     {
@@ -110,24 +120,10 @@ struct PACKED MemoryPoolIndexedHandlePage : MemoryPoolHandlePage
     }
 
     // Get first unallocated handle or nullptr if all present handles are allocated
-    handle_t* get_first_unallocated_handle(size_t total, int* index)
-    {
-        for(int i = 0; i < header.size; i++)
-        {
-            handle_t& descriptor = indexedHandle[i];
-
-            if(!descriptor.allocated)
-            {
-                *index = i;
-                return &descriptor;
-            }
-        }
-
-        return NULLPTR;
-    }
+    handle_t* get_first_unallocated_handle(size_t total, handle_opaque_t* index);
 
     // Get first unallocated handle or -1 if all present handles are allocated
-    IMemoryPool::handle_opaque_t get_first_unallocated_handle() const
+    handle_opaque_t get_first_unallocated_handle() const
     {
         for(size_t i = 0; i < header.size; i++)
         {
@@ -180,20 +176,10 @@ class MemoryPool : public IMemoryPool
     void initialize()
     {
         typedef MemoryPoolIndexedHandlePage pool_t;
-        typedef pool_t::handle_t handle_t;
 
         pool_t* sys_page = (pool_t*)pages[0];
 
-        // TODO: refactor to make size 0 based, to increase usable space
-        sys_page->header.size = 1;
-        sys_page->header.tier = Indexed;
-        // set up initial fully-empty handle
-        handle_t& handle = sys_page->indexedHandle[0];
-        handle.allocated = false;
-        // maximum size is page_count - 1 since we're using one page for
-        // system operations
-        handle.size = static_cast<uint8_t>(page_count - 1);
-        handle.page = 1; // skip by first page since that's sys_page
+        sys_page->initialize(1, page_count - 1);
     }
 
     static size_t get_size_in_pages(size_t size)
@@ -301,7 +287,7 @@ public:
         size_t total = page_count - 1;
 
         typedef MemoryPoolIndexedHandlePage pool_t;
-        typedef pool_t::handle_t handle_t;
+        //typedef pool_t::handle_t handle_t;
 
         pool_t* sys_page = (pool_t*)pages[0];
 
