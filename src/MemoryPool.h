@@ -16,18 +16,13 @@
 #define OVERRIDE
 #endif
 
+#define PACKED __attribute__ ((packed))
+
 namespace moducom { namespace coap {
 
 class IMemoryPool
 {
 public:
-    virtual int allocate(size_t size) = 0;
-    virtual bool free(int handle) = 0;
-};
-
-template <int page_size = 32, uint8_t page_count = 128>
-class MemoryPool : public IMemoryPool
-{
     enum TierEnum
     {
         Direct = 0,
@@ -35,6 +30,69 @@ class MemoryPool : public IMemoryPool
         Compact = 2
     };
 
+    virtual int allocate(size_t size) = 0;
+    virtual bool free(int handle) = 0;
+};
+
+/// Fits in the size of one page
+///
+struct PACKED MemoryPoolDescriptor
+{
+    IMemoryPool::TierEnum tier : 3;
+    // Number of handles in this page
+    uint8_t size: 4;
+
+    struct IndexedHandle
+    {
+        bool allocated : 1;
+        uint8_t page : 7;
+    };
+
+
+    struct CompactHandle : IndexedHandle
+    {
+        uint8_t handle;
+    };
+};
+
+// page dedicated to just managing handles
+struct PACKED MemoryPoolHandlePage
+{
+    MemoryPoolDescriptor header;
+    //MemoryPoolDescriptor::CompactHandle compactHandle[];
+};
+
+struct PACKED MemoryPoolIndexedHandlePage : MemoryPoolHandlePage
+{
+    typedef MemoryPoolDescriptor::IndexedHandle handle_t;
+
+    handle_t indexedHandle[];
+
+    handle_t& get_descriptor(uint8_t handle)
+    {
+        return indexedHandle[handle];
+    }
+
+    uint8_t get_page(uint8_t handle)
+    {
+        return get_descriptor(handle).page;
+    }
+
+    size_t handle_size() { return sizeof(handle_t); }
+
+    handle_t& get_first_free(size_t total)
+    {
+        /* prefer regular for loop cuz indexedHandle is an open ended array
+        for(handle_t& handle : indexedHandle)
+        {
+
+        }*/
+    }
+};
+
+template <int page_size = 32, uint8_t page_count = 128>
+class MemoryPool : public IMemoryPool
+{
     uint8_t pages[page_count][page_size];
 
 public:

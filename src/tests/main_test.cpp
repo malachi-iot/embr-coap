@@ -42,6 +42,9 @@ TEST_CASE("String tests", "[strings]")
 
     REQUIRE(str2 == STATIC_STR1 STATIC_STR2);
 
+    int test_size = sizeof(moducom::coap::MemoryPoolIndexedHandlePage);
+    test_size = sizeof(moducom::coap::MemoryPoolDescriptor);
+
     str2 += " ";
     str2 += 5;
 
