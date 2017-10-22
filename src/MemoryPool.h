@@ -308,6 +308,42 @@ public:
         return IMemoryPool::invalid_handle;
     }
 
+    handle_t::PageData& get_page_data(handle_opaque_t handle, uint8_t* pages, size_t page_size)
+    {
+        ASSERT(true, pages != NULLPTR);
+        
+        const handle_t& descriptor = get_descriptor(handle);
+
+        ASSERT(true, descriptor.is_active());
+
+        handle_t::PageData* p = reinterpret_cast<handle_t::PageData*>(
+                pages + (page_size * descriptor.page));
+
+        return *p;
+    }
+
+    void* lock(handle_opaque_t handle, uint8_t* pages, size_t page_size)
+    {
+        handle_t::PageData& page_data = get_page_data(handle, pages, page_size);
+
+        ASSERT(true, page_data.allocated);
+        ASSERT(false, page_data.locked);
+
+        page_data.locked = true;
+
+        return (uint8_t *)(&page_data) + sizeof(handle_t::PageData);
+    }
+
+    void unlock(handle_opaque_t handle, uint8_t* pages, size_t page_size)
+    {
+        handle_t::PageData& page_data = get_page_data(handle, pages, page_size);
+
+        ASSERT(true, page_data.allocated);
+        ASSERT(true, page_data.locked);
+
+        page_data.locked = false;
+    }
+
     /**!
      * Scouring through active and unallocated handles, find one whose minimum size meets our requirement
      * Does a best-fit match
