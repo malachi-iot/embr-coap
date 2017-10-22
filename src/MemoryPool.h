@@ -41,6 +41,9 @@ public:
 
     virtual int allocate(size_t size) = 0;
     virtual bool free(handle_opaque_t handle) = 0;
+    // TODO: consider making this an append instead
+    virtual bool expand(handle_opaque_t handle, size_t size) = 0;
+    virtual void shrink(handle_opaque_t handle, size_t size) = 0;
 };
 
 /// Fits in the size of one page
@@ -92,6 +95,20 @@ struct PACKED MemoryPoolIndexedHandlePage : MemoryPoolHandlePage
 
     static size_t handle_size() { return sizeof(handle_t); }
 
+    size_t get_total_allocated_pages() const
+    {
+        size_t total = 0;
+
+        for(int i = 0; i < header.size; i++)
+        {
+            const handle_t& handle = get_descriptor(i);
+
+            if(handle.allocated) total += handle.size;
+        }
+
+        return total;
+    }
+
     // Get first unallocated handle or nullptr if all present handles are allocated
     handle_t* get_first_unallocated_handle(size_t total, int* index)
     {
@@ -123,16 +140,13 @@ struct PACKED MemoryPoolIndexedHandlePage : MemoryPoolHandlePage
         return IMemoryPool::invalid_handle;
     }
 
+    /// Low-level function does NOT initialize handle_t
     handle_t* get_new_handle(size_t total)
     {
         if(header.size >= total) return NULLPTR;
 
         // we can expand our active handle index count here since there's room
-        handle_t* handle = &indexedHandle[header.size];
-        handle->allocated = false; // just to be extra sure
-        header.size++;
-
-        return handle;
+        return &indexedHandle[header.size++];
     }
 
     /// acquires a handle for allocation, but doesn't allocate it yet
@@ -174,10 +188,19 @@ class MemoryPool : public IMemoryPool
         sys_page->header.size = 1;
         sys_page->header.tier = Indexed;
         // set up initial fully-empty handle
-        sys_page->indexedHandle[0].allocated = false;
+        handle_t& handle = sys_page->indexedHandle[0];
+        handle.allocated = false;
         // maximum size is page_count - 1 since we're using one page for
         // system operations
-        sys_page->indexedHandle[0].size = static_cast<uint8_t>(page_count - 1);
+        handle.size = static_cast<uint8_t>(page_count - 1);
+        handle.page = 1; // skip by first page since that's sys_page
+    }
+
+    static size_t get_size_in_pages(size_t size)
+    {
+        size_t size_in_pages = (size + page_size - 1) / page_size;
+
+        return size_in_pages;
     }
 
 public:
@@ -187,8 +210,6 @@ public:
 
     virtual handle_opaque_t allocate(size_t size) OVERRIDE
     {
-        initialize();
-
         typedef MemoryPoolIndexedHandlePage pool_t;
         typedef pool_t::handle_t handle_t;
 
@@ -202,7 +223,7 @@ public:
 
         if(handle != NULLPTR)
         {
-            size_t size_in_pages = (size + page_size - 1) / page_size;
+            size_t size_in_pages = get_size_in_pages(size);
 
             if(size_in_pages == handle->size)
             {
@@ -227,16 +248,13 @@ public:
                 // TODO: Keep scanning looking for a better fit
 
                 // split the free handle in two, with the new handle containing remainder unallocated space
+                handle_t* new_handle = sys_page->get_new_handle(total);
+                new_handle->allocated = false;
+                new_handle->page = handle->page + size_in_pages;
+                new_handle->size = handle->size - size_in_pages;
+
                 handle->allocated = true;
                 handle->size = size_in_pages;
-
-                // TODO: above handle shall be the one returned
-
-                size_t new_unallocated_size_in_pages = handle->size - size_in_pages;
-
-                handle = sys_page->get_new_handle(total);
-                handle->allocated = false;
-                handle->size = new_unallocated_size_in_pages;
 
                 return index;
             }
@@ -245,7 +263,52 @@ public:
         return invalid_handle;
     }
 
-    virtual bool free(int handle) OVERRIDE { return false; }
+    virtual bool free(handle_opaque_t handle) OVERRIDE { return false; }
+
+    virtual bool expand(handle_opaque_t handle, size_t size) OVERRIDE
+    {
+        size_t size_in_pages = get_size_in_pages(size);
+
+        typedef MemoryPoolIndexedHandlePage pool_t;
+        typedef pool_t::handle_t handle_t;
+
+        pool_t* sys_page = (pool_t*)pages[0];
+
+        const handle_t& h = sys_page->get_descriptor(handle);
+
+        if(size_in_pages <= h.size)
+        {
+            // Memory blocks already big enough to accomodate expansion
+            return true;
+        }
+        else
+        {
+            // TODO: scour for contiguous unallocated memory page
+            // if none exists, choose either:
+            // a) swap allocated contiguous space elsewhere
+            // b) move this allocated memory to a new space which fits the expanded size
+            // c) compact operation and attempt a) and b) again
+        }
+    }
+
+    virtual void shrink(handle_opaque_t handle, size_t size) OVERRIDE
+    {
+
+    }
+
+    size_t get_free() const
+    {
+        size_t total = page_count - 1;
+
+        typedef MemoryPoolIndexedHandlePage pool_t;
+        typedef pool_t::handle_t handle_t;
+
+        pool_t* sys_page = (pool_t*)pages[0];
+
+        total -= sys_page->get_total_allocated_pages();
+
+        return total * page_size;
+    }
 };
 
 

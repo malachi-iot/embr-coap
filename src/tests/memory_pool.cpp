@@ -4,9 +4,11 @@
 
 using namespace moducom::coap;
 
-TEST_CASE("Low-level memory pool tests", "[mempool-low]")
+TEST_CASE("Low-level memory pool tests", "[mempool_low]")
 {
     MemoryPool<> pool;
 
-    pool.allocate(100);
+    int handle = pool.allocate(100);
+
+    REQUIRE(pool.get_free() == (32 * (128 - 1) - 128));
 }
