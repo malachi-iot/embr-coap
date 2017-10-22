@@ -3,7 +3,8 @@
 //
 
 #include "memory.h"
-#include <malloc.h>
+//#include <malloc.h>
+#include <stdlib.h>
 #include <string.h>
 
 namespace moducom { namespace coap {
