@@ -2,7 +2,7 @@
 
 #include "../MemoryPool.h"
 
-using namespace moducom::coap;
+using namespace moducom::dynamic;
 
 TEST_CASE("Low-level memory pool tests", "[mempool_low]")
 {

@@ -4,7 +4,7 @@
 
 #include "MemoryPool.h"
 
-namespace moducom { namespace coap {
+namespace moducom { namespace dynamic {
 
 void MemoryPoolIndexedHandlePage::initialize(uint8_t free_page, uint8_t page_count)
 {

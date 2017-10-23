@@ -25,7 +25,7 @@
 // TODO: Make this generate log warnings or something
 #define ASSERT(expected, actual)
 
-namespace moducom { namespace coap {
+namespace moducom { namespace dynamic {
 
 class IMemoryPool
 {
@@ -44,7 +44,7 @@ public:
         // Compact2 would be like the linked-list version I was working on before, but might have to carry handle info along too
     };
 
-    virtual int allocate(size_t size) = 0;
+    virtual handle_opaque_t allocate(size_t size) = 0;
     virtual bool free(handle_opaque_t handle) = 0;
     // TODO: consider making this an append instead
     virtual bool expand(handle_opaque_t handle, size_t size) = 0;
@@ -311,7 +311,7 @@ public:
     handle_t::PageData& get_page_data(handle_opaque_t handle, uint8_t* pages, size_t page_size)
     {
         ASSERT(true, pages != NULLPTR);
-        
+
         const handle_t& descriptor = get_descriptor(handle);
 
         ASSERT(true, descriptor.is_active());
@@ -424,7 +424,7 @@ public:
 
     void compact() {}
 
-    virtual handle_opaque_t allocate(size_t size) OVERRIDE
+    handle_opaque_t allocate_index(size_t size)
     {
         typedef MemoryPoolIndexedHandlePage pool_t;
         typedef pool_t::handle_t handle_t;
@@ -432,7 +432,7 @@ public:
         pool_t* sys_page = (pool_t*)pages[0];
         // total = total number of handles that can fit in a page
         CONSTEXPR size_t total = (page_size - sizeof(MemoryPoolDescriptor)) /
-                sizeof(handle_t);
+                                 sizeof(handle_t);
         handle_opaque_t index;
 
         handle_t* handle = sys_page->get_first_unallocated_handle(total, &index);
@@ -479,15 +479,60 @@ public:
         return invalid_handle;
     }
 
-    virtual bool free(handle_opaque_t handle) OVERRIDE
+    handle_opaque_t allocate_index2(size_t size)
     {
-        typedef MemoryPoolIndexedHandlePage pool_t;
+        typedef MemoryPoolIndexed2HandlePage pool_t;
+        typedef pool_t::handle_t handle_t;
+        typedef handle_t::PageData page_data_t;
 
         pool_t* sys_page = (pool_t*)pages[0];
+        page_data_t* page_data;
 
-        sys_page->free(handle);
+        handle_opaque_t handle = sys_page->get_unallocated_handle(size, pages[0], page_size, &page_data);
+
+        if(handle != invalid_handle)
+        {
+            page_data->allocated = true;
+        }
+
+        return handle;
+    }
+
+    virtual handle_opaque_t allocate(size_t size) OVERRIDE
+    {
+        return allocate_index(size);
+    }
+
+    MemoryPoolIndexedHandlePage& get_sys_page_index()
+    {
+        return *((MemoryPoolIndexedHandlePage*)pages[0]);
+    }
+
+    MemoryPoolIndexed2HandlePage& get_sys_page_index2()
+    {
+        return *((MemoryPoolIndexed2HandlePage*)pages[0]);
+    }
+
+    bool free_index(handle_opaque_t handle)
+    {
+        get_sys_page_index().free(handle);
 
         return true;
+    }
+
+
+    bool free_index2(handle_opaque_t handle)
+    {
+        //get_sys_page_index2().free(handle);
+
+        return true;
+    }
+
+
+
+    virtual bool free(handle_opaque_t handle) OVERRIDE
+    {
+        return free_index(handle);
     }
 
     virtual bool expand(handle_opaque_t handle, size_t size) OVERRIDE
