@@ -344,6 +344,16 @@ public:
         page_data.locked = false;
     }
 
+    void free(handle_opaque_t handle, uint8_t* pages, size_t page_size)
+    {
+        handle_t::PageData& page_data = get_page_data(handle, pages, page_size);
+
+        ASSERT(true, page_data.allocated);
+        ASSERT(false, page_data.locked);
+
+        page_data.allocated = false;
+    }
+
     /**!
      * Scouring through active and unallocated handles, find one whose minimum size meets our requirement
      * Does a best-fit match
@@ -403,13 +413,40 @@ class MemoryPool : public IMemoryPool
 {
     uint8_t pages[page_count][page_size];
 
-    void initialize()
+    const MemoryPoolDescriptor& get_sys_page_descriptor() const
+    {
+        return *((MemoryPoolDescriptor*)pages[0]);
+    }
+
+    MemoryPoolIndexedHandlePage& get_sys_page_index()
+    {
+        return *((MemoryPoolIndexedHandlePage*)pages[0]);
+    }
+
+    MemoryPoolIndexed2HandlePage& get_sys_page_index2()
+    {
+        return *((MemoryPoolIndexed2HandlePage*)pages[0]);
+    }
+
+
+    void initialize_index()
     {
         typedef MemoryPoolIndexedHandlePage pool_t;
 
         pool_t* sys_page = (pool_t*)pages[0];
 
         sys_page->initialize(1, page_count - 1);
+    }
+
+    void initialize_index2()
+    {
+        typedef MemoryPoolIndexed2HandlePage::handle_t::PageData page_data_t;
+
+        page_data_t* page_data = (page_data_t*)(pages[1]);
+
+        page_data->size = page_size - sizeof(page_data_t);
+
+        get_sys_page_index2().initialize(page_size, page_data);
     }
 
     static size_t get_size_in_pages(size_t size)
@@ -420,7 +457,7 @@ class MemoryPool : public IMemoryPool
     }
 
 public:
-    MemoryPool() { initialize(); }
+    MemoryPool() { initialize_index(); }
 
     void compact() {}
 
@@ -490,6 +527,7 @@ public:
 
         handle_opaque_t handle = sys_page->get_unallocated_handle(size, pages[0], page_size, &page_data);
 
+        // TODO: Do split logic like allocate_index does
         if(handle != invalid_handle)
         {
             page_data->allocated = true;
@@ -500,17 +538,15 @@ public:
 
     virtual handle_opaque_t allocate(size_t size) OVERRIDE
     {
-        return allocate_index(size);
-    }
+        // TODO: soon, replace with proper polymorphism
+        switch(get_sys_page_descriptor().tier)
+        {
+            case Indexed2:
+                return invalid_handle;
 
-    MemoryPoolIndexedHandlePage& get_sys_page_index()
-    {
-        return *((MemoryPoolIndexedHandlePage*)pages[0]);
-    }
-
-    MemoryPoolIndexed2HandlePage& get_sys_page_index2()
-    {
-        return *((MemoryPoolIndexed2HandlePage*)pages[0]);
+            default:
+                return allocate_index(size);
+        }
     }
 
     bool free_index(handle_opaque_t handle)
@@ -523,7 +559,7 @@ public:
 
     bool free_index2(handle_opaque_t handle)
     {
-        //get_sys_page_index2().free(handle);
+        get_sys_page_index2().free(handle, pages[0], page_size);
 
         return true;
     }
@@ -532,7 +568,14 @@ public:
 
     virtual bool free(handle_opaque_t handle) OVERRIDE
     {
-        return free_index(handle);
+        switch(get_sys_page_descriptor().tier)
+        {
+            case Indexed2:
+                return invalid_handle;
+
+            default:
+                return free_index(handle);
+        }
     }
 
     virtual bool expand(handle_opaque_t handle, size_t size) OVERRIDE
