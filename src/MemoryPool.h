@@ -295,12 +295,19 @@ public:
 
     uint8_t get_page(handle_opaque_t handle) const
     {
-        return get_descriptor(handle).page;
+        uint8_t page = get_descriptor(handle).page;
+        return page;
     }
 
     size_t get_approximate_header_size() const
     {
-        return 2 ^ (size_t) header.size;
+        return header.size;
+// TODO: re-enable this approximator, we need an algorithm to create the initial
+// approximation.  Probably evaluate what the header.size currently is, then see if
+// it's grown past its threshold value
+// during the ALLOCATION operation, we do have an exact value in which we found the
+// new handle(s) so that's a key thing to hang it off of
+        //return 1 << (size_t) header.size;
     }
 
     typedef void (*page_data_iterator_fn)(void* context, handle_opaque_t handle, uint8_t page);
@@ -627,7 +634,7 @@ public:
                 // get location of current unallocated page data, then increment just past end of it
                 // this forms the new_page data representing the shrunken remainder unallocated
                 // page data
-                uint8_t new_page = sys_page.get_page(handle) + page_data->size;
+                uint8_t new_page = sys_page.get_page(handle) + size_in_pages;
 
                 // set up new page data at location new page within pages buffer
                 // then be sure to assign the page_data size to the new shrunken remainder free memory
@@ -641,6 +648,9 @@ public:
 
             page_data->allocated = true;
             page_data->size = size_in_pages;
+
+			// TODO: fix this for exponential behavior
+			sys_page.header.size++;
         }
 
         return handle;
