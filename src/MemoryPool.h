@@ -485,7 +485,7 @@ class MemoryPool : public IMemoryPool
 
         page_data_t* page_data = (page_data_t*)(pages[1]);
 
-        page_data->size = page_size - sizeof(page_data_t);
+        page_data->size = page_count -1;
 
         get_sys_page_index2().initialize(page_size, page_data);
     }

@@ -20,6 +20,6 @@ TEST_CASE("Low-level memory pool tests", "[mempool_low]")
 
         int handle = pool.allocate(100);
 
-        REQUIRE(pool.get_free() == (32 * (128 - 1) - 128));
+        REQUIRE(pool.get_free() == (32 * (128 - 1) - 128) - sizeof(MemoryPoolIndexed2HandlePage::handle_t::PageData));
     }
 }
