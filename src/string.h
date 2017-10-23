@@ -116,11 +116,13 @@ public:
         unlock();
         return len;
     }
+#else
+    size_t length() { return size; }
 #endif
 
-    // experimental.  Safer than leaving string locked open and
-    // I imagine 95% of the time this is the operation the caller
-    // ultimately wants also
+    /// experimental.  Safer than leaving string locked open and
+    /// I imagine 95% of the time this is the operation the caller
+    /// ultimately wants also
     void populate(char* output)
     {
         auto_ptr_t input(handle);
@@ -166,6 +168,26 @@ public:
         );
     }
 
+    /// temporary measure while we figure out how to handle
+    /// trailing nulls
+    // Beware this likely doubly-locks and support for that is
+    // currently undefined
+    /**!
+     * temporary measure while we figure out how to handle
+     * trailing nulls
+     *
+     */
+    inline void ensure_trailing_null()
+    {
+#ifdef FEATURE_STRING_SIZE_FIELD
+        char* _str = lock();
+
+        _str[length - 1] = 0;
+
+        unlock();
+#endif
+    }
+
 
     /*
     auto_ptr_t get_auto_ptr_experimental()
@@ -177,14 +199,22 @@ public:
 
     bool operator ==(const char* src)
     {
+        ensure_trailing_null();
+
         auto_ptr_t str(handle);
-        char* _str = str;
 
-#ifdef FEATURE_STRING_SIZE_FIELD
-        _str[size - 1] = 0;
-#endif
+        return strcmp(str, src) == 0;
+    }
 
-        return strcmp(_str, src) == 0;
+    bool operator ==(string& compare_to)
+    {
+        ensure_trailing_null();
+        compare_to.ensure_trailing_null();
+
+        auto_ptr_t  ours(handle),
+                    theirs(compare_to.handle);
+
+        return strcmp(ours, theirs) == 0;
     }
 };
 

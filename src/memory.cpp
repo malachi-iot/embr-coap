@@ -1,9 +1,4 @@
-//
-// Created by malachi on 10/20/17.
-//
-
 #include "memory.h"
-//#include <malloc.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -25,6 +20,8 @@ Memory::handle_t Memory::allocate(const void* data, size_t size, size_t size_cop
         memcpy(new_data, data, size_copy);
     else
         memcpy(new_data, data, size);
+
+    return new_data;
 }
 
 Memory::handle_t Memory::copy(handle_t handle, size_t size, size_t size_copy)
