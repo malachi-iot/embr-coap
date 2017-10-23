@@ -20,7 +20,11 @@
 #define NULLPTR NULL
 #endif
 
+#if __ADSPBLACKFIN__
+#define PACKED
+#else
 #define PACKED __attribute__ ((packed))
+#endif
 
 // TODO: Make this generate log warnings or something
 #define ASSERT(expected, actual)
@@ -50,6 +54,10 @@ public:
     virtual bool expand(handle_opaque_t handle, size_t size) = 0;
     virtual void shrink(handle_opaque_t handle, size_t size) = 0;
 };
+
+#if __ADSPBLACKFIN__
+#pragma pack(1)
+#endif
 
 /// Fits in the size of one page
 ///
@@ -465,6 +473,11 @@ public:
 };
 
 
+#if __ADSPBLACKFIN__
+#pragma pack()
+#endif
+
+
 
 template <size_t page_size = 32, uint8_t page_count = 128>
 class MemoryPool : public IMemoryPool
@@ -746,7 +759,7 @@ public:
         // false = filter by unallocated
         bool filter_allocated;
         // leave this in here see if VisualDSP allows it
-        size_t total_bytes = 0;
+        size_t total_bytes;
         size_t total_handles;
         size_t total_locked;
 
