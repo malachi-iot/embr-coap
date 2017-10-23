@@ -265,6 +265,7 @@ public:
     void initialize(size_t page_size, handle_t::PageData* blank_page)
     {
         header.tier = IMemoryPool::Indexed2;
+        header.size = 1;
 
         page_size -= sizeof(MemoryPoolHandlePage);
 
