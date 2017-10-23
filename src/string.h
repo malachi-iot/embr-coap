@@ -19,7 +19,7 @@ namespace moducom { namespace std {
 
 // replacement for std::string class which instead uses handle-based memory
 class string {
-    typedef coap::Memory memory_t;
+    typedef dynamic::Memory memory_t;
 
     memory_t::SmartHandle handle;
 #ifdef FEATURE_STRING_SIZE_FIELD

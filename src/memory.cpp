@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-namespace moducom { namespace coap {
+namespace moducom { namespace dynamic {
 
 Memory Memory::default_pool;
 
@@ -29,11 +29,6 @@ Memory::handle_t Memory::copy(handle_t handle, size_t size, size_t size_copy)
     return allocate(handle, size, size_copy);
 }
 
-
-void Memory::resize(handle_t handle, size_t new_size)
-{
-    handle = realloc(handle, new_size);
-}
 
 bool Memory::free(handle_t handle)
 {

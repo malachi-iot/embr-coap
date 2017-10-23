@@ -5,7 +5,7 @@
 
 int main_old() {
     std::cout << "Hello, World!" << std::endl;
-    typedef moducom::coap::Memory memory_t;
+    typedef moducom::dynamic::Memory memory_t;
     memory_t memory;
 
     memory_t::handle_t handle = memory.allocate(10);

@@ -9,7 +9,7 @@
 #include <stdint.h>
 #include <string.h>
 
-namespace moducom { namespace coap {
+namespace moducom { namespace dynamic {
 
 
 class Memory {
@@ -33,7 +33,15 @@ public:
     /// @param handle memory handle to free
     /// @return false is memory is locked and not freeable
     bool free(handle_t handle);
-    void resize(handle_t handle, size_t new_size);
+
+    /// may change handle_t in the process
+    /// \param handle
+    /// \param new_size
+    /// \return
+    handle_t realloc(handle_t handle, size_t new_size)
+    {
+        return ::realloc(handle, new_size);
+    }
 
     // TODO: might manage size differently, but for now we have to be explicit
     ///
@@ -65,7 +73,9 @@ public:
     class SmartHandle
     {
     protected:
-        const handle_t handle;
+        //const // can't be const due to current realloc behavior
+        // with true memory pools, handle can return to being constant
+        handle_t handle;
         Memory& memory;
 
     public:
@@ -88,9 +98,11 @@ public:
 
         void unlock() { memory.unlock(handle); }
 
+        // FIX: beware, currently this might change handle
+        // that behavior goes away when proper memory manager code is present
         void resize(size_t new_size)
         {
-            memory.resize(handle, new_size);
+            handle = memory.realloc(handle, new_size);
         }
 
         SmartHandle append_into_new_experimental(const void* append_data,
@@ -133,6 +145,30 @@ public:
             memory.free(handle);
         }
     };
+};
+
+
+// Concept is: stack space is easier to push non-tiny objects around on
+// so Memory& is OK here
+class MemoryBuffer : public Memory::SmartHandle
+{
+    size_t size;
+
+public:
+    MemoryBuffer(Memory::handle_t handle, Memory& memory, size_t size) :
+            size(size),
+            Memory::SmartHandle(handle, memory) {}
+
+    MemoryBuffer(Memory::SmartHandle& copy_from, size_t size) :
+            size(size),
+            Memory::SmartHandle(copy_from) {}
+
+    MemoryBuffer(MemoryBuffer& copy_from) :
+            size(size),
+            Memory::SmartHandle(copy_from) {}
+
+    size_t length() const { return size; }
+
 };
 
 }}
