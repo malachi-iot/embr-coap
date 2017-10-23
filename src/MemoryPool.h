@@ -735,16 +735,27 @@ public:
             case Indexed2:
                 return get_free_index2();
         }
+
+        return -1;
     }
 
     struct get_allocated_handle_count_context
     {
-        MemoryPool* memory_pool;
+        const MemoryPool& memory_pool;
         // true = filter by allocated
         // false = filter by unallocated
         bool filter_allocated;
+        // leave this in here see if VisualDSP allows it
         size_t total_bytes = 0;
-        size_t total_handles = 0;
+        size_t total_handles;
+        size_t total_locked;
+
+        get_allocated_handle_count_context(const MemoryPool& memory_pool) : memory_pool(memory_pool)
+        {
+            total_bytes = 0;
+            total_handles = 0;
+            total_locked = 0;
+        }
     };
 
     static void get_allocated_handle_count_callback(void* context, handle_opaque_t handle, uint8_t page)
@@ -752,14 +763,15 @@ public:
         typedef MemoryPoolIndexed2HandlePage::handle_t::PageData page_data_t;
 
         get_allocated_handle_count_context* ctx = (get_allocated_handle_count_context*)context;
-        MemoryPool* _this = ctx->memory_pool;
+        const MemoryPool& _this = ctx->memory_pool;
 
-        page_data_t* page_data = (page_data_t*)_this->pages[page];
+        page_data_t* page_data = (page_data_t*)_this.pages[page];
 
         if(!(ctx->filter_allocated ^ page_data->allocated))
         {
             ctx->total_bytes += page_data->size * page_size - sizeof(page_data_t);
             ctx->total_handles++;
+            ctx->total_locked += page_data->locked;
         }
     }
 
@@ -770,8 +782,7 @@ public:
      */
     size_t get_allocated_handle_count(bool filter_allocated = true)
     {
-        get_allocated_handle_count_context context;
-        context.memory_pool = this;
+        get_allocated_handle_count_context context(*this);
         context.filter_allocated = filter_allocated;
         get_sys_page_index2().iterate_page_data(get_allocated_handle_count_callback, &context);
         return context.total_handles;

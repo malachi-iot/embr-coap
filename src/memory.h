@@ -166,7 +166,7 @@ public:
             Memory::SmartHandle(copy_from) {}
 
     MemoryBuffer(MemoryBuffer& copy_from) :
-            size(size),
+            size(copy_from.size),
             Memory::SmartHandle(copy_from) {}
 
     size_t length() const { return size; }
