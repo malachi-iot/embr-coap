@@ -419,6 +419,27 @@ public:
         return candidate_index;
     }
 
+    uint8_t get_total_unallocated_pages(const uint8_t* pages, size_t page_size) const
+    {
+        const size_t size_approximate = get_approximate_header_size();
+        uint8_t total = 0;
+
+        for(int i = 0; i < size_approximate; i++)
+        {
+            const handle_t& descriptor = get_descriptor(i);
+
+            if(descriptor.is_active())
+            {
+                const handle_t::PageData* p = reinterpret_cast<const handle_t::PageData*>(
+                        pages + (page_size * descriptor.page));
+
+                if(!p->allocated) total += p->size;
+            }
+        }
+
+        return total;
+    }
+
 };
 
 
@@ -433,12 +454,12 @@ class MemoryPool : public IMemoryPool
         return *((MemoryPoolDescriptor*)pages[0]);
     }
 
-    MemoryPoolIndexedHandlePage& get_sys_page_index()
+    MemoryPoolIndexedHandlePage& get_sys_page_index() const
     {
         return *((MemoryPoolIndexedHandlePage*)pages[0]);
     }
 
-    MemoryPoolIndexed2HandlePage& get_sys_page_index2()
+    MemoryPoolIndexed2HandlePage& get_sys_page_index2() const
     {
         return *((MemoryPoolIndexed2HandlePage*)pages[0]);
     }
@@ -472,7 +493,19 @@ class MemoryPool : public IMemoryPool
     }
 
 public:
-    MemoryPool() { initialize_index(); }
+    MemoryPool(TierEnum tier = Indexed)
+    {
+        switch(tier)
+        {
+            case Indexed:
+                initialize_index();
+                break;
+
+            case Indexed2:
+                initialize_index2();
+                break;
+        }
+    }
 
     void compact() {}
 
@@ -579,7 +612,7 @@ public:
         switch(get_sys_page_descriptor().tier)
         {
             case Indexed2:
-                return invalid_handle;
+                return allocate_index2(size);
 
             default:
                 return allocate_index(size);
@@ -608,7 +641,7 @@ public:
         switch(get_sys_page_descriptor().tier)
         {
             case Indexed2:
-                return invalid_handle;
+                return free_index2(handle);
 
             default:
                 return free_index(handle);
@@ -648,7 +681,7 @@ public:
 
     }
 
-    size_t get_free() const
+    size_t get_free_index() const
     {
         size_t total = page_count - 1;
 
@@ -660,6 +693,24 @@ public:
         total -= sys_page->get_total_allocated_pages();
 
         return total * page_size;
+    }
+
+
+    size_t get_free_index2() const
+    {
+        return get_sys_page_index2().get_total_unallocated_pages(pages[0], page_size);
+    }
+
+    size_t get_free() const
+    {
+        switch(get_sys_page_descriptor().tier)
+        {
+            case Indexed:
+                return get_free_index();
+
+            case Indexed2:
+                return get_free_index2();
+        }
     }
 };
 

@@ -6,9 +6,20 @@ using namespace moducom::dynamic;
 
 TEST_CASE("Low-level memory pool tests", "[mempool_low]")
 {
-    MemoryPool<> pool;
+    WHEN("Index1 memory pool")
+    {
+        MemoryPool<> pool;
 
-    int handle = pool.allocate(100);
+        int handle = pool.allocate(100);
 
-    REQUIRE(pool.get_free() == (32 * (128 - 1) - 128));
+        REQUIRE(pool.get_free() == (32 * (128 - 1) - 128));
+    }
+    WHEN("Index2 memory pool")
+    {
+        MemoryPool<> pool(IMemoryPool::Indexed2);
+
+        int handle = pool.allocate(100);
+
+        REQUIRE(pool.get_free() == (32 * (128 - 1) - 128));
+    }
 }
