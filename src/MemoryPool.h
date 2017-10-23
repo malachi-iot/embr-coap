@@ -281,7 +281,7 @@ public:
     }
 
 
-    uint8_t get_page(uint8_t handle) const
+    uint8_t get_page(handle_opaque_t handle) const
     {
         return get_descriptor(handle).page;
     }
@@ -315,6 +315,21 @@ public:
         const handle_t& descriptor = get_descriptor(handle);
 
         ASSERT(true, descriptor.is_active());
+
+        handle_t::PageData* p = reinterpret_cast<handle_t::PageData*>(
+                pages + (page_size * descriptor.page));
+
+        return *p;
+    }
+
+    // TBD
+    // doesn't assign page size just yet
+    // see if we can consolidate with above one
+    handle_t::PageData& new_page_data(handle_opaque_t new_handle, uint8_t page, uint8_t* pages, size_t page_size)
+    {
+        handle_t& descriptor = indexedHandle[new_handle];
+
+        descriptor.page = page;
 
         handle_t::PageData* p = reinterpret_cast<handle_t::PageData*>(
                 pages + (page_size * descriptor.page));
@@ -522,15 +537,37 @@ public:
         typedef pool_t::handle_t handle_t;
         typedef handle_t::PageData page_data_t;
 
-        pool_t* sys_page = (pool_t*)pages[0];
+        pool_t& sys_page = get_sys_page_index2();
         page_data_t* page_data;
 
-        handle_opaque_t handle = sys_page->get_unallocated_handle(size, pages[0], page_size, &page_data);
+        handle_opaque_t handle = sys_page.get_unallocated_handle(size, pages[0], page_size, &page_data);
 
         // TODO: Do split logic like allocate_index does
         if(handle != invalid_handle)
         {
+            size_t size_in_pages = get_size_in_pages(size);
+
             page_data->allocated = true;
+
+            // Do split logic
+            if(page_data->size > size_in_pages)
+            {
+                // get brand new inactive handle to snap up and use
+                handle_opaque_t new_handle = sys_page.get_first_inactive_handle();
+
+                // get location of current unallocated page data, then increment just past end of it
+                // this forms the new_page data representing the shrunken remainder unallocated
+                // page data
+                uint8_t new_page = sys_page.get_page(handle) + page_data->size;
+
+                // set up new page data at location new page within pages buffer
+                // then be sure to assign the page_data size to the new shrunken remainder free memory
+                page_data_t& new_page_data = sys_page.new_page_data(new_handle, new_page, pages[0], page_size);
+
+                new_page_data.size = page_data->size - size_in_pages;
+                new_page_data.allocated = false;
+                new_page_data.locked = false;
+            }
         }
 
         return handle;
