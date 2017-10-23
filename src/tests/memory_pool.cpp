@@ -6,7 +6,7 @@ using namespace moducom::dynamic;
 
 TEST_CASE("Low-level memory pool tests", "[mempool_low]")
 {
-    WHEN("Index1 memory pool")
+    SECTION("Index1 memory pool")
     {
         MemoryPool<> pool;
 
@@ -14,7 +14,7 @@ TEST_CASE("Low-level memory pool tests", "[mempool_low]")
 
         REQUIRE(pool.get_free() == (32 * (128 - 1) - 128));
     }
-    WHEN("Index2 memory pool")
+    SECTION("Index2 memory pool")
     {
         MemoryPool<> pool(IMemoryPool::Indexed2);
 

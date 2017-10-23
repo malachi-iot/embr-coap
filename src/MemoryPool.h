@@ -264,6 +264,8 @@ public:
     /// @param blank_page Page 1 from memory pool - note this should *already* have its size field initialized
     void initialize(size_t page_size, handle_t::PageData* blank_page)
     {
+        header.tier = IMemoryPool::Indexed2;
+
         page_size -= sizeof(MemoryPoolHandlePage);
 
         // NOTE: Just a formality, don't need to do a sizeof since it's exactly one byte
@@ -419,10 +421,12 @@ public:
         return candidate_index;
     }
 
-    uint8_t get_total_unallocated_pages(const uint8_t* pages, size_t page_size) const
+    // FIX: Not going to work because 1st out of multi-batch pages is - sizeof(page_data_t)
+    size_t get_total_unallocated_bytes(const uint8_t* pages, size_t page_size) const
     {
+        typedef const handle_t::PageData page_data_t;
         const size_t size_approximate = get_approximate_header_size();
-        uint8_t total = 0;
+        size_t total = 0;
 
         for(int i = 0; i < size_approximate; i++)
         {
@@ -430,10 +434,10 @@ public:
 
             if(descriptor.is_active())
             {
-                const handle_t::PageData* p = reinterpret_cast<const handle_t::PageData*>(
+                page_data_t* p = reinterpret_cast<page_data_t*>(
                         pages + (page_size * descriptor.page));
 
-                if(!p->allocated) total += p->size;
+                if(!p->allocated) total += (p->size * page_size) - sizeof(page_data_t);
             }
         }
 
@@ -698,7 +702,7 @@ public:
 
     size_t get_free_index2() const
     {
-        return get_sys_page_index2().get_total_unallocated_pages(pages[0], page_size);
+        return get_sys_page_index2().get_total_unallocated_bytes(pages[0], page_size);
     }
 
     size_t get_free() const
