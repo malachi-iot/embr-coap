@@ -20,8 +20,9 @@
 #define NULLPTR NULL
 #endif
 
-#if __ADSPBLACKFIN__
+#if __ADSPBLACKFIN__ || defined(_MSC_VER)
 #define PACKED
+#define USE_PRAGMA_PACK
 #else
 #define PACKED __attribute__ ((packed))
 #endif
@@ -55,7 +56,7 @@ public:
     virtual void shrink(handle_opaque_t handle, size_t size) = 0;
 };
 
-#if __ADSPBLACKFIN__
+#ifdef USE_PRAGMA_PACK
 #pragma pack(1)
 #endif
 
@@ -280,7 +281,7 @@ public:
         // NOTE: Just a formality, don't need to do a sizeof since it's exactly one byte
         // doing it anyway cuz should optimize out and saves us if we do have to increase
         // size of handle_t
-        for(int i = 1; i < page_size / sizeof(handle_t); i++)
+        for(size_t i = 1; i < page_size / sizeof(handle_t); i++)
         {
             indexedHandle[i].page = 0;
         }
@@ -308,7 +309,7 @@ public:
     {
         size_t count = get_approximate_header_size();
 
-        for(int i = 0; i < count; i++)
+        for(size_t i = 0; i < count; i++)
         {
             const handle_t& h = indexedHandle[i];
 
@@ -328,7 +329,7 @@ public:
         // by itself - by it being page == 0 or not)
         const size_t size_approximate = get_approximate_header_size();
 
-        for(int i = 0; i < size_approximate; i++)
+        for(size_t i = 0; i < size_approximate; i++)
         {
             if(!get_descriptor(i).is_active())
                 return i;
@@ -413,7 +414,7 @@ public:
         handle_t::PageData* candidate = NULLPTR;
         int candidate_index;
 
-        for(int i = 0; i < size_approximate; i++)
+        for(size_t i = 0; i < size_approximate; i++)
         {
             const handle_t& descriptor = get_descriptor(i);
 
@@ -454,7 +455,7 @@ public:
         const size_t size_approximate = get_approximate_header_size();
         size_t total = 0;
 
-        for(int i = 0; i < size_approximate; i++)
+        for(size_t i = 0; i < size_approximate; i++)
         {
             const handle_t& descriptor = get_descriptor(i);
 
@@ -473,7 +474,7 @@ public:
 };
 
 
-#if __ADSPBLACKFIN__
+#ifdef USE_PRAGMA_PACK
 #pragma pack()
 #endif
 
@@ -520,11 +521,13 @@ class MemoryPool : public IMemoryPool
         get_sys_page_index2().initialize(page_size, page_data);
     }
 
-    static size_t get_size_in_pages(size_t size)
+    static uint8_t get_size_in_pages(size_t size)
     {
         size_t size_in_pages = (size + page_size - 1) / page_size;
 
-        return size_in_pages;
+		ASSERT(true, size_in_pages < 0xFF);
+
+        return (uint8_t) size_in_pages;
     }
 
 public:
@@ -559,7 +562,7 @@ public:
 
         if(handle != NULLPTR)
         {
-            size_t size_in_pages = get_size_in_pages(size);
+            uint8_t size_in_pages = get_size_in_pages(size);
 
             if(size_in_pages == handle->size)
             {

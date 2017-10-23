@@ -40,3 +40,5 @@ cmake-build-debug/
 src/build/
 *.user
 
+# Visual Studio specific
+.vs/
