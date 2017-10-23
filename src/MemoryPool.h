@@ -8,27 +8,8 @@
 #include <stdint.h>
 #include <stdlib.h>
 
+#include "platform.h"
 
-// TODO: find "most" standardized version of this
-#ifdef __CPP11__
-#define OVERRIDE override
-#define CONSTEXPR constexpr
-#define NULLPTR nullptr
-#else
-#define OVERRIDE
-#define CONSTEXPR const
-#define NULLPTR NULL
-#endif
-
-#if __ADSPBLACKFIN__ || defined(_MSC_VER)
-#define PACKED
-#define USE_PRAGMA_PACK
-#else
-#define PACKED __attribute__ ((packed))
-#endif
-
-// TODO: Make this generate log warnings or something
-#define ASSERT(expected, actual)
 
 namespace moducom { namespace dynamic {
 
