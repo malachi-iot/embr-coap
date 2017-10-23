@@ -294,6 +294,24 @@ public:
         return 2 ^ (size_t) header.size;
     }
 
+    typedef void (*page_data_iterator_fn)(void* context, handle_opaque_t handle, uint8_t page);
+
+    void iterate_page_data(page_data_iterator_fn callback, void* context = NULLPTR) const
+    {
+        size_t count = get_approximate_header_size();
+
+        for(int i = 0; i < count; i++)
+        {
+            const handle_t& h = indexedHandle[i];
+
+            if(h.is_active()) callback(context, i, h.page);
+        }
+    }
+
+#ifdef __CPP11__
+#endif
+
+
     handle_opaque_t get_first_inactive_handle() const
     {
         // always reflects more elements than are actually
@@ -422,7 +440,6 @@ public:
         return candidate_index;
     }
 
-    // FIX: Not going to work because 1st out of multi-batch pages is - sizeof(page_data_t)
     size_t get_total_unallocated_bytes(const uint8_t* pages, size_t page_size) const
     {
         typedef const handle_t::PageData page_data_t;
@@ -585,8 +602,6 @@ public:
         {
             size_t size_in_pages = get_size_in_pages(size);
 
-            page_data->allocated = true;
-
             // Do split logic
             if(page_data->size > size_in_pages)
             {
@@ -605,7 +620,11 @@ public:
                 new_page_data.size = page_data->size - size_in_pages;
                 new_page_data.allocated = false;
                 new_page_data.locked = false;
+
             }
+
+            page_data->allocated = true;
+            page_data->size = size_in_pages;
         }
 
         return handle;
@@ -716,6 +735,46 @@ public:
             case Indexed2:
                 return get_free_index2();
         }
+    }
+
+    struct get_allocated_handle_count_context
+    {
+        MemoryPool* memory_pool;
+        // true = filter by allocated
+        // false = filter by unallocated
+        bool filter_allocated;
+        size_t total_bytes = 0;
+        size_t total_handles = 0;
+    };
+
+    static void get_allocated_handle_count_callback(void* context, handle_opaque_t handle, uint8_t page)
+    {
+        typedef MemoryPoolIndexed2HandlePage::handle_t::PageData page_data_t;
+
+        get_allocated_handle_count_context* ctx = (get_allocated_handle_count_context*)context;
+        MemoryPool* _this = ctx->memory_pool;
+
+        page_data_t* page_data = (page_data_t*)_this->pages[page];
+
+        if(!(ctx->filter_allocated ^ page_data->allocated))
+        {
+            ctx->total_bytes += page_data->size * page_size - sizeof(page_data_t);
+            ctx->total_handles++;
+        }
+    }
+
+    /**
+     * @brief get_allocated_handle_count
+     * @param filter_allocated true (default) return allocated metrics, false return unallocated metrics
+     * @return
+     */
+    size_t get_allocated_handle_count(bool filter_allocated = true)
+    {
+        get_allocated_handle_count_context context;
+        context.memory_pool = this;
+        context.filter_allocated = filter_allocated;
+        get_sys_page_index2().iterate_page_data(get_allocated_handle_count_callback, &context);
+        return context.total_handles;
     }
 };
 
