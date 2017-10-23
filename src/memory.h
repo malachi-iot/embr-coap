@@ -12,6 +12,8 @@
 namespace moducom { namespace dynamic {
 
 
+#define MODUCOM_ASSERT(expected, actual)
+
 class Memory {
 public:
     // FIX: eventually this will be an integer handle
@@ -155,7 +157,7 @@ class MemoryBuffer : public Memory::SmartHandle
     size_t size;
 
 public:
-    MemoryBuffer(Memory::handle_t handle, Memory& memory, size_t size) :
+    MemoryBuffer(Memory::handle_t handle, size_t size, Memory& memory = Memory::default_pool) :
             size(size),
             Memory::SmartHandle(handle, memory) {}
 
@@ -169,6 +171,22 @@ public:
 
     size_t length() const { return size; }
 
+};
+
+
+template <class T>
+class MemoryBufferAuto : public MemoryBuffer
+{
+public:
+    MemoryBufferAuto(size_t size, Memory& memory = Memory::default_pool) :
+            MemoryBuffer(memory.allocate(size), size, memory) {}
+
+    ~MemoryBufferAuto()
+    {
+        MODUCOM_ASSERT(true, memory.free(handle));
+    }
+
+    T* lock() { return MemoryBuffer::lock<T>(); }
 };
 
 }}
