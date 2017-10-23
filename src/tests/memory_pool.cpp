@@ -1,3 +1,4 @@
+
 #include <catch.hpp>
 
 #include "../MemoryPool.h"
@@ -19,20 +20,23 @@ TEST_CASE("Low-level memory pool tests", "[mempool_low]")
         MemoryPool<> pool(IMemoryPool::Indexed2);
         typedef MemoryPoolIndexed2HandlePage::handle_t handle_t;
 
-        int allocated_count = 2;
-        int unallocated_count = 1;
+        SECTION("Allocations")
+        {
+            int allocated_count = 2;
+            int unallocated_count = 1;
 
-        int handle = pool.allocate(100);
-        int handle2 = pool.allocate(100);
+            int handle = pool.allocate(100);
+            int handle2 = pool.allocate(100);
 
-        REQUIRE(pool.get_allocated_handle_count() == allocated_count);
-        REQUIRE(pool.get_allocated_handle_count(false) == unallocated_count);
-        REQUIRE(pool.get_free() == 32 * (128 - 1) -
-                                    allocated_count * (32 * 4) - // allocated
+            REQUIRE(pool.get_allocated_handle_count() == allocated_count);
+            REQUIRE(pool.get_allocated_handle_count(false) == unallocated_count);
+            REQUIRE(pool.get_free() == 32 * (128 - 1) -
+                                       allocated_count * (32 * 4) - // allocated
 
-                                    // unallocated siphons a little memory off the top too, because a PageData
-                                    // is being tracked in the page pool
-                                    unallocated_count * sizeof(handle_t::PageData)
-                                    );
+                                       // unallocated siphons a little memory off the top too, because a PageData
+                                       // is being tracked in the page pool
+                                       unallocated_count * sizeof(handle_t::PageData)
+            );
+        }
     }
 }
