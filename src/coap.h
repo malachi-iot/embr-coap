@@ -209,6 +209,65 @@ public:
 
 
     };
+
+    class Parser
+    {
+        enum State
+        {
+            Header = 0,
+            Options = 1,
+            Payload = 2
+        };
+
+        enum ExtendedMode : uint8_t
+        {
+            Extended8Bit = 13,
+            Extended16Bit = 14,
+            Reserved = 15
+        };
+
+
+        enum SubState
+        {
+            OptionSize, // header portion
+            OptionDelta, // delta portion (after header, if applicable)
+            OptionLength // length portion (after header, if applicable)
+        };
+
+        // Which part of CoAP message we are processing
+        State state;
+
+        // Which part of the option we are processing
+        SubState sub_state;
+
+        // small temporary buffer needed for OPTION processing
+        uint8_t buffer[4];
+        // position in buffer we are presently at
+        uint8_t pos;
+
+        // when processing options, what is the size of the next upcoming option
+        uint16_t option_size;
+
+        bool processOptionSize(uint8_t size_root, uint8_t value, uint8_t local_position);
+
+        bool processOptionValue(uint8_t value);
+
+        // returns false when processing is complete, true otherwise
+        bool processOption(uint8_t value);
+
+    public:
+        void process(uint8_t value);
+
+        Parser();
+    };
+
+    class OptionParser
+    {
+    public:
+        void process(uint8_t value);
+    };
+
+
 };
 
 }
