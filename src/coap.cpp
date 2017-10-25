@@ -1,9 +1,12 @@
 #include "coap.h"
+#include "memory.h"
 
 namespace moducom {
 namespace coap {
 
-bool CoAP::Parser::processOptionSize(uint8_t size_root, uint8_t value, uint8_t local_position)
+// Operations are done in "network byte order" according to CoAP spec, which in turn is
+// big endian as suggested by https://stackoverflow.com/questions/13514614/why-is-network-byte-order-defined-to-be-big-endian
+bool CoAP::Parser::processOptionSize(uint8_t size_root, uint8_t local_position)
 {
     if (size_root < Extended8Bit)
     {
@@ -14,21 +17,28 @@ bool CoAP::Parser::processOptionSize(uint8_t size_root, uint8_t value, uint8_t l
     }
     else if (size_root == Extended8Bit)
     {
-        //(*index_bump)++;
-        //return 13 + *extended;
+        option_size = buffer[pos] + 13;
+        return false;
     }
     else if (size_root == Extended16Bit)
     {
-        // FIX: BEWARE of endian issue!!
-        //uint16_t _extended = *((uint16_t*)extended);
+        switch(local_position)
+        {
+            // First byte (big endian)
+            case 0:
+                option_size = (uint16_t) buffer[pos] << 8;
+                return true;
 
-        //(*index_bump) += 2;
-
-        //return 269 + _extended;
+            case 1:
+                option_size |= buffer[pos];
+                option_size += 269;
+                return false;
+        }
     }
     else // RESERVED
     {
-
+        ASSERT_ABORT(true, false, "Invalid 15 observed")
+        return false;
     }
 }
 
@@ -45,19 +55,36 @@ bool CoAP::Parser::processOption(uint8_t value)
     {
         case OptionSize:
             // just record and skip by this one, use it later
+            local_position = 0;
             break;
 
         case OptionDelta:
-            if (!processOptionSize(buffer[0] & 0xF0 >> 4, value, pos))
+            if (processOptionSize(buffer[0] & 0xF0 >> 4, local_position))
+                local_position++;
+            else
             {
-                // when done, reset pos so that we keep looking
-                //pos = 1;
-                // TODO: need two pos at once, local and "global"
+                // Done with Delta
+                // strip off no-longer used Delta size so that Length is
+                // easier to process
+                buffer[0] &= 0xF0;
+                sub_state = OptionLength;
+                /*
+                // TODO: do something with option_size here
+                if(low_level_callback)
+                {
+                    low_level_callback(callback_context);
+                } */
             }
             break;
 
         case OptionLength:
-            processOptionSize(buffer[0] & 0x0F, value, -1);
+            if(processOptionSize(buffer[0], local_position))
+                local_position++;
+            else
+            {
+                // TODO: do something with option_size here
+                return false;
+            }
             break;
     }
 
@@ -94,6 +121,7 @@ CoAP::Parser::Parser()
 {
     state = Header;
     pos = 0;
+    //low_level_callback = NULLPTR;
 }
 
 }

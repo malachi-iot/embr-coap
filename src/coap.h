@@ -162,12 +162,14 @@ public:
     };
 #endif
 
+/*
     class Option
     {
         uint8_t option_size;
         uint8_t bytes[];
 
-        enum ExtendedMode : uint8_t
+        enum ExtendedMode
+                : uint8_t
         {
             Extended8Bit = 13,
             Extended16Bit = 14,
@@ -209,7 +211,7 @@ public:
 
 
 
-    };
+    }; */
 
     class Parser
     {
@@ -220,7 +222,8 @@ public:
             Payload = 2
         };
 
-        enum ExtendedMode : uint8_t
+        enum ExtendedMode :
+                uint8_t
         {
             Extended8Bit = 13,
             Extended16Bit = 14,
@@ -248,18 +251,36 @@ public:
 
         // when processing options, what is the size of the next upcoming option
         uint16_t option_size;
+        uint8_t local_position;
 
-        bool processOptionSize(uint8_t size_root, uint8_t value, uint8_t local_position);
+        bool processOptionSize(uint8_t size_root, uint8_t local_position);
 
         bool processOptionValue(uint8_t value);
 
         // returns false when processing is complete, true otherwise
         bool processOption(uint8_t value);
 
+        /* Don't do any of this callback stuff because remember our lesson with workflows:
+         * state machines are a great standalone underpinning of event sources
+        typedef void (*low_level_callback_t)(void *context);
+        typedef void (*callback_t)(void* context);
+
+        low_level_callback_t low_level_callback;
+
+        void * const callback_context;
+
+        // announce an option has been found
+        void callback_option();
+
+        // announce a header has been found
+        void callback_header(); */
+
     public:
         void process(uint8_t value);
 
         Parser();
+
+        State get_state() const { return state; }
     };
 
     class OptionParser
