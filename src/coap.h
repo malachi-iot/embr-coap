@@ -221,17 +221,34 @@ public:
 
     }; */
 
+    class Parser;
+
+    // FIX: Need better name
+    /// Represents higher level fully built out option for processing at an application level
+    class OptionExperimental
+    {
+    public:
+        // Option Number as defined by RFC7252
+        const uint16_t number;
+        const uint16_t length;
+
+        OptionExperimental(uint16_t number, uint16_t length) :
+            number(number),
+            length(length)
+        {}
+    };
+
+    class IResponder
+    {
+    public:
+        virtual void OnOption(const Parser* parser, const OptionExperimental& option) = 0;
+        virtual void OnPayload(const uint8_t message[], size_t length) = 0;
+    };
+
     class Parser
     {
-        enum State
-        {
-            Header = 0,
-            Options = 1,
-            Payload = 2 // Note that Payload is *NOT* handled by this class, since its length is defined by transport layer
-        };
-
         enum ExtendedMode :
-                uint8_t
+            uint8_t
         {
             Extended8Bit = 13,
             Extended16Bit = 14,
@@ -239,14 +256,26 @@ public:
         };
 
 
+    public:
+        enum State
+        {
+            Header = 0,
+            Options = 1,
+            Payload = 2 // Note that Payload is *NOT* handled by this class, since its length is defined by transport layer
+        };
+
         enum SubState
         {
             OptionSize, // header portion
-            OptionDelta, // delta portion (after header, if applicable)
-            OptionLength, // length portion (after header, if applicable)
-            OptionValue, // value portion (this decoder merely skips value, outer processors handle it)
+            OptionDelta, // processing delta portion (after header, if applicable)
+            OptionDeltaDone, // done with delta portion
+            OptionLength, // processing length portion (after header, if applicable)
+            OptionLengthDone, // done with length portion
+            OptionValue, // processing value portion (this decoder merely skips value, outer processors handle it)
+            OptionValueDone // done with value portion
         };
 
+    private:
         // remember this is in "network byte order", meaning that
         // message ID will be big endian
         uint32_t header;
@@ -297,6 +326,24 @@ public:
         Parser();
 
         State get_state() const { return state; }
+        SubState get_sub_state() const { return sub_state;  }
+        uint16_t get_option_size() const { return option_size; }
+    };
+
+    // FIX: Needs much better name
+    /// This class is an adapter between low-level decoder and high level IResponder
+    class ParseToIResponder
+    {
+        IResponder* const responder;
+        Parser parser;
+
+    public:
+        ParseToIResponder(IResponder* responder) : responder(responder)
+        {
+
+        }
+
+        void process(uint8_t message[], size_t length);
     };
 
     class OptionParser
