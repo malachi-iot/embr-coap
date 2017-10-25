@@ -1,4 +1,4 @@
 # Code Files
-[*.cpp,*.h]
+[*.{cpp,h}]
 indent_size = 4
-intent_style = space
+indent_style = space
