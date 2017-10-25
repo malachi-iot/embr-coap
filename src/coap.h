@@ -29,6 +29,27 @@ namespace coap {
 #define COAP_OPTION_LENGTH_POS  0
 #define COAP_OPTION_LENGTH_MASK 15
 
+// potentially http://pubs.opengroup.org/onlinepubs/7908799/xns/htonl.html are of interest here
+// also endianness macros here if you are in GNU:
+// https://gcc.gnu.org/onlinedocs/cpp/Common-Predefined-Macros.html
+
+// given a 16-bit value, swap bytes
+#define SWAP_16(value) (((value & 0xFF) << 8) | (value >> 8))
+// convert a 16-bit little endian number to big endian
+#define LE_TO_BE_16(value)
+
+#ifdef __GNUC__
+#if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+#define COAP_HTONS(int_short) int_short
+#define COAP_NTOHS(int_short) SWAP_16(int_short)
+// network order bytes
+#define COAP_UINT16_FROM_NBYTES(val0, val1) (((uint16_t)val0) << 8 | val1)
+#else // little endian
+#define COAP_HTONS(int_short) SWAP_16(int_short)
+#define COAP_NTOHS(int_short) int_short
+#define COAP_UINT16_FROM_NBYTES(val0, val1) (((uint16_t)val1) << 8 | val0)
+#endif
+#endif
 
 // See RFC 7252: https://tools.ietf.org/html/rfc7252
 class CoAP
@@ -237,6 +258,10 @@ public:
             OptionDelta, // delta portion (after header, if applicable)
             OptionLength // length portion (after header, if applicable)
         };
+
+        // remember this is in "network byte order", meaning that
+        // message ID will be big endian
+        uint32_t header;
 
         // Which part of CoAP message we are processing
         State state;

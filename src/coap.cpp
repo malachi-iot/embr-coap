@@ -4,6 +4,7 @@
 namespace moducom {
 namespace coap {
 
+
 // Operations are done in "network byte order" according to CoAP spec, which in turn is
 // big endian as suggested by https://stackoverflow.com/questions/13514614/why-is-network-byte-order-defined-to-be-big-endian
 bool CoAP::Parser::processOptionSize(uint8_t size_root, uint8_t local_position)
@@ -99,9 +100,15 @@ void CoAP::Parser::process(uint8_t value)
     switch (state)
     {
         case Header:
-            buffer[pos] = value;
-            if (pos++ == 4)
+            buffer[pos++] = value;
+
+            header <<= 8;
+            header |= value;
+
+            if (pos == 4)
             {
+                // TODO: this could be optimized further
+                uint16_t message_id = COAP_UINT16_FROM_NBYTES(buffer[2], buffer[3]);
                 // create our header
                 state = Options;
                 pos = 0;
@@ -126,6 +133,7 @@ CoAP::Parser::Parser()
     pos = 0;
     //low_level_callback = NULLPTR;
     nonPayLoadSize = 0;
+    header = 0;
 }
 
 }
