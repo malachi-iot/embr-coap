@@ -289,9 +289,10 @@ public:
             OptionSize, // header portion
             OptionSizeDone, // done processing size-header portion
             OptionDelta, // processing delta portion (after header, if applicable)
-            OptionDeltaDone, // done with delta portion
+            OptionDeltaDone, // done with delta portion, ready to move on to Length
             OptionLength, // processing length portion (after header, if applicable)
             OptionLengthDone, // done with length portion
+            OptionDeltaAndLengthDone, // done with both length and size, happens only when no extended values are used
             OptionValue, // processing value portion (this decoder merely skips value, outer processors handle it)
             OptionValueDone // done with value portion
         };
@@ -321,8 +322,7 @@ public:
 
         bool processOptionSize(uint8_t size_root);
 
-        // returns false when processing is complete, true otherwise
-        bool processOption(uint8_t value);
+        void processOption();
 
         /* Don't do any of this callback stuff because remember our lesson with workflows:
          * state machines are a great standalone underpinning of event sources

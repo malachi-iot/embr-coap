@@ -9,6 +9,7 @@ namespace coap {
 // big endian as suggested by https://stackoverflow.com/questions/13514614/why-is-network-byte-order-defined-to-be-big-endian
 bool CoAP::Parser::processOptionSize(uint8_t size_root)
 {
+    /*
     if (size_root < Extended8Bit)
     {
         option_size = size_root;
@@ -16,7 +17,8 @@ bool CoAP::Parser::processOptionSize(uint8_t size_root)
         // Just use literal value, not extended
         //return nonextended;
     }
-    else if (size_root == Extended8Bit)
+    else */
+    if (size_root == Extended8Bit)
     {
         option_size = buffer[pos] + 13;
         return false;
@@ -39,22 +41,19 @@ bool CoAP::Parser::processOptionSize(uint8_t size_root)
     }
     else // RESERVED
     {
-        ASSERT_ABORT(true, false, "Invalid 15 observed")
+        ASSERT_ABORT(true, false, "Invalid 15 or 0-12 observed")
         return false;
     }
 }
 
-bool CoAP::Parser::processOption(uint8_t value)
+void CoAP::Parser::processOption()
 {
-    // Designates payload follows
-    if (value == 0xFF)
-    {
-        return false;
-    }
-
-    // we don't process OptionValue, just skip over it (outer code processes
-    // option values)
-    if(sub_state() != OptionValue) buffer[pos++] = value;
+    // We have to determine right here if we have extended Delta and/or
+    // extended Lengths
+    uint8_t raw_delta = (buffer[0] & 0xF0) >> 4;
+    uint8_t raw_length = buffer[0] & 0x0F;
+    bool delta_extended = raw_delta >= Extended8Bit;
+    bool length_extended = raw_length >= Extended8Bit;
 
     switch (sub_state())
     {
@@ -62,36 +61,53 @@ bool CoAP::Parser::processOption(uint8_t value)
             sub_state(OptionSize);
 
         case OptionSize:
-            sub_state(OptionSizeDone);
+            if (!delta_extended && !length_extended)
+            // Done with length AND delta processing
+                sub_state(OptionDeltaAndLengthDone);
+            else if (length_extended)
+            {
+                // then it's only length extended, so move there
+                sub_state(OptionDeltaDone);
+            }
+            else // only other possibility is only delta extended
+            {
+                sub_state(OptionSizeDone);
+            }
             break;
 
         case OptionSizeDone:
             sub_state(OptionDelta);
 
         case OptionDelta:
-            if (!processOptionSize((buffer[0] & 0xF0) >> 4))
+            if (!processOptionSize(raw_delta))
             {
-                // Done with Delta
-                // strip off no-longer used Delta size so that Length is
-                // easier to process
-                buffer[0] &= 0xF0;
                 sub_state(OptionDeltaDone);
-                // TODO: do something with option_size here
                 pos = 1; // re-use buffer for length processing
             }
             break;
 
         case OptionDeltaDone:
-            sub_state(OptionLength);
+        {
+            if (!length_extended)
+            {
+                // If not an extended length flavor, move right away to OptionLengthDone
+                // and return so that consumer has a change to act on it
+                sub_state(OptionLengthDone);
+                return;
+            }
+            else
+                // otherwise, extended length, so we have to gather up length before it can
+                // be acted on
+                sub_state(OptionLength);
+        }
 
         case OptionLength:
-            if (!processOptionSize(buffer[0]))
-            {
+            if (!processOptionSize(raw_length))
                 sub_state(OptionLengthDone);
-                // TODO: do something with option_size here
-            }
+
             break;
 
+        case OptionDeltaAndLengthDone:
         case OptionLengthDone:
             sub_state(OptionValue);
 
@@ -102,14 +118,9 @@ bool CoAP::Parser::processOption(uint8_t value)
             {
                 // NOTE: slight redundancy here in returning false also, perhaps optimize out
                 sub_state(OptionValueDone);
-                return false;
             }
             break;
     }
-
-    //if(pos++ > 3)
-
-    return true;
 }
 
 void CoAP::Parser::process(uint8_t value)
@@ -131,12 +142,16 @@ void CoAP::Parser::process(uint8_t value)
             sub_state(OptionSize);
 
         case Options:
+            // we don't process OptionValue, just skip over it (outer code processes
+            // option values)
+            if (sub_state() != OptionValue) buffer[pos++] = value;
+
             // remember, we could be processing multiple options here
             if ((sub_state() == OptionValueDone || sub_state() == OptionSize)
                 && value == 0xFF)
                 state = OptionsDone;
             else
-                processOption(value);
+                processOption();
 
             break;
 
