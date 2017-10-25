@@ -219,7 +219,7 @@ public:
         {
             Header = 0,
             Options = 1,
-            Payload = 2
+            Payload = 2 // Note that Payload is *NOT* handled by this class, since its length is defined by transport layer
         };
 
         enum ExtendedMode :
@@ -244,12 +244,16 @@ public:
         // Which part of the option we are processing
         SubState sub_state;
 
-        // small temporary buffer needed for OPTION processing
+        // small temporary buffer needed for OPTION and HEADER processing
         uint8_t buffer[4];
         // position in buffer we are presently at
         uint8_t pos;
+        // size of CoAP HEADER+OPTIONS
+        uint16_t nonPayLoadSize;
 
-        // when processing options, what is the size of the next upcoming option
+        // TODO: optimize out and calculate in-place based purely on buffer[] then
+        // emit via a pointer
+        // when processing options, what is the value of the Delta/Length
         uint16_t option_size;
         uint8_t local_position;
 

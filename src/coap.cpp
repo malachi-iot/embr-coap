@@ -44,12 +44,13 @@ bool CoAP::Parser::processOptionSize(uint8_t size_root, uint8_t local_position)
 
 bool CoAP::Parser::processOption(uint8_t value)
 {
+    // Designates payload follows
     if (value == 0xFF)
     {
         return false;
     }
 
-    buffer[pos] = value;
+    buffer[pos++] = value;
 
     switch (sub_state)
     {
@@ -93,6 +94,8 @@ bool CoAP::Parser::processOption(uint8_t value)
 
 void CoAP::Parser::process(uint8_t value)
 {
+    nonPayLoadSize++;
+
     switch (state)
     {
         case Header:
@@ -122,6 +125,7 @@ CoAP::Parser::Parser()
     state = Header;
     pos = 0;
     //low_level_callback = NULLPTR;
+    nonPayLoadSize = 0;
 }
 
 }
