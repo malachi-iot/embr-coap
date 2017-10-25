@@ -54,12 +54,19 @@ bool CoAP::Parser::processOption(uint8_t value)
 
     // we don't process OptionValue, just skip over it (outer code processes
     // option values)
-    if(sub_state != OptionValue) buffer[pos++] = value;
+    if(sub_state() != OptionValue) buffer[pos++] = value;
 
-    switch (sub_state)
+    switch (sub_state())
     {
+        case OptionValueDone:
+            sub_state(OptionSize);
+
         case OptionSize:
+            sub_state(OptionSizeDone);
             break;
+
+        case OptionSizeDone:
+            sub_state(OptionDelta);
 
         case OptionDelta:
             if (!processOptionSize((buffer[0] & 0xF0) >> 4))
@@ -68,25 +75,25 @@ bool CoAP::Parser::processOption(uint8_t value)
                 // strip off no-longer used Delta size so that Length is
                 // easier to process
                 buffer[0] &= 0xF0;
-                sub_state = OptionDeltaDone;
+                sub_state(OptionDeltaDone);
                 // TODO: do something with option_size here
                 pos = 1; // re-use buffer for length processing
             }
             break;
 
         case OptionDeltaDone:
-            sub_state = OptionLength;
+            sub_state(OptionLength);
 
         case OptionLength:
             if (!processOptionSize(buffer[0]))
             {
-                sub_state = OptionLengthDone;
+                sub_state(OptionLengthDone);
                 // TODO: do something with option_size here
             }
             break;
 
         case OptionLengthDone:
-            sub_state = OptionValue;
+            sub_state(OptionValue);
 
         case OptionValue:
             // we've completed processing this option when option_size from
@@ -94,7 +101,7 @@ bool CoAP::Parser::processOption(uint8_t value)
             if (--option_size == 0)
             {
                 // NOTE: slight redundancy here in returning false also, perhaps optimize out
-                sub_state = OptionValueDone;
+                sub_state(OptionValueDone);
                 return false;
             }
             break;
@@ -107,33 +114,33 @@ bool CoAP::Parser::processOption(uint8_t value)
 
 void CoAP::Parser::process(uint8_t value)
 {
-    nonPayLoadSize++;
-
     switch (state)
     {
         case Header:
             buffer[pos++] = value;
 
-            header <<= 8;
-            header |= value;
-
             if (pos == 4)
             {
-                // TODO: this could be optimized further
-                uint16_t message_id = COAP_UINT16_FROM_NBYTES(buffer[2], buffer[3]);
-                // create our header
-                state = Options;
+                state = HeaderDone;
                 pos = 0;
             }
             break;
 
+        case HeaderDone:
+            state = Options;
+            sub_state(OptionSize);
+
         case Options:
-            if (!processOption(value))
-                state = Payload;
+            // remember, we could be processing multiple options here
+            if ((sub_state() == OptionValueDone || sub_state() == OptionSize)
+                && value == 0xFF)
+                state = OptionsDone;
+            else
+                processOption(value);
 
             break;
 
-        case Payload:
+        case OptionsDone:
             break;
     }
 }
@@ -143,9 +150,6 @@ CoAP::Parser::Parser()
 {
     state = Header;
     pos = 0;
-    //low_level_callback = NULLPTR;
-    nonPayLoadSize = 0;
-    header = 0;
 }
 
 void CoAP::ParseToIResponder::process(uint8_t message[], size_t length)
@@ -160,22 +164,22 @@ void CoAP::ParseToIResponder::process(uint8_t message[], size_t length)
 
         if (state != Parser::Payload)
         {
-            Parser::SubState sub_state = parser.get_sub_state();
-
             // processing header + options
             parser.process(message[i]);
 
-            switch (state)
+            switch (state = parser.get_state())
             {
-                case Parser::Header:
-                    if (parser.get_state() == Parser::Options)
-                    {
-                        // we *just* finished processing header, so extract it
-                    }
+                case Parser::HeaderDone:
+                {
+                    // we *just* finished processing header, so extract it
+                    Header* header = (Header*)parser.get_header();
+
+                    responder->OnHeader(*header);
                     break;
+                }
 
                 case Parser::Options:
-                    switch (sub_state)
+                    switch (parser.sub_state())
                     {
                         case Parser::OptionDeltaDone:
                         {

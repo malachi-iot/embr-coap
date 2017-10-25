@@ -91,7 +91,11 @@ public:
     {
         // temporary public while building code
     public:
-        uint32_t raw;
+        union
+        {
+            uint8_t bytes[4];
+            uint32_t raw;
+        };
 
         template <uint8_t pos, uint32_t mask_value>
         inline void mask(uint16_t value)
@@ -142,9 +146,11 @@ public:
             mask<COAP_HEADER_MID_POS, COAP_HEADER_MID_MASK>(mid);
         }
 
-        uint16_t messaged_id() const
+        uint16_t message_id() const
         {
-            return mask<COAP_HEADER_MID_POS, COAP_HEADER_MID_MASK>();
+            uint16_t mid = mask<COAP_HEADER_MID_POS, COAP_HEADER_MID_MASK>();
+
+            return COAP_NTOHS(mid);
         }
 
         void token_length(uint8_t tkl)
@@ -159,6 +165,8 @@ public:
         {
             return (uint8_t) mask<COAP_HEADER_TKL_POS, COAP_HEADER_TKL_MASK>();
         }
+
+        Header() {}
 
 
         Header(TypeEnum type)
@@ -269,14 +277,17 @@ public:
     public:
         enum State
         {
-            Header = 0,
-            Options = 1,
-            Payload = 2 // Note that Payload is *NOT* handled by this class, since its length is defined by transport layer
+            Header,
+            HeaderDone,
+            Options,
+            OptionsDone,
+            Payload // Note that Payload is *NOT* handled by this class, since its length is defined by transport layer
         };
 
         enum SubState
         {
             OptionSize, // header portion
+            OptionSizeDone, // done processing size-header portion
             OptionDelta, // processing delta portion (after header, if applicable)
             OptionDeltaDone, // done with delta portion
             OptionLength, // processing length portion (after header, if applicable)
@@ -288,20 +299,20 @@ public:
     private:
         // remember this is in "network byte order", meaning that
         // message ID will be big endian
-        uint32_t header;
+        //uint32_t header;
 
         // Which part of CoAP message we are processing
         State state;
 
         // Which part of the option we are processing
-        SubState sub_state;
+        SubState _sub_state;
+
+        void sub_state(SubState sub_state) { _sub_state = sub_state; }
 
         // small temporary buffer needed for OPTION and HEADER processing
         uint8_t buffer[4];
         // position in buffer we are presently at
         uint8_t pos;
-        // size of CoAP HEADER+OPTIONS
-        uint16_t nonPayLoadSize;
 
         // TODO: optimize out and calculate in-place based purely on buffer[] then
         // emit via a pointer
@@ -334,8 +345,9 @@ public:
         Parser();
 
         State get_state() const { return state; }
-        SubState get_sub_state() const { return sub_state;  }
+        SubState sub_state() const { return _sub_state;  }
         uint16_t get_option_size() const { return option_size; }
+        uint8_t* get_header() { return &buffer[0]; }
     };
 
     // FIX: Needs much better name

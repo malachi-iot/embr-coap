@@ -17,4 +17,42 @@ TEST_CASE("CoAP tests", "[coap]")
 
         REQUIRE(header.raw == 0x50000000);
     }
+    SECTION("Basic parsing")
+    {
+        typedef CoAP::Parser parser_t;
+
+        uint8_t buffer[] = {
+            0x40, 0x00, 0x00, 0x00, // fully blank header
+            0x11, // option with delta 1 length 1
+            //0x02, // delta single byte of data
+            0x03, // value single byte of data
+            0x12, // option with delta 1 length 2
+            0x04, // value byte of data #1
+            0x05 // value byte of data #2
+        };
+
+        parser_t parser;
+
+        for (int i = 0; i < sizeof(buffer); i++)
+        {
+            parser.process(buffer[i]);
+
+            switch (i + 1)
+            {
+                case 4:
+                    REQUIRE(parser.get_state() == parser_t::HeaderDone);
+                    break;
+
+                case 5:
+                    REQUIRE(parser.get_state() == parser_t::Options);
+                    REQUIRE(parser.sub_state() == parser_t::OptionSizeDone);
+                    break;
+
+                case 6:
+                    REQUIRE(parser.get_state() == parser_t::Options);
+                    //REQUIRE(parser.sub_state() == parser_t::OptionSizeDone);
+                    break;
+            }
+        }
+    }
 }

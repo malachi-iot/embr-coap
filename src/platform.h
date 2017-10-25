@@ -43,12 +43,12 @@
 
 #ifdef COAP_HOST_BIG_ENDIAN
 #define COAP_HTONS(int_short) int_short
-#define COAP_NTOHS(int_short) SWAP_16(int_short)
+#define COAP_NTOHS(int_short) int_short
 // network order bytes
 #define COAP_UINT16_FROM_NBYTES(val0, val1) (((uint16_t)val0) << 8 | val1)
 #elif defined(COAP_HOST_LITTLE_ENDIAN)
 #define COAP_HTONS(int_short) SWAP_16(int_short)
-#define COAP_NTOHS(int_short) int_short
+#define COAP_NTOHS(int_short) SWAP_16(int_short)
 #define COAP_UINT16_FROM_NBYTES(val0, val1) (((uint16_t)val1) << 8 | val0)
 #else
 #error "Unknown processor endianness"
