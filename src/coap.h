@@ -231,17 +231,27 @@ public:
         // Option Number as defined by RFC7252
         const uint16_t number;
         const uint16_t length;
+        const uint8_t* value;
 
-        OptionExperimental(uint16_t number, uint16_t length) :
+        OptionExperimental(uint16_t number, uint16_t length, const uint8_t* value) :
             number(number),
-            length(length)
+            length(length),
+            value(value)
         {}
+    };
+
+
+    class OptionString
+    {
+    public:
+
     };
 
     class IResponder
     {
     public:
-        virtual void OnOption(const Parser* parser, const OptionExperimental& option) = 0;
+        virtual void OnHeader(const Header header) = 0;
+        virtual void OnOption(const OptionExperimental& option) = 0;
         virtual void OnPayload(const uint8_t message[], size_t length) = 0;
     };
 
@@ -299,8 +309,6 @@ public:
         uint16_t option_size;
 
         bool processOptionSize(uint8_t size_root);
-
-        bool processOptionValue(uint8_t value);
 
         // returns false when processing is complete, true otherwise
         bool processOption(uint8_t value);

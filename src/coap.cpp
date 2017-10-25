@@ -150,8 +150,9 @@ CoAP::Parser::Parser()
 
 void CoAP::ParseToIResponder::process(uint8_t message[], size_t length)
 {
-    uint16_t option_delta;
+    uint16_t option_number = 0;
     uint16_t option_length;
+    uint8_t* option_value;
 
     for (int i = 0; i < length; i++)
     {
@@ -177,17 +178,21 @@ void CoAP::ParseToIResponder::process(uint8_t message[], size_t length)
                     switch (sub_state)
                     {
                         case Parser::OptionDeltaDone:
-                            option_delta = parser.get_option_size();
+                        {
+                            uint16_t option_delta = parser.get_option_size();
+                            option_number += option_delta;
                             break;
+                        }
 
                         case Parser::OptionLengthDone:
                             option_length = parser.get_option_size();
+                            option_value = &message[i + 1];
                             break;
 
                         case Parser::OptionValueDone:
                         {
-                            OptionExperimental option(0, option_length);
-                            responder->OnOption(&parser, option);
+                            OptionExperimental option(option_number, option_length, option_value);
+                            responder->OnOption(option);
                             break;
                         }
                     }
