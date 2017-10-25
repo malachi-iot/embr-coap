@@ -7,7 +7,7 @@ namespace coap {
 
 // Operations are done in "network byte order" according to CoAP spec, which in turn is
 // big endian as suggested by https://stackoverflow.com/questions/13514614/why-is-network-byte-order-defined-to-be-big-endian
-bool CoAP::Parser::processOptionSize(uint8_t size_root, uint8_t local_position)
+bool CoAP::Parser::processOptionSize(uint8_t size_root)
 {
     if (size_root < Extended8Bit)
     {
@@ -23,14 +23,15 @@ bool CoAP::Parser::processOptionSize(uint8_t size_root, uint8_t local_position)
     }
     else if (size_root == Extended16Bit)
     {
-        switch(local_position)
+        switch(pos)
         {
             // First byte (big endian)
-            case 0:
+            case 1:
                 option_size = (uint16_t) buffer[pos] << 8;
                 return true;
 
-            case 1:
+            // Second byte (big endian)
+            case 2:
                 option_size |= buffer[pos];
                 option_size += 269;
                 return false;
@@ -51,46 +52,46 @@ bool CoAP::Parser::processOption(uint8_t value)
         return false;
     }
 
-    buffer[pos++] = value;
+    // we don't process OptionValue, just skip over it (outer code processes
+    // option values)
+    if(sub_state != OptionValue) buffer[pos++] = value;
 
     switch (sub_state)
     {
         case OptionSize:
-            // just record and skip by this one, use it later
-            local_position = 0;
             break;
 
         case OptionDelta:
-            if (processOptionSize(buffer[0] & 0xF0 >> 4, local_position))
-                local_position++;
-            else
+            if (!processOptionSize((buffer[0] & 0xF0) >> 4))
             {
                 // Done with Delta
                 // strip off no-longer used Delta size so that Length is
                 // easier to process
                 buffer[0] &= 0xF0;
                 sub_state = OptionLength;
-                /*
                 // TODO: do something with option_size here
-                if(low_level_callback)
-                {
-                    low_level_callback(callback_context);
-                } */
+                pos = 1; // re-use buffer for length processing
             }
             break;
 
         case OptionLength:
-            if(processOptionSize(buffer[0], local_position))
-                local_position++;
-            else
+            if (!processOptionSize(buffer[0]))
             {
+                sub_state = OptionValue;
                 // TODO: do something with option_size here
-                return false;
             }
+            break;
+
+        case OptionValue:
+            // we've completed processing this option when option_size from
+            // option length has finally gone to zero
+            if (--option_size == 0) return false;
             break;
     }
 
     //if(pos++ > 3)
+
+    return true;
 }
 
 void CoAP::Parser::process(uint8_t value)

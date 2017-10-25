@@ -38,19 +38,6 @@ namespace coap {
 // convert a 16-bit little endian number to big endian
 #define LE_TO_BE_16(value)
 
-#ifdef __GNUC__
-#if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
-#define COAP_HTONS(int_short) int_short
-#define COAP_NTOHS(int_short) SWAP_16(int_short)
-// network order bytes
-#define COAP_UINT16_FROM_NBYTES(val0, val1) (((uint16_t)val0) << 8 | val1)
-#else // little endian
-#define COAP_HTONS(int_short) SWAP_16(int_short)
-#define COAP_NTOHS(int_short) int_short
-#define COAP_UINT16_FROM_NBYTES(val0, val1) (((uint16_t)val1) << 8 | val0)
-#endif
-#endif
-
 // See RFC 7252: https://tools.ietf.org/html/rfc7252
 class CoAP
 {
@@ -256,7 +243,8 @@ public:
         {
             OptionSize, // header portion
             OptionDelta, // delta portion (after header, if applicable)
-            OptionLength // length portion (after header, if applicable)
+            OptionLength, // length portion (after header, if applicable)
+            OptionValue, // value portion (this decoder merely skips value, outer processors handle it)
         };
 
         // remember this is in "network byte order", meaning that
@@ -280,9 +268,8 @@ public:
         // emit via a pointer
         // when processing options, what is the value of the Delta/Length
         uint16_t option_size;
-        uint8_t local_position;
 
-        bool processOptionSize(uint8_t size_root, uint8_t local_position);
+        bool processOptionSize(uint8_t size_root);
 
         bool processOptionValue(uint8_t value);
 
