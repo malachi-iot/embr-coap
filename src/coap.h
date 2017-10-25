@@ -178,8 +178,7 @@ public:
     };
 #endif
 
-/*
-    class Option
+    class Option_OLD
     {
         uint8_t option_size;
         uint8_t bytes[];
@@ -192,7 +191,8 @@ public:
             Reserved = 15
         };
 
-        static uint16_t get_value(uint8_t nonextended, uint8_t* extended, uint8_t* index_bump)
+    public:
+        static uint16_t get_value(uint8_t nonextended, const uint8_t* extended, uint8_t* index_bump)
         {
             if (nonextended < Extended8Bit)
             {
@@ -201,7 +201,7 @@ public:
             }
             else if (nonextended == Extended8Bit)
             {
-                (*index_bump)++;
+                //(*index_bump)++;
                 return 13 + *extended;
             }
             else if (nonextended == Extended16Bit)
@@ -209,7 +209,7 @@ public:
                 // FIX: BEWARE of endian issue!!
                 uint16_t _extended = *((uint16_t*)extended);
 
-                (*index_bump)+=2;
+                //(*index_bump)+=2;
 
                 return 269 + _extended;
             }
@@ -227,7 +227,7 @@ public:
 
 
 
-    }; */
+    };
 
     class Parser;
 
@@ -339,6 +339,11 @@ public:
         // announce a header has been found
         void callback_header(); */
 
+        uint8_t raw_delta() const { return buffer[0] >> 4; }
+        uint8_t raw_length() const { return buffer[0] & 0x0F; }
+
+        const uint8_t* get_buffer() const { return (&buffer[0]); }
+
     public:
         void process(uint8_t value);
 
@@ -346,8 +351,17 @@ public:
 
         State get_state() const { return state; }
         SubState sub_state() const { return _sub_state;  }
-        uint16_t get_option_size() const { return option_size; }
         uint8_t* get_header() { return &buffer[0]; }
+
+        uint16_t option_delta() const
+        {
+            return Option_OLD::get_value(raw_delta(), &buffer[1], NULLPTR);
+        }
+
+        uint16_t option_length() const 
+        { 
+            return Option_OLD::get_value(raw_length(), &buffer[1], NULLPTR);
+        }
     };
 
     // FIX: Needs much better name

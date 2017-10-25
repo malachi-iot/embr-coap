@@ -45,12 +45,23 @@ TEST_CASE("CoAP tests", "[coap]")
 
                 case 5:
                     REQUIRE(parser.get_state() == parser_t::Options);
-                    REQUIRE(parser.sub_state() == parser_t::OptionSizeDone);
+                    REQUIRE(parser.sub_state() == parser_t::OptionDeltaAndLengthDone);
+                    REQUIRE(parser.option_delta() == 1);
+                    REQUIRE(parser.option_length() == 1);
                     break;
 
                 case 6:
+                    // Because it's only one byte, we don't get to see OptionValue since it's 1:1 with
+                    // OptionLengthDone/OptionDeltaAndLengthDone
                     REQUIRE(parser.get_state() == parser_t::Options);
-                    //REQUIRE(parser.sub_state() == parser_t::OptionSizeDone);
+                    REQUIRE(parser.sub_state() == parser_t::OptionValueDone);
+                    break;
+
+                case 7:
+                    REQUIRE(parser.get_state() == parser_t::Options);
+                    REQUIRE(parser.sub_state() == parser_t::OptionDeltaAndLengthDone);
+                    REQUIRE(parser.option_delta() == 1);
+                    REQUIRE(parser.option_length() == 2);
                     break;
             }
         }

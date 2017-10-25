@@ -9,6 +9,21 @@ namespace coap {
 // big endian as suggested by https://stackoverflow.com/questions/13514614/why-is-network-byte-order-defined-to-be-big-endian
 bool CoAP::Parser::processOptionSize(uint8_t size_root)
 {
+    switch (size_root)
+    {
+        // first time we get here, we're already processing first byte which is also last byte,
+        // so signal immediate completion
+        case Extended8Bit:
+            return false;
+
+        // we wait for two bytes to come in this time
+        case Extended16Bit:
+            return pos != 2;
+
+        default:
+            ASSERT_ABORT(true, false, "Invalid 15 or 0-12 observed");
+            return false;
+    }
     /*
     if (size_root < Extended8Bit)
     {
@@ -17,7 +32,7 @@ bool CoAP::Parser::processOptionSize(uint8_t size_root)
         // Just use literal value, not extended
         //return nonextended;
     }
-    else */
+    else 
     if (size_root == Extended8Bit)
     {
         option_size = buffer[pos] + 13;
@@ -43,15 +58,15 @@ bool CoAP::Parser::processOptionSize(uint8_t size_root)
     {
         ASSERT_ABORT(true, false, "Invalid 15 or 0-12 observed")
         return false;
-    }
+    } */
 }
 
 void CoAP::Parser::processOption()
 {
     // We have to determine right here if we have extended Delta and/or
     // extended Lengths
-    uint8_t raw_delta = (buffer[0] & 0xF0) >> 4;
-    uint8_t raw_length = buffer[0] & 0x0F;
+    uint8_t raw_delta = this->raw_delta();// (buffer[0] & 0xF0) >> 4;
+    uint8_t raw_length = this->raw_length();
     bool delta_extended = raw_delta >= Extended8Bit;
     bool length_extended = raw_length >= Extended8Bit;
 
@@ -59,6 +74,7 @@ void CoAP::Parser::processOption()
     {
         case OptionValueDone:
             sub_state(OptionSize);
+            //pos = 0;
 
         case OptionSize:
             if (!delta_extended && !length_extended)
@@ -109,6 +125,7 @@ void CoAP::Parser::processOption()
 
         case OptionDeltaAndLengthDone:
         case OptionLengthDone:
+            option_size = option_length();
             sub_state(OptionValue);
 
         case OptionValue:
@@ -118,6 +135,8 @@ void CoAP::Parser::processOption()
             {
                 // NOTE: slight redundancy here in returning false also, perhaps optimize out
                 sub_state(OptionValueDone);
+                // FIX: a little hacky, have to do this here so that our buffer[pos++] doesn't wig out
+                pos = 0;
             }
             break;
     }
@@ -130,20 +149,21 @@ void CoAP::Parser::process(uint8_t value)
         case Header:
             buffer[pos++] = value;
 
-            if (pos == 4)
-            {
-                state = HeaderDone;
-                pos = 0;
-            }
+            if (pos == 4) state = HeaderDone;
             break;
 
         case HeaderDone:
+        {
+            // Set up for Options start
             state = Options;
             sub_state(OptionSize);
+            pos = 0;
+        }
 
         case Options:
             // we don't process OptionValue, just skip over it (outer code processes
             // option values)
+            // FIX: find a better location for this code block
             if (sub_state() != OptionValue) buffer[pos++] = value;
 
             // remember, we could be processing multiple options here
@@ -196,15 +216,19 @@ void CoAP::ParseToIResponder::process(uint8_t message[], size_t length)
                 case Parser::Options:
                     switch (parser.sub_state())
                     {
+                        case Parser::OptionDeltaAndLengthDone:
+                            option_length = parser.option_length();
+                            option_value = &message[i + 1];
+
                         case Parser::OptionDeltaDone:
                         {
-                            uint16_t option_delta = parser.get_option_size();
+                            uint16_t option_delta = parser.option_delta();
                             option_number += option_delta;
                             break;
                         }
 
                         case Parser::OptionLengthDone:
-                            option_length = parser.get_option_size();
+                            option_length = parser.option_length();
                             option_value = &message[i + 1];
                             break;
 
