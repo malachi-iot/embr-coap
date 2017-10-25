@@ -85,16 +85,16 @@ public:
     public:
         uint32_t raw;
 
-        template <uint8_t pos, uint32_t mask>
+        template <uint8_t pos, uint32_t mask_value>
         inline void mask(uint16_t value)
         {
-            raw = (raw & ~mask) | (value << pos);
+            raw = (raw & ~mask_value) | (value << pos);
         }
 
-        template <uint8_t pos, uint32_t mask>
+        template <uint8_t pos, uint32_t mask_value>
         inline uint16_t mask() const
         {
-            return ((raw & mask) >> pos);
+            return ((raw & mask_value) >> pos);
         }
 
 
@@ -164,6 +164,7 @@ public:
 
     class Option
     {
+        uint8_t option_size;
         uint8_t bytes[];
 
         enum ExtendedMode : uint8_t
