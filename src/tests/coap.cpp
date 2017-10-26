@@ -101,6 +101,9 @@ TEST_CASE("CoAP tests", "[coap]")
             parser_t::State state = parser.state();
             parser_t::SubState sub_state = parser.sub_state();
 
+            uint16_t option_delta = parser.option_delta();
+            uint16_t option_length = parser.option_length();
+
             switch (i + 1)
             {
                 case 4:
@@ -112,7 +115,7 @@ TEST_CASE("CoAP tests", "[coap]")
                     // TODO: Fix clumsiness of state inspection here with "non processed" mode
                     // where process returns false
                     REQUIRE(sub_state == parser_t::OptionSizeDone);
-                    REQUIRE(parser.option_delta() == 0xE);
+                    REQUIRE(option_delta == 269);
                     REQUIRE(parser.option_length() == 1);
                     break;
 
@@ -136,7 +139,7 @@ TEST_CASE("CoAP tests", "[coap]")
                 case 9:
                     REQUIRE(state == parser_t::Options);
                     REQUIRE(sub_state == parser_t::OptionDeltaAndLengthDone);
-                    REQUIRE(parser.option_delta() == 1);
+                    REQUIRE(option_delta == 1);
                     REQUIRE(parser.option_length() == 2);
                     break;
 
