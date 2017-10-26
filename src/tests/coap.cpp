@@ -77,6 +77,81 @@ TEST_CASE("CoAP tests", "[coap]")
             }
         }
     }
+    SECTION("Basic Parsing: 16 bit")
+    {
+        typedef CoAP::Parser parser_t;
+
+        uint8_t buffer[] = {
+            0x40, 0x00, 0x00, 0x00, // fully blank header
+            0xE1, // option with delta 1 length 1
+            0x00, // delta byte #1 of data
+            0x01, // delta byte #2 of data
+            0x03, // value single byte of data
+            0x12, // option with delta 1 length 2
+            0x04, // value byte of data #1
+            0x05 // value byte of data #2
+        };
+
+        parser_t parser;
+
+        for (int i = 0; i < sizeof(buffer); i++)
+        {
+            parser.process(buffer[i]);
+
+            parser_t::State state = parser.state();
+            parser_t::SubState sub_state = parser.sub_state();
+
+            switch (i + 1)
+            {
+                case 4:
+                    REQUIRE(state == parser_t::HeaderDone);
+                    break;
+
+                case 5:
+                    REQUIRE(state == parser_t::Options);
+                    // TODO: Fix clumsiness of state inspection here with "non processed" mode
+                    // where process returns false
+                    REQUIRE(sub_state == parser_t::OptionSizeDone);
+                    REQUIRE(parser.option_delta() == 0xE);
+                    REQUIRE(parser.option_length() == 1);
+                    break;
+
+                case 6:
+                    REQUIRE(state == parser_t::Options);
+                    REQUIRE(sub_state == parser_t::OptionDelta);
+                    break;
+
+                case 7:
+                    REQUIRE(state == parser_t::Options);
+                    REQUIRE(sub_state == parser_t::OptionDeltaDone);
+                    break;
+
+                case 8:
+                    // Because it's only one byte, we don't get to see OptionValue since it's 1:1 with
+                    // OptionLengthDone/OptionDeltaAndLengthDone
+                    REQUIRE(state == parser_t::Options);
+                    REQUIRE(sub_state == parser_t::OptionValueDone);
+                    break;
+
+                case 9:
+                    REQUIRE(state == parser_t::Options);
+                    REQUIRE(sub_state == parser_t::OptionDeltaAndLengthDone);
+                    REQUIRE(parser.option_delta() == 1);
+                    REQUIRE(parser.option_length() == 2);
+                    break;
+
+                case 10:
+                    REQUIRE(parser.state() == parser_t::Options);
+                    REQUIRE(sub_state == parser_t::OptionValue);
+                    break;
+
+                case 11:
+                    REQUIRE(parser.state() == parser_t::Options);
+                    REQUIRE(sub_state == parser_t::OptionValueDone);
+                    break;
+            }
+        }
+    }
     SECTION("Basic generating single option")
     {
         uint8_t buffer[64];
