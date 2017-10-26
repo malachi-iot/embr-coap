@@ -370,7 +370,7 @@ public:
 
         bool processOptionSize(uint8_t size_root);
 
-        void processOption();
+        bool processOption(uint8_t value);
 
         /* Don't do any of this callback stuff because remember our lesson with workflows:
          * state machines are a great standalone underpinning of event sources
@@ -393,7 +393,13 @@ public:
         const uint8_t* get_buffer() const { return (&buffer[0]); }
 
     public:
-        void process(uint8_t value);
+        // returns true when the character is *actually* processed
+        bool process_iterate(uint8_t value);
+
+        void process(uint8_t value)
+        {
+            while (!process_iterate(value));
+        }
 
         Parser();
 
