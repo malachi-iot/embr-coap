@@ -18,6 +18,7 @@ namespace layer2 {
 class OptionValue
 {
 protected:
+public:
     union
     {
         const char*     value_string;
@@ -46,8 +47,9 @@ public:
 class OptionNumber
 {
 protected:
-    const uint8_t number;
 public:
+    const uint8_t number;
+
     OptionNumber(uint8_t number) : number(number) {}
 };
 
@@ -62,9 +64,16 @@ class OptionGenerator : public OptionBase
 {
     class StateMachine
     {
+        uint16_t current_option_number;
+        int pos;
         const OptionBase& option_base;
         CoAP::Parser::State _state;
         CoAP::Parser::SubState _sub_state;
+
+        void sub_state(CoAP::Parser::SubState _sub_state)
+        {
+            this->_sub_state = _sub_state;
+        }
 
     public:
         StateMachine(const OptionBase&);

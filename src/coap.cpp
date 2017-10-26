@@ -169,13 +169,19 @@ void CoAP::Parser::process(uint8_t value)
             // remember, we could be processing multiple options here
             if ((sub_state() == OptionValueDone || sub_state() == OptionSize)
                 && value == 0xFF)
-                _state = OptionsDone;
+                // A little clumsy - want OptionsDone to represent
+                // when we naturally run out of bytes - not get an 0xFF
+                _state = Payload;
             else
                 processOption();
 
             break;
 
+        // all options are done being processed, and we actually shouldn't get here
+        // since this is a header+option handling area only
         case OptionsDone:
+        case Payload:
+            ASSERT_ERROR(false, false, "Should not be here");
             break;
     }
 }
@@ -204,6 +210,9 @@ void CoAP::ParseToIResponder::process(uint8_t message[], size_t length)
 
             switch (parser.state())
             {
+                case Parser::Header:
+                    break;
+
                 case Parser::HeaderDone:
                 {
                     // we *just* finished processing header, so extract it
@@ -216,6 +225,12 @@ void CoAP::ParseToIResponder::process(uint8_t message[], size_t length)
                 case Parser::Options:
                     switch (parser.sub_state())
                     {
+                        case Parser::OptionSize:
+                        case Parser::OptionSizeDone:
+                        case Parser::OptionDelta:
+                            // we see these, but don't care about them
+                            break;
+
                         case Parser::OptionDeltaAndLengthDone:
                             option_length = parser.option_length();
                             option_value = &message[i + 1];
@@ -239,6 +254,19 @@ void CoAP::ParseToIResponder::process(uint8_t message[], size_t length)
                             break;
                         }
                     }
+                    break;
+
+                // effectively same as payload ready
+                case Parser::OptionsDone:
+                    // parser.state(Parser::Payload);
+                    // FIX: brute force into Payload immediately so we don't waste time
+                    // processing and ignoring another character
+                    // also it will trigger an assert, since we're not supposed to process OptionsDone in there
+                    break;
+
+                case Parser::Payload:
+                    // Should see this once and only once
+                    //ASSERT_ERROR(false, false, "Should not be here");
                     break;
             }
         }

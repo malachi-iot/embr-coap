@@ -30,6 +30,9 @@ namespace coap {
 #define COAP_OPTION_LENGTH_POS  0
 #define COAP_OPTION_LENGTH_MASK 15
 
+#define COAP_EXTENDED8_BIT_MAX  (255 - 13)
+#define COAP_EXTENDED16_BIT_MAX (0xFFFF - 269)
+
 // potentially http://pubs.opengroup.org/onlinepubs/7908799/xns/htonl.html are of interest here
 // also endianness macros here if you are in GNU:
 // https://gcc.gnu.org/onlinedocs/cpp/Common-Predefined-Macros.html
@@ -206,14 +209,17 @@ public:
             {
                 //(*index_bump)++;
                 return 13 + *extended;
+                //return  *extended;
             }
             else if (nonextended == Extended16Bit)
             {
                 // FIX: BEWARE of endian issue!!
-                uint16_t _extended = *((uint16_t*)extended);
+                //uint16_t _extended = *((uint16_t*)extended);
+                uint16_t _extended COAP_UINT16_FROM_NBYTES(extended[0], extended[1]);
 
                 //(*index_bump)+=2;
 
+                //return 269 + _extended;
                 return 269 + _extended;
             }
             else // RESERVED
@@ -298,6 +304,8 @@ public:
 
     class Parser
     {
+        // FIX: temporarily making this public
+    public:
         enum ExtendedMode
 #ifdef __CPP11__
             : uint8_t
@@ -315,7 +323,7 @@ public:
             Header,
             HeaderDone,
             Options,
-            OptionsDone,
+            OptionsDone, // all options are done being processed
             Payload // Note that Payload is *NOT* handled by this class, since its length is defined by transport layer
         };
 
