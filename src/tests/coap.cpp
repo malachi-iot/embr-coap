@@ -121,12 +121,12 @@ TEST_CASE("CoAP tests", "[coap]")
 
                 case 6:
                     REQUIRE(state == parser_t::Options);
-                    REQUIRE(sub_state == parser_t::OptionDelta);
+                    REQUIRE(sub_state == parser_t::OptionDeltaDone);
                     break;
 
                 case 7:
                     REQUIRE(state == parser_t::Options);
-                    REQUIRE(sub_state == parser_t::OptionDeltaDone);
+                    REQUIRE(sub_state == parser_t::OptionLengthDone);
                     break;
 
                 case 8:
@@ -140,16 +140,16 @@ TEST_CASE("CoAP tests", "[coap]")
                     REQUIRE(state == parser_t::Options);
                     REQUIRE(sub_state == parser_t::OptionDeltaAndLengthDone);
                     REQUIRE(option_delta == 1);
-                    REQUIRE(parser.option_length() == 2);
+                    REQUIRE(option_length == 2);
                     break;
 
                 case 10:
-                    REQUIRE(parser.state() == parser_t::Options);
+                    REQUIRE(state == parser_t::Options);
                     REQUIRE(sub_state == parser_t::OptionValue);
                     break;
 
                 case 11:
-                    REQUIRE(parser.state() == parser_t::Options);
+                    REQUIRE(state == parser_t::Options);
                     REQUIRE(sub_state == parser_t::OptionValueDone);
                     break;
             }
