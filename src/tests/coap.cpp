@@ -98,4 +98,27 @@ TEST_CASE("CoAP tests", "[coap]")
         REQUIRE(buffer[1] == 'a');
         REQUIRE(counter == 2);
     }
+    SECTION("Basic generating single option: 16-bit")
+    {
+        uint8_t buffer[64];
+        int counter = 0;
+
+        experimental::layer2::OptionBase o(10000);
+
+        o.length = 1;
+        o.value_string = "a";
+
+        experimental::layer2::OptionGenerator::StateMachine sm(o);
+
+        while(sm.sub_state() != CoAP::Parser::OptionValueDone)
+        {
+            buffer[counter++] = sm.generate();
+        }
+
+        REQUIRE(buffer[0] == 0xE1);
+        REQUIRE(buffer[1] == ((10000 - 269) >> 8));
+        REQUIRE(buffer[2] == ((10000 - 269) & 0xFF));
+        REQUIRE(buffer[3] == 'a');
+        REQUIRE(counter == 4);
+    }
 }

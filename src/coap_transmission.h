@@ -48,16 +48,16 @@ class OptionNumber
 {
 protected:
 public:
-    const uint8_t number;
+    const uint16_t number;
 
-    OptionNumber(uint8_t number) : number(number) {}
+    OptionNumber(uint16_t number) : number(number) {}
 };
 
 class OptionBase : public OptionValue,
                         public OptionNumber
 {
 public:
-    OptionBase(uint8_t number) : OptionNumber(number) {}
+    OptionBase(uint16_t number) : OptionNumber(number) {}
 };
 
 class OptionGenerator : public OptionBase
@@ -78,7 +78,21 @@ public:
     public:
         StateMachine(const OptionBase&);
 
-        uint8_t generate();
+        typedef int16_t output_t;
+
+        static CONSTEXPR output_t signal_continue = -1;
+
+        output_t generate_iterate();
+        uint8_t generate()
+        {
+            output_t result;
+            do
+            {
+                result = generate_iterate();
+            } while(result == signal_continue);
+
+            return result;
+        }
 
         CoAP::Parser::SubState sub_state() const { return _sub_state; }
     };
