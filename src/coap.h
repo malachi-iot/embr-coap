@@ -239,24 +239,52 @@ public:
     class OptionExperimental
     {
     public:
+        enum ValueFormats
+        {
+            Empty,
+            Opaque,
+            UInt,
+            String
+        };
+
+        enum Numbers
+        {
+            /// format: opaque
+            IfMatch = 1,
+            // format: string
+            UriHost = 3,
+            // format: opaque
+            ETag = 4,
+            IfNoneMatch = 5,
+            UriPort = 7,
+            LocationPath = 8,
+            UriPath = 11,
+            ContentFormat = 12
+
+        };
+
         // Option Number as defined by RFC7252
         const uint16_t number;
         const uint16_t length;
-        const uint8_t* value;
+        union
+        {
+            const uint8_t *value;
+            const uint16_t value_uint;
+        };
 
         OptionExperimental(uint16_t number, uint16_t length, const uint8_t* value) :
             number(number),
             length(length),
             value(value)
         {}
+
+        OptionExperimental(uint16_t number, uint16_t length, const uint16_t value_uint) :
+                number(number),
+                length(length),
+                value_uint(value_uint)
+        {}
     };
 
-
-    class OptionString
-    {
-    public:
-
-    };
 
     class IResponder
     {

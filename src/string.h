@@ -60,6 +60,10 @@ public:
     {
     }
 
+    // FIX: default constructor allocates 10 bytes, but make this configurable
+    string(memory_t& pool = memory_t::default_pool) :
+            handle(pool.allocate(10), pool) {}
+
     // TODO: Do also && move operation for C++11
     string(const string& copy_from) :
 #ifdef FEATURE_STRING_SIZE_FIELD
