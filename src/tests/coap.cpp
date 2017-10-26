@@ -2,6 +2,7 @@
 #include <catch.hpp>
 
 #include "../coap.h"
+#include "../coap_transmission.h"
 
 using namespace moducom::coap;
 
@@ -75,5 +76,26 @@ TEST_CASE("CoAP tests", "[coap]")
                     break;
             }
         }
+    }
+    SECTION("Basic generating single option")
+    {
+        uint8_t buffer[64];
+        int counter = 0;
+
+        experimental::layer2::OptionBase o(1);
+
+        o.length = 1;
+        o.value_string = "a";
+
+        experimental::layer2::OptionGenerator::StateMachine sm(o);
+
+        while(sm.sub_state() != CoAP::Parser::OptionValueDone)
+        {
+            buffer[counter++] = sm.generate();
+        }
+
+        REQUIRE(buffer[0] == 0x11);
+        REQUIRE(buffer[1] == 'a');
+        REQUIRE(counter == 2);
     }
 }

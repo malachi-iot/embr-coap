@@ -62,12 +62,12 @@ public:
 
 class OptionGenerator : public OptionBase
 {
+public:
     class StateMachine
     {
         uint16_t current_option_number;
-        int pos;
+        uint8_t pos;
         const OptionBase& option_base;
-        CoAP::Parser::State _state;
         CoAP::Parser::SubState _sub_state;
 
         void sub_state(CoAP::Parser::SubState _sub_state)
@@ -80,7 +80,6 @@ class OptionGenerator : public OptionBase
 
         uint8_t generate();
 
-        CoAP::Parser::State state() const { return _state; }
         CoAP::Parser::SubState sub_state() const { return _sub_state; }
     };
 

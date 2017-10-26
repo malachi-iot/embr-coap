@@ -125,7 +125,7 @@ uint8_t OptionGenerator::StateMachine::generate()
             sub_state(CoAP::Parser::OptionValue);
 
         case CoAP::Parser::OptionValue:
-            if(pos == option_base.length)
+            if(pos == option_base.length - 1)
                 sub_state(CoAP::Parser::OptionValueDone);
 
             return option_base.value_opaque[pos++];
