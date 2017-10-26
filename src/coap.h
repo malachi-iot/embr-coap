@@ -4,6 +4,7 @@
 
 #include "platform.h"
 #include <stdint.h>
+#include <stdlib.h>
 
 #ifndef SRC_COAP_H
 #define SRC_COAP_H
@@ -184,7 +185,9 @@ public:
         uint8_t bytes[];
 
         enum ExtendedMode
+#ifdef __CPP11__
                 : uint8_t
+#endif
         {
             Extended8Bit = 13,
             Extended16Bit = 14,
@@ -258,6 +261,8 @@ public:
     class IResponder
     {
     public:
+        //! Responds to a header found in a CoAP message
+        //! \param header
         virtual void OnHeader(const Header header) = 0;
         virtual void OnOption(const OptionExperimental& option) = 0;
         virtual void OnPayload(const uint8_t message[], size_t length) = 0;
@@ -265,8 +270,10 @@ public:
 
     class Parser
     {
-        enum ExtendedMode :
-            uint8_t
+        enum ExtendedMode
+#ifdef __CPP11__
+            : uint8_t
+#endif
         {
             Extended8Bit = 13,
             Extended16Bit = 14,
@@ -303,12 +310,13 @@ public:
         //uint32_t header;
 
         // Which part of CoAP message we are processing
-        State state;
+        State _state;
 
         // Which part of the option we are processing
         SubState _sub_state;
 
         void sub_state(SubState sub_state) { _sub_state = sub_state; }
+        void state(State state) { _state = state; }
 
         // small temporary buffer needed for OPTION and HEADER processing
         uint8_t buffer[4];
@@ -349,7 +357,7 @@ public:
 
         Parser();
 
-        State get_state() const { return state; }
+        State state() const { return _state; }
         SubState sub_state() const { return _sub_state;  }
         uint8_t* get_header() { return &buffer[0]; }
 

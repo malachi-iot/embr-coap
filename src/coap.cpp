@@ -144,18 +144,18 @@ void CoAP::Parser::processOption()
 
 void CoAP::Parser::process(uint8_t value)
 {
-    switch (state)
+    switch (_state)
     {
         case Header:
             buffer[pos++] = value;
 
-            if (pos == 4) state = HeaderDone;
+            if (pos == 4) _state = HeaderDone;
             break;
 
         case HeaderDone:
         {
             // Set up for Options start
-            state = Options;
+            _state = Options;
             sub_state(OptionSize);
             pos = 0;
         }
@@ -169,7 +169,7 @@ void CoAP::Parser::process(uint8_t value)
             // remember, we could be processing multiple options here
             if ((sub_state() == OptionValueDone || sub_state() == OptionSize)
                 && value == 0xFF)
-                state = OptionsDone;
+                _state = OptionsDone;
             else
                 processOption();
 
@@ -183,7 +183,7 @@ void CoAP::Parser::process(uint8_t value)
 
 CoAP::Parser::Parser()
 {
-    state = Header;
+    _state = Header;
     pos = 0;
 }
 
@@ -195,14 +195,14 @@ void CoAP::ParseToIResponder::process(uint8_t message[], size_t length)
 
     for (int i = 0; i < length; i++)
     {
-        Parser::State state = parser.get_state();
+        Parser::State state = parser.state();
 
         if (state != Parser::Payload)
         {
             // processing header + options
             parser.process(message[i]);
 
-            switch (state = parser.get_state())
+            switch (parser.state())
             {
                 case Parser::HeaderDone:
                 {
