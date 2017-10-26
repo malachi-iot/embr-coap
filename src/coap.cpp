@@ -7,6 +7,7 @@ namespace coap {
 
 // Operations are done in "network byte order" according to CoAP spec, which in turn is
 // big endian as suggested by https://stackoverflow.com/questions/13514614/why-is-network-byte-order-defined-to-be-big-endian
+// TODO: Looks like we might be able to consolidate this a little with the generator_helper function
 bool CoAP::Parser::processOptionSize(uint8_t size_root)
 {
     switch (size_root)
@@ -65,7 +66,7 @@ void CoAP::Parser::processOption()
 {
     // We have to determine right here if we have extended Delta and/or
     // extended Lengths
-    uint8_t raw_delta = this->raw_delta();// (buffer[0] & 0xF0) >> 4;
+    uint8_t raw_delta = this->raw_delta();
     uint8_t raw_length = this->raw_length();
     bool delta_extended = raw_delta >= Extended8Bit;
     bool length_extended = raw_length >= Extended8Bit;
@@ -158,6 +159,7 @@ void CoAP::Parser::process(uint8_t value)
             _state = Options;
             sub_state(OptionSize);
             pos = 0;
+            // Fall thru to options, as most "Done"s should do
         }
 
         case Options:

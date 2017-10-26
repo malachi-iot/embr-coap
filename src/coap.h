@@ -215,7 +215,7 @@ public:
             {
                 // FIX: BEWARE of endian issue!!
                 //uint16_t _extended = *((uint16_t*)extended);
-                uint16_t _extended COAP_UINT16_FROM_NBYTES(extended[0], extended[1]);
+                uint16_t _extended = COAP_UINT16_FROM_NBYTES(extended[0], extended[1]);
 
                 //(*index_bump)+=2;
 
@@ -355,14 +355,18 @@ public:
         void state(State state) { _state = state; }
 
         // small temporary buffer needed for OPTION and HEADER processing
-        uint8_t buffer[4];
+        union
+        {
+            // By the time we use option size, we've extracted it from buffer and no longer use buffer
+            uint16_t option_size;
+            uint8_t buffer[4];
+        };
         // position in buffer we are presently at
         uint8_t pos;
 
         // TODO: optimize out and calculate in-place based purely on buffer[] then
         // emit via a pointer
         // when processing options, what is the value of the Delta/Length
-        uint16_t option_size;
 
         bool processOptionSize(uint8_t size_root);
 
