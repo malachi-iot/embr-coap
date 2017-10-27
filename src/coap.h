@@ -253,6 +253,7 @@ public:
     public:
         enum ValueFormats
         {
+            Unknown = -1,
             Empty,
             Opaque,
             UInt,
@@ -278,6 +279,29 @@ public:
         // Option Number as defined by RFC7252
         const uint16_t number;
         const uint16_t length;
+
+        Numbers get_number() const { return (Numbers)number; }
+
+        ValueFormats get_format() const 
+        {
+            typedef ValueFormats vf_t;
+            typedef Numbers number_t;
+
+            switch (get_number())
+            {
+                case number_t::IfMatch:         return vf_t::Opaque;
+                case number_t::UriHost:         return vf_t::String;
+                case number_t::ETag:            return vf_t::Opaque;
+                case number_t::IfNoneMatch:     return vf_t::Empty;
+                case number_t::UriPort:         return vf_t::UInt;
+                case number_t::LocationPath:    return vf_t::String;
+                case number_t::UriPath:         return vf_t::String;
+                case number_t::ContentFormat:   return vf_t::UInt;
+                default:
+                    return vf_t::Unknown;
+            }
+        }
+
         union
         {
             const uint8_t *value;

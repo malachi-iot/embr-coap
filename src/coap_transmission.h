@@ -239,6 +239,22 @@ protected:
 };
 
 }
+
+namespace coap {
+namespace experimental
+{
+
+class TestResponder : coap::CoAP::IResponder
+{
+public:
+    virtual void OnHeader(const coap::CoAP::Header header) OVERRIDE;
+    virtual void OnOption(const coap::CoAP::OptionExperimental& option) OVERRIDE;
+    virtual void OnPayload(const uint8_t message[], size_t length) OVERRIDE;
+};
+
+}
+}
+
 }
 
 

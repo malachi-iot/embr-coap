@@ -37,7 +37,7 @@ size_t OptionGenerator::generate(uint16_t last_number, uint8_t *output)
 }
 
 OptionGenerator::StateMachine::StateMachine(const OptionBase& option_base) :
-        option_base(option_base)
+    option_base(option_base)
 {
     _sub_state = CoAP::Parser::OptionSize;
     current_option_number = 0;
@@ -47,26 +47,26 @@ OptionGenerator::StateMachine::StateMachine(const OptionBase& option_base) :
 
 uint8_t generator_helper(uint16_t value, int pos = 0)
 {
-    if(value < CoAP::Parser::Extended8Bit)
+    if (value < CoAP::Parser::Extended8Bit)
     {
         return value;
     }
-    else if(value < COAP_EXTENDED8_BIT_MAX)
+    else if (value < COAP_EXTENDED8_BIT_MAX)
     {
-        if(pos == 0) return CoAP::Parser::Extended8Bit;
+        if (pos == 0) return CoAP::Parser::Extended8Bit;
 
         value -= 13;
 
-        if(pos == 1) return value;
+        if (pos == 1) return value;
     }
-    else if(value < COAP_EXTENDED16_BIT_MAX)
+    else if (value < COAP_EXTENDED16_BIT_MAX)
     {
-        if(pos == 0) return CoAP::Parser::Extended16Bit;
+        if (pos == 0) return CoAP::Parser::Extended16Bit;
 
         value -= 269;
 
-        if(pos == 1) return (value >> 8);
-        if(pos == 2) return (value & 0xFF);
+        if (pos == 1) return (value >> 8);
+        if (pos == 2) return (value & 0xFF);
     }
 
     ASSERT_ERROR(false, false, "Should not get here");
@@ -81,7 +81,7 @@ OptionGenerator::StateMachine::output_t OptionGenerator::StateMachine::generate_
     uint8_t option_delta_root = generator_helper(option_base.number - current_option_number);
     uint8_t option_length_root = generator_helper(option_base.length);
 
-    switch(sub_state())
+    switch (sub_state())
     {
         case CoAP::Parser::OptionSize:
             pos = 0;
@@ -92,9 +92,9 @@ OptionGenerator::StateMachine::output_t OptionGenerator::StateMachine::generate_
             return option_length_root;
 
         case CoAP::Parser::OptionSizeDone:
-            if(option_delta_root >= CoAP::Parser::Extended8Bit)
+            if (option_delta_root >= CoAP::Parser::Extended8Bit)
                 sub_state(CoAP::Parser::OptionDelta);
-            else if(option_length_root >= CoAP::Parser::Extended8Bit)
+            else if (option_length_root >= CoAP::Parser::Extended8Bit)
                 sub_state(CoAP::Parser::OptionDeltaDone);
             else
                 sub_state(CoAP::Parser::OptionDeltaAndLengthDone);
@@ -104,11 +104,11 @@ OptionGenerator::StateMachine::output_t OptionGenerator::StateMachine::generate_
         case CoAP::Parser::OptionDelta:
         {
             uint8_t option_delta_next = generator_helper(option_base.number - current_option_number, ++pos);
-            if(option_delta_root == CoAP::Parser::Extended8Bit)
+            if (option_delta_root == CoAP::Parser::Extended8Bit)
                 sub_state(CoAP::Parser::OptionDeltaDone);
-            else if(option_delta_root == CoAP::Parser::Extended16Bit && pos == 2)
+            else if (option_delta_root == CoAP::Parser::Extended16Bit && pos == 2)
                 sub_state(CoAP::Parser::OptionDeltaDone);
-            else if(pos > 2)
+            else if (pos > 2)
             {
                 ASSERT_ERROR(false, false, "Should not be here");
             }
@@ -117,7 +117,7 @@ OptionGenerator::StateMachine::output_t OptionGenerator::StateMachine::generate_
 
         case CoAP::Parser::OptionDeltaDone:
             current_option_number = option_base.number;
-            if(option_length_root >= CoAP::Parser::Extended8Bit)
+            if (option_length_root >= CoAP::Parser::Extended8Bit)
                 sub_state(CoAP::Parser::OptionLength);
             else
                 sub_state(CoAP::Parser::OptionLengthDone);
@@ -127,11 +127,11 @@ OptionGenerator::StateMachine::output_t OptionGenerator::StateMachine::generate_
         case CoAP::Parser::OptionLength:
         {
             uint8_t option_length_next = generator_helper(option_base.length, ++pos);
-            if(option_length_next == CoAP::Parser::Extended8Bit)
+            if (option_length_next == CoAP::Parser::Extended8Bit)
                 sub_state(CoAP::Parser::OptionLengthDone);
-            else if(option_length_next == CoAP::Parser::Extended16Bit && pos == 2)
+            else if (option_length_next == CoAP::Parser::Extended16Bit && pos == 2)
                 sub_state(CoAP::Parser::OptionLengthDone);
-            else if(pos > 2)
+            else if (pos > 2)
             {
                 ASSERT_ERROR(false, false, "Should not be here");
             }
@@ -145,7 +145,7 @@ OptionGenerator::StateMachine::output_t OptionGenerator::StateMachine::generate_
             sub_state(CoAP::Parser::OptionValue);
 
         case CoAP::Parser::OptionValue:
-            if(pos == option_base.length - 1)
+            if (pos == option_base.length - 1)
                 sub_state(CoAP::Parser::OptionValueDone);
 
             return option_base.value_opaque[pos++];
@@ -160,7 +160,29 @@ OptionGenerator::StateMachine::output_t OptionGenerator::StateMachine::generate_
 
 
 }
+
+void TestResponder::OnHeader(const coap::CoAP::Header header)
+{
+
 }
 
+void TestResponder::OnOption(const coap::CoAP::OptionExperimental& option)
+{
+    typedef coap::CoAP::OptionExperimental::Numbers numbers_t;
+
+    switch (option.get_number())
+    {
+        case numbers_t::UriPath:
+            break;
+    }
+}
+
+void TestResponder::OnPayload(const uint8_t message[], size_t length)
+{
+
+
+}
+
+}
 }
 }
