@@ -27,6 +27,9 @@ public:
     };
 
     uint16_t length;
+    
+    // C++98 requirement
+    OptionValue() : value_uint(0) {}
 };
 
 class OptionString : public OptionValue

@@ -168,11 +168,15 @@ void TestResponder::OnHeader(const coap::CoAP::Header header)
 
 void TestResponder::OnOption(const coap::CoAP::OptionExperimental& option)
 {
-    typedef coap::CoAP::OptionExperimental::Numbers numbers_t;
+#ifdef __CPP11__
+    typedef coap::CoAP::OptionExperimental::Numbers enum_t;
+#else
+    typedef coap::CoAP::OptionExperimental enum_t;
+#endif    
 
     switch (option.get_number())
     {
-        case numbers_t::UriPath:
+        case enum_t::UriPath:
             break;
     }
 }
