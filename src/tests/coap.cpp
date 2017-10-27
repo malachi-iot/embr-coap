@@ -6,8 +6,45 @@
 
 using namespace moducom::coap;
 
+class TestResponder : public CoAP::IResponder
+{
+public:
+    virtual void OnHeader(const CoAP::Header header);
+    virtual void OnOption(const CoAP::OptionExperimental& option);
+    virtual void OnPayload(const uint8_t message[], size_t length);
+};
+
+
+void TestResponder::OnHeader(const CoAP::Header header) 
+{
+}
+
+void TestResponder::OnOption(const CoAP::OptionExperimental& option)
+{
+
+}
+
+void TestResponder::OnPayload(const uint8_t message[], size_t length)
+{
+
+}
+
+
 TEST_CASE("CoAP tests", "[coap]")
 {
+    uint8_t buffer_16bit_delta[] = {
+        0x40, 0x00, 0x00, 0x00, // 4: fully blank header
+        0xE1, // 5: option with delta 1 length 1
+        0x00, // 6: delta ext byte #1
+        0x01, // 7: delta ext byte #2
+        0x03, // 8: value single byte of data
+        0x12, // 9: option with delta 1 length 2
+        0x04, //10: value byte of data #1
+        0x05, //11: value byte of data #2
+        0xFF  //12: denotes a payload presence
+    };
+
+
     SECTION("Basic header construction")
     {
         CoAP::Header header(CoAP::Header::Confirmable);
@@ -81,21 +118,11 @@ TEST_CASE("CoAP tests", "[coap]")
     {
         typedef CoAP::Parser parser_t;
 
-        uint8_t buffer[] = {
-            0x40, 0x00, 0x00, 0x00, // 4: fully blank header
-            0xE1, // 5: option with delta 1 length 1
-            0x00, // 6: delta ext byte #1
-            0x01, // 7: delta ext byte #2
-            0x03, // 8: value single byte of data
-            0x12, // 9: option with delta 1 length 2
-            0x04, //10: value byte of data #1
-            0x05, //11: value byte of data #2
-            0xFF  //12: denotes a payload presence
-        };
+        uint8_t* buffer = buffer_16bit_delta;
 
         parser_t parser;
 
-        for (int i = 0; i < sizeof(buffer); i++)
+        for (int i = 0; i < sizeof(buffer_16bit_delta); i++)
         {
             uint8_t value = buffer[i];
 
@@ -159,6 +186,17 @@ TEST_CASE("CoAP tests", "[coap]")
                     break;
             }
         }
+    }
+    SECTION("Parsing to IResponder")
+    {
+        typedef CoAP::Parser parser_t;
+
+        TestResponder responder;
+
+        CoAP::ParseToIResponder p(&responder);
+
+        p.process(buffer_16bit_delta, sizeof(buffer_16bit_delta));
+
     }
     SECTION("Basic generating single option")
     {

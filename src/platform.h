@@ -33,12 +33,23 @@
 // TODO: Make this generate log warnings or something
 #define ASSERT(expected, actual)
 
+#ifdef _MSC_VER
+#include <iostream>
+// This will generate warnings but the program will keep going
+#define ASSERT_WARN(expected, actual, message)
+// This will generate a warning and issue a 'return' statement immediately
+#define ASSERT_ABORT(expected, actual, message)
+// This will halt the program with a message
+#define ASSERT_ERROR(expected, actual, message) if((expected) != (actual)) \
+{ ::std::cerr << "ERROR: (" << __func__ << ") " << message << ::std::endl; }
+#else
 // This will generate warnings but the program will keep going
 #define ASSERT_WARN(expected, actual, message)
 // This will generate a warning and issue a 'return' statement immediately
 #define ASSERT_ABORT(expected, actual, message)
 // This will halt the program with a message
 #define ASSERT_ERROR(expected, actual, message)
+#endif
 
 
 // NOTE: untested old trick for byte swapping without a temp variable

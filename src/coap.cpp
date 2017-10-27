@@ -217,6 +217,9 @@ bool CoAP::Parser::process_iterate(uint8_t value)
             {
                 // A little clumsy - want OptionsDone to represent
                 // when we naturally run out of bytes - not get an 0xFF
+                // though it stands to reason a state machine can never
+                // count on knowing options done because 0xFF marker may or
+                // may not appear, and if it does, it's ALWAYS a payload
                 _state = Payload;
                 return true;
             }
@@ -253,70 +256,83 @@ void CoAP::ParseToIResponder::process(uint8_t message[], size_t length)
 
         if (state != Parser::Payload)
         {
-            // processing header + options
-            parser.process(message[i]);
+            bool processed;
 
-            switch (parser.state())
+            do
             {
-                case Parser::Header:
-                    break;
+                // processing header + options
+                processed = parser.process_iterate(message[i]);
 
-                case Parser::HeaderDone:
+                switch (parser.state())
                 {
-                    // we *just* finished processing header, so extract it
-                    Header* header = (Header*)parser.get_header();
+                    case Parser::Header:
+                        break;
 
-                    responder->OnHeader(*header);
-                    break;
-                }
-
-                case Parser::Options:
-                    switch (parser.sub_state())
+                    case Parser::HeaderDone:
                     {
-                        case Parser::OptionSize:
-                        case Parser::OptionSizeDone:
-                        case Parser::OptionDelta:
-                            // we see these, but don't care about them
-                            break;
+                        // we *just* finished processing header, so extract it
+                        Header* header = (Header*)parser.get_header();
 
-                        case Parser::OptionDeltaAndLengthDone:
-                            option_length = parser.option_length();
-                            option_value = &message[i + 1];
-
-                        case Parser::OptionDeltaDone:
-                        {
-                            uint16_t option_delta = parser.option_delta();
-                            option_number += option_delta;
-                            break;
-                        }
-
-                        case Parser::OptionLengthDone:
-                            option_length = parser.option_length();
-                            option_value = &message[i + 1];
-                            break;
-
-                        case Parser::OptionValueDone:
-                        {
-                            OptionExperimental option(option_number, option_length, option_value);
-                            responder->OnOption(option);
-                            break;
-                        }
+                        responder->OnHeader(*header);
+                        break;
                     }
-                    break;
 
-                // effectively same as payload ready
-                case Parser::OptionsDone:
-                    // parser.state(Parser::Payload);
-                    // FIX: brute force into Payload immediately so we don't waste time
-                    // processing and ignoring another character
-                    // also it will trigger an assert, since we're not supposed to process OptionsDone in there
-                    break;
+                    case Parser::Options:
+                    {
+                        Parser::SubState sub_state = parser.sub_state();
+                        switch (sub_state)
+                        {
+                            case Parser::OptionSize:
+                            case Parser::OptionSizeDone:
+                            case Parser::OptionDelta:
+                                // we see these, but don't care about them
+                                break;
 
-                case Parser::Payload:
-                    // Should see this once and only once
-                    //ASSERT_ERROR(false, false, "Should not be here");
-                    break;
-            }
+                            case Parser::OptionDeltaAndLengthDone:
+                                option_length = parser.option_length();
+                                // FIX: This is glitchy, because we reach this status *before*
+                                // consuming byte, therefore we're off by one (because OptionSize
+                                // is not consuming byte as it should)
+                                option_value = &message[i + 1];
+
+                            case Parser::OptionDeltaDone:
+                            {
+                                uint16_t option_delta = parser.option_delta();
+                                option_number += option_delta;
+                                break;
+                            }
+
+                            case Parser::OptionLengthDone:
+                                option_length = parser.option_length();
+                                option_value = &message[i];
+                                break;
+
+                            case Parser::OptionValueDone:
+                            {
+                                OptionExperimental option(option_number, option_length, option_value);
+                                responder->OnOption(option);
+                                break;
+                            }
+                        }
+                        break;
+                    }
+
+                    // effectively same as payload ready
+                    case Parser::OptionsDone:
+                        // parser.state(Parser::Payload);
+                        // FIX: brute force into Payload immediately so we don't waste time
+                        // processing and ignoring another character
+                        // also it will trigger an assert, since we're not supposed to process OptionsDone in there
+                        break;
+
+                    case Parser::Payload:
+                        // Should see this once and only once
+
+                        // i + 1 because payload content starts one after this payload marker
+                        ASSERT_ERROR(true, length - (i + 1) > 0, "Payload marker seen but no payload found");
+                        break;
+                }
+            } while (!processed);
         }
         else
         {
