@@ -185,6 +185,8 @@ void TestResponder::OnOption(const coap::CoAP::OptionExperimental& option)
             // RFC7252 Section 6.5 #6
             this->uri += uri + "/";
 
+            // TODO: case sensitivity flag
+
 #ifdef DEBUG
             char temp[128];
             this->uri.populate(temp);
@@ -198,12 +200,31 @@ void TestResponder::OnOption(const coap::CoAP::OptionExperimental& option)
             break;
         }
     }
+
+    // we have enough to assign user_responder, so do so
+    if (user_responder == NULLPTR && option.number > enum_t::UriPath)
+    {
+        user_responder = uri_list[this->uri];
+    }
 }
 
 void TestResponder::OnPayload(const uint8_t message[], size_t length)
 {
+    // FIX: consolidate/clean this code
+    if (user_responder == NULLPTR)
+    {
+        user_responder = uri_list[uri];
 
+        map_t::iterator it = uri_list.find(uri);
 
+        if (it != uri_list.end())
+        {
+            user_responder = it->second;
+        }
+    }
+
+    // because we can't quite find a match yet in uri_list, have to disable this one for now
+    //user_responder->OnPayload(message, length);
 }
 
 }

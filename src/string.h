@@ -244,17 +244,34 @@ public:
         return strcmp(ours, theirs) == 0;
     }
 
+
+    /*
+    // FIX: Wondering if this is needed for our map<> calls
+    bool operator ==(const string& compare_to) const
+    {
+        return *((string*)this) == (string&)compare_to;
+    } */
+
+
     bool operator !=(string& compare_to)
     {
         return !(*this == compare_to);
     }
 
-    // NOT READY YET
     string& operator =(string& copy_from)
     {
         handle.copy_from(copy_from.handle, copy_from.length());
 
         return *this;
+    }
+
+    bool operator <(string& compare_to)
+    {
+        ensure_trailing_null();
+        auto_ptr_t  ours(handle),
+            theirs(compare_to.handle);
+
+        return strcmp(ours, theirs) < 0;
     }
 };
 

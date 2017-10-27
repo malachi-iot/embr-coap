@@ -280,8 +280,10 @@ TEST_CASE("CoAP tests", "[coap]")
     SECTION("Parsing thru experimental TestResponder")
     {
         moducom::coap::experimental::TestResponder responder;
+        TestResponder user_responder;
 
-        responder.add_handle("test", empty_fn);
+        responder.add_handle("test", &user_responder);
+        responder.add_handle("TEMP/POS/", &user_responder);
 
         typedef CoAP::Parser parser_t;
 

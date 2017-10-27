@@ -251,35 +251,52 @@ namespace coap {
 namespace experimental
 {
 
+// Note there 2 scenarios for memory handled from the one calling IResponder:
+//
+// 1. memory only lasts as long as the OnXXX call (streaming)
+// 2. memory only lasts as long as all the OnXXX calls (datagram/buffer based)
+// 
+// we'll want two very similar versions of this responder for those two scenarios
+// note that even if it SEEMS like option #2, we might want to process it like option #1
+// so that we can multithread it and dump/reuse the datagram buffer before we're fully
+// done processing
 class TestResponder : public CoAP::IResponder
 {
+    CoAP::IResponder* user_responder;
+
     std::string uri;
     uint16_t port;
 
-    typedef void(*action_fn)();
     typedef bool(*comp_fn)(std::string s1, std::string s2);
 
     // TODO: Try to get std::string& into here
     static bool str_cmp(std::string s1, std::string s2)
     {
-        bool result = s1 != s2; // TODO: do proper < compare here, add that to our std::string
+        bool result = s1 < s2; // TODO: do proper < compare here, add that to our std::string
         return result;
     }
 
-    ::std::map<std::string, action_fn, comp_fn> uri_list;
+    // Hmm there's no specific equality version... so how do we find stuff?
+    typedef ::std::map<std::string, CoAP::IResponder*, comp_fn> map_t;
+    //typedef ::std::map<std::string, CoAP::IResponder*> map_t;
+
+    // put THIS into a map of ports, otherwise the key must get more complicated and include port
+    map_t uri_list;
 
 public:
     virtual void OnHeader(const CoAP::Header header) OVERRIDE;
     virtual void OnOption(const CoAP::OptionExperimental& option) OVERRIDE;
     virtual void OnPayload(const uint8_t message[], size_t length) OVERRIDE;
 
-    TestResponder() : uri_list(str_cmp) {}
+    TestResponder() : 
+        user_responder(NULLPTR),
+        uri_list(str_cmp) 
+    {}
 
-    void add_handle(const std::string& uri, action_fn handler)
+    // Doesn't handle port yet
+    void add_handle(const std::string& uri, CoAP::IResponder* user_responder)
     {
-        uri_list[uri] = handler;
-
-        action_fn result = uri_list["test"];
+        uri_list[uri] = user_responder;
     }
 };
 
