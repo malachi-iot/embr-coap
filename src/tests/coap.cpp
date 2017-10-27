@@ -6,6 +6,22 @@
 
 using namespace moducom::coap;
 
+static uint8_t buffer_16bit_delta[] = {
+    0x40, 0x00, 0x00, 0x00, // 4: fully blank header
+    0xE1, // 5: option with delta 1 length 1
+    0x00, // 6: delta ext byte #1
+    0x01, // 7: delta ext byte #2
+    0x03, // 8: value single byte of data
+    0x12, // 9: option with delta 1 length 2
+    0x04, //10: value byte of data #1
+    0x05, //11: value byte of data #2
+    0xFF, //12: denotes a payload presence
+    // payload itself
+    0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16
+};
+
+
+
 class TestResponder : public CoAP::IResponder
 {
 public:
@@ -21,30 +37,30 @@ void TestResponder::OnHeader(const CoAP::Header header)
 
 void TestResponder::OnOption(const CoAP::OptionExperimental& option)
 {
+    switch (option.number)
+    {
+        case 270:
+            REQUIRE(option.length == 1);
+            break;
 
+        case 271:
+            REQUIRE(option.length == 2);
+            break;
+
+        default:
+            FAIL("Unexpected Option Number: " << option.number);
+    }
 }
 
 void TestResponder::OnPayload(const uint8_t message[], size_t length)
 {
-
+    REQUIRE(length == 7);
+    REQUIRE(memcmp(&buffer_16bit_delta[12], message, length) == 0);
 }
 
 
 TEST_CASE("CoAP tests", "[coap]")
 {
-    uint8_t buffer_16bit_delta[] = {
-        0x40, 0x00, 0x00, 0x00, // 4: fully blank header
-        0xE1, // 5: option with delta 1 length 1
-        0x00, // 6: delta ext byte #1
-        0x01, // 7: delta ext byte #2
-        0x03, // 8: value single byte of data
-        0x12, // 9: option with delta 1 length 2
-        0x04, //10: value byte of data #1
-        0x05, //11: value byte of data #2
-        0xFF  //12: denotes a payload presence
-    };
-
-
     SECTION("Basic header construction")
     {
         CoAP::Header header(CoAP::Header::Confirmable);
