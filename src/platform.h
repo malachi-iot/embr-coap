@@ -41,15 +41,22 @@
 #define ASSERT_ERROR(expected, actual, message)
 
 
+// NOTE: untested old trick for byte swapping without a temp variable
+#define COAP_SWAP_2_BYTES(val0, val1) { val0 ^= val1; val1 ^= val0; val0 ^= val1; }
+
 #ifdef COAP_HOST_BIG_ENDIAN
 #define COAP_HTONS(int_short) int_short
 #define COAP_NTOHS(int_short) int_short
+#define COAP_NTOH_2_BYTES(val0, val1)    {}
 // network order bytes
-#define COAP_UINT16_FROM_NBYTES(val0, val1) (((uint16_t)val0) << 8 | val1)
+// Never mind, doing bit shifting *this* way always produces the desired
+// result regardless of endianness
+//#define COAP_UINT16_FROM_NBYTES(val0, val1) (((uint16_t)val0) << 8 | val1)
 #elif defined(COAP_HOST_LITTLE_ENDIAN)
 #define COAP_HTONS(int_short) SWAP_16(int_short)
 #define COAP_NTOHS(int_short) SWAP_16(int_short)
-#define COAP_UINT16_FROM_NBYTES(val0, val1) (((uint16_t)val1) << 8 | val0)
+//#define COAP_UINT16_FROM_NBYTES(val0, val1) (((uint16_t)val1) << 8 | val0)
+#define COAP_NTOH_2_BYTES(val0, val1)    COAP_SWAP_2_BYTES(val0, val1)
 #else
 #error "Unknown processor endianness"
 #endif

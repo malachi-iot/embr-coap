@@ -215,7 +215,13 @@ public:
             {
                 // FIX: BEWARE of endian issue!!
                 //uint16_t _extended = *((uint16_t*)extended);
-                uint16_t _extended = COAP_UINT16_FROM_NBYTES(extended[0], extended[1]);
+                //uint16_t _extended = COAP_UINT16_FROM_NBYTES(extended[0], extended[1]);
+
+                // Always coming in from network byte order (big endian)
+                uint16_t _extended = extended[0];
+                
+                _extended <<= 8;
+                _extended |= extended[1];
 
                 //(*index_bump)+=2;
 

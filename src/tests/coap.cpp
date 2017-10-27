@@ -96,7 +96,9 @@ TEST_CASE("CoAP tests", "[coap]")
 
         for (int i = 0; i < sizeof(buffer); i++)
         {
-            parser.process(buffer[i]);
+            uint8_t value = buffer[i];
+
+            parser.process(value);
 
             parser_t::State state = parser.state();
             parser_t::SubState sub_state = parser.sub_state();
@@ -126,34 +128,31 @@ TEST_CASE("CoAP tests", "[coap]")
                 case 7:
                     REQUIRE(state == parser_t::Options);
                     REQUIRE(sub_state == parser_t::OptionDeltaDone);
-                    REQUIRE(option_delta == 269);
+                    REQUIRE(option_delta == 270);
                     break;
 
                 case 8:
-                    REQUIRE(state == parser_t::Options);
-                    REQUIRE(sub_state == parser_t::OptionLengthDone);
-                    break;
-
-                case 9:
+                    // Because option length was handled during OptionSize (not extended)
+                    // then we jump right to OptionValue
                     // Because it's only one byte, we don't get to see OptionValue since it's 1:1 with
                     // OptionLengthDone/OptionDeltaAndLengthDone
                     REQUIRE(state == parser_t::Options);
                     REQUIRE(sub_state == parser_t::OptionValueDone);
                     break;
 
-                case 10:
+                case 9:
                     REQUIRE(state == parser_t::Options);
                     REQUIRE(sub_state == parser_t::OptionDeltaAndLengthDone);
                     REQUIRE(option_delta == 1);
                     REQUIRE(option_length == 2);
                     break;
 
-                case 11:
+                case 10:
                     REQUIRE(state == parser_t::Options);
                     REQUIRE(sub_state == parser_t::OptionValue);
                     break;
 
-                case 12:
+                case 11:
                     REQUIRE(state == parser_t::Options);
                     REQUIRE(sub_state == parser_t::OptionValueDone);
                     break;
