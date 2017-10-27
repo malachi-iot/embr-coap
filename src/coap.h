@@ -335,7 +335,7 @@ public:
 
         enum SubState
         {
-            OptionSize, // header portion
+            OptionSize, // header portion.  This serves also as OptionSizeBegin, since OptionSize is only one byte ever
             OptionSizeDone, // done processing size-header portion
             OptionDelta, // processing delta portion (after header, if applicable)
             OptionDeltaDone, // done with delta portion, ready to move on to Length

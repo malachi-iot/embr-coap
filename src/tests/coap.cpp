@@ -89,7 +89,8 @@ TEST_CASE("CoAP tests", "[coap]")
             0x03, // 8: value single byte of data
             0x12, // 9: option with delta 1 length 2
             0x04, //10: value byte of data #1
-            0x05 // 11: value byte of data #2
+            0x05, //11: value byte of data #2
+            0xFF  //12: denotes a payload presence
         };
 
         parser_t parser;
@@ -116,8 +117,8 @@ TEST_CASE("CoAP tests", "[coap]")
                     REQUIRE(state == parser_t::Options);
                     // TODO: Fix clumsiness of state inspection here with "non processed" mode
                     // where process returns false
-                    REQUIRE(sub_state == parser_t::OptionSizeDone);
-                    REQUIRE(parser.option_length() == 1);
+                    REQUIRE(sub_state == parser_t::OptionDelta);
+                    REQUIRE(option_length == 1);
                     break;
 
                 case 6:

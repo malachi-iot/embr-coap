@@ -74,38 +74,52 @@ bool CoAP::Parser::processOption(uint8_t value)
         case OptionValueDone:
             sub_state(OptionSize);
             return false;
-            //pos = 0;
 
         case OptionSize:
         {
             buffer[0] = value;
             pos = 1;
 
-            // FIX: have to reassign this, because raw_delta & friends
-            // get their values from buffer[0]
-            raw_delta = this->raw_delta();
-            raw_length = this->raw_length();
-            bool delta_extended = raw_delta >= Extended8Bit;
-            bool length_extended = raw_length >= Extended8Bit;
+            sub_state(OptionSizeDone);
 
-            if (!delta_extended && !length_extended)
-                // Done with length AND delta processing
-                sub_state(OptionDeltaAndLengthDone);
-            else if (length_extended)
-            {
-                // then it's only length extended, so move there
-                sub_state(OptionDeltaDone);
-            }
-            else // only other possibility is only delta extended
-            {
-                sub_state(OptionSizeDone);
-            }
-            break;
+            // FIX: normally we'd return true here since we have "processed" the value
+            // but we want to reveal whether we want to report
+            // OptionDelta, OptionDeltaDone or OptionDeltaAndLengthDone
+            // once we stabalize the "iterative" state machine behavior more hopefully this
+            // will shake out and we can revert this back to false
+            return false;
         }
 
         case OptionSizeDone:
-            sub_state(OptionDelta);
-            return false;
+        {
+            bool delta_extended = raw_delta >= Extended8Bit;
+            bool length_extended = raw_length >= Extended8Bit;
+
+            if (delta_extended)
+            {
+                // extended delta and MAYBE extended length
+                sub_state(OptionDelta);
+            }
+            else if (length_extended)
+            {
+                // no extended delta, but yes extended length
+                // a bit of a formality, kick off OptionDeltaDone just
+                // so watchers know it's OK to pull a Delta out
+                // this adds overhead also during OptionDeltaDone
+                // to check again on length_extended
+                sub_state(OptionDeltaDone);
+            }
+            else
+                // no extended delta or length
+                // NOTE: this state might go away if we force everyone to participate in "iterative"
+                // state machine behavior (since then discrete delta/length states will *always* be
+                // visible)
+                sub_state(OptionDeltaAndLengthDone);
+
+            // FIX: eventually this should return a *false* as reflected in 
+            // OptionSize comments
+            return true;
+        }
 
         case OptionDelta:
             buffer[pos] = value;
@@ -114,9 +128,6 @@ bool CoAP::Parser::processOption(uint8_t value)
             if (!processOptionSize(raw_delta))
             {
                 sub_state(OptionDeltaDone);
-
-                // FIX: would do this with an OptionLengthStart event if we had one
-                pos = 1; // re-use buffer for length processing
             }
             else
                 pos++;
@@ -134,9 +145,14 @@ bool CoAP::Parser::processOption(uint8_t value)
                 sub_state(OptionLengthDone);
             }
             else
+            {
                 // otherwise, extended length, so we have to gather up length before it can
                 // be acted on
                 sub_state(OptionLength);
+
+                // FIX: would do this with an OptionLengthStart event if we had one
+                pos = 1; // re-use buffer for length processing
+            }
 
             return false;
         }
@@ -156,6 +172,7 @@ bool CoAP::Parser::processOption(uint8_t value)
 
         case OptionDeltaAndLengthDone:
         case OptionLengthDone:
+            // NOTE: Be careful, option_size occupies same space as buffer[4]
             option_size = option_length();
             sub_state(OptionValue);
             return false;
@@ -167,8 +184,6 @@ bool CoAP::Parser::processOption(uint8_t value)
             {
                 // NOTE: slight redundancy here in returning false also, perhaps optimize out
                 sub_state(OptionValueDone);
-                // FIX: a little hacky, have to do this here so that our buffer[pos++] doesn't wig out
-                pos = 0;
             }
             return true;
     }
@@ -191,14 +206,14 @@ bool CoAP::Parser::process_iterate(uint8_t value)
             // Set up for Options start
             _state = Options;
             sub_state(OptionSize);
-            pos = 0;
             // Fall thru to options, as most "Done"s should do
         }
 
         case Options:
             // remember, we could be processing multiple options here
-            if ((sub_state() == OptionValueDone || sub_state() == OptionSize)
-                && value == 0xFF)
+            // or, we could encounter 0 options with only
+            // a payload
+            if (sub_state() == OptionSize && value == 0xFF)
             {
                 // A little clumsy - want OptionsDone to represent
                 // when we naturally run out of bytes - not get an 0xFF
@@ -207,8 +222,6 @@ bool CoAP::Parser::process_iterate(uint8_t value)
             }
             else
                 return processOption(value);
-
-            break;
 
         // all options are done being processed, and we actually shouldn't get here
         // since this is a header+option handling area only
