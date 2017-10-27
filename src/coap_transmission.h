@@ -254,6 +254,7 @@ namespace experimental
 class TestResponder : public CoAP::IResponder
 {
     std::string uri;
+    uint16_t port;
 
     typedef void(*action_fn)();
     typedef bool(*comp_fn)(std::string s1, std::string s2);

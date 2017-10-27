@@ -178,9 +178,23 @@ void TestResponder::OnOption(const coap::CoAP::OptionExperimental& option)
     {
         case enum_t::UriPath:
         {
+            // TODO: make it switchable whether we allocate more memory or keep pointing
+            // to the value buffer given to us
             std::string uri((const char*)option.value, option.length);
 
-            uri_list[uri]();
+            // RFC7252 Section 6.5 #6
+            this->uri += uri + "/";
+
+#ifdef DEBUG
+            char temp[128];
+            this->uri.populate(temp);
+#endif
+            break;
+        }
+
+        case enum_t::UriPort:
+        {
+            port = option.value_uint;
             break;
         }
     }

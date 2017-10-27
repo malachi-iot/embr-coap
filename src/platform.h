@@ -1,5 +1,7 @@
 #pragma once
 
+#define DEBUG
+
 // TODO: find "most" standardized version of this
 #ifdef __CPP11__
 #define OVERRIDE override

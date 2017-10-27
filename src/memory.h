@@ -46,7 +46,7 @@ public:
     }
 
     // TODO: might manage size differently, but for now we have to be explicit
-    ///
+    /// Copies from one handle to a new handle
     /// \param handle
     /// \param size size of allocation
     /// \param size_copy size of copy must be less than size
@@ -105,6 +105,18 @@ public:
         void resize(size_t new_size)
         {
             handle = memory.realloc(handle, new_size);
+        }
+
+        void copy_from(handle_t handle, size_t size)
+        {
+            memory.free(handle);
+            handle = memory.copy(handle, size);
+        }
+
+
+        void copy_from(SmartHandle& sh, size_t size)
+        {
+            copy_from(sh.handle, size);
         }
 
         SmartHandle append_into_new_experimental(const void* append_data,

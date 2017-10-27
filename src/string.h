@@ -62,7 +62,9 @@ public:
 
     // FIX: default constructor allocates 10 bytes, but make this configurable
     string(memory_t& pool = memory_t::default_pool) :
-            handle(pool.allocate(10), pool) {}
+            // FIX: we are left with "undiscoverable" bytes which may or may not 
+            // cause inefficiencies for reallocation (FEATURE_STRING_SIZE_FIELD sorta trying to address that)
+            handle(pool.allocate("", 10, 1), pool) {}
 
     // TODO: Do also && move operation for C++11
     string(const string& copy_from) :
@@ -82,8 +84,14 @@ public:
 #ifdef FEATURE_STRING_SIZE_FIELD
         size(length),
 #endif
-        handle(pool.allocate(src, length), pool)
-        {}
+        handle(pool.allocate(src, length + 1), pool)
+    {
+        char* data = lock();
+
+        data[length] = 0;
+
+        unlock();
+    }
 
     // experimental
     template <class T>
@@ -164,6 +172,14 @@ public:
         return *this;
     }
 
+    string& operator += (string& append_from)
+    {
+        const char* _append_from = append_from.lock();
+        *this += _append_from;
+        append_from.unlock();
+        return *this;
+    }
+
     inline string operator +(const char *src)
     {
         size_t src_len = strlen(src);
@@ -236,6 +252,8 @@ public:
     // NOT READY YET
     string& operator =(string& copy_from)
     {
+        handle.copy_from(copy_from.handle, copy_from.length());
+
         return *this;
     }
 };
