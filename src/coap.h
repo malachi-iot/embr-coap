@@ -282,23 +282,23 @@ public:
 
         Numbers get_number() const { return (Numbers)number; }
 
+        typedef ValueFormats vf_t;
+        typedef Numbers number_t;
+
         ValueFormats get_format() const 
         {
-            typedef ValueFormats vf_t;
-            typedef Numbers number_t;
-
             switch (get_number())
             {
-                case number_t::IfMatch:         return vf_t::Opaque;
-                case number_t::UriHost:         return vf_t::String;
-                case number_t::ETag:            return vf_t::Opaque;
-                case number_t::IfNoneMatch:     return vf_t::Empty;
-                case number_t::UriPort:         return vf_t::UInt;
-                case number_t::LocationPath:    return vf_t::String;
-                case number_t::UriPath:         return vf_t::String;
-                case number_t::ContentFormat:   return vf_t::UInt;
+                case IfMatch:         return Opaque;
+                case UriHost:         return String;
+                case ETag:            return Opaque;
+                case IfNoneMatch:     return Empty;
+                case UriPort:         return UInt;
+                case LocationPath:    return String;
+                case UriPath:         return String;
+                case ContentFormat:   return UInt;
                 default:
-                    return vf_t::Unknown;
+                    return Unknown;
             }
         }
 
@@ -311,8 +311,10 @@ public:
         OptionExperimental(uint16_t number, uint16_t length, const uint8_t* value) :
             number(number),
             length(length),
-            value(value)
-        {}
+            value_uint(0)
+        {
+        	this->value = value;
+        }
 
         OptionExperimental(uint16_t number, uint16_t length, const uint16_t value_uint) :
                 number(number),
