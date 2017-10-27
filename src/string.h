@@ -78,6 +78,13 @@ public:
 
     }
 
+    string(const char* src, size_t length, memory_t& pool = memory_t::default_pool) :
+#ifdef FEATURE_STRING_SIZE_FIELD
+        size(length),
+#endif
+        handle(pool.allocate(src, length), pool)
+        {}
+
     // experimental
     template <class T>
     class auto_locking_ptr
@@ -219,6 +226,17 @@ public:
                     theirs(compare_to.handle);
 
         return strcmp(ours, theirs) == 0;
+    }
+
+    bool operator !=(string& compare_to)
+    {
+        return !(*this == compare_to);
+    }
+
+    // NOT READY YET
+    string& operator =(string& copy_from)
+    {
+        return *this;
     }
 };
 

@@ -21,6 +21,11 @@ static uint8_t buffer_16bit_delta[] = {
 };
 
 
+static void empty_fn()
+{
+
+}
+
 
 class TestResponder : public CoAP::IResponder
 {
@@ -257,5 +262,17 @@ TEST_CASE("CoAP tests", "[coap]")
         REQUIRE(buffer[2] == ((10000 - 269) & 0xFF));
         REQUIRE(buffer[3] == 'a');
         REQUIRE(counter == 4);
+    }
+    SECTION("Parsing thru experimental TestResponder")
+    {
+        moducom::coap::experimental::TestResponder responder;
+
+        responder.add_handle("test", empty_fn);
+
+        typedef CoAP::Parser parser_t;
+
+        CoAP::ParseToIResponder p(&responder);
+
+        p.process(buffer_16bit_delta, sizeof(buffer_16bit_delta));
     }
 }

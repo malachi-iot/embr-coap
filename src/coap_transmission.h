@@ -9,6 +9,10 @@
 #include "coap.h"
 #include "string.h"
 
+// interim: eventually provide our own memory pool version of map 
+#include <map>
+
+
 namespace moducom {
 namespace coap {
 
@@ -247,12 +251,35 @@ namespace coap {
 namespace experimental
 {
 
-class TestResponder : coap::CoAP::IResponder
+class TestResponder : public CoAP::IResponder
 {
+    std::string uri;
+
+    typedef void(*action_fn)();
+    typedef bool(*comp_fn)(std::string s1, std::string s2);
+
+    // TODO: Try to get std::string& into here
+    static bool str_cmp(std::string s1, std::string s2)
+    {
+        bool result = s1 != s2; // TODO: do proper < compare here, add that to our std::string
+        return result;
+    }
+
+    ::std::map<std::string, action_fn, comp_fn> uri_list;
+
 public:
-    virtual void OnHeader(const coap::CoAP::Header header) OVERRIDE;
-    virtual void OnOption(const coap::CoAP::OptionExperimental& option) OVERRIDE;
+    virtual void OnHeader(const CoAP::Header header) OVERRIDE;
+    virtual void OnOption(const CoAP::OptionExperimental& option) OVERRIDE;
     virtual void OnPayload(const uint8_t message[], size_t length) OVERRIDE;
+
+    TestResponder() : uri_list(str_cmp) {}
+
+    void add_handle(const std::string& uri, action_fn handler)
+    {
+        uri_list[uri] = handler;
+
+        action_fn result = uri_list["test"];
+    }
 };
 
 }

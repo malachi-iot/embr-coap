@@ -177,7 +177,12 @@ void TestResponder::OnOption(const coap::CoAP::OptionExperimental& option)
     switch (option.get_number())
     {
         case enum_t::UriPath:
+        {
+            std::string uri((const char*)option.value, option.length);
+
+            uri_list[uri]();
             break;
+        }
     }
 }
 
