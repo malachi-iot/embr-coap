@@ -337,6 +337,13 @@ class TestOutgoingMessageHandler;
 // note that even if it SEEMS like option #2, we might want to process it like option #1
 // so that we can multithread it and dump/reuse the datagram buffer before we're fully
 // done processing
+//
+// PERHAPS a #3 option would be:
+// 3. memory exists longer and we are in control/notified of its lifecycle
+//
+// This option might be interesting for say copying a UDP datagram to allow scavenging
+// of the original UDP pool, but then let us process at our leisure without (potentially)
+// additional allocations (we could treat it like #2 but have some benefit of #1)
 class TestResponder : public CoAP::IResponder
 {
     CoAP::IResponder* user_responder;
