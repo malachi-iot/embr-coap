@@ -408,8 +408,8 @@ public:
     // FIX: FOR DEBUG ONLY!!
     const uint8_t* get_buffer() const { return buffer; }
 
-    TestOutgoingMessageHandler() :
-            token(NULLPTR),
+    TestOutgoingMessageHandler(const Token* token = NULLPTR) :
+            token(token),
             option_generator(0),
             option_generator_statemachine(option_generator)
     {}
@@ -436,6 +436,13 @@ public:
 class OutgoingResponseHandler : public TestOutgoingMessageHandler
 {
 public:
+    // OutgoingResponses "always" have a token, even if it's a 0 length
+    // Bizzare verbiage I know, but that's the notion from RFC7252
+    // In our case, token also carries context with it, so it's
+    // useful to have even in all cases
+    OutgoingResponseHandler(const Token* token) :
+            TestOutgoingMessageHandler(token) {}
+
     // higher level function which
     //  does header-payload processing
     //  knows it's a response, so specifically does NOT construct things as a request

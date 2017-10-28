@@ -20,7 +20,11 @@ TEST_CASE("CoAP message construction tests", "[coap-send]")
             'H', 'e', 'l', 'l', 'o'
         };
 
-        OutgoingResponseHandler out_handler;
+        Token token;
+
+        token.length = 0;
+
+        OutgoingResponseHandler out_handler(&token);
 
         out_handler.send(
                 CoAP::Header::ResponseCode::Changed,
