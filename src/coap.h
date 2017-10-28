@@ -150,6 +150,7 @@ public:
         union
         {
             uint8_t bytes[4];
+            // beware raw exposes endian issues, so only use this for bulk assignment/copy
             uint32_t raw;
         };
 
@@ -163,6 +164,12 @@ public:
         inline uint16_t mask() const
         {
             return ((raw & mask_value) >> pos);
+        }
+
+        template <uint8_t pos, uint32_t mask_value>
+        inline uint8_t mask_fixed(uint8_t byte_pos) const
+        {
+            return ((bytes[byte_pos] & mask_value) >> pos);
         }
 
         uint8_t code() const
@@ -186,7 +193,11 @@ public:
 
         TypeEnum type() const 
         {
+#ifdef BROKEN
             return (TypeEnum) mask<COAP_HEADER_TYPE_POS, COAP_HEADER_TYPE_MASK>();
+#else
+            return (TypeEnum) mask_fixed<COAP_HEADER_TYPE_POS, COAP_HEADER_TYPE_MASK>(1);
+#endif
         }
 
         template <uint8_t pos>

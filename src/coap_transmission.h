@@ -388,6 +388,8 @@ class TestOutgoingMessageHandler : public CoAP::IOutgoingMessageHandler
     layer2::OptionGenerator option_generator;
     layer2::OptionGenerator::StateMachine option_generator_statemachine;
 
+protected:
+
     // experimental - start is like a reset/start fresh CoAP output stream
     void write_start() { pos = 0; }
     // because we don't do it state machine style yet, this is a blocking component
@@ -403,7 +405,11 @@ class TestOutgoingMessageHandler : public CoAP::IOutgoingMessageHandler
     void write_end() {}
 
 public:
+    // FIX: FOR DEBUG ONLY!!
+    const uint8_t* get_buffer() const { return buffer; }
+
     TestOutgoingMessageHandler() :
+            token(NULLPTR),
             option_generator(0),
             option_generator_statemachine(option_generator)
     {}
@@ -425,14 +431,26 @@ public:
 
     // writes an empty ack message (for non-piggyback/no response scenarios)
     void send_ack();
+};
 
+class OutgoingResponseHandler : public TestOutgoingMessageHandler
+{
+public:
     // higher level function which
     //  does header-payload processing
     //  knows it's a response, so specifically does NOT construct things as a request
-    void send_response(CoAP::Header::ResponseCode::Codes response_code, const uint8_t* payload, size_t length, bool piggyback = true);
+    void send(CoAP::Header::ResponseCode::Codes response_code, const uint8_t* payload, size_t length, bool piggyback = true);
 
-    void send_request(CoAP::Header::RequestMethodEnum request_method, const uint8_t* payload, size_t length);
 };
+
+
+class OutgoingRequestHandler : public TestOutgoingMessageHandler
+{
+public:
+    void send(CoAP::Header::RequestMethodEnum request_method, const uint8_t* payload, size_t length);
+
+};
+
 
 }
 }

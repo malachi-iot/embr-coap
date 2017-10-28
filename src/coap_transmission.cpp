@@ -373,7 +373,7 @@ void TestOutgoingMessageHandler::send_ack()
     write_end();
 }
 
-void TestOutgoingMessageHandler::send_request(CoAP::Header::RequestMethodEnum request_method,
+void OutgoingRequestHandler::send(CoAP::Header::RequestMethodEnum request_method,
                                               const uint8_t *payload,
                                               size_t length)
 {
@@ -397,7 +397,7 @@ void TestOutgoingMessageHandler::send_request(CoAP::Header::RequestMethodEnum re
 // to tend to "long running" acqusition of response data, and therefore
 // an all-in-one sequential send_response is not suitable to send
 // two messages at once
-void TestOutgoingMessageHandler::send_response(CoAP::Header::ResponseCode::Codes response_code,
+void OutgoingResponseHandler::send(CoAP::Header::ResponseCode::Codes response_code,
                                                const uint8_t *payload, size_t length, bool piggyback)
 {
 #ifdef __CPP11__

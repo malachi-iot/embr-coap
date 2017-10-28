@@ -27,11 +27,17 @@ TEST_CASE("CoAP low level tests", "[coap-lowlevel]")
     {
         CoAP::Header header(CoAP::Header::Confirmable);
 
-        REQUIRE(header.raw == 0x40000000);
+        REQUIRE(header.bytes[0] == 0x40);
+        REQUIRE(header.bytes[1] == 0);
+        REQUIRE(header.bytes[2] == 0);
+        REQUIRE(header.bytes[3] == 0);
 
         header.type(CoAP::Header::NonConfirmable);
 
-        REQUIRE(header.raw == 0x50000000);
+        REQUIRE(header.bytes[0] == 0x50);
+        REQUIRE(header.bytes[1] == 0);
+        REQUIRE(header.bytes[2] == 0);
+        REQUIRE(header.bytes[3] == 0);
     }
     SECTION("Basic parsing")
     {
