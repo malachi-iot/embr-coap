@@ -203,10 +203,45 @@ bool CoAP::Parser::process_iterate(uint8_t value)
 
         case HeaderDone:
         {
+            // HeaderDone clearly we have header available
+            CoAP::Header* header = (CoAP::Header*) this->header();
+
+            if(header->token_length() > 0)
+            {
+                state(Token);
+                // we're going to be tricky and store this
+                // in a union with sub_state, so that
+                // we don't allocate a new variable space
+                _token_length = header->token_length();
+            }
+            else
+            {
+
+                // Set up for Options start
+                _state = Options;
+                sub_state(OptionSize);
+            }
+
+            return false;
+            // Fall thru to options, as most "Done"s should do
+        }
+
+        case Token:
+        {
+            buffer[pos++] = value;
+            if(pos == token_length())
+                state(TokenDone);
+
+            return true;
+        }
+
+        case TokenDone:
+        {
             // Set up for Options start
             _state = Options;
             sub_state(OptionSize);
-            // Fall thru to options, as most "Done"s should do
+
+            return false;
         }
 
         case Options:
@@ -271,9 +306,15 @@ void CoAP::ParseToIResponder::process(uint8_t message[], size_t length)
                     case Parser::HeaderDone:
                     {
                         // we *just* finished processing header, so extract it
-                        Header* header = (Header*)parser.get_header();
+                        Header* header = (Header*) parser.header();
 
                         responder->OnHeader(*header);
+                        break;
+                    }
+
+                    case Parser::TokenDone:
+                    {
+                        responder->OnToken(parser.token(), parser.token_length());
                         break;
                     }
 

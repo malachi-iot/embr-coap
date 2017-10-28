@@ -45,6 +45,7 @@ class TestResponder : public CoAP::IResponder
 {
 public:
     virtual void OnHeader(const CoAP::Header header);
+    virtual void OnToken(const uint8_t message[], size_t length) OVERRIDE;
     virtual void OnOption(const CoAP::OptionExperimental& option);
     virtual void OnPayload(const uint8_t message[], size_t length);
 };
@@ -52,6 +53,12 @@ public:
 
 void TestResponder::OnHeader(const CoAP::Header header) 
 {
+}
+
+
+void TestResponder::OnToken(const uint8_t *message, size_t length)
+{
+
 }
 
 void TestResponder::OnOption(const CoAP::OptionExperimental& option)

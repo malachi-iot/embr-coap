@@ -241,6 +241,11 @@ void TestResponder::OnOptionRequest(const coap::CoAP::OptionExperimental& option
 }
 
 
+void TestResponder::OnToken(const uint8_t *message, size_t length)
+{
+
+}
+
 
 void TestResponder::OnOptionResponse(const CoAP::OptionExperimental &option)
 {

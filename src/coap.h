@@ -330,6 +330,7 @@ public:
         //! Responds to a header found in a CoAP message
         //! \param header
         virtual void OnHeader(const Header header) = 0;
+        virtual void OnToken(const uint8_t message[], size_t length) = 0;
         virtual void OnOption(const OptionExperimental& option) = 0;
         virtual void OnPayload(const uint8_t message[], size_t length) = 0;
     };
@@ -354,6 +355,8 @@ public:
         {
             Header,
             HeaderDone,
+            Token,
+            TokenDone,
             Options,
             OptionsDone, // all options are done being processed
             Payload // Note that Payload is *NOT* handled by this class, since its length is defined by transport layer
@@ -380,8 +383,13 @@ public:
         // Which part of CoAP message we are processing
         State _state;
 
-        // Which part of the option we are processing
-        SubState _sub_state;
+        union
+        {
+            // Which part of the option we are processing
+            SubState _sub_state;
+            // how long token is that we are processing
+            uint8_t _token_length;
+        };
 
         void sub_state(SubState sub_state) { _sub_state = sub_state; }
         void state(State state) { _state = state; }
@@ -391,7 +399,11 @@ public:
         {
             // By the time we use option size, we've extracted it from buffer and no longer use buffer
             uint16_t option_size;
-            uint8_t buffer[4];
+            // buffer needs only be:
+            //  3 for option processing
+            //  4 for header processing
+            //  8 for token processing
+            uint8_t buffer[8];
         };
         // position in buffer we are presently at
         uint8_t pos;
@@ -437,7 +449,11 @@ public:
 
         State state() const { return _state; }
         SubState sub_state() const { return _sub_state;  }
-        uint8_t* get_header() { return &buffer[0]; }
+        uint8_t* header() { return &buffer[0]; }
+
+        // for use only during token processing
+        uint8_t token_length() const { return _token_length; }
+        const uint8_t* token() const { return buffer; }
 
         uint16_t option_delta() const
         {
