@@ -141,7 +141,7 @@ TEST_CASE("CoAP tests", "[coap]")
         TestResponder user_responder;
 
         responder.add_handle("test", &user_responder);
-        responder.add_handle("TEMP/POS/", &user_responder);
+        responder.add_handle("TEST/POS/", &user_responder);
 
         typedef CoAP::Parser parser_t;
 

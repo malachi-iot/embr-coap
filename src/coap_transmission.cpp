@@ -194,6 +194,9 @@ void TestResponder::OnOption(const coap::CoAP::OptionExperimental& option)
             break;
         }
 
+        case enum_t::ContentFormat:
+            break;
+
         case enum_t::UriPort:
         {
             port = option.value_uint;
@@ -202,9 +205,15 @@ void TestResponder::OnOption(const coap::CoAP::OptionExperimental& option)
     }
 
     // we have enough to assign user_responder, so do so
+    // FIX: be sure to pay attention to port as well
     if (user_responder == NULLPTR && option.number > enum_t::UriPath)
     {
         user_responder = uri_list[this->uri];
+    }
+
+    if (user_responder)
+    {
+        user_responder->OnOption(option);
     }
 }
 
@@ -215,16 +224,10 @@ void TestResponder::OnPayload(const uint8_t message[], size_t length)
     {
         user_responder = uri_list[uri];
 
-        map_t::iterator it = uri_list.find(uri);
-
-        if (it != uri_list.end())
-        {
-            user_responder = it->second;
-        }
+        if(user_responder == NULLPTR) return;
     }
 
-    // because we can't quite find a match yet in uri_list, have to disable this one for now
-    //user_responder->OnPayload(message, length);
+    user_responder->OnPayload(message, length);
 }
 
 }

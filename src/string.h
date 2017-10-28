@@ -259,7 +259,7 @@ public:
         return strcmp(str, src) == 0;
     }
 
-    bool operator ==(string& compare_to) FEATURE_STRING_CONST
+    bool operator ==(FEATURE_STRING_CONST string& compare_to) FEATURE_STRING_CONST
     {
         ensure_trailing_null();
         compare_to.ensure_trailing_null();
@@ -279,7 +279,7 @@ public:
     } */
 
 
-    bool operator !=(string& compare_to) FEATURE_STRING_CONST
+    bool operator !=(FEATURE_STRING_CONST string& compare_to) FEATURE_STRING_CONST
     {
         return !(*this == compare_to);
     }
@@ -291,13 +291,16 @@ public:
         return *this;
     }
 
-    bool operator <(string& compare_to) FEATURE_STRING_CONST
+    bool operator <(FEATURE_STRING_CONST string& compare_to) FEATURE_STRING_CONST
     {
         ensure_trailing_null();
         auto_ptr_t  ours(handle),
             theirs(compare_to.handle);
 
-        return strcmp(ours, theirs) < 0;
+        const char* _ours = ours;
+        const char* _theirs = theirs;
+
+        return strcmp(_ours, _theirs) < 0;
     }
 };
 

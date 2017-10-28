@@ -277,8 +277,8 @@ class TestResponder : public CoAP::IResponder
     }
 
     // Hmm there's no specific equality version... so how do we find stuff?
-    typedef ::std::map<std::string, CoAP::IResponder*, comp_fn> map_t;
-    //typedef ::std::map<std::string, CoAP::IResponder*> map_t;
+    //typedef ::std::map<std::string, CoAP::IResponder*, comp_fn> map_t;
+    typedef ::std::map<std::string, CoAP::IResponder*> map_t;
 
     // put THIS into a map of ports, otherwise the key must get more complicated and include port
     map_t uri_list;
@@ -289,14 +289,14 @@ public:
     virtual void OnPayload(const uint8_t message[], size_t length) OVERRIDE;
 
     TestResponder() : 
-        user_responder(NULLPTR),
-        uri_list(str_cmp) 
+        user_responder(NULLPTR)
+        //uri_list(str_cmp)
     {}
 
     // Doesn't handle port yet
-    void add_handle(const std::string& uri, CoAP::IResponder* user_responder)
+    void add_handle(const std::string& uri, CoAP::IResponder* ur)
     {
-        uri_list[uri] = user_responder;
+        uri_list[uri] = ur;
     }
 };
 
