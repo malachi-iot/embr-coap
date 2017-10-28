@@ -12,6 +12,12 @@
 namespace moducom {
 namespace coap {
 
+#define COAP_HEADER_FIXED_VER_POS       6
+#define COAP_HEADER_FIXED_TYPE_POS      4
+#define COAP_HEADER_FIXED_TKL_POS       0
+
+#define COAP_HEADER_FIXED_TYPE_MASK   (3 << COAP_HEADER_FIXED_TYPE_POS)
+
 #define COAP_HEADER_VER_POS     30
 #define COAP_HEADER_TYPE_POS    28
 #define COAP_HEADER_TKL_POS     24
@@ -106,6 +112,7 @@ public:
             // RFC7252 Section 12.1.2
             enum Codes
             {
+                Empty =             COAP_RESPONSE_CODE(0, 00),
                 Created =           COAP_RESPONSE_CODE(2, 01),
                 Deleted =           COAP_RESPONSE_CODE(2, 02),
                 Valid =             COAP_RESPONSE_CODE(2, 03),
@@ -160,7 +167,11 @@ public:
 
         uint8_t code() const
         {
+#ifdef BROKEN
             return (uint8_t)mask<COAP_HEADER_CODE_POS, COAP_HEADER_CODE_MASK>();
+#else
+            return bytes[1];
+#endif
         }
 
 
@@ -178,14 +189,31 @@ public:
             return (TypeEnum) mask<COAP_HEADER_TYPE_POS, COAP_HEADER_TYPE_MASK>();
         }
 
+        template <uint8_t pos>
+        inline void mask_or(uint8_t byte_pos, uint8_t value)
+        {
+            bytes[byte_pos] |= value << pos;
+        }
+
         void type(TypeEnum type)
         {
+#ifdef BROKEN
             mask<COAP_HEADER_TYPE_POS, COAP_HEADER_TYPE_MASK>((uint16_t)type);
+#else
+            bytes[0] &= ~COAP_HEADER_FIXED_TYPE_MASK;
+            bytes[0] |= ((uint8_t)type) << COAP_HEADER_FIXED_TYPE_POS;
+            mask_or<COAP_HEADER_FIXED_TYPE_POS>(0, type);
+#endif
         }
 
         ResponseCode::Codes response_code() const
         {
             return ResponseCode(code()).code();
+        }
+
+        void response_code(ResponseCode::Codes value)
+        {
+            code((ResponseCode::Codes)value);
         }
 
         RequestMethodEnum request_method() const
@@ -196,7 +224,11 @@ public:
 
         void code(uint8_t code)
         {
+#ifdef BROKEN
             mask<COAP_HEADER_CODE_POS, COAP_HEADER_CODE_MASK>(code);
+#else
+            bytes[1] = code;
+#endif
         }
 
 
@@ -231,8 +263,14 @@ public:
         Header(TypeEnum type)
         {
             raw = 0;
+#ifdef BROKEN
+            // FIX: 100% endian malfunction, does not work
             raw |= 1 << COAP_HEADER_VER_POS;
             this->type(type);
+#else
+            mask_or<COAP_HEADER_FIXED_VER_POS>(0, 1);
+            mask_or<COAP_HEADER_FIXED_TYPE_POS>(0, type);
+#endif
         }
     };
 #endif

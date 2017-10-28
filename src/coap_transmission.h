@@ -257,7 +257,10 @@ namespace experimental
 // with a token
 struct RequestContext
 {
+    // NOTE: not active yet
+    const uint16_t message_id;
 
+    RequestContext() : message_id(0) {}
 };
 
 struct Token
@@ -383,6 +386,7 @@ class TestOutgoingMessageHandler : public CoAP::IOutgoingMessageHandler
 
     const Token* token;
     layer2::OptionGenerator option_generator;
+    layer2::OptionGenerator::StateMachine option_generator_statemachine;
 
     // experimental - start is like a reset/start fresh CoAP output stream
     void write_start() { pos = 0; }
@@ -399,19 +403,35 @@ class TestOutgoingMessageHandler : public CoAP::IOutgoingMessageHandler
     void write_end() {}
 
 public:
+    TestOutgoingMessageHandler() :
+            option_generator(0),
+            option_generator_statemachine(option_generator)
+    {}
     // start out with these all being blocking-ish, but consider
     // making a iterative/byte-by-byte version for less blocking or
     // less memory intensive flavors
 
-    void write_header(CoAP::Header::TypeEnum type);
+    void write_header(const CoAP::Header& header)
+    {
+        write_bytes(header.bytes, 4);
+    }
+
+    void write_request_header(CoAP::Header::TypeEnum type, CoAP::Header::RequestMethodEnum method);
+    void write_response_header(CoAP::Header::TypeEnum type, CoAP::Header::ResponseCode::Codes response_code);
+
     void write_token();
     void write_options();
     void write_payload(const uint8_t* message, size_t length);
 
+    // writes an empty ack message (for non-piggyback/no response scenarios)
+    void send_ack();
+
     // higher level function which
     //  does header-payload processing
     //  knows it's a response, so specifically does NOT construct things as a request
-    void send_response(const uint8_t* payload, size_t length, bool piggyback);
+    void send_response(CoAP::Header::ResponseCode::Codes response_code, const uint8_t* payload, size_t length, bool piggyback = true);
+
+    void send_request(CoAP::Header::RequestMethodEnum request_method, const uint8_t* payload, size_t length);
 };
 
 }

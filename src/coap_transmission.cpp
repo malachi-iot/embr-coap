@@ -314,11 +314,28 @@ void TestResponder::OnPayload(const uint8_t message[], size_t length)
     user_responder->OnPayload(message, length);
 }
 
-void TestOutgoingMessageHandler::write_header(CoAP::Header::TypeEnum type)
+void TestOutgoingMessageHandler::write_request_header(CoAP::Header::TypeEnum type,
+                                                      CoAP::Header::RequestMethodEnum method)
+{
+
+}
+
+void TestOutgoingMessageHandler::write_response_header(CoAP::Header::TypeEnum type,
+                                                       CoAP::Header::ResponseCode::Codes response_code)
 {
     CoAP::Header header(type);
 
-    write_bytes(header.bytes, 4);
+    header.response_code(response_code);
+
+    if(token != NULLPTR)
+    {
+        header.token_length(token->length);
+
+        // FIX: slightly clumsy, in some senses context should contain token not the other way around
+        header.message_id(token->context.message_id);
+    }
+
+    write_header(header);
 }
 
 void TestOutgoingMessageHandler::write_token()
@@ -340,13 +357,55 @@ void TestOutgoingMessageHandler::write_payload(const uint8_t *message, size_t le
     write_bytes(message, length);
 }
 
-
-void TestOutgoingMessageHandler::send_response(const uint8_t *payload, size_t length, bool piggyback)
+void TestOutgoingMessageHandler::send_ack()
 {
 #ifdef __CPP11__
     typedef CoAP::Header::TypeEnum type_t;
+    typedef CoAP::Header::ResponseCode::Codes codes_t;
 #else
     typedef CoAP::Header type_t;
+    typedef CoAP::Header::ResponseCode codes_t;
+#endif
+
+    write_start();
+    write_response_header(type_t::Acknowledgement, codes_t::Empty);
+    write_token();
+    write_end();
+}
+
+void TestOutgoingMessageHandler::send_request(CoAP::Header::RequestMethodEnum request_method,
+                                              const uint8_t *payload,
+                                              size_t length)
+{
+#ifdef __CPP11__
+    typedef CoAP::Header::TypeEnum type_t;
+    typedef CoAP::Header::ResponseCode::Codes codes_t;
+#else
+    typedef CoAP::Header type_t;
+    typedef CoAP::Header::ResponseCode codes_t;
+#endif
+
+    write_start();
+    write_request_header(type_t::NonConfirmable, request_method);
+    write_token();
+    write_options();
+    write_payload(payload, length);
+    write_end();
+}
+
+// piggybacking is done specifically
+// to tend to "long running" acqusition of response data, and therefore
+// an all-in-one sequential send_response is not suitable to send
+// two messages at once
+void TestOutgoingMessageHandler::send_response(CoAP::Header::ResponseCode::Codes response_code,
+                                               const uint8_t *payload, size_t length, bool piggyback)
+{
+#ifdef __CPP11__
+    typedef CoAP::Header::TypeEnum type_t;
+    typedef CoAP::Header::ResponseCode::Codes codes_t;
+#else
+    typedef CoAP::Header type_t;
+    typedef CoAP::Header::ResponseCode codes_t;
 #endif
 
     write_start();
@@ -356,22 +415,11 @@ void TestOutgoingMessageHandler::send_response(const uint8_t *payload, size_t le
     // We may also have to decide here whether we are going to do the additional
     // separate ACK for the separate response
     if(piggyback)
-    {
-        write_header(type_t::Acknowledgement);
-    }
+        write_response_header(type_t::Acknowledgement, response_code);
     else
-    {
         // non-piggybacked means we have to send two distinct CoAP messages
-        // as of now that is very hard - may HAVE to do state machine output then to manage
-        // two separate messages queued up
-        write_header(type_t::Acknowledgement);
-        write_token();
-        write_end();
-
-        write_start();
-        // hardcoding to NonConfirmable, for now
-        write_header(type_t::NonConfirmable);
-    }
+        // so be sure to call send_ack BEFORE calling send_response
+        write_response_header(type_t::NonConfirmable, response_code);
 
     write_token();
     write_options();
