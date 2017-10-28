@@ -241,9 +241,28 @@ void TestResponder::OnOptionRequest(const coap::CoAP::OptionExperimental& option
 }
 
 
-void TestResponder::OnToken(const uint8_t *message, size_t length)
+void TestResponder::OnToken(const uint8_t *token, size_t length)
 {
+#ifdef __CPP11__
+    typedef CoAP::Header::TypeEnum type_t;
+#else
+    typedef CoAP::Header type_t;
+#endif
 
+    switch(header.type())
+    {
+        case type_t::Confirmable:
+        case type_t::NonConfirmable:
+            // add a token to our known list on an incoming request to use later for
+            // the outgoing response
+            token_manager.add(token, length, NULLPTR);
+            break;
+
+        case type_t::Acknowledgement:
+            // look up a token on an incoming response to match against a previously outgoing request
+            const Token* t = token_manager.get(token, length);
+            break;
+    }
 }
 
 

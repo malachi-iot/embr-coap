@@ -33,6 +33,8 @@ namespace coap {
 #define COAP_EXTENDED8_BIT_MAX  (255 - 13)
 #define COAP_EXTENDED16_BIT_MAX (0xFFFF - 269)
 
+#define COAP_RESPONSE_CODE(_class, _detail) ((_class << 5) | _detail)
+
 // potentially http://pubs.opengroup.org/onlinepubs/7908799/xns/htonl.html are of interest here
 // also endianness macros here if you are in GNU:
 // https://gcc.gnu.org/onlinedocs/cpp/Common-Predefined-Macros.html
@@ -95,6 +97,49 @@ public:
     {
         // temporary public while building code
     public:
+        class ResponseCode
+        {
+            uint8_t _code;
+        public:
+            ResponseCode(uint8_t _code) : _code(_code) {}
+
+            // RFC7252 Section 12.1.2
+            enum Codes
+            {
+                Created =           COAP_RESPONSE_CODE(2, 01),
+                Deleted =           COAP_RESPONSE_CODE(2, 02),
+                Valid =             COAP_RESPONSE_CODE(2, 03),
+                Changed =           COAP_RESPONSE_CODE(2, 04),
+                Content =           COAP_RESPONSE_CODE(2, 05),
+                BadRequest =        COAP_RESPONSE_CODE(4, 00),
+                Unauthorized =      COAP_RESPONSE_CODE(4, 01),
+                BadOption =         COAP_RESPONSE_CODE(4, 02),
+                Forbidden =         COAP_RESPONSE_CODE(4, 03),
+                NotFound =          COAP_RESPONSE_CODE(4, 04),
+                MethodNotAllowed =  COAP_RESPONSE_CODE(4, 05),
+                InternalServerError =   COAP_RESPONSE_CODE(5, 00),
+                NotImplemented =        COAP_RESPONSE_CODE(5, 01),
+                ServiceUnavailable =    COAP_RESPONSE_CODE(5, 03),
+                ProxyingNotSupported =  COAP_RESPONSE_CODE(5, 05)
+            };
+
+                // topmost 3 bits
+            uint8_t get_class() const { return _code >> 5; }
+            // bottommost 5 bits
+            uint8_t detail() const { return _code & 0xE0; }
+
+            Codes code() { return (Codes) _code; }
+        };
+
+        // RFC 7252 Section 12.1.1
+        enum RequestMethodEnum
+        {
+            Get = 1,
+            Post = 2,
+            Put = 3,
+            Delete = 4
+        };
+
         union
         {
             uint8_t bytes[4];
@@ -111,6 +156,11 @@ public:
         inline uint16_t mask() const
         {
             return ((raw & mask_value) >> pos);
+        }
+
+        uint8_t code() const
+        {
+            return (uint8_t)mask<COAP_HEADER_CODE_POS, COAP_HEADER_CODE_MASK>();
         }
 
 
@@ -133,9 +183,14 @@ public:
             mask<COAP_HEADER_TYPE_POS, COAP_HEADER_TYPE_MASK>((uint16_t)type);
         }
 
-        uint8_t code() const
+        ResponseCode::Codes response_code() const
         {
-            return (uint8_t)mask<COAP_HEADER_CODE_POS, COAP_HEADER_CODE_MASK>();
+            return ResponseCode(code()).code();
+        }
+
+        RequestMethodEnum request_method() const
+        {
+            return (RequestMethodEnum) code();
         }
 
 

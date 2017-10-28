@@ -248,8 +248,52 @@ protected:
 }
 
 namespace coap {
+
 namespace experimental
 {
+struct Token
+{
+    uint8_t data[8];
+    uint8_t length;
+
+    CoAP::IResponder* responder;
+};
+
+// TODO: Just a fledgling class, will need to be a lot more powerful
+// shared token manager so that request and response logic can be aware of each
+// other's tokens
+class TokenManager
+{
+    Token tokens[8];
+
+public:
+    TokenManager()
+    {
+    }
+
+    void add(const uint8_t* token, uint8_t length, CoAP::IResponder* responder)
+    {
+        Token& t = tokens[0];
+
+        t.length = length;
+        memcpy(t.data, token, length);
+        t.responder = responder;
+    }
+
+    const Token* get(const uint8_t* token, uint8_t length) const
+    {
+        for(int i = 0 ; i < 8; i++)
+        {
+            const Token& t = tokens[i];
+
+            if(t.length == length && memcmp(t.data, token, length) == 0)
+            {
+                return &t;
+            }
+        }
+    }
+};
+
 
 // Note there 2 scenarios for memory handled from the one calling IResponder:
 //
@@ -263,6 +307,7 @@ namespace experimental
 class TestResponder : public CoAP::IResponder
 {
     CoAP::IResponder* user_responder;
+    TokenManager token_manager;
 
     std::string uri;
     uint16_t port;

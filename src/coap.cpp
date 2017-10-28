@@ -199,7 +199,7 @@ bool CoAP::Parser::process_iterate(uint8_t value)
             buffer[pos++] = value;
 
             if (pos == 4) _state = HeaderDone;
-            break;
+            return true;
 
         case HeaderDone:
         {
@@ -223,7 +223,6 @@ bool CoAP::Parser::process_iterate(uint8_t value)
             }
 
             return false;
-            // Fall thru to options, as most "Done"s should do
         }
 
         case Token:
