@@ -14,6 +14,14 @@
 #include <stdio.h>
 #endif
 
+// FEATURE_STRING_CONST is not compatible with FEATURE_STRING_SIZE_FIELD
+#define FEATURE_STRING_CONST const
+
+#ifndef FEATURE_STRING_CONST
+#define FEATURE_STRING_CONST_DISABLED
+#define FEATURE_STRING_CONST
+#endif
+
 
 namespace moducom { namespace std {
 
@@ -28,11 +36,28 @@ class string {
 #endif
 
 private:
-    inline char* lock()
+    inline char* lock() FEATURE_STRING_CONST
     {
+#ifdef FEATURE_STRING_CONST_DISABLED
         return handle.lock<char>();
+#else
+        // cheating and creating side affects in a const
+        memory_t::SmartHandle& _h = (memory_t::SmartHandle&) handle;
+
+        return _h.lock<char>();
+#endif
     }
-    inline void unlock() { handle.unlock(); }
+    inline void unlock() FEATURE_STRING_CONST
+    {
+#ifdef FEATURE_STRING_CONST_DISABLED
+        handle.unlock();
+#else
+        // cheating and creating side affects in a const
+        memory_t::SmartHandle& _h = (memory_t::SmartHandle&) handle;
+
+        _h.unlock();
+#endif
+    }
 
     // TODO: make this smart enough to not allocate memory until someone actually
     // changes the string
@@ -117,7 +142,8 @@ public:
     class auto_ptr_t : public auto_locking_ptr<char>
     {
     public:
-        auto_ptr_t(memory_t::SmartHandle& handle) : auto_locking_ptr<char>(handle)
+        auto_ptr_t(FEATURE_STRING_CONST memory_t::SmartHandle& handle) :
+                auto_locking_ptr<char>((memory_t::SmartHandle&)handle)
         {
         }
 
@@ -128,7 +154,7 @@ public:
 
 
 #ifndef FEATURE_STRING_SIZE_FIELD
-    size_t length()
+    size_t length() FEATURE_STRING_CONST
     {
         char* str = lock();
         size_t len = strlen(str);
@@ -142,7 +168,7 @@ public:
     /// experimental.  Safer than leaving string locked open and
     /// I imagine 95% of the time this is the operation the caller
     /// ultimately wants also
-    void populate(char* output)
+    void populate(char* output) FEATURE_STRING_CONST
     {
         auto_ptr_t input(handle);
 
@@ -172,7 +198,7 @@ public:
         return *this;
     }
 
-    string& operator += (string& append_from)
+    string& operator += (FEATURE_STRING_CONST string& append_from)
     {
         const char* _append_from = append_from.lock();
         *this += _append_from;
@@ -180,7 +206,7 @@ public:
         return *this;
     }
 
-    inline string operator +(const char *src)
+    inline string operator +(const char *src) FEATURE_STRING_CONST
     {
         size_t src_len = strlen(src);
 #ifndef FEATURE_STRING_SIZE_FIELD
@@ -204,7 +230,7 @@ public:
      * trailing nulls
      *
      */
-    inline void ensure_trailing_null()
+    inline void ensure_trailing_null() FEATURE_STRING_CONST
     {
 #ifdef FEATURE_STRING_SIZE_FIELD
         char* _str = lock();
@@ -224,7 +250,7 @@ public:
         ((char*)temp)[size] = 0;
     }*/
 
-    bool operator ==(const char* src)
+    bool operator ==(const char* src) FEATURE_STRING_CONST
     {
         ensure_trailing_null();
 
@@ -233,7 +259,7 @@ public:
         return strcmp(str, src) == 0;
     }
 
-    bool operator ==(string& compare_to)
+    bool operator ==(string& compare_to) FEATURE_STRING_CONST
     {
         ensure_trailing_null();
         compare_to.ensure_trailing_null();
@@ -253,7 +279,7 @@ public:
     } */
 
 
-    bool operator !=(string& compare_to)
+    bool operator !=(string& compare_to) FEATURE_STRING_CONST
     {
         return !(*this == compare_to);
     }
@@ -265,7 +291,7 @@ public:
         return *this;
     }
 
-    bool operator <(string& compare_to)
+    bool operator <(string& compare_to) FEATURE_STRING_CONST
     {
         ensure_trailing_null();
         auto_ptr_t  ours(handle),
