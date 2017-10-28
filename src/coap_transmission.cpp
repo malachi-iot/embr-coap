@@ -253,15 +253,44 @@ void TestResponder::OnToken(const uint8_t *token, size_t length)
     {
         case type_t::Confirmable:
         case type_t::NonConfirmable:
+        {
             // add a token to our known list on an incoming request to use later for
             // the outgoing response
-            token_manager.add(token, length, NULLPTR);
+            // NOTE: in a non-piggybacked server outgoing response, I *THINK* we need to
+            // get an existing token since the tokens are *always* client-generated according
+            // to spec.  This means also that the ACK in that context is the client ACK'ing
+            // this server request, in which we may be able to leave the Acknowledgement switch
+            // alone
+            const Token *t = token_manager.get(token, length);
+            if(t == NULLPTR)
+            {
+                // go here when incoming CoAP is not matched to a token,
+                // indicating a new request
+                t = token_manager.add(token, length, NULLPTR);
+            }
+            else
+            {
+                // go here when incoming CoAP IS matched to a token
+                // indicating a response (non-piggybacked/separate server response)
+                t->responder->OnHeader(header);
+            }
+
+            this->token = t;
+
+            // FIX: kludgy brute force here, clean this up when code settles down
+            context = (RequestContext*) &t->context;
+
             break;
+        }
 
         case type_t::Acknowledgement:
+        {
             // look up a token on an incoming response to match against a previously outgoing request
-            const Token* t = token_manager.get(token, length);
+            const Token *t = token_manager.get(token, length);
+
+            // if receiving a piggybacked message, expect a payload with this ACK
             break;
+        }
     }
 }
 
@@ -283,6 +312,74 @@ void TestResponder::OnPayload(const uint8_t message[], size_t length)
     }
 
     user_responder->OnPayload(message, length);
+}
+
+void TestOutgoingMessageHandler::write_header(CoAP::Header::TypeEnum type)
+{
+    CoAP::Header header(type);
+
+    write_bytes(header.bytes, 4);
+}
+
+void TestOutgoingMessageHandler::write_token()
+{
+    if(token != NULLPTR)
+    {
+        write_bytes(token->data, token->length);
+    }
+}
+
+void TestOutgoingMessageHandler::write_options()
+{
+    //option_generator.
+}
+
+void TestOutgoingMessageHandler::write_payload(const uint8_t *message, size_t length)
+{
+    write_byte(0xFF); // payload marker
+    write_bytes(message, length);
+}
+
+
+void TestOutgoingMessageHandler::send_response(const uint8_t *payload, size_t length, bool piggyback)
+{
+#ifdef __CPP11__
+    typedef CoAP::Header::TypeEnum type_t;
+#else
+    typedef CoAP::Header type_t;
+#endif
+
+    write_start();
+
+    // We have to decide whether we are going to do ACK for a piggybacked response,
+    // or Confirmable/NonConfirmable for a separate response
+    // We may also have to decide here whether we are going to do the additional
+    // separate ACK for the separate response
+    if(piggyback)
+    {
+        write_header(type_t::Acknowledgement);
+    }
+    else
+    {
+        // non-piggybacked means we have to send two distinct CoAP messages
+        // as of now that is very hard - may HAVE to do state machine output then to manage
+        // two separate messages queued up
+        write_header(type_t::Acknowledgement);
+        write_token();
+        write_end();
+
+        write_start();
+        // hardcoding to NonConfirmable, for now
+        write_header(type_t::NonConfirmable);
+    }
+
+    write_token();
+    write_options();
+
+    if(payload != NULLPTR && length != 0)
+        write_payload(payload, length);
+
+    write_end();
 }
 
 }

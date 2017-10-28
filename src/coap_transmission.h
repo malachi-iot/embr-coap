@@ -251,12 +251,22 @@ namespace coap {
 
 namespace experimental
 {
+
+// TODO: Can't find an official designation for this in CoAP, but the token
+// represents a kind of "dialog" or context.  Expect that RequestContext is 1:1
+// with a token
+struct RequestContext
+{
+
+};
+
 struct Token
 {
     uint8_t data[8];
     uint8_t length;
 
     CoAP::IResponder* responder;
+    RequestContext context;
 };
 
 // TODO: Just a fledgling class, will need to be a lot more powerful
@@ -271,13 +281,15 @@ public:
     {
     }
 
-    void add(const uint8_t* token, uint8_t length, CoAP::IResponder* responder)
+    const Token* add(const uint8_t* token, uint8_t length, CoAP::IResponder* responder)
     {
         Token& t = tokens[0];
 
         t.length = length;
         memcpy(t.data, token, length);
         t.responder = responder;
+
+        return &t;
     }
 
     const Token* get(const uint8_t* token, uint8_t length) const
@@ -307,7 +319,12 @@ public:
 class TestResponder : public CoAP::IResponder
 {
     CoAP::IResponder* user_responder;
+    //TokenManager& token_manager;
+    // TODO: Eventually pass in a shared token manager, just making this an inline
+    // instance here for convenience as we build out things
     TokenManager token_manager;
+    const Token* token;
+    RequestContext* context;
 
     std::string uri;
     uint16_t port;
@@ -349,6 +366,52 @@ public:
     {
         uri_list[uri] = ur;
     }
+};
+
+
+// Similar to above class, we may have to decide if we are
+//
+// 1: Doing a byte-by-byte stream output only
+// 2: Doing a buffer-aware output
+class TestOutgoingMessageHandler : public CoAP::IOutgoingMessageHandler
+{
+    // NOTE: only temporary as we build things out,
+    // do NOT count on this buffer or anything resembling it
+    // to be present in the real code
+    uint8_t buffer[2048];
+    size_t pos;
+
+    const Token* token;
+    layer2::OptionGenerator option_generator;
+
+    // experimental - start is like a reset/start fresh CoAP output stream
+    void write_start() { pos = 0; }
+    // because we don't do it state machine style yet, this is a blocking component
+    // TODO: Consider strongly pulling in the util.embedded stream processor for this
+    // though it's not yet set up for memory streams at all and also doesn't play nice
+    // in C++98 environments
+    void write_byte(uint8_t value) { buffer[pos++] = value; }
+    void write_bytes(const uint8_t* value, size_t length)
+    {
+        while(length--) write_byte(*value++);
+    }
+    // experimental - end is like a commit/send CoAP output stream
+    void write_end() {}
+
+public:
+    // start out with these all being blocking-ish, but consider
+    // making a iterative/byte-by-byte version for less blocking or
+    // less memory intensive flavors
+
+    void write_header(CoAP::Header::TypeEnum type);
+    void write_token();
+    void write_options();
+    void write_payload(const uint8_t* message, size_t length);
+
+    // higher level function which
+    //  does header-payload processing
+    //  knows it's a response, so specifically does NOT construct things as a request
+    void send_response(const uint8_t* payload, size_t length, bool piggyback);
 };
 
 }

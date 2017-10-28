@@ -379,6 +379,8 @@ public:
     };
 
 
+    // TODO: Rename this to something more like "IncomingMessageHandler"
+    // since "Response" carries particular meaning in CoAP request/response behavior
     class IResponder
     {
     public:
@@ -388,6 +390,12 @@ public:
         virtual void OnToken(const uint8_t message[], size_t length) = 0;
         virtual void OnOption(const OptionExperimental& option) = 0;
         virtual void OnPayload(const uint8_t message[], size_t length) = 0;
+    };
+
+
+    class IOutgoingMessageHandler
+    {
+
     };
 
     class Parser
