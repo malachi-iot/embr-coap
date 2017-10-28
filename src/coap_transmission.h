@@ -266,6 +266,8 @@ class TestResponder : public CoAP::IResponder
 
     std::string uri;
     uint16_t port;
+    // NOTE: probably can optimize this out
+    CoAP::Header header;
 
     typedef bool(*comp_fn)(std::string s1, std::string s2);
 
@@ -283,12 +285,15 @@ class TestResponder : public CoAP::IResponder
     // put THIS into a map of ports, otherwise the key must get more complicated and include port
     map_t uri_list;
 
+    void OnOptionRequest(const CoAP::OptionExperimental& option);
+    void OnOptionResponse(const CoAP::OptionExperimental& option);
+
 public:
     virtual void OnHeader(const CoAP::Header header) OVERRIDE;
     virtual void OnOption(const CoAP::OptionExperimental& option) OVERRIDE;
     virtual void OnPayload(const uint8_t message[], size_t length) OVERRIDE;
 
-    TestResponder() : 
+    TestResponder() :
         user_responder(NULLPTR)
         //uri_list(str_cmp)
     {}

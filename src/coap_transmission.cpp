@@ -163,10 +163,33 @@ OptionGenerator::StateMachine::output_t OptionGenerator::StateMachine::generate_
 
 void TestResponder::OnHeader(const coap::CoAP::Header header)
 {
-
 }
 
 void TestResponder::OnOption(const coap::CoAP::OptionExperimental& option)
+{
+#ifdef __CPP11__
+    typedef CoAP::Header::TypeEnum type_t;
+#else
+    typedef CoAP::Header type_t;
+#endif
+
+    // figure out if we're handling a request or a response
+    switch(header.type())
+    {
+        // request
+        case type_t::Confirmable:
+        case type_t::NonConfirmable:
+            OnOptionRequest(option);
+            break;
+
+            // response
+        case type_t::Acknowledgement:
+            OnOptionResponse(option);
+            break;
+    }
+}
+
+void TestResponder::OnOptionRequest(const coap::CoAP::OptionExperimental& option)
 {
 #ifdef __CPP11__
     typedef coap::CoAP::OptionExperimental::Numbers enum_t;
@@ -216,6 +239,14 @@ void TestResponder::OnOption(const coap::CoAP::OptionExperimental& option)
         user_responder->OnOption(option);
     }
 }
+
+
+
+void TestResponder::OnOptionResponse(const CoAP::OptionExperimental &option)
+{
+    header.token_length();
+}
+
 
 void TestResponder::OnPayload(const uint8_t message[], size_t length)
 {
