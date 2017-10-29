@@ -5,7 +5,7 @@
 
 using namespace moducom::dynamic;
 
-TEST_CASE("Low-level memory pool tests", "[mempool_low]")
+TEST_CASE("Low-level memory pool tests", "[mempool-low]")
 {
     SECTION("Index1 memory pool")
     {
