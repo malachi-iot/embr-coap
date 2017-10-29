@@ -104,6 +104,11 @@ public:
         return IMemoryPool::invalid_handle;
     }
 
+    //!
+    //! \param handle
+    //! \param pages 0-based, inclusive of system page
+    //! \param page_size
+    //! \return
     handle_t::PageData& get_page_data(handle_opaque_t handle, uint8_t* pages, size_t page_size)
     {
         ASSERT(true, pages != NULLPTR);
@@ -133,6 +138,11 @@ public:
         return *p;
     }
 
+    //!
+    //! \param handle
+    //! \param pages
+    //! \param page_size
+    //! \return
     void* lock(handle_opaque_t handle, uint8_t* pages, size_t page_size)
     {
         handle_t::PageData& page_data = get_page_data(handle, pages, page_size);

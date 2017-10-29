@@ -55,6 +55,12 @@ class MemoryPool : public IMemoryPool
         return (uint8_t) size_in_pages;
     }
 
+    void* lock_index2(handle_opaque_t handle)
+    {
+        get_sys_page_index2().lock(handle, pages[0], page_size);
+
+    }
+
 public:
     MemoryPool(TierEnum tier = Indexed)
     {
@@ -71,6 +77,30 @@ public:
     }
 
     void compact() {}
+
+    virtual void* lock(handle_opaque_t handle) OVERRIDE
+    {
+        switch(get_sys_page_descriptor().tier)
+        {
+            case Indexed:
+                //get_sys_page_index()
+                break;
+
+            case Indexed2:
+                return lock_index2(handle);
+        }
+
+        return NULLPTR;
+    }
+
+    virtual void unlock(handle_opaque_t handle) OVERRIDE
+    {
+        switch(get_sys_page_descriptor().tier)
+        {
+            case Indexed2:
+                get_sys_page_index2().unlock(handle, pages[0], page_size);
+        }
+    }
 
     handle_opaque_t allocate_index(size_t size)
     {

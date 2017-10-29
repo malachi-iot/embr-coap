@@ -35,6 +35,13 @@ public:
     // TODO: consider making this an append instead
     virtual bool expand(handle_opaque_t handle, size_t size) = 0;
     virtual void shrink(handle_opaque_t handle, size_t size) = 0;
+
+    virtual handle_opaque_t copy(handle_opaque_t copy_from,
+                                 size_t size,
+                                 size_t size_copy) { return invalid_handle; };
+
+    virtual void* lock(handle_opaque_t handle) = 0;
+    virtual void unlock(handle_opaque_t handle) = 0;
 };
 
 #ifdef USE_PRAGMA_PACK
@@ -77,7 +84,7 @@ struct PACKED MemoryPoolDescriptor
         {
             ASSERT(false, allocated);
             ASSERT(false, right.allocated);
-            ASSERT(right.page, page size);
+            //ASSERT(right.page, page size);
 
             size += right.size;
 

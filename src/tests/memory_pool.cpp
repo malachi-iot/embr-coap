@@ -43,8 +43,21 @@ TEST_CASE("Low-level memory pool tests", "[mempool_low]")
                                        unallocated_count * sizeof(handle_t::PageData)
             );
         }
-        SECTION("Next")
+        SECTION("Locking")
         {
+            REQUIRE(pool.get_allocated_handle_count() == 0);
+
+            int handle = pool.allocate(100);
+
+            REQUIRE(pool.get_allocated_handle_count() == 1);
+
+            pool.lock(handle);
+            pool.unlock(handle);
+
+            REQUIRE(pool.get_allocated_handle_count() == 1);
+
+            pool.free(handle);
+
             REQUIRE(pool.get_allocated_handle_count() == 0);
         }
     }
