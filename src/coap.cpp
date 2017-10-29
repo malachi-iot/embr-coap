@@ -1,5 +1,5 @@
 #include "coap.h"
-#include "memory.h"
+#include "mc/memory.h"
 
 namespace moducom {
 namespace coap {

@@ -6,5 +6,5 @@ set(CMAKE_CXX_STANDARD 98)
 
 include_directories(../ext/Catch/include)
 
-set(SOURCE_FILES main.cpp coap.cpp coap.h memory.cpp memory.h string.cpp string.h tests/main_test.cpp MemoryPool.cpp MemoryPool.h tests/memory_pool.cpp tests/coap.cpp coap_transmission.cpp coap_transmission.h tests/coap_lowlevel.cpp coap_subscription.cpp coap_subscription.h cbor.cpp tests/coap_send.cpp)
+set(SOURCE_FILES main.cpp coap.cpp coap.h memory.cpp mc/memory.h string.cpp mc/string.h tests/main_test.cpp MemoryPool.cpp MemoryPool.h tests/memory_pool.cpp tests/coap.cpp coap_transmission.cpp coap_transmission.h tests/coap_lowlevel.cpp coap_subscription.cpp coap_subscription.h cbor.cpp tests/coap_send.cpp mc/memory_index2.h mc/memory_pool.h mc/memory_index.h)
 add_executable(src ${SOURCE_FILES})

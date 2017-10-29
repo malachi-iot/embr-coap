@@ -1,15 +1,8 @@
-//
-// Created by malachi on 10/20/17.
-//
-
-#ifndef SRC_MEMORY_H
-#define SRC_MEMORY_H
+#pragma once
 
 #include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
-
-// TODO: need to rename or move this (and string) because they are colliding with system named ones
 
 namespace moducom { namespace dynamic {
 
@@ -205,4 +198,3 @@ public:
 
 }}
 
-#endif //SRC_MEMORY_H

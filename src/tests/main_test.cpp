@@ -9,7 +9,7 @@
 #endif
 
 #include <iostream>
-#include "../string.h"
+#include "../mc/string.h"
 #include "../MemoryPool.h"
 
 // https://github.com/philsquared/Catch/issues/531

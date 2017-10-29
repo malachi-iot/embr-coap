@@ -7,7 +7,7 @@
 
 #include "platform.h"
 #include "coap.h"
-#include "string.h"
+#include "mc/string.h"
 
 // interim: eventually provide our own memory pool version of map 
 #include <map>

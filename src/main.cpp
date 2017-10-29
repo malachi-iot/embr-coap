@@ -1,7 +1,7 @@
 #include <iostream>
 #include "coap.h"
-#include "memory.h"
-#include "string.h"
+#include "mc/memory.h"
+#include "mc/string.h"
 
 int main_old() {
     std::cout << "Hello, World!" << std::endl;
