@@ -222,6 +222,26 @@ public:
         }
     }
 
+
+    // untested
+    virtual handle_opaque_t allocate(const void* data, size_t size, size_t size_copy) OVERRIDE
+    {
+        // FIX: optimize
+        handle_opaque_t h = allocate(size);
+
+        void* locked = lock(h);
+
+        if(size_copy == 0) size_copy = size;
+
+        memcpy(locked, data, size_copy);
+
+        unlock(h);
+
+        return h;
+    }
+
+
+
     bool free_index(handle_opaque_t handle)
     {
         get_sys_page_index().free(handle);

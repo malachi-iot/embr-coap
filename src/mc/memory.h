@@ -34,6 +34,7 @@ public:
     };
 
     virtual handle_opaque_t allocate(size_t size) = 0;
+    virtual handle_opaque_t allocate(const void* data, size_t size, size_t size_copy = 0) = 0;
     virtual bool free(handle_opaque_t handle) = 0;
     // TODO: consider making this an append instead (add a append byte* who is 'size' big)
     virtual bool expand(handle_opaque_t handle, size_t size) = 0;
@@ -49,28 +50,27 @@ public:
 
 #define MODUCOM_ASSERT(expected, actual)
 
-class Memory
+class Memory : public IMemory
 {
 public:
-    // FIX: eventually this will be an integer handle
-    typedef void* handle_t;
+    typedef IMemory::handle_opaque_t handle_t;
 
 public:
     /// Allocate a block of memory, but don't lock it yet
     /// @param size size in bytes of memory chunk to allocate
     /// @return
-    handle_t allocate(size_t size);
+    handle_t allocate(size_t size) OVERRIDE;
     /// Allocate a block of memory, but don't lock it yet
     /// @param data data to copy into newly allocated block
     /// @param size size in bytes of memory chunk to allocate
-    /// @param size_copy size in bytes to copy from data
+    /// @param size_copy size in bytes to copy from data, or 0 if it matches 'size'
     /// @return
-    handle_t allocate(const void* data, size_t size, size_t size_copy = 0);
+    handle_t allocate(const void* data, size_t size, size_t size_copy = 0) OVERRIDE;
 
     /// frees an unlocked memory handle
     /// @param handle memory handle to free
     /// @return false is memory is locked and not freeable
-    bool free(handle_t handle);
+    bool free(handle_t handle) OVERRIDE;
 
     /// may change handle_t in the process
     /// \param handle
@@ -78,7 +78,7 @@ public:
     /// \return
     handle_t realloc(handle_t handle, size_t new_size)
     {
-        return ::realloc(handle, new_size);
+        return (handle_t) ::realloc((void*)handle, new_size);
     }
 
     // TODO: might manage size differently, but for now we have to be explicit
@@ -89,7 +89,7 @@ public:
     /// \return
     handle_t copy(handle_t handle, size_t size, size_t size_copy = 0);
 
-    void* lock(handle_t handle) { return handle; }
+    void* lock(handle_t handle) { return (void*)handle; }
 
     template <class T>
     T* lock(handle_t handle)
@@ -107,6 +107,19 @@ public:
     size_t available();
 
     static Memory default_pool;
+
+    // cannot safely expand with this approach (it may want to change the "handle")
+    virtual bool expand(handle_t handle, size_t size) OVERRIDE
+    {
+        return false;
+    }
+
+    // not 100% gaurunteed, but close enough for diagnostics - realloc I imagine 99.9%
+    // of the time keeps the same pointer
+    virtual void shrink(handle_t handle, size_t size) OVERRIDE
+    {
+        realloc(handle, size);
+    }
 
     class SmartHandle
     {

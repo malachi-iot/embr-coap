@@ -8,7 +8,7 @@ Memory Memory::default_pool;
 
 Memory::handle_t Memory::allocate(size_t size)
 {
-    return malloc(size);
+    return (handle_t) malloc(size);
 }
 
 Memory::handle_t Memory::allocate(const void* data, size_t size, size_t size_copy)
@@ -21,18 +21,18 @@ Memory::handle_t Memory::allocate(const void* data, size_t size, size_t size_cop
     else
         memcpy(new_data, data, size);
 
-    return new_data;
+    return (handle_t) new_data;
 }
 
 Memory::handle_t Memory::copy(handle_t handle, size_t size, size_t size_copy)
 {
-    return allocate(handle, size, size_copy);
+    return allocate((void*)handle, size, size_copy);
 }
 
 
 bool Memory::free(handle_t handle)
 {
-    ::free(handle);
+    ::free((void*) handle);
     return true;
 }
 
