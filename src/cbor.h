@@ -34,6 +34,12 @@ public:
         SimpleData = 7
     };
 
+    enum SimpleTypes
+    {
+        Boolean,
+        Null
+    };
+
     class DecoderStateMachine
     {
         union
@@ -55,6 +61,7 @@ public:
         void free_nested() {}
         void unlock_nested() {}
 
+    public:
         enum State
         {
             MajorType,
@@ -67,8 +74,11 @@ public:
             ItemArrayDone,
             MapState,
             MapDone,
+            Done,
             Pop // if we are nested, pop one level
         };
+
+    private:
 
         enum AdditionalIntegerInformation
         {
@@ -79,6 +89,8 @@ public:
             bits_16 = 25,
             bits_32 = 26,
             bits_64 = 27,
+            Reserved1 = 28,
+            Reserved2 = 30,
             Indefinite = 31
         };
 
@@ -119,8 +131,6 @@ public:
             }
         }
 
-        Types type() const { return (Types) (buffer[0] >> 5); }
-
         void state(State _state) { this->_state = _state; }
 
         uint8_t get_value_8() const { return buffer[1]; }
@@ -134,8 +144,46 @@ public:
             return value;
         }
 
+        bool process_iterate_nested(uint8_t value, bool* encountered_break);
+
+        // rfc7409 section 2.3
+        uint8_t get_simple_value() const { return buffer[0] & 0x1F; }
+
+        // rfc7409 section 2.3
+        bool is_simple_value() const
+        {
+            return type() == SimpleData && get_simple_value() <= 24;
+        }
+
+        bool is_simple_type_bool() const
+        {
+            uint8_t simple_value = get_simple_value();
+
+            return type() == SimpleData && (simple_value == 20 || simple_value == 21);
+        }
+
+
+        bool simple_value_bool() const
+        {
+            ASSERT_ERROR(true, is_simple_type_bool(), "Not a true/false type");
+
+            return get_simple_value() == 21;
+        }
+
+
+        bool is_simple_value_null() const
+        {
+            ASSERT_ERROR(true, is_simple_value(), "Not a simple value");
+
+            return get_simple_value() == 22;
+        }
+
+
+
     public:
         DecoderStateMachine() : _nested(NULLPTR) {}
+
+        Types type() const { return (Types) (buffer[0] >> 5); }
 
         bool process_iterate(uint8_t value);
 
@@ -148,10 +196,38 @@ public:
 
     };
 
+    class IDecoderObserver
+    {
+    public:
+        virtual void OnTag(const DecoderStateMachine& decoder) = 0;
+
+        // when this is fired, the integer/count information is all resolved also
+        virtual void OnType(const DecoderStateMachine& decoder) = 0;
+
+        // fired potentially multipled time for byte array, string, item array
+        virtual void OnArray(const DecoderStateMachine& decoder) = 0;
+
+        // fired potentially multiple times for map
+        virtual void OnMap(const DecoderStateMachine& decoder) = 0;
+
+        virtual void OnFloat(const DecoderStateMachine& decoder) = 0;
+
+        virtual void OnCompleted() = 0;
+    };
+
 
     class EncoderStateMachine
     {
 
+    };
+
+
+    class DecodeToObserver
+    {
+    public:
+        IDecoderObserver* observer;
+
+        void decode(const uint8_t* cbor, size_t len);
     };
 };
 
