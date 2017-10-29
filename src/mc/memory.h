@@ -3,13 +3,46 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
+#include "../platform.h"
 
 namespace moducom { namespace dynamic {
 
+class IMemory
+{
+protected:
+public:
+    typedef int handle_opaque_t;
+
+    static CONSTEXPR handle_opaque_t invalid_handle = -1;
+
+    // TODO: Move this out of IMemory abstract class
+    enum TierEnum
+    {
+        Direct = 0,
+        Indexed = 1,
+        Compact = 2,
+        Indexed2 = 3
+        // Compact2 would be like the linked-list version I was working on before, but might have to carry handle info along too
+    };
+
+    virtual handle_opaque_t allocate(size_t size) = 0;
+    virtual bool free(handle_opaque_t handle) = 0;
+    // TODO: consider making this an append instead (add a append byte* who is 'size' big)
+    virtual bool expand(handle_opaque_t handle, size_t size) = 0;
+    virtual void shrink(handle_opaque_t handle, size_t size) = 0;
+
+    virtual handle_opaque_t copy(handle_opaque_t copy_from,
+                                 size_t size,
+                                 size_t size_copy) { return invalid_handle; };
+
+    virtual void* lock(handle_opaque_t handle) = 0;
+    virtual void unlock(handle_opaque_t handle) = 0;
+};
 
 #define MODUCOM_ASSERT(expected, actual)
 
-class Memory {
+class Memory
+{
 public:
     // FIX: eventually this will be an integer handle
     typedef void* handle_t;
