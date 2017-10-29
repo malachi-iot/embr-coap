@@ -2,8 +2,53 @@
 
 namespace moducom {
 
+void CBOR::DecoderStateMachine::assign_additional_integer_information()
+{
+    switch(additional_integer_information())
+    {
+        case bits_8:
+            count = get_value_8();
+            break;
+
+        case bits_16:
+            count = get_value_16();
+            break;
+
+        case bits_32:
+        case bits_64:
+#ifdef CBOR_FEATURE_32_BIT
+#error "32-bit and higher values not yet supported"
+#endif
+            // FIX: Not yet supported, need to make sure I get endian behavior right
+            break;
+    }
+}
+
+
 bool CBOR::DecoderStateMachine::process_iterate(uint8_t value)
 {
+    bool encountered_break;
+
+    DecoderStateMachine* nested = this->lock_nested();
+
+    if(nested)
+    {
+        bool processed = nested->process_iterate(value);
+        if(nested->state() == Pop)
+        {
+            encountered_break = nested->encountered_break();
+
+            // then we are actually done
+            // de-allocated "nested" memory
+            free_nested();
+        }
+        else
+            unlock_nested();
+
+        return processed;
+    }
+    // don't need to unlock or free nested if it was never allocated, just proceed
+
     switch(state())
     {
         case MajorType:
@@ -72,41 +117,20 @@ bool CBOR::DecoderStateMachine::process_iterate(uint8_t value)
                 case ByteArray:
                 case String:
                     state(ByteArrayState);
-                    switch(additional_integer_information())
-                    {
-                        case bits_8:
-                            count = get_value_8();
-                            break;
-
-                        case bits_16:
-                            count = get_value_16();
-                            break;
-
-                        case bits_32:
-                        case bits_64:
-                            // FIX: Not yet supported, need to make sure I get endian behavior right
-                            break;
-                    }
+                    assign_additional_integer_information();
                     break;
 
                 case ItemArray:
                     state(ItemArrayState);
-                    switch(additional_integer_information())
-                    {
-                        case bits_8:
-                            count = get_value_8();
-                            break;
-
-                        case bits_16:
-                            count = get_value_16();
-                            break;
-
-                        case bits_32:
-                        case bits_64:
-                            // FIX: Not yet supported, need to make sure I get endian behavior right
-                            break;
-                    }
+                    assign_additional_integer_information();
+                    // each item in this array is processed as an independent CBOR decoder state machine
+                    alloc_nested();
                     // can't get byte count because items in array are variable
+                    break;
+
+                case Map:
+                    state(MapState);
+                    assign_additional_integer_information();
                     break;
 
                 default:
@@ -117,7 +141,13 @@ bool CBOR::DecoderStateMachine::process_iterate(uint8_t value)
 
         case ByteArrayState:
         {
-            if(--count == 0)
+            // something feels wrong about doing this here
+            if(is_indefinite())
+            {
+                if(encountered_break)
+                    state(ByteArrayDone);
+            }
+            else if(--count == 0)
                 state(ByteArrayDone);
 
             return true;
@@ -131,11 +161,34 @@ bool CBOR::DecoderStateMachine::process_iterate(uint8_t value)
         {
             // will probably need nested substates because we can have arrays of arrays and
             // itemarrays of itemarrays.  that is gonna be tricky in a fixed-size state machine
-            if(--count == 0)
+            if(is_indefinite())
+            {
+
+            }
+            else if(--count == 0)
                 state(ItemArrayDone);
 
             return true;
         }
+
+        case ItemArrayDone:
+        {
+            state(MajorType);
+            return false;
+        }
+
+        case MapState:
+        {
+            return true;
+        }
+
+        case MapDone:
+        {
+            state(MajorType);
+            return false;
+        }
+
+        case Pop: return false;
     }
     return false;
 }

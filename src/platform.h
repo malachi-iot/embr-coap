@@ -8,6 +8,8 @@
 #define CONSTEXPR constexpr
 #define NULLPTR nullptr
 #else
+#include <stddef.h> // for NULL
+
 #define OVERRIDE
 #define CONSTEXPR const
 #define NULLPTR NULL

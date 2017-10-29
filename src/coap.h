@@ -265,6 +265,7 @@ public:
             uint16_t mid = bytes[2];
             mid <<= 8;
             mid |= bytes[3];
+            return mid;
 #endif
         }
 

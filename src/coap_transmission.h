@@ -306,6 +306,8 @@ public:
                 return &t;
             }
         }
+
+        return NULLPTR;
     }
 };
 

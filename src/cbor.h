@@ -5,8 +5,18 @@
 
 #include "platform.h"
 
+//#define CBOR_FEATURE_32_BIT
+//#define CBOR_FEATURE_64_BIT
+
+#ifdef CBOR_FEATURE_64_BIT
+#ifndef CBOR_FEATURE_32_BIT
+#define CBOR_FEATURE_32_BIT
+#endif
+#endif
+
 namespace moducom {
 
+// https://tools.ietf.org/html/rfc7049
 class CBOR
 {
 public:
@@ -37,6 +47,14 @@ public:
 
         uint8_t pos;
 
+        DecoderStateMachine* _nested;
+
+        void alloc_nested() {}
+
+        DecoderStateMachine* lock_nested() { return _nested; }
+        void free_nested() {}
+        void unlock_nested() {}
+
         enum State
         {
             MajorType,
@@ -46,7 +64,10 @@ public:
             ByteArrayState,
             ByteArrayDone,
             ItemArrayState,
-            ItemArrayDone
+            ItemArrayDone,
+            MapState,
+            MapDone,
+            Pop // if we are nested, pop one level
         };
 
         enum AdditionalIntegerInformation
@@ -57,7 +78,8 @@ public:
             bits_8 = 24,
             bits_16 = 25,
             bits_32 = 26,
-            bits_64 = 27
+            bits_64 = 27,
+            Indefinite = 31
         };
 
         State _state;
@@ -66,6 +88,21 @@ public:
         {
             return buffer[0] & 0x1F;
         }
+
+        bool is_indefinite() const
+        {
+            return additional_integer_information() == Indefinite;
+        }
+
+        // for use during indefinite processing.  Note that the nested decoder
+        // discovers this and the parent queries the nested one for it on a pop
+        // condition
+        bool encountered_break() const
+        {
+            return buffer[0] == 0xFF;
+        }
+
+        void assign_additional_integer_information();
 
         bool has_additional_integer_information() const
         {
@@ -93,9 +130,13 @@ public:
 
             value <<= 8;
             value |= buffer[2];
+
+            return value;
         }
 
     public:
+        DecoderStateMachine() : _nested(NULLPTR) {}
+
         bool process_iterate(uint8_t value);
 
         void process(uint8_t value)
