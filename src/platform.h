@@ -22,6 +22,13 @@
 #define PACKED __attribute__ ((packed))
 #endif
 
+#ifdef __ADSPBLACKFIN__
+// FIX: Not sure if this really is a double here
+typedef double float32_t;
+#else
+typedef float float32_t;
+typedef double float64_t;
+#endif
 
 #if __ADSPBLACKFIN__ || defined(_MSC_VER)
 #define COAP_HOST_LITTLE_ENDIAN

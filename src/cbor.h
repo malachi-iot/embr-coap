@@ -14,6 +14,8 @@
 #endif
 #endif
 
+#define CBOR_FEATURE_FLOAT
+
 namespace moducom {
 
 // https://tools.ietf.org/html/rfc7049
@@ -40,7 +42,7 @@ public:
         Null
     };
 
-    class DecoderStateMachine
+    class Decoder
     {
         union
         {
@@ -53,11 +55,11 @@ public:
 
         uint8_t pos;
 
-        DecoderStateMachine* _nested;
+        Decoder* _nested;
 
         void alloc_nested() {}
 
-        DecoderStateMachine* lock_nested() { return _nested; }
+        Decoder* lock_nested() { return _nested; }
         void free_nested() {}
         void unlock_nested() {}
 
@@ -181,9 +183,14 @@ public:
 
 
     public:
-        DecoderStateMachine() : _nested(NULLPTR) {}
+        Decoder() : _nested(NULLPTR) {}
 
-        Types type() const { return (Types) (buffer[0] >> 5); }
+        Types type() const
+        {
+            ASSERT_ERROR(true, pos > 0, "Buffer not yet initialized");
+
+            return (Types) (buffer[0] >> 5);
+        }
 
         bool process_iterate(uint8_t value);
 
@@ -194,29 +201,36 @@ public:
 
         State state() const { return _state; }
 
+#ifdef CBOR_FEATURE_FLOAT
+        // might have to do one of these https://beej.us/guide/bgnet/examples/ieee754.c
+        float32_t value_float32()
+        {
+            return -1;
+        }
+#endif
     };
 
     class IDecoderObserver
     {
     public:
-        virtual void OnTag(const DecoderStateMachine& decoder) = 0;
+        virtual void OnTag(const Decoder& decoder) = 0;
 
         // when this is fired, the integer/count information is all resolved also
-        virtual void OnType(const DecoderStateMachine& decoder) = 0;
+        virtual void OnType(const Decoder& decoder) = 0;
 
         // fired potentially multipled time for byte array, string, item array
-        virtual void OnArray(const DecoderStateMachine& decoder) = 0;
+        virtual void OnArray(const Decoder& decoder) = 0;
 
         // fired potentially multiple times for map
-        virtual void OnMap(const DecoderStateMachine& decoder) = 0;
+        virtual void OnMap(const Decoder& decoder) = 0;
 
-        virtual void OnFloat(const DecoderStateMachine& decoder) = 0;
+        virtual void OnFloat(const Decoder& decoder) = 0;
 
         virtual void OnCompleted() = 0;
     };
 
 
-    class EncoderStateMachine
+    class Encoder
     {
 
     };

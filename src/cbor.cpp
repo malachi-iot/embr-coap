@@ -2,7 +2,7 @@
 
 namespace moducom {
 
-void CBOR::DecoderStateMachine::assign_additional_integer_information()
+void CBOR::Decoder::assign_additional_integer_information()
 {
     switch(additional_integer_information())
     {
@@ -24,11 +24,11 @@ void CBOR::DecoderStateMachine::assign_additional_integer_information()
     }
 }
 
-bool CBOR::DecoderStateMachine::process_iterate_nested(uint8_t value, bool* encountered_break)
+bool CBOR::Decoder::process_iterate_nested(uint8_t value, bool* encountered_break)
 {
     // nested decoder lasts the duration of the array/map which uses it
     // avoid alloc/free-ing per item
-    DecoderStateMachine* nested = this->lock_nested();
+    Decoder* nested = this->lock_nested();
 
     ASSERT_ERROR(true, nested != NULLPTR, "Expected nested decoder but none present");
 
@@ -48,7 +48,7 @@ bool CBOR::DecoderStateMachine::process_iterate_nested(uint8_t value, bool* enco
 }
 
 
-bool CBOR::DecoderStateMachine::process_iterate(uint8_t value)
+bool CBOR::Decoder::process_iterate(uint8_t value)
 {
     switch(state())
     {
@@ -156,7 +156,7 @@ bool CBOR::DecoderStateMachine::process_iterate(uint8_t value)
             {
                 // indefinite byte arrays are a sequence of CBOR regular arrays ended by the 0xFF break
                 // and therefore are nested
-                DecoderStateMachine* nested = lock_nested();
+                Decoder* nested = lock_nested();
 
                 // if the last processing step yielded DONE
                 // and we now have a STOP/BREAK value
@@ -187,7 +187,7 @@ bool CBOR::DecoderStateMachine::process_iterate(uint8_t value)
 
         case ItemArrayState:
         {
-            DecoderStateMachine* nested = lock_nested();
+            Decoder* nested = lock_nested();
 
             bool processed = nested->process_iterate(value);
 
@@ -242,11 +242,11 @@ void CBOR::DecodeToObserver::decode(const uint8_t *cbor, size_t len)
 {
 #ifdef __CPP11__
 #else
-    typedef DecoderStateMachine state_t;
+    typedef Decoder state_t;
     typedef CBOR type_t;
 #endif
 
-    DecoderStateMachine decoder;
+    Decoder decoder;
 
     for(int i = 0; i < len; i++)
     {
