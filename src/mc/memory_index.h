@@ -14,7 +14,7 @@ namespace moducom { namespace dynamic {
 struct PACKED MemoryPoolIndexedHandlePage : MemoryPoolHandlePage
 {
     typedef MemoryPoolDescriptor::IndexedHandle handle_t;
-    typedef IMemoryPool::handle_opaque_t handle_opaque_t;
+    typedef IMemory::handle_opaque_t handle_opaque_t;
 
 private:
     handle_t indexedHandle[];
@@ -64,7 +64,7 @@ public:
                 return i;
         }
 
-        return IMemoryPool::invalid_handle;
+        return IMemory::invalid_handle;
     }
 
     /// Low-level function does NOT initialize handle_t

@@ -7,7 +7,7 @@
 namespace moducom { namespace dynamic {
 
 template <size_t page_size = 32, uint8_t page_count = 128>
-class MemoryPool : public IMemoryPool
+class MemoryPool : public IMemory
 {
     uint8_t pages[page_count][page_size];
 
@@ -369,7 +369,7 @@ public:
 };
 
 
-class MemoryPoolAggregator : public IMemoryPool
+class MemoryPoolAggregator : public IMemory
 {
 public:
     virtual int allocate(size_t size) OVERRIDE { return -1; }

@@ -17,7 +17,7 @@ TEST_CASE("Low-level memory pool tests", "[mempool_low]")
     }
     SECTION("Index2 memory pool")
     {
-        MemoryPool<> pool(IMemoryPool::Indexed2);
+        MemoryPool<> pool(IMemory::Indexed2);
         typedef MemoryPoolIndexed2HandlePage::handle_t handle_t;
 
         SECTION("Allocations")

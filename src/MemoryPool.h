@@ -13,7 +13,7 @@
 
 namespace moducom { namespace dynamic {
 
-class IMemoryPool
+class IMemory
 {
 protected:
 public:
@@ -21,6 +21,7 @@ public:
 
     static CONSTEXPR handle_opaque_t invalid_handle = -1;
 
+    // TODO: Move this out of IMemory abstract class
     enum TierEnum
     {
         Direct = 0,
@@ -32,7 +33,7 @@ public:
 
     virtual handle_opaque_t allocate(size_t size) = 0;
     virtual bool free(handle_opaque_t handle) = 0;
-    // TODO: consider making this an append instead
+    // TODO: consider making this an append instead (add a append byte* who is 'size' big)
     virtual bool expand(handle_opaque_t handle, size_t size) = 0;
     virtual void shrink(handle_opaque_t handle, size_t size) = 0;
 
@@ -52,7 +53,7 @@ public:
 ///
 struct PACKED MemoryPoolDescriptor
 {
-    IMemoryPool::TierEnum tier : 3;
+    IMemory::TierEnum tier : 3;
     // Number of handles in this page
     uint8_t size: 4;
     // Next page also has is a memory pool descriptor

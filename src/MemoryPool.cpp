@@ -10,7 +10,7 @@ void MemoryPoolIndexedHandlePage::initialize(uint8_t free_page, uint8_t page_cou
 {
     // TODO: refactor to make size 0 based, to increase usable space
     header.size = 1;
-    header.tier = IMemoryPool::Indexed;
+    header.tier = IMemory::Indexed;
     header.followup = false;
     // set up initial fully-empty handle
     handle_t& handle = indexedHandle[0];

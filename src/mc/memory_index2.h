@@ -49,7 +49,7 @@ struct PACKED MemoryPoolIndexed2HandlePage : MemoryPoolHandlePage
     };
 
     typedef Index2Handle handle_t;
-    typedef IMemoryPool::handle_opaque_t handle_opaque_t;
+    typedef IMemory::handle_opaque_t handle_opaque_t;
 
 private:
     handle_t indexedHandle[];
@@ -64,7 +64,7 @@ public:
     /// @param blank_page Page 1 from memory pool - note this should *already* have its size field initialized
     void initialize(size_t page_size, handle_t::PageData* blank_page)
     {
-        header.tier = IMemoryPool::Indexed2;
+        header.tier = IMemory::Indexed2;
         header.size = 1;
 
         page_size -= sizeof(MemoryPoolHandlePage);
@@ -136,7 +136,7 @@ public:
                 return i;
         }
 
-        return IMemoryPool::invalid_handle;
+        return IMemory::invalid_handle;
     }
 
     //!
@@ -253,7 +253,7 @@ public:
             }
         }
 
-        if(candidate == NULLPTR) return IMemoryPool::invalid_handle;
+        if(candidate == NULLPTR) return IMemory::invalid_handle;
 
         *page_data = candidate;
 
