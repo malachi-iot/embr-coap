@@ -174,12 +174,21 @@ void TestResponder::OnOption(const coap::CoAP::OptionExperimental& option)
 #endif
 
     // figure out if we're handling a request or a response
+    // FIX: https://tools.ietf.org/html/rfc7252#section-2.2
+    // denotes that a response can also be confirmable/noncomfirmable
+    // (cases are non-piggyback response or probably also registered observer/subscriber responses)
+    // so we need to instead pay closer attention to the token to figure out whether
+    // we're looking at a response or not
     switch(header.type())
     {
         // request
         case type_t::Confirmable:
         case type_t::NonConfirmable:
-            OnOptionRequest(option);
+            if(context->is_server)
+                OnOptionRequest(option);
+            else
+                OnOptionResponse(option);
+
             break;
 
             // response
@@ -279,10 +288,13 @@ void TestResponder::OnToken(const uint8_t *token, size_t length)
             // this server request, in which we may be able to leave the Acknowledgement switch
             // alone
             const Token *t = token_manager.get(token, length);
-            if(t == NULLPTR)
+            bool is_new_token = t == NULLPTR;
+
+            if(is_new_token)
             {
                 // go here when incoming CoAP is not matched to a token,
-                // indicating a new request
+                // indicating a new token+request is coming in (signals that
+                // we are the server)
                 t = token_manager.add(token, length, NULLPTR);
             }
             else
@@ -297,6 +309,10 @@ void TestResponder::OnToken(const uint8_t *token, size_t length)
 
             // FIX: kludgy brute force here, clean this up when code settles down
             context = (RequestContext*) &t->context;
+
+            // incoming fresh new token means we are receiving a client request,
+            // making us the server
+            context->is_server = is_new_token;
 
             break;
         }

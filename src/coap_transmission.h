@@ -262,6 +262,8 @@ struct RequestContext
 
     CoAP::IResponder* responder;
 
+    bool is_server;
+
 #ifdef COAP_FEATURE_SUBSCRIPTIONS
     // only 24 bit of LSB used
     // https://tools.ietf.org/html/rfc7641#section-3.4
@@ -270,7 +272,10 @@ struct RequestContext
     bool subscribed;
 #endif
 
-    RequestContext() : message_id(0) {}
+    RequestContext() :
+        message_id(0),
+        responder(NULLPTR)
+    {}
 };
 
 struct Token
@@ -340,6 +345,10 @@ class TestResponder : public CoAP::IResponder
     const Token* token;
     RequestContext* context;
 
+    // FIX: Get rid of this once token manager/token
+    // settles down more
+    RequestContext dummy_context;
+
     std::string uri;
     uint16_t port;
     // NOTE: probably can optimize this out
@@ -377,7 +386,9 @@ public:
     virtual void OnCompleted();
 
     TestResponder() :
-        user_responder(NULLPTR)
+        token(NULLPTR),
+        user_responder(NULLPTR),
+        context(&dummy_context)
         //uri_list(str_cmp)
     {}
 
@@ -429,7 +440,8 @@ public:
             token(token),
             option_generator(0),
             option_generator_statemachine(option_generator)
-    {}
+    {
+    }
     // start out with these all being blocking-ish, but consider
     // making a iterative/byte-by-byte version for less blocking or
     // less memory intensive flavors
