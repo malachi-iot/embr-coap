@@ -25,6 +25,7 @@ public:
     virtual void OnToken(const uint8_t message[], size_t length) OVERRIDE;
     virtual void OnOption(const CoAP::OptionExperimental& option) OVERRIDE;
     virtual void OnPayload(const uint8_t message[], size_t length) OVERRIDE;
+    virtual void OnCompleted() OVERRIDE;
 };
 
 void TestResponder::OnHeader(const CoAP::Header header) {}
@@ -34,6 +35,11 @@ void TestResponder::OnOption(const CoAP::OptionExperimental &option) {}
 void TestResponder::OnPayload(const uint8_t *message, size_t length) {}
 
 void TestResponder::OnToken(const uint8_t *message, size_t length) {}
+
+void TestResponder::OnCompleted()
+{
+    std::cout << "Finished CoAP processing" << std::endl;
+}
 
 int main()
 {

@@ -461,6 +461,10 @@ public:
         virtual void OnToken(const uint8_t message[], size_t length) = 0;
         virtual void OnOption(const OptionExperimental& option) = 0;
         virtual void OnPayload(const uint8_t message[], size_t length) = 0;
+        // NOTE: Would like the convenience of OnPayload and OnCompleted combined, but that
+        // breaks consistency with the naming.  I suppose I could name it OnPayloadAndOrCompleted
+        // but that seems clumsy too
+        virtual void OnCompleted() {}
     };
 
 

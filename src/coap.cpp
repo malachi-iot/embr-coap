@@ -288,6 +288,8 @@ void CoAP::ParseToIResponder::process(uint8_t message[], size_t length)
     {
         Parser::State state = parser.state();
 
+        // FIX: Need something a little clearer, since we get this status when we
+        // are end-of-message that never had a payload also
         if (state != Parser::Payload)
         {
             bool processed;
@@ -378,9 +380,12 @@ void CoAP::ParseToIResponder::process(uint8_t message[], size_t length)
         {
             // payload processing happens here
             responder->OnPayload(&message[i], length - i);
+            responder->OnCompleted();
             return;
         }
     }
+
+    responder->OnCompleted();
 }
 
 }

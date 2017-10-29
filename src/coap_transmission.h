@@ -358,6 +358,7 @@ public:
     virtual void OnToken(const uint8_t message[], size_t length) OVERRIDE;
     virtual void OnOption(const CoAP::OptionExperimental& option) OVERRIDE;
     virtual void OnPayload(const uint8_t message[], size_t length) OVERRIDE;
+    virtual void OnCompleted();
 
     TestResponder() :
         user_responder(NULLPTR)

@@ -314,6 +314,12 @@ void TestResponder::OnPayload(const uint8_t message[], size_t length)
     user_responder->OnPayload(message, length);
 }
 
+
+void TestResponder::OnCompleted()
+{
+    if(user_responder) user_responder->OnCompleted();
+}
+
 void TestOutgoingMessageHandler::write_request_header(CoAP::Header::TypeEnum type,
                                                       CoAP::Header::RequestMethodEnum method)
 {
