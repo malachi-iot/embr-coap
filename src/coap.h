@@ -42,6 +42,8 @@ namespace coap {
 
 #define COAP_RESPONSE_CODE(_class, _detail) ((_class << 5) | _detail)
 
+#define COAP_FEATURE_SUBSCRIPTIONS
+
 // potentially http://pubs.opengroup.org/onlinepubs/7908799/xns/htonl.html are of interest here
 // also endianness macros here if you are in GNU:
 // https://gcc.gnu.org/onlinedocs/cpp/Common-Predefined-Macros.html

@@ -217,6 +217,23 @@ void TestResponder::OnOptionRequest(const coap::CoAP::OptionExperimental& option
             break;
         }
 
+#ifdef COAP_FEATURE_SUBSCRIPTIONS
+        case enum_t::Observe:
+            switch(option.get_uint8_t())
+            {
+                // register/subscribe
+                case 0:
+                    register_subscriber();
+                    break;
+
+                // deregister/ubsubscribe
+                case 1:
+                    deregister_subscriber();
+                    break;
+            }
+            break;
+#endif
+
         case enum_t::ContentFormat:
             break;
 
@@ -272,7 +289,8 @@ void TestResponder::OnToken(const uint8_t *token, size_t length)
             {
                 // go here when incoming CoAP IS matched to a token
                 // indicating a response (non-piggybacked/separate server response)
-                t->responder->OnHeader(header);
+                // FIX: Shouldn't this actually be an OnToken call?
+                t->context.responder->OnHeader(header);
             }
 
             this->token = t;
@@ -288,15 +306,51 @@ void TestResponder::OnToken(const uint8_t *token, size_t length)
             // look up a token on an incoming response to match against a previously outgoing request
             const Token *t = token_manager.get(token, length);
 
+            this->token = t;
+
             // if receiving a piggybacked message, expect a payload with this ACK
             break;
         }
     }
+
+    // pass this on to the registered responder, who will probably just ignore it
+    if(context->responder)
+        context->responder->OnToken(token, length);
 }
 
 
 void TestResponder::OnOptionResponse(const CoAP::OptionExperimental &option)
 {
+#ifdef __CPP11__
+    typedef coap::CoAP::OptionExperimental::Numbers enum_t;
+#else
+    typedef coap::CoAP::OptionExperimental enum_t;
+#endif
+
+#ifdef COAP_FEATURE_SUBSCRIPTIONS
+    switch(option.get_number())
+    {
+        case enum_t::Observe:
+            // this is a rising sequence to ensure out-of-order updates are
+            // discarded.  Check incoming option value against our tracked one
+            uint32_t incoming = option.get_uint();
+            bool is_fresh_observed = incoming > token->context.observer_option_value;
+            experimental::Token* t = ((experimental::Token*)token);
+
+            if(is_fresh_observed)
+                t->context.observer_option_value = incoming;
+
+            // FIX: need a better indicator, because this is going to stay "true"
+            // when all kinds of non-observe situations may show up which should
+            // make it false
+            t->context.is_fresh_observed = is_fresh_observed;
+
+            break;
+    }
+#endif
+
+    if(context->responder) context->responder->OnOption(option);
+
     header.token_length();
 }
 

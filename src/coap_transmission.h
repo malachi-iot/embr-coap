@@ -260,6 +260,16 @@ struct RequestContext
     // NOTE: not active yet
     const uint16_t message_id;
 
+    CoAP::IResponder* responder;
+
+#ifdef COAP_FEATURE_SUBSCRIPTIONS
+    // only 24 bit of LSB used
+    // https://tools.ietf.org/html/rfc7641#section-3.4
+    uint32_t observer_option_value;
+    bool is_fresh_observed;
+    bool subscribed;
+#endif
+
     RequestContext() : message_id(0) {}
 };
 
@@ -268,7 +278,6 @@ struct Token
     uint8_t data[8];
     uint8_t length;
 
-    CoAP::IResponder* responder;
     RequestContext context;
 };
 
@@ -290,7 +299,7 @@ public:
 
         t.length = length;
         memcpy(t.data, token, length);
-        t.responder = responder;
+        t.context.responder = responder;
 
         return &t;
     }
@@ -351,6 +360,11 @@ class TestResponder : public CoAP::IResponder
 
     // put THIS into a map of ports, otherwise the key must get more complicated and include port
     map_t uri_list;
+
+#ifdef COAP_FEATURE_SUBSCRIPTIONS
+    void register_subscriber() { context->subscribed = true; }
+    void deregister_subscriber() { context->subscribed = false; }
+#endif
 
     void OnOptionRequest(const CoAP::OptionExperimental& option);
     void OnOptionResponse(const CoAP::OptionExperimental& option);
