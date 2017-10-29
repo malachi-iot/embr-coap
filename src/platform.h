@@ -44,7 +44,7 @@ typedef double float64_t;
 // TODO: Make this generate log warnings or something
 #define ASSERT(expected, actual)
 
-#ifdef _MSC_VER
+#if defined(_MSC_VER) || defined(__GNUC__)
 #include <iostream>
 // This will generate warnings but the program will keep going
 #define ASSERT_WARN(expected, actual, message)

@@ -22,14 +22,16 @@ TEST_CASE("Low-level memory pool tests", "[mempool_low]")
 
         SECTION("Allocations")
         {
-            int allocated_count = 2;
+            int allocated_count = 1;
             int unallocated_count = 1;
 
             int handle = pool.allocate(100);
-            int handle2 = pool.allocate(100);
 
-            // broken, aborting for now
-            return;
+            REQUIRE(pool.get_allocated_handle_count() == allocated_count);
+
+            allocated_count++;
+
+            int handle2 = pool.allocate(100);
 
             REQUIRE(pool.get_allocated_handle_count() == allocated_count);
             REQUIRE(pool.get_allocated_handle_count(false) == unallocated_count);
@@ -40,6 +42,10 @@ TEST_CASE("Low-level memory pool tests", "[mempool_low]")
                                        // is being tracked in the page pool
                                        unallocated_count * sizeof(handle_t::PageData)
             );
+        }
+        SECTION("Next")
+        {
+            REQUIRE(pool.get_allocated_handle_count() == 0);
         }
     }
 }

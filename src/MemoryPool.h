@@ -86,6 +86,7 @@ struct PACKED MemoryPoolDescriptor
     };
 
 
+    /// Actual handle(s) residing within system page 0
     struct PACKED Index2Handle
     {
         /// which page this handle points to.  0 is reserved always for system handle
@@ -94,6 +95,8 @@ struct PACKED MemoryPoolDescriptor
 
         bool is_active() const { return page != 0; }
 
+        // header at the beginning of a non-system page (1-255)
+        // only used for ACTIVE Index2Handle
         struct PACKED PageData
         {
             bool locked : 1;
@@ -309,7 +312,9 @@ public:
 #endif
 
 
-    handle_opaque_t get_first_inactive_handle() const
+    // FIX: temporarily passing in page_size until we settle down
+    // get_approximate_header_size() behavior
+    handle_opaque_t get_first_inactive_handle(size_t page_size) const
     {
         // always reflects more elements than are actually
         // present to optimize lookups in large page sizes
@@ -317,7 +322,8 @@ public:
         // by itself - by it being page == 0 or not)
         const size_t size_approximate = get_approximate_header_size();
 
-        for(size_t i = 0; i < size_approximate; i++)
+        //for(size_t i = 0; i < size_approximate; i++)
+        for(size_t i = 0; i < page_size / sizeof(handle_t); i++)
         {
             if(!get_descriptor(i).is_active())
                 return i;
@@ -610,7 +616,9 @@ public:
             if(page_data->size > size_in_pages)
             {
                 // get brand new inactive handle to snap up and use
-                handle_opaque_t new_handle = sys_page.get_first_inactive_handle();
+                handle_opaque_t new_handle = sys_page.get_first_inactive_handle(page_size);
+
+                ASSERT_ERROR(true, new_handle != invalid_handle, "Unable to find inactive handle");
 
                 // get location of current unallocated page data, then increment just past end of it
                 // this forms the new_page data representing the shrunken remainder unallocated
@@ -639,8 +647,10 @@ public:
 
     virtual handle_opaque_t allocate(size_t size) OVERRIDE
     {
+        const MemoryPoolDescriptor& descriptor = get_sys_page_descriptor();
+
         // TODO: soon, replace with proper polymorphism
-        switch(get_sys_page_descriptor().tier)
+        switch(descriptor.tier)
         {
             case Indexed2:
                 return allocate_index2(size);
