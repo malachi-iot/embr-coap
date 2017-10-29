@@ -73,6 +73,14 @@ void TestResponder::OnOption(const CoAP::OptionExperimental& option)
             REQUIRE(option.length == 2);
             break;
 
+        case CoAP::OptionExperimental::UriPath:
+            // FIX: First failure is option.length coming in
+            // at 3, which suggests the TEST portion is not
+            // coming through properly (have a feeling it's
+            // getting eaten by our uri matcher)
+            REQUIRE(option.length == 4);
+            break;
+
         default:
             FAIL("Unexpected Option Number: " << option.number);
     }

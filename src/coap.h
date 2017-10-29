@@ -411,6 +411,9 @@ public:
             // format: opaque
             ETag = 4,
             IfNoneMatch = 5,
+            // https://tools.ietf.org/html/rfc7641#section-2
+            // format: uint 0-3 bytes
+            Observe = 6,
             UriPort = 7,
             LocationPath = 8,
             UriPath = 11,
@@ -453,6 +456,8 @@ public:
         union
         {
             const uint8_t *value;
+            // FIX: Looks like we can have uints from 0-32 bits
+            // https://tools.ietf.org/html/rfc7252#section-3.2
             const uint16_t value_uint;
         };
 
@@ -469,6 +474,52 @@ public:
                 length(length),
                 value_uint(value_uint)
         {}
+
+        uint8_t get_uint8_t() const
+        {
+            ASSERT_ERROR(1, length, "Incorrect length");
+            return *value;
+        }
+
+        uint32_t get_uint16_t() const
+        {
+            ASSERT_ERROR(2, length, "Incorrect length");
+
+            uint32_t v = *value;
+
+            v <<= 8;
+            v |= value[1];
+
+            return v;
+        }
+
+        uint32_t get_uint24_t() const
+        {
+            ASSERT_ERROR(3, length, "Incorrect length");
+
+            uint32_t v = *value;
+
+            v <<= 8;
+            v |= value[1];
+            v <<= 8;
+            v |= value[2];
+
+            return v;
+        }
+
+        // Have yet to see a CoAP UINT option value larger than 32 bits
+        uint32_t get_uint() const
+        {
+            ASSERT_ERROR(true, length <= 4, "Option length too large");
+
+            uint32_t v = *value;
+
+            for(int i = 0; i < length; i++)
+            {
+                v <<= 8;
+                v |= value[i];
+            }
+        }
     };
 
 
