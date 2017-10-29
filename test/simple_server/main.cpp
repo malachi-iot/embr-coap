@@ -8,6 +8,7 @@
 #include <netinet/in.h>
 
 // bits adapted from http://www.linuxhowtos.org/data/6/server.c
+// and https://www.cs.rutgers.edu/~pxk/417/notes/sockets/udp.html
 
 void error(const char *msg)
 {
@@ -17,12 +18,32 @@ void error(const char *msg)
 
 using namespace moducom::coap;
 
+class TestResponder : public CoAP::IResponder
+{
+public:
+    virtual void OnHeader(const CoAP::Header header) OVERRIDE;
+    virtual void OnToken(const uint8_t message[], size_t length) OVERRIDE;
+    virtual void OnOption(const CoAP::OptionExperimental& option) OVERRIDE;
+    virtual void OnPayload(const uint8_t message[], size_t length) OVERRIDE;
+};
+
+void TestResponder::OnHeader(const CoAP::Header header) {}
+
+void TestResponder::OnOption(const CoAP::OptionExperimental &option) {}
+
+void TestResponder::OnPayload(const uint8_t *message, size_t length) {}
+
+void TestResponder::OnToken(const uint8_t *message, size_t length) {}
+
 int main()
 {
     //moducom::coap::CoAP::Header header;
     experimental::OutgoingResponseHandler out_handler(nullptr);
     experimental::TestResponder responder;
+    TestResponder user_responder;
     CoAP::Parser parser;
+
+    responder.add_handle("basic/", &user_responder);
 
     std::cout << "Hello, World!" << std::endl;
 
@@ -51,12 +72,12 @@ int main()
         //int newsockfd = accept(sockfd, (sockaddr *) &cli_addr, &clilen);
         int newsockfd = sockfd;
 
-        if(newsockfd < 1) error("ERROR on accept");
+        //if(newsockfd < 1) error("ERROR on accept");
 
         bzero(buffer, 1024);
 
         //size_t n = read(newsockfd, buffer, 1024);
-        size_t n = recvfrom(newsockfd, buffer, sizeof(buffer), 0, (sockaddr*) &cli_addr, &clilen);
+        ssize_t n = recvfrom(newsockfd, buffer, sizeof(buffer), 0, (sockaddr*) &cli_addr, &clilen);
 
         std::cout << "Got packet: " << n << " bytes" << std::endl;
 
@@ -65,7 +86,7 @@ int main()
         if(n > 0)
             parser2.process(buffer, n);
 
-        close(newsockfd);
+        //close(newsockfd);
     }
 
     return 0;

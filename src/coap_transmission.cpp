@@ -229,7 +229,7 @@ void TestResponder::OnOptionRequest(const coap::CoAP::OptionExperimental& option
 
     // we have enough to assign user_responder, so do so
     // FIX: be sure to pay attention to port as well
-    if (user_responder == NULLPTR && option.number > enum_t::UriPath)
+    if (user_responder == NULLPTR && option.number >= enum_t::UriPath)
     {
         user_responder = uri_list[this->uri];
     }
