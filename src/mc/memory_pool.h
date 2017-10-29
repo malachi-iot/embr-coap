@@ -372,8 +372,8 @@ public:
 class MemoryPoolAggregator : public IMemory
 {
 public:
-    virtual int allocate(size_t size) OVERRIDE { return -1; }
-    virtual bool free(int handle) OVERRIDE { return false; }
+    virtual handle_opaque_t allocate(size_t size) OVERRIDE { return -1; }
+    virtual bool free(handle_opaque_t handle) OVERRIDE { return false; }
 };
 
 }}

@@ -11,7 +11,15 @@ class IMemory
 {
 protected:
 public:
-    typedef int handle_opaque_t;
+    // need to be big enough to also just hold a regular non-lockable pointer
+    // (for the IMemory providers which don't actually do any locking/tracking)
+    // TODO: Consider a non-locking IMemory implementation which still does minimal tracking
+    // so that we can use 16-bit handles
+#ifdef ENVIRONMENT64
+    typedef uint64_t handle_opaque_t;
+#else
+    typedef uint32_t handle_opaque_t;
+#endif
 
     static CONSTEXPR handle_opaque_t invalid_handle = -1;
 
