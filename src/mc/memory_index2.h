@@ -13,7 +13,42 @@ namespace moducom { namespace dynamic {
 
 struct PACKED MemoryPoolIndexed2HandlePage : MemoryPoolHandlePage
 {
-    typedef MemoryPoolDescriptor::Index2Handle handle_t;
+    /// Actual handle(s) residing within system page 0
+    struct PACKED Index2Handle
+    {
+        /// which page this handle points to.  0 is reserved always for system handle
+        /// descriptor area, and therefore is repurposed as an "inactive" indicator
+        uint8_t page;
+
+        bool is_active() const { return page != 0; }
+
+        // header at the beginning of a non-system page (1-255)
+        // only used for ACTIVE Index2Handle
+        struct PACKED PageData
+        {
+            bool locked : 1;
+            bool allocated : 1;
+
+            /// # of utilized pages valid values from 1-255
+            uint8_t size;
+
+            /// Initialize an active but unlocked and unallocated
+            /// page
+            PageData(uint8_t size)
+            {
+                locked = false;
+                allocated = false;
+                this->size = size;
+            }
+
+            PageData(const PageData& copy_from)
+            {
+                *this = copy_from;
+            }
+        };
+    };
+
+    typedef Index2Handle handle_t;
     typedef IMemoryPool::handle_opaque_t handle_opaque_t;
 
 private:
