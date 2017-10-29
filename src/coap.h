@@ -387,6 +387,21 @@ public:
             String
         };
 
+
+        enum ContentFormats
+        {
+            // RFC 7252 Section 12.3
+            TextPlain               = 0,
+            ApplicationLinkFormat   = 40,
+            ApplicationXml          = 41,
+            ApplicationOctetStream  = 42,
+            ApplicationExi          = 43,
+            ApplicationJson         = 44,
+
+            // RFC 7049
+            ApplicationCbor         = 60
+        };
+
         enum Numbers
         {
             /// format: opaque
@@ -399,8 +414,14 @@ public:
             UriPort = 7,
             LocationPath = 8,
             UriPath = 11,
-            ContentFormat = 12
-
+            ContentFormat = 12,
+            MaxAge = 14,
+            UriQuery = 15,
+            Accept = 17,
+            LocationQuery = 20,
+            ProxyUri = 35,
+            ProxyScheme = 39,
+            Size1 = 60
         };
 
         // Option Number as defined by RFC7252
