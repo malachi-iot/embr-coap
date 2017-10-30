@@ -18,18 +18,45 @@ public:
 };
 
 
+class PipelineMessage : public MemoryChunk
+{
+public:
+    struct Status
+    {
+        // message has reached its final destination
+        bool delivered : 1;
+        // message has been copied and original no longer
+        // needed
+        bool copied : 1;
+
+        // 6 bits of things just for me!
+        uint8_t reserved: 6;
+
+        // 8 bits of things just for you!
+        uint8_t user : 8;
+    };
+
+    Status* status;
+
+    PipelineMessage() : status(NULLPTR) {}
+    PipelineMessage(uint8_t* data, size_t length) : status(NULLPTR),
+                                                    MemoryChunk(data, length) {}
+
+};
+
+
 // borrowing concept for .NET low-level pipelining underneath ASP.NET Core
 // very similar to message queuing
 class IPipeline
 {
 public:
     // returns a memory chunk with NULLS if no pipeline data was present
-    virtual MemoryChunk read() = 0;
-    virtual bool write(const MemoryChunk& chunk) = 0;
+    virtual PipelineMessage read() = 0;
+    virtual bool write(const PipelineMessage& chunk) = 0;
 
     bool write(const uint8_t* data, size_t length)
     {
-        write(MemoryChunk((uint8_t *)data, length));
+        write(PipelineMessage((uint8_t *)data, length));
     }
 };
 
@@ -38,20 +65,20 @@ public:
 class BasicPipeline : public IPipeline
 {
     // just the one chunk
-    MemoryChunk chunk;
+    PipelineMessage chunk;
 
 public:
     BasicPipeline() { chunk.length = 0; }
 
-    virtual MemoryChunk read() OVERRIDE
+    virtual PipelineMessage read() OVERRIDE
     {
-        MemoryChunk return_chunk = chunk;
+        PipelineMessage return_chunk = chunk;
         chunk.length = 0;
         chunk.data = 0;
         return return_chunk;
     }
 
-    virtual bool write(const MemoryChunk& chunk) OVERRIDE
+    virtual bool write(const PipelineMessage& chunk) OVERRIDE
     {
         if(this->chunk.length) return false;
 
