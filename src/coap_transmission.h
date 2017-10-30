@@ -326,6 +326,8 @@ public:
 };
 
 
+class TestOutgoingMessageHandler;
+
 // Note there 2 scenarios for memory handled from the one calling IResponder:
 //
 // 1. memory only lasts as long as the OnXXX call (streaming)
@@ -344,6 +346,7 @@ class TestResponder : public CoAP::IResponder
     TokenManager token_manager;
     const Token* token;
     RequestContext* context;
+    TestOutgoingMessageHandler* outgoing_message_handler;
 
     // FIX: Get rid of this once token manager/token
     // settles down more
@@ -385,9 +388,10 @@ public:
     virtual void OnPayload(const uint8_t message[], size_t length) OVERRIDE;
     virtual void OnCompleted();
 
-    TestResponder() :
+    TestResponder(TestOutgoingMessageHandler* outgoing_message_handler = NULLPTR) :
         token(NULLPTR),
         user_responder(NULLPTR),
+        outgoing_message_handler(outgoing_message_handler),
         context(&dummy_context)
         //uri_list(str_cmp)
     {}
@@ -435,6 +439,7 @@ protected:
 public:
     // FIX: FOR DEBUG ONLY!!
     const uint8_t* get_buffer() const { return buffer; }
+    const size_t get_pos() const { return pos; }
 
     TestOutgoingMessageHandler(const Token* token = NULLPTR) :
             token(token),

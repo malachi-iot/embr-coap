@@ -278,11 +278,11 @@ CoAP::Parser::Parser()
     pos = 0;
 }
 
-void CoAP::ParseToIResponder::process(uint8_t message[], size_t length)
+void CoAP::ParseToIResponder::process(const uint8_t message[], size_t length)
 {
     uint16_t option_number = 0;
     uint16_t option_length;
-    uint8_t* option_value;
+    const uint8_t* option_value;
 
     for (int i = 0; i < length; i++)
     {

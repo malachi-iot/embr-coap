@@ -692,7 +692,7 @@ public:
 
         }
 
-        void process(uint8_t message[], size_t length);
+        void process(const uint8_t message[], size_t length);
     };
 
     class OptionParser
