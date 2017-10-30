@@ -21,19 +21,33 @@ public:
 class PipelineMessage : public MemoryChunk
 {
 public:
+    // Expected this will live on a stack or instance field somewhere
+    // With this we can retrieve how our message is progressing through
+    // the pipelines
     struct Status
     {
+    private:
         // message has reached its final destination
-        bool delivered : 1;
+        bool _delivered : 1;
         // message has been copied and original no longer
         // needed
-        bool copied : 1;
+        bool _copied : 1;
 
         // 6 bits of things just for me!
+        // TODO: Consider a flag for memory handle
+        // TODO: Consider also a cheap-n-nasty RTTI for extended Statuses
         uint8_t reserved: 6;
+    public:
+        bool delivered() const { return _delivered; }
+        void delivered(bool value) { _delivered = value; }
+
+        bool copied() const {return _copied;}
+        void copied(bool value) { _copied = value; }
 
         // 8 bits of things just for you!
         uint8_t user : 8;
+
+        // Consider an extended version of this with a semaphore
     };
 
     Status* status;
@@ -60,6 +74,48 @@ public:
     }
 };
 
+// TODO: Find a better name
+// With pipelining + message status, we can write one set of code which can either
+//
+// 1. send a message and block waiting for delivery (traditional blocking)
+// 2. send a message and proceed, checking status for delivery (traditional threaded/async)
+// 3. send a message and proceed, checking status for just copied (traditional big-buffer style)
+class SemiBlockingPipeline : public IPipeline
+{
+    IPipeline& underlying;
+
+public:
+    SemiBlockingPipeline(IPipeline& underlying) : underlying(underlying) {}
+
+    virtual PipelineMessage read() OVERRIDE
+    {
+        PipelineMessage message;
+
+        do
+        {
+            message = underlying.read();
+            // put a yield into here also
+        } while(message.length == 0);
+
+        return message;
+    }
+
+    virtual bool write(const PipelineMessage &chunk) OVERRIDE
+    {
+        bool result = underlying.write(chunk);
+
+        if(result == false) return false;
+
+        if(chunk.status)
+            while(!(chunk.status->copied() || chunk.status->delivered()))
+            {
+                // do some kind of yield
+            }
+
+        return true;
+    }
+
+};
 
 // no buffering or queuing (just the one chunk), be careful!
 class BasicPipeline : public IPipeline

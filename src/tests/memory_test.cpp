@@ -4,7 +4,8 @@
 #include "../MemoryPool.h"
 #include "../mc/string.h"
 
-#include <malloc.h>
+// Not really using it, and isn't behaving on macOS
+//#include <malloc.h>
 
 using namespace moducom::dynamic;
 
@@ -24,7 +25,7 @@ TEST_CASE("General memory tests", "[memory]")
         memory->unlock(handle);
 
 #ifdef __GNUC__
-        struct mallinfo mi = mallinfo();
+//        struct mallinfo mi = mallinfo();
 #endif
 
         delete memory;
