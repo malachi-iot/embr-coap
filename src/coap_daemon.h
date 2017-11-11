@@ -103,11 +103,14 @@ class IPipeline
 public:
     // returns a memory chunk with NULLS if no pipeline data was present
     virtual PipelineMessage read() = 0;
+
+    // returns true when memory could be written to pipeline,
+    // false otherwise
     virtual bool write(const PipelineMessage& chunk) = 0;
 
     bool write(const uint8_t* data, size_t length)
     {
-        write(PipelineMessage((uint8_t *)data, length));
+        return write(PipelineMessage((uint8_t *)data, length));
     }
 };
 
@@ -207,9 +210,11 @@ public:
     bool write(const PipelineMessage& message)
     {
         queue[0] = message;
+        return true;
     }
 };
 
+// Convert from experimental by-ref pipeline to regular pipeline
 class ConverterPipeline : public QueuedReferencePipeline
 {
     IPipeline& pipeline;
@@ -224,7 +229,7 @@ public:
 
     bool write(const PipelineMessage& message)
     {
-        write(message);
+        return pipeline.write(message);
     }
 };
 

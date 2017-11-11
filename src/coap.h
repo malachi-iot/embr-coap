@@ -521,6 +521,8 @@ public:
                 v <<= 8;
                 v |= value[i];
             }
+
+            return v;
         }
     };
 
