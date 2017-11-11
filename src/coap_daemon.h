@@ -403,7 +403,10 @@ public:
 
 class PipelineDaemon : public DaemonBase
 {
+    // incoming represents data coming into daemon from outside source, outside source could
+    // possibly ultimately be lwip or similar
     IPipeline& incoming;
+    // outgoing represents data emerging from daemon to outside source,
     IPipeline& outgoing;
 
 public:
@@ -415,5 +418,25 @@ public:
     // NOTE: all chunks at this time must be FULL packets
     void process_iterate();
 };
+
+// Daemon where external control loop initiates pushes into "incoming"
+class PassivePipelineDaemon : public PipelineDaemon
+{
+public:
+    PassivePipelineDaemon(IPipeline& incoming, IPipeline& outgoing) :
+            PipelineDaemon(incoming, outgoing) {}
+};
+
+
+
+// Daemon itself runs control loop and pulls from "incoming"
+class ActivePipelineDaemon : public PipelineDaemon
+{
+public:
+    ActivePipelineDaemon(IPipeline& incoming, IPipeline& outgoing) :
+        PipelineDaemon(incoming, outgoing) {}
+
+};
+
 
 }}
