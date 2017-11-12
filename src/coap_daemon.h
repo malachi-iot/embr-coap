@@ -70,6 +70,8 @@ public:
         // boundary behavior described below, so plan accordingly when using boundaries
         uint32_t user : 8;
 
+        // boundary indicates a signal to a pipeline consumer (the one doing reads) that
+        // possibly an action needs to be taken (boundary reached)
         // boundaries tend to be application specific, so use this for boundary types 1-7, 0 being
         // no boundary.  Only restriction is that in buffered situations, larger boundary types will "eat"
         // smaller ones until buffer is read back out again:
@@ -207,7 +209,7 @@ public:
     // Acquire a buffer provided by this pipeline that later one may
     // conveniently use during a write operation.  Experimental only
     // NOTE: probably will need a free_buffer also
-    virtual MemoryChunk get_buffer(size_t size) = 0;
+    virtual PipelineMessage get_buffer(size_t size) = 0;
 
     // Request whether usage of get_buffer-provided buffer is preferred,
     // or whether caller should provide their own
