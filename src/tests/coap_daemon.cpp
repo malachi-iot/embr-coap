@@ -7,6 +7,7 @@
 #include "../coap_daemon.h"
 
 using namespace moducom::coap;
+using namespace moducom::pipeline;
 
 static uint8_t buffer_16bit_delta[] = {
         0x40, 0x00, 0x00, 0x00, // 4: fully blank header

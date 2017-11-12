@@ -4,6 +4,8 @@
 
 #include "coap_daemon.h"
 
+using namespace moducom::pipeline;
+
 namespace moducom { namespace coap {
 
 
