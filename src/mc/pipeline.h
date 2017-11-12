@@ -104,6 +104,8 @@ public:
         copied_status.boundary = 0;
     }
 
+    PipelineMessage(const MemoryChunk& chunk) : MemoryChunk(chunk), status(NULLPTR) {}
+
 };
 
 
@@ -358,6 +360,10 @@ class BufferProviderPipeline : pipeline::experimental::IBufferProviderPipeline
     PipelineMessage::CopiedStatus copied_status;
 
 public:
+    BufferProviderPipeline(const MemoryChunk& chunk) : buffer(chunk)
+    {
+    }
+
     virtual PipelineMessage get_buffer(size_t size) OVERRIDE
     {
         // FIX: if size is larger than buffer, don't return it -

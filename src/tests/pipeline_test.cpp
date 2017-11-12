@@ -20,11 +20,15 @@ TEST_CASE("Pipeline basic tests", "[pipeline]")
     }
     SECTION("experimental")
     {
-        BufferProviderPipeline p;
+        uint8_t buffer[128];
+        MemoryChunk _chunk(buffer, 128);
+        BufferProviderPipeline p(_chunk);
         MemoryChunk* chunk = NULLPTR;
 
         if(p.get_buffer(&chunk))
         {
+            sprintf((char*)chunk->data, "Hello World");
+
             PipelineMessage::CopiedStatus copied_status;
 
             MemoryChunk chunk2 = p.advance(100, copied_status);
