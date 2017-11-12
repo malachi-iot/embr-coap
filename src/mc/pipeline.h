@@ -340,6 +340,80 @@ public:
 
 };
 
+namespace experimental {
+
+// A copy/paste hack job from SimpleBufferPipeline
+class BufferProviderPipeline : pipeline::experimental::IBufferProviderPipeline
+{
+    PipelineMessage buffer;
+    size_t length_used;
+    PipelineMessage::CopiedStatus copied_status;
+
+public:
+    virtual PipelineMessage get_buffer(size_t size) OVERRIDE
+    {
+        // FIX: if size is larger than buffer, don't return it -
+        // maybe return a null buffer indicating unable to do it
+        return buffer;
+    }
+
+    virtual bool is_buffer_preferred(size_t size) OVERRIDE
+    {
+        return true;
+    }
+
+    virtual PipelineMessage read() OVERRIDE
+    {
+        PipelineMessage msg;
+
+        if(length_used == 0)
+            msg.data = NULLPTR;
+        else
+            msg.data = buffer.data;
+
+        msg.length = length_used;
+        msg.status = NULLPTR;
+        msg.copied_status = copied_status;
+
+        length_used = 0;
+
+        return msg;
+    }
+
+    virtual bool write(const PipelineMessage& chunk) OVERRIDE
+    {
+        // delta represents how far into internal buffer.data incoming chunk
+        // represents
+        auto delta = chunk.data - buffer.data;
+
+        if(delta >= buffer.length)
+        {
+            // incoming chunk does NOT reside in our internally held buffer
+        }
+        else // delta < buffer.length, chunk *starts* within internally held buffer
+        {
+            // remaining size means how much internal buffer is available based on
+            // position of incoming chunk
+            auto remaining_length = buffer.length - delta;
+
+            // if remaining length of internal buffer meets or exceeds size of
+            // incoming chunk, then we are confident incoming chunk fully resides
+            // within internal buffer
+            if(remaining_length >= chunk.length)
+            {
+                // all good
+            }
+            else
+            {
+                
+            }
+        }
+    }
+
+};
+
+}
+
 }
 
 }}
