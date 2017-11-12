@@ -81,6 +81,10 @@ public:
         // becomes
         // ...............3.......2...
         uint32_t boundary : 3;
+
+        // Helper flag to indicate whether get_buffer was utilized, in which case
+        // we should take extra measures to avoid buffer allocation and/or copying
+        uint32_t is_preferred_experimental : 1;
     } copied_status;
 
     Status* status;
@@ -187,6 +191,29 @@ public:
 
 
 namespace experimental {
+
+
+// Augmented pipeline which also provides a preferred buffer (similar to a
+// malloc, but it's implied the buffer has already been allocated that is
+// returned by get_buffer)
+//
+// Using this kind of pipeline carries a special behavior which is that
+// write operations are expected to carry a MemoryChunk which is contained
+// within the get_buffer provided MemoryChunk.  If MemoryChunk being written
+// does *not* reside within provided chunk, a copy into a buffer is anticipated
+class IBufferProviderPipeline : IPipeline
+{
+public:
+    // Acquire a buffer provided by this pipeline that later one may
+    // conveniently use during a write operation.  Experimental only
+    // NOTE: probably will need a free_buffer also
+    virtual MemoryChunk get_buffer(size_t size) = 0;
+
+    // Request whether usage of get_buffer-provided buffer is preferred,
+    // or whether caller should provide their own
+    virtual bool is_buffer_preferred(size_t size) = 0;
+};
+
 
 // PipelineMessage is starting to get big, experiental code here to handle
 // copying by reference instead of value
