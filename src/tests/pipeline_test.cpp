@@ -33,5 +33,21 @@ TEST_CASE("Pipeline basic tests", "[pipeline]")
 
             MemoryChunk chunk2 = p.advance(100, copied_status);
         }
+
+#ifdef IDEALIZED
+        PipelineType p;
+        PipelineMessageWrapper<default_boundary_number> msg;
+
+        size_t len = sprintf(msg, "Hello");
+
+        // bump forward and notify interested parties
+        msg.advance(len, boundary_number);
+
+        // this should auto advance
+        msg << "Hello Again" << endl;
+
+        msg.boundary();
+
+#endif
     }
 }
