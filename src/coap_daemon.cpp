@@ -12,13 +12,14 @@ namespace moducom { namespace coap {
 size_t PassiveDaemon::write(const uint8_t* data, size_t length)
 {
     incoming_parser.process(data, length);
+    return length;
 }
 
 
 
 size_t PassiveDaemon::read(uint8_t* data, size_t length)
 {
-
+    return 0;
 }
 
 

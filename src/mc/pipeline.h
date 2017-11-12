@@ -219,6 +219,14 @@ public:
     // Request whether usage of get_buffer-provided buffer is preferred,
     // or whether caller should provide their own
     virtual bool is_buffer_preferred(size_t size) = 0;
+
+    // access internal memory buffer (experimental replacement for other
+    // get_buffer)
+    virtual bool get_buffer(MemoryChunk** memory_chunk) = 0;
+
+    // move forward in buffer, provider will return next position
+    // (experimental for moving forward without doing a write)
+    virtual MemoryChunk advance(size_t size, PipelineMessage::CopiedStatus status) = 0;
 };
 
 
@@ -357,6 +365,10 @@ public:
         return buffer;
     }
 
+    virtual MemoryChunk advance(size_t length, PipelineMessage::CopiedStatus copied_status) OVERRIDE;
+
+    virtual bool get_buffer(MemoryChunk** chunk) OVERRIDE;
+
     virtual bool is_buffer_preferred(size_t size) OVERRIDE
     {
         return true;
@@ -384,7 +396,7 @@ public:
     {
         // delta represents how far into internal buffer.data incoming chunk
         // represents
-        auto delta = chunk.data - buffer.data;
+        size_t delta = chunk.data - buffer.data;
 
         if(delta >= buffer.length)
         {
@@ -394,7 +406,7 @@ public:
         {
             // remaining size means how much internal buffer is available based on
             // position of incoming chunk
-            auto remaining_length = buffer.length - delta;
+            size_t remaining_length = buffer.length - delta;
 
             // if remaining length of internal buffer meets or exceeds size of
             // incoming chunk, then we are confident incoming chunk fully resides
@@ -405,9 +417,11 @@ public:
             }
             else
             {
-                
+                // error condition, part of buffer is ours, part is theirs
             }
         }
+
+        return true;
     }
 
 };
