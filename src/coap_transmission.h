@@ -67,9 +67,14 @@ public:
     OptionBase(uint16_t number) : OptionNumber(number) {}
 };
 
+
 class OptionGenerator : public OptionBase
 {
 public:
+    /*!
+     * State machine which is capable of spitting out a single option
+     * within the context of many options
+     */
     class StateMachine
     {
         uint16_t current_option_number;
@@ -102,6 +107,22 @@ public:
         }
 
         CoAP::Parser::SubState sub_state() const { return _sub_state; }
+
+        // do really do this might have to use my fancy FRAB in-place init
+        // helper, but then we'd be losing "current_option_number" so
+        // really we probably need to un-isolate this generator behavior
+        // so that it may start up in a less initialized state, and be
+        // able to retain its state between options, or, in other words,
+        // turn this into a multi-option capable state machine
+        // TODO: make this option_base 'const' so that nothing can
+        // modify contents of option_base itself (having trouble
+        // figuring out syntax for that)
+        /*
+        void reset(const OptionBase& option)
+        {
+            option_base = option;
+            pos = 0;
+        } */
     };
 
 public:
