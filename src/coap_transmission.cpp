@@ -36,8 +36,7 @@ size_t OptionGenerator::generate(uint16_t last_number, uint8_t *output)
     return 0;
 }
 
-OptionGenerator::StateMachine::StateMachine(const OptionBase& option_base) :
-    option_base(option_base)
+void OptionGenerator::StateMachine::initialize()
 {
     _sub_state = CoAP::Parser::OptionSize;
     current_option_number = 0;
@@ -78,6 +77,7 @@ uint8_t generator_helper(uint16_t value, int pos = 0)
 // so that we don't have to pull stunts to pop around extra steps
 OptionGenerator::StateMachine::output_t OptionGenerator::StateMachine::generate_iterate()
 {
+    const OptionBase& option_base = *this->option_base;
     uint8_t option_delta_root = generator_helper(option_base.number - current_option_number);
     uint8_t option_length_root = generator_helper(option_base.length);
 

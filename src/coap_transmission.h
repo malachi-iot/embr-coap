@@ -79,7 +79,7 @@ public:
     {
         uint16_t current_option_number;
         uint8_t pos;
-        const OptionBase& option_base;
+        const OptionBase* option_base;
         CoAP::Parser::SubState _sub_state;
 
         void sub_state(CoAP::Parser::SubState _sub_state)
@@ -87,12 +87,25 @@ public:
             this->_sub_state = _sub_state;
         }
 
+        void initialize();
+
     public:
-        StateMachine(const OptionBase&);
+        StateMachine() { initialize(); }
+
+        StateMachine(const OptionBase& option_base) :
+                option_base(&option_base)
+        {
+            initialize();
+        }
 
         typedef int16_t output_t;
 
         static CONSTEXPR output_t signal_continue = -1;
+
+        const OptionBase& get_option_base() const
+        {
+            return *option_base;
+        }
 
         output_t generate_iterate();
         uint8_t generate()
@@ -123,6 +136,13 @@ public:
             option_base = option;
             pos = 0;
         } */
+
+        void next(const OptionBase& option)
+        {
+            _sub_state = CoAP::Parser::OptionSize;
+            pos = 0;
+            option_base = &option;
+        }
     };
 
 public:

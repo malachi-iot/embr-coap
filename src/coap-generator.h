@@ -19,11 +19,11 @@ class CoAPGenerator
         size_t pos;
     };
 
+    typedef experimental::layer2::OptionGenerator::StateMachine _option_state_t;
+
     struct option_state_t
     {
-        experimental::layer2::OptionBase* current_option;
-        // FIX: won't be a pointer and needs name improvement
-        experimental::layer2::OptionGenerator::StateMachine* option_state;
+        uint8_t fakebuffer[sizeof(_option_state_t)];
     };
 
     union
@@ -32,12 +32,42 @@ class CoAPGenerator
         option_state_t option_state;
     };
 
+    // workarounds for C++98/C++03 union limitations
+    inline _option_state_t* get_option_state_ptr()
+    {
+        return (_option_state_t*) option_state.fakebuffer;
+    }
+
+    _option_state_t& get_option_state()
+    {
+        return *get_option_state_ptr();
+    }
+
 public:
     CoAPGenerator(pipeline::experimental::IBufferProviderPipeline& output) : output(output) {}
 
     bool output_option_iterate(const experimental::layer2::OptionBase& option);
     bool output_header_iterate();
     bool output_payload_iterate(const pipeline::MemoryChunk& chunk);
+
+
+    void _output(const experimental::layer2::OptionBase& option)
+    {
+        while(!output_option_iterate(option))
+        {
+            // TODO: place a yield statement in here since this is a spinwait
+        }
+    }
+
+
+    // this is for payload, we may need a flag (or a distinct call) to designate
+    void _output(const pipeline::MemoryChunk& chunk)
+    {
+        while(!output_payload_iterate(chunk))
+        {
+            // TODO: place a yield statement in here since this is a spinwait
+        }
+    }
 };
 
 }}
