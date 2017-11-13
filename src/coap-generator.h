@@ -46,7 +46,20 @@ class CoAPGenerator
 public:
     CoAPGenerator(pipeline::experimental::IBufferProviderPipeline& output) : output(output) {}
 
+    // for raw access , useful for optimized zero copy scenarios
+    pipeline::experimental::IBufferProviderPipeline& get_output() { return output; }
+
+    // doesn't utilize value, that must happen manually.  Instead just sets up
+    // number and length of option
+    bool output_option_raw_iterate(const experimental::layer2::OptionBase& option);
+
+    //!
+    //! \param option
+    //! \return
+    // TODO: Make a version of this which can re-use same option over and over again
+    // and figure out a new option is present by some other means
     bool output_option_iterate(const experimental::layer2::OptionBase& option);
+    bool output_option_next(const experimental::layer2::OptionBase& option);
     bool output_header_iterate();
     bool output_payload_iterate(const pipeline::MemoryChunk& chunk);
 
