@@ -210,7 +210,7 @@ namespace experimental {
 // write operations are expected to carry a MemoryChunk which is contained
 // within the get_buffer provided MemoryChunk.  If MemoryChunk being written
 // does *not* reside within provided chunk, a copy into a buffer is anticipated
-class IBufferProviderPipeline : IPipeline
+class IBufferProviderPipeline : public IPipeline
 {
 public:
     // Acquire a buffer provided by this pipeline that later one may
@@ -229,6 +229,9 @@ public:
     // move forward in buffer, provider will return next position
     // (experimental for moving forward without doing a write)
     virtual MemoryChunk advance(size_t size, PipelineMessage::CopiedStatus status) = 0;
+
+    // Amount of non-blocking forward movement we can do
+    virtual size_t advanceable() = 0;
 };
 
 
@@ -429,6 +432,9 @@ public:
 
         return true;
     }
+
+    // FIX
+    virtual size_t advanceable() OVERRIDE { return 99999; }
 
 };
 

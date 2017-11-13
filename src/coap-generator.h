@@ -11,13 +11,33 @@ namespace moducom { namespace coap {
 
 class CoAPGenerator
 {
-    pipeline::IPipeline& output;
-    //experimental::layer2::OptionGenerator::StateMachine option_state;
+    CoAP::Parser::State state;
+    pipeline::experimental::IBufferProviderPipeline& output;
+
+    struct payload_state_t
+    {
+        size_t pos;
+    };
+
+    struct option_state_t
+    {
+        experimental::layer2::OptionBase* current_option;
+        // FIX: won't be a pointer and needs name improvement
+        experimental::layer2::OptionGenerator::StateMachine* option_state;
+    };
+
+    union
+    {
+        payload_state_t payload_state;
+        option_state_t option_state;
+    };
 
 public:
-    CoAPGenerator(pipeline::IPipeline& output) : output(output) {}
+    CoAPGenerator(pipeline::experimental::IBufferProviderPipeline& output) : output(output) {}
 
-    bool output_option_iterate(experimental::layer2::OptionBase& option);
+    bool output_option_iterate(const experimental::layer2::OptionBase& option);
+    bool output_header_iterate();
+    bool output_payload_iterate(const pipeline::MemoryChunk& chunk);
 };
 
 }}

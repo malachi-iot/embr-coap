@@ -5,6 +5,7 @@
       <value>
         <Objective-C>
           <option name="INDENT_NAMESPACE_MEMBERS" value="0" />
+          <option name="KEEP_CASE_EXPRESSIONS_IN_ONE_LINE" value="true" />
           <option name="FUNCTION_BRACE_PLACEMENT" value="5" />
         </Objective-C>
         <Objective-C-extensions>
