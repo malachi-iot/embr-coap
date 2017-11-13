@@ -47,7 +47,7 @@ class OptionOpaque : public OptionValue
 {
 public:
     const uint8_t* value() { return value_opaque; }
-    const uint16_t length() { return OptionValue::length; }
+    uint16_t length() { return OptionValue::length; }
 };
 
 
@@ -446,7 +446,7 @@ protected:
 public:
     // FIX: FOR DEBUG ONLY!!
     const uint8_t* get_buffer() const { return buffer; }
-    const size_t get_pos() const { return pos; }
+    size_t get_pos() const { return pos; }
 
     TestOutgoingMessageHandler(const Token* token = NULLPTR) :
             token(token),
