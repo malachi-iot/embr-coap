@@ -54,11 +54,32 @@ TEST_CASE("CoAP message construction tests", "[coap-send]")
         //BufferProviderPipeline p(chunk);
         SimpleBufferedPipeline p(chunk);
         CoAPGenerator generator(p);
+        // FIX: default constructor leaves header uninitialized
+        // would very much prefer to avoid that if possible
+        CoAP::Header header;
+
+        header.raw = 0;
+
+        uint8_t expected_header_bytes[] = { 0x14, 0x77, 0, 1 };
+
+        chunk.memset(0);
+
+        header.message_id(1);
+        header.token_length(4);
+        header.code(0x77);
+        header.type(CoAP::Header::NonConfirmable);
+
+        int i = 0;
+
+        REQUIRE(header.bytes[i] == expected_header_bytes[i]); i++;
+        REQUIRE(header.bytes[i] == expected_header_bytes[i]); i++;
+        REQUIRE(header.bytes[i] == expected_header_bytes[i]); i++;
+        REQUIRE(header.bytes[i] == expected_header_bytes[i]); i++;
+
+        generator._output(header);
 
         CONSTEXPR int option_number = 4;
         CONSTEXPR int option_length = 4;
-
-        chunk.memset(0);
 
         moducom::coap::experimental::layer2::OptionBase option(option_number);
 
@@ -67,9 +88,13 @@ TEST_CASE("CoAP message construction tests", "[coap-send]")
 
         generator._output(option);
 
-        int i = 0;
+        i = 0;
 
-        // FIX: Not doing header yet, but need to
+        REQUIRE(chunk.data[i] == expected_header_bytes[i]); i++;
+        REQUIRE(chunk.data[i] == expected_header_bytes[i]); i++;
+        REQUIRE(chunk.data[i] == expected_header_bytes[i]); i++;
+        REQUIRE(chunk.data[i] == expected_header_bytes[i]); i++;
+
         REQUIRE(chunk.data[i++] == ((option_number << 4) | option_length));
         REQUIRE(chunk.data[i++] == 'T');
         REQUIRE(chunk.data[i++] == 'E');

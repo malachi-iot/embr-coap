@@ -157,6 +157,8 @@ public:
             uint32_t raw;
         };
 
+    protected:
+
         template <uint8_t pos, uint32_t mask_value>
         inline void mask(uint16_t value)
         {
@@ -174,6 +176,8 @@ public:
         {
             return ((bytes[byte_pos] & mask_value) >> pos);
         }
+
+    public:
 
         uint8_t code() const
         {
@@ -203,11 +207,14 @@ public:
 #endif
         }
 
+    protected:
         template <uint8_t pos>
         inline void mask_or(uint8_t byte_pos, uint8_t value)
         {
             bytes[byte_pos] |= value << pos;
         }
+
+    public:
 
         void type(TypeEnum type)
         {

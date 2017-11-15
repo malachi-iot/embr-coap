@@ -40,6 +40,18 @@ bool pipeline_output_helper(pipeline::experimental::IBufferProviderPipeline& out
 }
 
 
+bool CoAPGenerator::output_header_iterate()
+{
+    uint8_t value = header_state.bytes[header_state.pos];
+
+    if(output.write(value))
+    {
+        if(++header_state.pos == 4) return true;
+    }
+    return false;
+}
+
+
 bool CoAPGenerator::output_option_next(const experimental::layer2::OptionBase& option)
 {
     _option_state_t& option_state = get_option_state();

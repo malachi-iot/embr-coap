@@ -39,9 +39,9 @@ class CoAPGenerator
     CoAP::Parser::State state() const { return _state; }
     void state(CoAP::Parser::State state) { _state = state; }
 
-    struct header_state_t
+    struct header_state_t : public payload_state_t
     {
-
+        uint8_t bytes[4];
     };
 
     struct option_state_t
@@ -88,6 +88,13 @@ public:
     // and figure out a new option is present by some other means
     bool output_option_iterate();
     bool output_option_next(const option_t& option);
+
+    bool output_header_begin(const CoAP::Header& header)
+    {
+        header_state.pos = 0;
+        memcpy(header_state.bytes, header.bytes, 4);
+    }
+
     bool output_header_iterate();
 
     void output_payload_begin() {}
@@ -113,6 +120,17 @@ public:
         while(!output_payload_iterate(chunk))
         {
             // TODO: place a yield statement in here since this is a spinwait
+        }
+    }
+
+
+    void _output(const CoAP::Header& header)
+    {
+        output_header_begin(header);
+
+        while(!output_header_iterate())
+        {
+            // TODO: place a yield statement in here
         }
     }
 };
