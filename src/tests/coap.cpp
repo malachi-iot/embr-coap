@@ -164,4 +164,16 @@ TEST_CASE("CoAP tests", "[coap]")
 
         p.process(buffer_plausible, sizeof(buffer_plausible));
     }
+    SECTION("Experimental CoAP::Header::Code tests")
+    {
+        CoAP::Header header;
+
+        header.raw = 0;
+        header.response_code(CoAP::Header::Code::ProxyingNotSupported);
+
+        CoAP::Header::Code& code = header.code_experimental();
+
+        REQUIRE(code.get_class() == 5);
+        REQUIRE(code.detail() == 05);
+    }
 }

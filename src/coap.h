@@ -108,8 +108,14 @@ public:
     public:
         class Code
         {
+            friend class Header;
+
             uint8_t _code;
+
+            // FIX: for internal use only
+            Code() {}
         public:
+
             Code(uint8_t _code) : _code(_code) {}
 
             enum Classes
@@ -236,6 +242,11 @@ public:
 #endif
         }
 
+        Code& code_experimental() const
+        {
+            return *new ((void*)&bytes[1]) Code();
+        }
+
         bool is_request() const
         {
             return (code() >> 5) == 0;
@@ -318,8 +329,12 @@ public:
 #endif
         }
 
+    //private:
+        // FIX: make this private & friended - asking for trouble otherwise
+        // with uninitialized data
         Header() {}
 
+    public:
 
         Header(TypeEnum type)
         {
