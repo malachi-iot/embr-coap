@@ -356,7 +356,7 @@ public:
 namespace experimental {
 
 // A copy/paste hack job from SimpleBufferPipeline
-class BufferProviderPipeline : pipeline::experimental::IBufferProviderPipeline
+class BufferProviderPipeline : public pipeline::experimental::IBufferProviderPipeline
 {
     PipelineMessage buffer;
     size_t length_used;

@@ -3,13 +3,19 @@
 
 #include "../coap.h"
 #include "../coap_transmission.h"
+#include "../coap-generator.h"
 
 using namespace moducom::coap;
 using namespace moducom::coap::experimental;
 
+using namespace moducom::pipeline;
+using namespace moducom::pipeline::experimental;
+using namespace moducom::pipeline::layer3;
+using namespace moducom::pipeline::layer3::experimental;
+
 TEST_CASE("CoAP message construction tests", "[coap-send]")
 {
-    SECTION("")
+    SECTION("1")
     {
         uint8_t expected[] =
         {
@@ -41,5 +47,12 @@ TEST_CASE("CoAP message construction tests", "[coap-send]")
 
             REQUIRE(expected_ch == result_ch);
         }
+    }
+    SECTION("2")
+    {
+        uint8_t buffer[128];
+        MemoryChunk _chunk(buffer, 128);
+        BufferProviderPipeline p(_chunk);
+        CoAPGenerator generator(p);
     }
 }

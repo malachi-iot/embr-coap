@@ -19,6 +19,7 @@ class CoAPGenerator
         size_t pos;
     };
 
+    typedef experimental::layer2::OptionBase option_t;
     typedef experimental::layer2::OptionGenerator::StateMachine _option_state_t;
 
     struct option_state_t
@@ -58,7 +59,7 @@ public:
     //! \return
     // TODO: Make a version of this which can re-use same option over and over again
     // and figure out a new option is present by some other means
-    bool output_option_iterate(const experimental::layer2::OptionBase& option);
+    bool output_option_iterate();
     bool output_option_next(const experimental::layer2::OptionBase& option);
     bool output_header_iterate();
     bool output_payload_iterate(const pipeline::MemoryChunk& chunk);
@@ -66,7 +67,9 @@ public:
 
     void _output(const experimental::layer2::OptionBase& option)
     {
-        while(!output_option_iterate(option))
+        output_option_next(option);
+
+        while(!output_option_iterate())
         {
             // TODO: place a yield statement in here since this is a spinwait
         }

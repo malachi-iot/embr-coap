@@ -45,38 +45,42 @@ bool CoAPGenerator::output_option_next(const experimental::layer2::OptionBase& o
     _option_state_t& option_state = get_option_state();
 
     option_state.next(option);
+
+    return true;
 }
 
 
-bool CoAPGenerator::output_option_iterate(const experimental::layer2::OptionBase& option)
+bool CoAPGenerator::output_option_iterate()
 {
     typedef _option_state_t statemachine_t;
     typedef statemachine_t::output_t output_t;
+#ifdef __CPP11__
+    typedef CoAP::Parser::State state_t;
+    typedef CoAP::Parser::SubState substate_t;
+#else
+    typedef CoAP::Parser state_t;
+    typedef CoAP::Parser substate_t;
+#endif
 
     statemachine_t& option_state = get_option_state();
+    const option_t& option = option_state.get_option_base();
 
     switch(state)
     {
-        case CoAP::Parser::HeaderDone:
+        case state_t::HeaderDone:
             // signals initialization of options phase
 
             // placement new to get around union C++03 limitation
             new (get_option_state_ptr()) statemachine_t(option);
 
             break;
-        case CoAP::Parser::Options:
+        case state_t::Options:
         {
-            if (&option != &option_state.get_option_base())
-            {
-                option_state.next(option);
-                // reset/advance options parser
-            }
-
             size_t advanceable = output.advanceable();
 
             if(advanceable == 0) return false;
 
-            if(option_state.sub_state() == CoAP::Parser::OptionLengthDone)
+            if(option_state.sub_state() == substate_t::OptionLengthDone)
             {
                 if(option.length < advanceable)
                 {
@@ -99,7 +103,7 @@ bool CoAPGenerator::output_option_iterate(const experimental::layer2::OptionBase
             output.write(&_out, 1);
             return true;
         }
-        case CoAP::Parser::OptionsDone:
+        case state_t::OptionsDone:
             // probably we won't actually know this here
             // for completeness would like to do a placement delete, but I forgot
             // the syntax
