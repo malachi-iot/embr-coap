@@ -106,37 +106,46 @@ public:
     {
         // temporary public while building code
     public:
-        class ResponseCode
+        class Code
         {
             uint8_t _code;
         public:
-            ResponseCode(uint8_t _code) : _code(_code) {}
+            Code(uint8_t _code) : _code(_code) {}
+
+            enum Classes
+            {
+                Request = 0,
+                Success = 2,
+                ClientError = 4,
+                ServerError = 5
+            };
 
             // RFC7252 Section 12.1.2
             enum Codes
             {
                 Empty =             COAP_RESPONSE_CODE(0, 00),
-                Created =           COAP_RESPONSE_CODE(2, 01),
-                Deleted =           COAP_RESPONSE_CODE(2, 02),
-                Valid =             COAP_RESPONSE_CODE(2, 03),
-                Changed =           COAP_RESPONSE_CODE(2, 04),
-                Content =           COAP_RESPONSE_CODE(2, 05),
-                BadRequest =        COAP_RESPONSE_CODE(4, 00),
-                Unauthorized =      COAP_RESPONSE_CODE(4, 01),
-                BadOption =         COAP_RESPONSE_CODE(4, 02),
-                Forbidden =         COAP_RESPONSE_CODE(4, 03),
-                NotFound =          COAP_RESPONSE_CODE(4, 04),
-                MethodNotAllowed =  COAP_RESPONSE_CODE(4, 05),
-                InternalServerError =   COAP_RESPONSE_CODE(5, 00),
-                NotImplemented =        COAP_RESPONSE_CODE(5, 01),
-                ServiceUnavailable =    COAP_RESPONSE_CODE(5, 03),
-                ProxyingNotSupported =  COAP_RESPONSE_CODE(5, 05)
+                Created =           COAP_RESPONSE_CODE(Success, 01),
+                Deleted =           COAP_RESPONSE_CODE(Success, 02),
+                Valid =             COAP_RESPONSE_CODE(Success, 03),
+                Changed =           COAP_RESPONSE_CODE(Success, 04),
+                Content =           COAP_RESPONSE_CODE(Success, 05),
+                BadRequest =        COAP_RESPONSE_CODE(ClientError, 00),
+                Unauthorized =      COAP_RESPONSE_CODE(ClientError, 01),
+                BadOption =         COAP_RESPONSE_CODE(ClientError, 02),
+                Forbidden =         COAP_RESPONSE_CODE(ClientError, 03),
+                NotFound =          COAP_RESPONSE_CODE(ClientError, 04),
+                MethodNotAllowed =  COAP_RESPONSE_CODE(ClientError, 05),
+                InternalServerError =   COAP_RESPONSE_CODE(ServerError, 00),
+                NotImplemented =        COAP_RESPONSE_CODE(ServerError, 01),
+                ServiceUnavailable =    COAP_RESPONSE_CODE(ServerError, 03),
+                ProxyingNotSupported =  COAP_RESPONSE_CODE(ServerError, 05)
             };
 
+
                 // topmost 3 bits
-            uint8_t get_class() const { return _code >> 5; }
+            Classes get_class() const { return (Classes)(_code >> 5); }
             // bottommost 5 bits
-            uint8_t detail() const { return _code & 0xE0; }
+            uint8_t detail() const { return _code & 0x1F; }
 
             Codes code() { return (Codes) _code; }
         };
@@ -227,14 +236,23 @@ public:
 #endif
         }
 
-        ResponseCode::Codes response_code() const
+        bool is_request() const
         {
-            return ResponseCode(code()).code();
+            return (code() >> 5) == 0;
         }
 
-        void response_code(ResponseCode::Codes value)
+        bool is_response() const { return !is_request(); }
+
+        Code::Codes response_code() const
         {
-            code((ResponseCode::Codes)value);
+            ASSERT_WARN(true, is_response(), "Invalid response code detected");
+
+            return Code(code()).code();
+        }
+
+        void response_code(Code::Codes value)
+        {
+            code((Code::Codes)value);
         }
 
         RequestMethodEnum request_method() const

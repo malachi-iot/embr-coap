@@ -33,7 +33,7 @@ TEST_CASE("CoAP message construction tests", "[coap-send]")
         OutgoingResponseHandler out_handler(&token);
 
         out_handler.send(
-                CoAP::Header::ResponseCode::Changed,
+                CoAP::Header::Code::Changed,
                 (const uint8_t*) "Hello", 5);
 
         const uint8_t* result = out_handler.get_buffer();

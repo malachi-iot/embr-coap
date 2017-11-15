@@ -505,7 +505,7 @@ public:
     }
 
     void write_request_header(CoAP::Header::TypeEnum type, CoAP::Header::RequestMethodEnum method);
-    void write_response_header(CoAP::Header::TypeEnum type, CoAP::Header::ResponseCode::Codes response_code);
+    void write_response_header(CoAP::Header::TypeEnum type, CoAP::Header::Code::Codes response_code);
 
     void write_token();
     void write_options();
@@ -528,7 +528,7 @@ public:
     // higher level function which
     //  does header-payload processing
     //  knows it's a response, so specifically does NOT construct things as a request
-    void send(CoAP::Header::ResponseCode::Codes response_code, const uint8_t* payload, size_t length, bool piggyback = true);
+    void send(CoAP::Header::Code::Codes response_code, const uint8_t* payload, size_t length, bool piggyback = true);
 
 };
 

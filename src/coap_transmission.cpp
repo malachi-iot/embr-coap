@@ -400,7 +400,7 @@ void TestOutgoingMessageHandler::write_request_header(CoAP::Header::TypeEnum typ
 }
 
 void TestOutgoingMessageHandler::write_response_header(CoAP::Header::TypeEnum type,
-                                                       CoAP::Header::ResponseCode::Codes response_code)
+                                                       CoAP::Header::Code::Codes response_code)
 {
     CoAP::Header header(type);
 
@@ -443,7 +443,7 @@ void TestOutgoingMessageHandler::send_ack()
     typedef CoAP::Header::ResponseCode::Codes codes_t;
 #else
     typedef CoAP::Header type_t;
-    typedef CoAP::Header::ResponseCode codes_t;
+    typedef CoAP::Header::Code codes_t;
 #endif
 
     write_start();
@@ -461,7 +461,7 @@ void OutgoingRequestHandler::send(CoAP::Header::RequestMethodEnum request_method
     typedef CoAP::Header::ResponseCode::Codes codes_t;
 #else
     typedef CoAP::Header type_t;
-    typedef CoAP::Header::ResponseCode codes_t;
+    typedef CoAP::Header::Code codes_t;
 #endif
 
     write_start();
@@ -476,7 +476,7 @@ void OutgoingRequestHandler::send(CoAP::Header::RequestMethodEnum request_method
 // to tend to "long running" acqusition of response data, and therefore
 // an all-in-one sequential send_response is not suitable to send
 // two messages at once
-void OutgoingResponseHandler::send(CoAP::Header::ResponseCode::Codes response_code,
+void OutgoingResponseHandler::send(CoAP::Header::Code::Codes response_code,
                                                const uint8_t *payload, size_t length, bool piggyback)
 {
 #ifdef __CPP11__
@@ -484,7 +484,7 @@ void OutgoingResponseHandler::send(CoAP::Header::ResponseCode::Codes response_co
     typedef CoAP::Header::ResponseCode::Codes codes_t;
 #else
     typedef CoAP::Header type_t;
-    typedef CoAP::Header::ResponseCode codes_t;
+    typedef CoAP::Header::Code codes_t;
 #endif
 
     write_start();
