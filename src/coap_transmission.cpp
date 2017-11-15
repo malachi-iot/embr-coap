@@ -151,7 +151,10 @@ OptionGenerator::StateMachine::output_t OptionGenerator::StateMachine::generate_
             return option_base.value_opaque[pos++];
 
         case CoAP::Parser::OptionValueDone:
-            break;
+            // technically it's more like a signal_done but until a new option
+            // is loaded in, it's reasonable for state machine to iterate forever
+            // on OptionValueDone state
+            return this->signal_continue;
     }
 
     ASSERT_ERROR(false, false, "Should not get here");

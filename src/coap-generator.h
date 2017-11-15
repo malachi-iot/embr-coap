@@ -9,9 +9,9 @@
 
 namespace moducom { namespace coap {
 
+// Non-blocking coap message generator state machine wrapper
 class CoAPGenerator
 {
-    CoAP::Parser::State state;
     pipeline::experimental::IBufferProviderPipeline& output;
 
     struct payload_state_t
@@ -21,6 +21,25 @@ class CoAPGenerator
 
     typedef experimental::layer2::OptionBase option_t;
     typedef experimental::layer2::OptionGenerator::StateMachine _option_state_t;
+    typedef coap::CoAP::OptionExperimental::number_t option_number_t;
+
+#ifdef __CPP11__
+    typedef CoAP::Parser::State state_t;
+    typedef CoAP::Parser::SubState substate_t;
+#else
+    typedef CoAP::Parser state_t;
+    typedef CoAP::Parser substate_t;
+#endif
+
+    CoAP::Parser::State _state;
+
+    CoAP::Parser::State state() const { return _state; }
+    void state(CoAP::Parser::State state) { _state = state; }
+
+    struct header_state_t
+    {
+
+    };
 
     struct option_state_t
     {
@@ -29,6 +48,7 @@ class CoAPGenerator
 
     union
     {
+        header_state_t header_state;
         payload_state_t payload_state;
         option_state_t option_state;
     };
@@ -45,7 +65,11 @@ class CoAPGenerator
     }
 
 public:
-    CoAPGenerator(pipeline::experimental::IBufferProviderPipeline& output) : output(output) {}
+    CoAPGenerator(pipeline::experimental::IBufferProviderPipeline& output) :
+            // FIX: temporarily marking as HeaderDone, since the header handling
+            // code isn't ready yet
+            _state(state_t::HeaderDone),
+            output(output) {}
 
     // for raw access , useful for optimized zero copy scenarios
     pipeline::experimental::IBufferProviderPipeline& get_output() { return output; }
@@ -60,12 +84,14 @@ public:
     // TODO: Make a version of this which can re-use same option over and over again
     // and figure out a new option is present by some other means
     bool output_option_iterate();
-    bool output_option_next(const experimental::layer2::OptionBase& option);
+    bool output_option_next(const option_t& option);
     bool output_header_iterate();
+
+    void output_payload_begin() {}
     bool output_payload_iterate(const pipeline::MemoryChunk& chunk);
 
 
-    void _output(const experimental::layer2::OptionBase& option)
+    void _output(const option_t& option)
     {
         output_option_next(option);
 
@@ -79,6 +105,8 @@ public:
     // this is for payload, we may need a flag (or a distinct call) to designate
     void _output(const pipeline::MemoryChunk& chunk)
     {
+        output_payload_begin();
+
         while(!output_payload_iterate(chunk))
         {
             // TODO: place a yield statement in here since this is a spinwait

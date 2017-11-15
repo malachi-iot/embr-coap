@@ -54,5 +54,12 @@ TEST_CASE("CoAP message construction tests", "[coap-send]")
         MemoryChunk _chunk(buffer, 128);
         BufferProviderPipeline p(_chunk);
         CoAPGenerator generator(p);
+
+        moducom::coap::experimental::layer2::OptionBase option(4);
+
+        option.value_string = "TEST";
+        option.length = 4;
+
+        generator._output(option);
     }
 }

@@ -587,7 +587,7 @@ public:
             OptionLengthDone, // done with length portion
             OptionDeltaAndLengthDone, // done with both length and size, happens only when no extended values are used
             OptionValue, // processing value portion (this decoder merely skips value, outer processors handle it)
-            OptionValueDone // done with value portion
+            OptionValueDone // done with value portion.  Also indicates completion of option, even with zero-length value
         };
 
     private:

@@ -54,18 +54,11 @@ bool CoAPGenerator::output_option_iterate()
 {
     typedef _option_state_t statemachine_t;
     typedef statemachine_t::output_t output_t;
-#ifdef __CPP11__
-    typedef CoAP::Parser::State state_t;
-    typedef CoAP::Parser::SubState substate_t;
-#else
-    typedef CoAP::Parser state_t;
-    typedef CoAP::Parser substate_t;
-#endif
 
     statemachine_t& option_state = get_option_state();
     const option_t& option = option_state.get_option_base();
 
-    switch(state)
+    switch(state())
     {
         case state_t::HeaderDone:
             // signals initialization of options phase
@@ -73,14 +66,17 @@ bool CoAPGenerator::output_option_iterate()
             // placement new to get around union C++03 limitation
             new (get_option_state_ptr()) statemachine_t(option);
 
-            break;
+            state(state_t::Options);
+            return false;
+
         case state_t::Options:
         {
             size_t advanceable = output.advanceable();
+            CoAP::Parser::SubState sub_state = option_state.sub_state();
 
             if(advanceable == 0) return false;
 
-            if(option_state.sub_state() == substate_t::OptionLengthDone)
+            if(sub_state == substate_t::OptionLengthDone)
             {
                 if(option.length < advanceable)
                 {
@@ -93,15 +89,27 @@ bool CoAPGenerator::output_option_iterate()
                     //output.write(option.value_opaque, option.length);
                 }
             }
+            // signals end of option
+            else if(sub_state == substate_t::OptionValueDone)
+            {
+                // signals completion of this particular option to caller
+                // probably can be optimized
+                return true;
+            }
 
             output_t out = option_state.generate_iterate();
+
+            // TODO: sloppy, clean this code up.  Regardless of option_state machine
+            // output, we report back "still processing" until OptionValueDone is
+            // reached
             if(out == statemachine_t::signal_continue) return false;
+
             uint8_t _out = out;
 
             // copy operation of one character is much preferred to buffer availability
             // juggling
             output.write(&_out, 1);
-            return true;
+            return false;
         }
         case state_t::OptionsDone:
             // probably we won't actually know this here
@@ -113,11 +121,11 @@ bool CoAPGenerator::output_option_iterate()
 
 bool CoAPGenerator::output_payload_iterate(const pipeline::MemoryChunk& chunk)
 {
-    if(state != CoAP::Parser::Payload)
+    if(state() != state_t::Payload)
     {
         // FIX: cheap and nasty payload mode init, but it's a start
         payload_state.pos = 0;
-        state = CoAP::Parser::Payload;
+        state(state_t::Payload);
     }
 
     size_t advanceable = output.advanceable();
