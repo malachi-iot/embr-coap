@@ -71,8 +71,10 @@ bool CoAPGenerator::output_option_iterate()
 
         case state_t::Options:
         {
-            size_t advanceable = output.advanceable();
             CoAP::Parser::SubState sub_state = option_state.sub_state();
+            /*
+             * TODO: For IBufferProviderPipeline
+            size_t advanceable = output.advanceable();
 
             if(advanceable == 0) return false;
 
@@ -89,8 +91,9 @@ bool CoAPGenerator::output_option_iterate()
                     //output.write(option.value_opaque, option.length);
                 }
             }
+            else */
             // signals end of option
-            else if(sub_state == substate_t::OptionValueDone)
+            if(sub_state == substate_t::OptionValueDone)
             {
                 // signals completion of this particular option to caller
                 // probably can be optimized
@@ -104,11 +107,9 @@ bool CoAPGenerator::output_option_iterate()
             // reached
             if(out == statemachine_t::signal_continue) return false;
 
-            uint8_t _out = out;
-
             // copy operation of one character is much preferred to buffer availability
             // juggling
-            output.write(&_out, 1);
+            output.write((uint8_t)out);
             return false;
         }
         case state_t::OptionsDone:
@@ -128,6 +129,8 @@ bool CoAPGenerator::output_payload_iterate(const pipeline::MemoryChunk& chunk)
         state(state_t::Payload);
     }
 
+    /*
+     * TODO: For IBufferProviderPipeline
     size_t advanceable = output.advanceable();
 
     if(advanceable >= chunk.length)
@@ -142,7 +145,10 @@ bool CoAPGenerator::output_payload_iterate(const pipeline::MemoryChunk& chunk)
         output.write(chunk.data, advanceable);
         payload_state.pos += advanceable;
         return false;
-    }
+    }*/
+
+    // FIX: Needs testing here
+    return output.write(chunk);
     //pipeline::MemoryChunk
 }
 

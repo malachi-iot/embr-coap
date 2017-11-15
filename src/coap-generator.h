@@ -12,7 +12,10 @@ namespace moducom { namespace coap {
 // Non-blocking coap message generator state machine wrapper
 class CoAPGenerator
 {
-    pipeline::experimental::IBufferProviderPipeline& output;
+    //typedef pipeline::experimental::IBufferProviderPipeline pipeline_t;
+    typedef pipeline::IPipeline pipeline_t;
+
+    pipeline_t& output;
 
     struct payload_state_t
     {
@@ -65,18 +68,18 @@ class CoAPGenerator
     }
 
 public:
-    CoAPGenerator(pipeline::experimental::IBufferProviderPipeline& output) :
+    CoAPGenerator(pipeline_t& output) :
             // FIX: temporarily marking as HeaderDone, since the header handling
             // code isn't ready yet
             _state(state_t::HeaderDone),
             output(output) {}
 
     // for raw access , useful for optimized zero copy scenarios
-    pipeline::experimental::IBufferProviderPipeline& get_output() { return output; }
+    pipeline_t& get_output() { return output; }
 
     // doesn't utilize value, that must happen manually.  Instead just sets up
     // number and length of option
-    bool output_option_raw_iterate(const experimental::layer2::OptionBase& option);
+    bool output_option_raw_iterate(const option_t& option);
 
     //!
     //! \param option

@@ -50,16 +50,30 @@ TEST_CASE("CoAP message construction tests", "[coap-send]")
     }
     SECTION("2")
     {
-        uint8_t buffer[128];
-        MemoryChunk _chunk(buffer, 128);
-        BufferProviderPipeline p(_chunk);
+        moducom::pipeline::layer2::MemoryChunk<128> chunk;
+        //BufferProviderPipeline p(chunk);
+        SimpleBufferedPipeline p(chunk);
         CoAPGenerator generator(p);
 
-        moducom::coap::experimental::layer2::OptionBase option(4);
+        CONSTEXPR int option_number = 4;
+        CONSTEXPR int option_length = 4;
+
+        chunk.memset(0);
+
+        moducom::coap::experimental::layer2::OptionBase option(option_number);
 
         option.value_string = "TEST";
-        option.length = 4;
+        option.length = option_length;
 
         generator._output(option);
+
+        int i = 0;
+
+        // FIX: Not doing header yet, but need to
+        REQUIRE(chunk.data[i++] == ((option_number << 4) | option_length));
+        REQUIRE(chunk.data[i++] == 'T');
+        REQUIRE(chunk.data[i++] == 'E');
+        REQUIRE(chunk.data[i++] == 'S');
+        REQUIRE(chunk.data[i++] == 'T');
     }
 }

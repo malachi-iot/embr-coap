@@ -20,7 +20,25 @@ public:
 
     MemoryChunk(uint8_t* data, size_t length) : data(data), length(length) {}
     MemoryChunk() {}
+
+    inline void memset(uint8_t c, size_t length) { ::memset(data, c, length); }
+    inline void memset(uint8_t c) { memset(c, length); }
 };
+
+namespace layer2
+{
+template <size_t buffer_length>
+class MemoryChunk : public pipeline::MemoryChunk
+{
+    uint8_t buffer[buffer_length];
+
+public:
+    MemoryChunk() : pipeline::MemoryChunk(buffer, buffer_length) {}
+
+    inline void memset(uint8_t c) { ::memset(buffer, c, buffer_length); }
+};
+
+}
 
 
 class PipelineMessage : public MemoryChunk
@@ -125,6 +143,14 @@ public:
     {
         return write(PipelineMessage((uint8_t *)data, length));
     }
+
+    bool write(uint8_t ch)
+    {
+        return write(&ch, 1);
+    }
+
+    // TODO: move advanceable (or perhaps rename to canwrite) here
+    // to increase non-blocking abilities
 };
 
 // TODO: Find a better name
