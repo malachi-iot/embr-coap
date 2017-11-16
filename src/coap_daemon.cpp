@@ -34,14 +34,8 @@ void Daemon::process_iterative()
     }
 }
 
-
-bool PipelineDaemon::process_iterate()
+bool PipelineDaemon::process_pusher()
 {
-    // FIX: need to make this read/incoming_parser.process a process_iterate
-    MemoryChunk chunk = incoming.read();
-
-    incoming_parser.process(chunk.data, chunk.length);
-
     //outgoing.write(outgoing_generator.get_buffer(), outgoing_generator.get_pos());
     // if push code exists
     if(pusher_head)
@@ -56,6 +50,20 @@ bool PipelineDaemon::process_iterate()
 
         return true;
     }
+}
+
+bool PipelineDaemon::process_iterate()
+{
+    if(has_items_to_push())
+        return process_pusher();
+
+    // FIX: need to make this read/incoming_parser.process a process_iterate
+    MemoryChunk chunk = incoming.read();
+
+    incoming_parser.process(chunk.data, chunk.length);
+
+    // FIX: return value not worked out properly yet for this function
+    return false;
 }
 
 }}

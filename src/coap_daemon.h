@@ -122,7 +122,7 @@ class PipelineDaemon //: public DaemonBase
 {
     experimental::TestResponder responder;
     CoAP::ParseToIResponder incoming_parser;
-    CoAPGenerator generator;
+    //CoAPGenerator generator;
 
     // incoming represents data coming into daemon from outside source, outside source could
     // possibly ultimately be lwip or similar
@@ -134,6 +134,10 @@ class PipelineDaemon //: public DaemonBase
     Pusher* pusher_head;
     Pusher* pusher_tail;
 
+    // services push items only
+    bool process_pusher();
+
+    bool has_items_to_push() const { return pusher_head; }
 
 public:
     PipelineDaemon(IPipeline& incoming, IPipeline& outgoing)
@@ -141,8 +145,9 @@ public:
                 outgoing(outgoing),
                 pusher_head(NULLPTR),
                 pusher_tail(NULLPTR),
-                incoming_parser(&responder),
-                generator(outgoing)
+                incoming_parser(&responder)
+
+                //generator(outgoing)
     {}
 
     // process a chunk and return.  May block but tries to avoid it
