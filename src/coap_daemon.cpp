@@ -37,11 +37,12 @@ void Daemon::process_iterative()
 
 void PipelineDaemon::process_iterate()
 {
+    // FIX: need to make this read/incoming_parser.process a process_iterate
     MemoryChunk chunk = incoming.read();
 
     incoming_parser.process(chunk.data, chunk.length);
 
-    outgoing.write(outgoing_generator.get_buffer(), outgoing_generator.get_pos());
+    //outgoing.write(outgoing_generator.get_buffer(), outgoing_generator.get_pos());
 }
 
 }}

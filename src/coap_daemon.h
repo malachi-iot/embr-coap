@@ -2,6 +2,7 @@
 
 #include "mc/pipeline.h"
 #include "coap_transmission.h"
+#include "coap-generator.h"
 #include "platform.h"
 #include <stdint.h>
 
@@ -102,8 +103,12 @@ public:
 
 };
 
-class PipelineDaemon : public DaemonBase
+class PipelineDaemon //: public DaemonBase
 {
+    experimental::TestResponder responder;
+    CoAP::ParseToIResponder incoming_parser;
+    CoAPGenerator generator;
+
     // incoming represents data coming into daemon from outside source, outside source could
     // possibly ultimately be lwip or similar
     IPipeline& incoming;
@@ -113,7 +118,10 @@ class PipelineDaemon : public DaemonBase
 public:
     PipelineDaemon(IPipeline& incoming, IPipeline& outgoing)
             :   incoming(incoming),
-                outgoing(outgoing) {}
+                outgoing(outgoing),
+                incoming_parser(&responder),
+                generator(outgoing)
+    {}
 
     // process a chunk and return.  May block but tries to avoid it
     // NOTE: all chunks at this time must be FULL packets

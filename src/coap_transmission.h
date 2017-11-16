@@ -9,7 +9,7 @@
 #include "coap.h"
 #include "mc/string.h"
 
-// interim: eventually provide our own memory pool version of map 
+// interim: eventually provide our own memory pool version of map
 #include <map>
 
 
