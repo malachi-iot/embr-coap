@@ -385,7 +385,7 @@ class TestOutgoingMessageHandler;
 // This option might be interesting for say copying a UDP datagram to allow scavenging
 // of the original UDP pool, but then let us process at our leisure without (potentially)
 // additional allocations (we could treat it like #2 but have some benefit of #1)
-class TestResponder : public CoAP::IResponder
+class DispatchingResponder : public CoAP::IResponder
 {
     CoAP::IResponder* user_responder;
     //TokenManager& token_manager;
@@ -436,7 +436,7 @@ public:
     virtual void OnPayload(const uint8_t message[], size_t length) OVERRIDE;
     virtual void OnCompleted();
 
-    TestResponder(TestOutgoingMessageHandler* outgoing_message_handler = NULLPTR) :
+    DispatchingResponder(TestOutgoingMessageHandler* outgoing_message_handler = NULLPTR) :
         token(NULLPTR),
         user_responder(NULLPTR),
         outgoing_message_handler(outgoing_message_handler),

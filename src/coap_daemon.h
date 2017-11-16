@@ -55,7 +55,7 @@ public:
 class DaemonBase
 {
 protected:
-    experimental::TestResponder responder;
+    experimental::DispatchingResponder responder;
     CoAP::ParseToIResponder incoming_parser;
     experimental::TestOutgoingMessageHandler outgoing_generator;
 
@@ -86,7 +86,7 @@ public:
 
 class Daemon
 {
-    experimental::TestResponder responder;
+    experimental::DispatchingResponder responder;
     CoAP::ParseToIResponder incoming_parser;
     experimental::TestOutgoingMessageHandler outgoing_generator;
     IStream& stream;
@@ -120,7 +120,7 @@ public:
 
 class PipelineDaemon //: public DaemonBase
 {
-    experimental::TestResponder responder;
+    experimental::DispatchingResponder responder;
     CoAP::ParseToIResponder incoming_parser;
     //CoAPGenerator generator;
 

@@ -150,9 +150,9 @@ TEST_CASE("CoAP tests", "[coap]")
         REQUIRE(buffer[3] == 'a');
         REQUIRE(counter == 4);
     }
-    SECTION("Parsing thru experimental TestResponder")
+    SECTION("Parsing thru experimental DispatchingResponder")
     {
-        moducom::coap::experimental::TestResponder responder;
+        moducom::coap::experimental::DispatchingResponder responder;
         TestResponder user_responder;
 
         responder.add_handle("test", &user_responder);

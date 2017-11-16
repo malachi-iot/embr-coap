@@ -164,11 +164,11 @@ OptionGenerator::StateMachine::output_t OptionGenerator::StateMachine::generate_
 
 }
 
-void TestResponder::OnHeader(const coap::CoAP::Header header)
+void DispatchingResponder::OnHeader(const coap::CoAP::Header header)
 {
 }
 
-void TestResponder::OnOption(const coap::CoAP::OptionExperimental& option)
+void DispatchingResponder::OnOption(const coap::CoAP::OptionExperimental& option)
 {
 #ifdef __CPP11__
     typedef CoAP::Header::TypeEnum type_t;
@@ -201,7 +201,7 @@ void TestResponder::OnOption(const coap::CoAP::OptionExperimental& option)
     }
 }
 
-void TestResponder::OnOptionRequest(const coap::CoAP::OptionExperimental& option)
+void DispatchingResponder::OnOptionRequest(const coap::CoAP::OptionExperimental& option)
 {
 #ifdef __CPP11__
     typedef coap::CoAP::OptionExperimental::Numbers enum_t;
@@ -270,7 +270,7 @@ void TestResponder::OnOptionRequest(const coap::CoAP::OptionExperimental& option
 }
 
 
-void TestResponder::OnToken(const uint8_t *token, size_t length)
+void DispatchingResponder::OnToken(const uint8_t *token, size_t length)
 {
 #ifdef __CPP11__
     typedef CoAP::Header::TypeEnum type_t;
@@ -338,7 +338,7 @@ void TestResponder::OnToken(const uint8_t *token, size_t length)
 }
 
 
-void TestResponder::OnOptionResponse(const CoAP::OptionExperimental &option)
+void DispatchingResponder::OnOptionResponse(const CoAP::OptionExperimental &option)
 {
 #ifdef __CPP11__
     typedef coap::CoAP::OptionExperimental::Numbers enum_t;
@@ -374,7 +374,7 @@ void TestResponder::OnOptionResponse(const CoAP::OptionExperimental &option)
 }
 
 
-void TestResponder::OnPayload(const uint8_t message[], size_t length)
+void DispatchingResponder::OnPayload(const uint8_t message[], size_t length)
 {
     // FIX: consolidate/clean this code
     if (user_responder == NULLPTR)
@@ -388,7 +388,7 @@ void TestResponder::OnPayload(const uint8_t message[], size_t length)
 }
 
 
-void TestResponder::OnCompleted()
+void DispatchingResponder::OnCompleted()
 {
     if(user_responder) user_responder->OnCompleted();
 }
