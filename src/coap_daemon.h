@@ -103,6 +103,21 @@ public:
 
 };
 
+// Needs a better name.  Represents CoAP messages pushed instead of responded to
+// such as (sort of) subscription messages
+class Pusher
+{
+    friend class PipelineDaemon;
+
+    Pusher* next;
+
+public:
+    Pusher() : next(NULLPTR) {}
+
+    virtual bool push(IPipeline& output);
+};
+
+
 class PipelineDaemon //: public DaemonBase
 {
     experimental::TestResponder responder;
@@ -115,17 +130,36 @@ class PipelineDaemon //: public DaemonBase
     // outgoing represents data emerging from daemon to outside source,
     IPipeline& outgoing;
 
+    // NOTE: may want to track pushers out in daemon instead of responder
+    Pusher* pusher_head;
+    Pusher* pusher_tail;
+
+
 public:
     PipelineDaemon(IPipeline& incoming, IPipeline& outgoing)
             :   incoming(incoming),
                 outgoing(outgoing),
+                pusher_head(NULLPTR),
+                pusher_tail(NULLPTR),
                 incoming_parser(&responder),
                 generator(outgoing)
     {}
 
     // process a chunk and return.  May block but tries to avoid it
     // NOTE: all chunks at this time must be FULL packets
-    void process_iterate();
+    bool process_iterate();
+
+    void add(Pusher* pusher)
+    {
+        if(pusher_head == NULLPTR)
+        {
+            pusher_head = pusher;
+            pusher_tail = pusher;
+            return;
+        }
+
+        pusher_tail->next = pusher;
+    }
 };
 
 // Daemon where external control loop initiates pushes into "incoming"

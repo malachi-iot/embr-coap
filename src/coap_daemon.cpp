@@ -35,7 +35,7 @@ void Daemon::process_iterative()
 }
 
 
-void PipelineDaemon::process_iterate()
+bool PipelineDaemon::process_iterate()
 {
     // FIX: need to make this read/incoming_parser.process a process_iterate
     MemoryChunk chunk = incoming.read();
@@ -43,6 +43,19 @@ void PipelineDaemon::process_iterate()
     incoming_parser.process(chunk.data, chunk.length);
 
     //outgoing.write(outgoing_generator.get_buffer(), outgoing_generator.get_pos());
+    // if push code exists
+    if(pusher_head)
+    {
+        // execute it iteratively
+        if(!pusher_head->push(outgoing)) return false;
+
+        // if iterative execution of push head is complete, then advance to next
+        // push if present
+        pusher_head = pusher_head->next;
+        if(pusher_head == NULLPTR) pusher_tail = NULLPTR;
+
+        return true;
+    }
 }
 
 }}
