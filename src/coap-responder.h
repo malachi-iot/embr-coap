@@ -13,12 +13,11 @@ namespace moducom { namespace coap {
 
 class GeneratorResponder : public CoAP::IResponder
 {
+protected:
     CoAPGenerator generator;
-    pipeline::IPipeline& output;
 
 public:
     GeneratorResponder(pipeline::IPipeline& output) :
-        output(output),
         generator(output)
     {}
 

@@ -5,6 +5,7 @@
 #include <catch.hpp>
 
 #include "../coap_daemon.h"
+#include "../coap-responder.h"
 
 using namespace moducom::coap;
 using namespace moducom::pipeline;
@@ -24,6 +25,19 @@ static uint8_t buffer_16bit_delta[] = {
 };
 
 
+class TestResponder : moducom::coap::GeneratorResponder
+{
+public:
+    TestResponder(IPipeline& output) : GeneratorResponder(output) {}
+
+
+    //virtual void OnHeader(const Header header) OVERRIDE {}
+
+    // TODO: utilize memorychunk
+    //virtual void OnToken(const uint8_t message[], size_t length) OVERRIDE {}
+};
+
+
 TEST_CASE("CoAP daemon tests", "[coap-daemon]")
 {
     SECTION("Pipeline Daemon")
@@ -38,5 +52,10 @@ TEST_CASE("CoAP daemon tests", "[coap-daemon]")
         net_in.write(buffer_16bit_delta, sizeof(buffer_16bit_delta));
 
         daemon.process_iterate();
+    }
+    SECTION("Generator Responder")
+    {
+        BasicPipeline net_out;
+        //TestResponder responder(net_out);
     }
 }
