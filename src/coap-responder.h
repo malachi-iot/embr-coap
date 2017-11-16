@@ -2,7 +2,20 @@
 // Created by malachi on 11/15/17.
 //
 
-#ifndef MC_COAP_TEST_COAP_RESPONDER_H
-#define MC_COAP_TEST_COAP_RESPONDER_H
+#pragma once
 
-#endif //MC_COAP_TEST_COAP_RESPONDER_H
+#include "coap_transmission.h"
+#include "coap-generator.h"
+
+namespace moducom { namespace coap {
+
+class GeneratorResponder : public CoAP::IResponder
+{
+    CoAPGenerator generator;
+
+public:
+};
+
+}}
+
+

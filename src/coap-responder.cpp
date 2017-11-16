@@ -3,3 +3,9 @@
 //
 
 #include "coap-responder.h"
+
+namespace moducom { namespace coap {
+
+
+
+}}
