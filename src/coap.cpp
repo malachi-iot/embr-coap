@@ -388,5 +388,123 @@ void CoAP::ParseToIResponder::process(const uint8_t message[], size_t length)
     responder->OnCompleted();
 }
 
+
+// FIX: Not ready!  Does not account for incoming chunks which *ARENT* the whole message
+bool CoAP::ParseIterateToIResponder::process_iterate(const pipeline::MemoryChunk& incoming)
+{
+    option_state_t& option = state.option;
+    uint8_t* message = incoming.data;
+    size_t length = incoming.length;
+
+    for (int i = 0; i < length; i++)
+    {
+        Parser::State state = parser.state();
+
+        // FIX: Need something a little clearer, since we get this status when we
+        // are end-of-message that never had a payload also
+        if (state != Parser::Payload)
+        {
+            bool processed;
+
+            do
+            {
+                // processing header + options
+                processed = parser.process_iterate(message[i]);
+
+                switch (parser.state())
+                {
+                    case Parser::Header:
+                        break;
+
+                    case Parser::HeaderDone:
+                    {
+                        // we *just* finished processing header, so extract it
+                        Header* header = (Header*) parser.header();
+
+                        responder->OnHeader(*header);
+                        break;
+                    }
+
+                    case Parser::TokenDone:
+                    {
+                        responder->OnToken(parser.token(), parser.token_length());
+                        break;
+                    }
+
+                    case Parser::Options:
+                    {
+                        Parser::SubState sub_state = parser.sub_state();
+                        switch (sub_state)
+                        {
+                            case Parser::OptionSize:
+                            case Parser::OptionSizeDone:
+                            case Parser::OptionDelta:
+                                // we see these, but don't care about them
+                                break;
+
+                            case Parser::OptionDeltaAndLengthDone:
+                                option.length = parser.option_length();
+                                // FIX: only do this if chunk actually has entire
+                                // option present
+                                // FIX: This is glitchy, because we reach this status *before*
+                                // consuming byte, therefore we're off by one (because OptionSize
+                                // is not consuming byte as it should)
+                                option.value = &message[i + 1];
+
+                            case Parser::OptionDeltaDone:
+                            {
+                                uint16_t option_delta = parser.option_delta();
+                                option.number += option_delta;
+                                break;
+                            }
+
+                            case Parser::OptionLengthDone:
+                                // FIX: only do this if chunk actually has entire
+                                // option present
+                                option.length = parser.option_length();
+                                option.value = &message[i];
+                                break;
+
+                            case Parser::OptionValueDone:
+                            {
+                                OptionExperimental option(option.number, option.length, option.value);
+                                responder->OnOption(option);
+                                break;
+                            }
+                        }
+                        break;
+                    }
+
+                        // effectively same as payload ready
+                    case Parser::OptionsDone:
+                        // parser.state(Parser::Payload);
+                        // FIX: brute force into Payload immediately so we don't waste time
+                        // processing and ignoring another character
+                        // also it will trigger an assert, since we're not supposed to process OptionsDone in there
+                        break;
+
+                    case Parser::Payload:
+                        // Should see this once and only once
+
+                        // i + 1 because payload content starts one after this payload marker
+                        ASSERT_ERROR(true, length - (i + 1) > 0, "Payload marker seen but no payload found");
+                        break;
+                }
+            } while (!processed);
+        }
+        else
+        {
+            // FIX: payload sort of handles chunking already, but this call
+            // will still probably need attention
+            // payload processing happens here
+            responder->OnPayload(&message[i], length - i);
+            responder->OnCompleted();
+            return false;
+        }
+    }
+
+    return false;
+}
+
 }
 }

@@ -730,6 +730,7 @@ public:
     /// This class is an adapter between low-level decoder and high level IResponder
     class ParseToIResponder
     {
+    protected:
         IResponder* const responder;
         Parser parser;
 
@@ -740,6 +741,36 @@ public:
         }
 
         void process(const uint8_t message[], size_t length);
+    };
+
+
+    // FIX: Needs an even better name than its parent
+    class ParseIterateToIResponder : protected ParseToIResponder
+    {
+        // Experimental Anticipated maximum size of incoming option
+        pipeline::layer2::MemoryChunk<64> chunk;
+
+        struct option_state_t
+        {
+            uint16_t number;
+            uint16_t length;
+            const uint8_t* value;
+        };
+
+        union
+        {
+            option_state_t  option;
+        } state;
+
+
+    public:
+        ParseIterateToIResponder(IResponder* responder) : ParseToIResponder(responder) {}
+
+        bool process_iterate(const pipeline::MemoryChunk& incoming);
+        bool process_done()
+        {
+            responder->OnCompleted();
+        }
     };
 
     class OptionParser

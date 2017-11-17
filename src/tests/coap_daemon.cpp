@@ -31,10 +31,13 @@ public:
     TestResponder(IPipeline& output) : GeneratorResponder(output) {}
 
 
-    //virtual void OnHeader(const Header header) OVERRIDE {}
+    virtual void OnHeader(const CoAP::Header header) OVERRIDE {}
 
     // TODO: utilize memorychunk
-    //virtual void OnToken(const uint8_t message[], size_t length) OVERRIDE {}
+    virtual void OnToken(const uint8_t message[], size_t length) OVERRIDE {}
+
+    virtual void OnOption(const CoAP::OptionExperimental& option);
+    virtual void OnPayload(const uint8_t message[], size_t length);
 };
 
 
@@ -55,7 +58,7 @@ TEST_CASE("CoAP daemon tests", "[coap-daemon]")
     }
     SECTION("Generator Responder")
     {
-        BasicPipeline net_out;
-        //TestResponder responder(net_out);
+        BasicPipeline net_in, net_out;
+        TestResponder responder(net_out);
     }
 }
