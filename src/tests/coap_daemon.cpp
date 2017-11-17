@@ -25,24 +25,53 @@ static uint8_t buffer_16bit_delta[] = {
 };
 
 
-class TestResponder : moducom::coap::GeneratorResponder
+class TestResponder2 : public GeneratorResponder
 {
 public:
-    TestResponder(IPipeline& output) : GeneratorResponder(output) {}
+    TestResponder2(IPipeline& output) : GeneratorResponder(output) {}
 
-
-    virtual void OnHeader(const CoAP::Header header) OVERRIDE {}
-
-    // TODO: utilize memorychunk
-    virtual void OnToken(const uint8_t message[], size_t length) OVERRIDE {}
 
     virtual void OnOption(const CoAP::OptionExperimental& option);
     virtual void OnPayload(const uint8_t message[], size_t length);
+
+    // spit out options and payload
+    void process();
 };
+
+void TestResponder2::OnOption(const CoAP::OptionExperimental& option)
+{
+
+}
+
+
+void TestResponder2::OnPayload(const uint8_t* message, size_t length)
+{
+
+}
+
+
+void TestResponder2::process()
+{
+    // remember we have to spit them out in order
+
+    //option_t option(option_number_t::UriPath);
+    option_t option(11);
+
+    option.value_string = "TESTPATH";
+    option.length = 8;
+
+    generator._output(option);
+
+    // FIX: option number is getting generated wrong
+    option.value_string = "TESTPAT2";
+    generator._output(option);
+}
 
 
 TEST_CASE("CoAP daemon tests", "[coap-daemon]")
 {
+    moducom::pipeline::MemoryChunk coap_chunk(buffer_16bit_delta, sizeof(buffer_16bit_delta));
+
     SECTION("Pipeline Daemon")
     {
         BasicPipeline _net_in, net_out;
@@ -52,13 +81,24 @@ TEST_CASE("CoAP daemon tests", "[coap-daemon]")
 
         PipelineDaemon daemon(net_in, net_out);
 
-        net_in.write(buffer_16bit_delta, sizeof(buffer_16bit_delta));
+        net_in.write(coap_chunk);
 
         daemon.process_iterate();
     }
     SECTION("Generator Responder")
     {
-        BasicPipeline net_in, net_out;
-        TestResponder responder(net_out);
+        moducom::pipeline::layer3::MemoryChunk<1024> buffer_out;
+
+        layer3::SimpleBufferedPipeline net_out(buffer_out);
+        BasicPipeline net_in;
+        TestResponder2 responder(net_out);
+        CoAP::ParseToIResponder parseToResponder(&responder);
+
+        parseToResponder.process(buffer_16bit_delta, sizeof(buffer_16bit_delta));
+        while(!responder.process_iterate());
+        responder.process();
+
+        // Just so I can observe stuff in debugger
+        REQUIRE(1 == 1);
     }
 }

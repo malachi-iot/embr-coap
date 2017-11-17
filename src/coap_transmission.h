@@ -327,6 +327,8 @@ struct Token
     RequestContext context;
 };
 
+
+
 // TODO: Just a fledgling class, will need to be a lot more powerful
 // shared token manager so that request and response logic can be aware of each
 // other's tokens

@@ -570,6 +570,7 @@ public:
 
     // TODO: Rename this to something more like "IncomingMessageHandler"
     // since "Response" carries particular meaning in CoAP request/response behavior
+    // TODO: Rename the OnX functions to on_x
     class IResponder
     {
     public:

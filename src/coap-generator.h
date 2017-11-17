@@ -23,8 +23,10 @@ class CoAPGenerator
         size_t pos;
     };
 
-    typedef experimental::layer2::OptionBase option_t;
     typedef experimental::layer2::OptionGenerator::StateMachine _option_state_t;
+
+public:
+    typedef experimental::layer2::OptionBase option_t;
     typedef coap::CoAP::OptionExperimental::number_t option_number_t;
 
 #ifdef __CPP11__
@@ -35,6 +37,10 @@ class CoAPGenerator
     typedef CoAP::Parser substate_t;
 #endif
 
+private:
+    // FIX: lift this out of here, because we have explicit 'begins'
+    // for the different state sections, we're able to initialize which
+    // substate we're in
     CoAP::Parser::State _state;
 
     CoAP::Parser::State state() const { return _state; }
@@ -68,6 +74,7 @@ class CoAPGenerator
         return *get_option_state_ptr();
     }
 
+public:
     CoAP::Header* get_header() const
     {
         // NOTE: Be very careful with this cast! Make sure Header class itself
@@ -75,7 +82,6 @@ class CoAPGenerator
         return (CoAP::Header*) header_state.bytes;
     }
 
-public:
     CoAPGenerator(pipeline_t& output) :
             // FIX: temporarily marking as HeaderDone, since the header handling
             // code isn't ready yet

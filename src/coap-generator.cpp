@@ -40,6 +40,8 @@ bool pipeline_output_helper(pipeline::experimental::IBufferProviderPipeline& out
 }
 
 
+// doing this because pipeline might not be able to take all bytes just yet and
+// I only return a true/false instead of number of bytes actually written
 bool CoAPGenerator::output_header_iterate()
 {
     uint8_t value = header_state.bytes[header_state.pos];
