@@ -5,6 +5,7 @@
 #include <catch.hpp>
 
 #include "../mc/pipeline.h"
+#include <stdio.h>
 
 using namespace moducom::pipeline;
 using namespace moducom::pipeline::experimental;

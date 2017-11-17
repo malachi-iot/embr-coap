@@ -6,6 +6,7 @@
 #define MC_COAP_TEST_COAP_GENERATOR_H
 
 #include "mc/pipeline.h"
+#include "coap_transmission.h"
 
 namespace moducom { namespace coap {
 

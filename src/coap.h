@@ -3,6 +3,7 @@
 //
 
 #include "platform.h"
+#include "mc/pipeline.h"
 #include <stdint.h>
 #include <stdlib.h>
 
@@ -575,6 +576,10 @@ public:
         //! Responds to a header found in a CoAP message
         //! \param header
         virtual void OnHeader(const Header header) = 0;
+        //!
+        //! \param message
+        //! \param length
+        // NOTE: technically we have token length from header...
         virtual void OnToken(const uint8_t message[], size_t length) = 0;
         virtual void OnOption(const OptionExperimental& option) = 0;
         virtual void OnPayload(const uint8_t message[], size_t length) = 0;

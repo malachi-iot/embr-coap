@@ -5,9 +5,10 @@
 #ifndef MC_COAP_TEST_PIPELINE_H
 #define MC_COAP_TEST_PIPELINE_H
 
-#include "../coap_transmission.h"
+//#include "../coap_transmission.h"
 #include "../platform.h"
 #include <stdint.h>
+#include <memory.h>
 
 
 namespace moducom { namespace pipeline {
