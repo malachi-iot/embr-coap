@@ -68,6 +68,13 @@ class CoAPGenerator
         return *get_option_state_ptr();
     }
 
+    CoAP::Header* get_header() const
+    {
+        // NOTE: Be very careful with this cast! Make sure Header class itself
+        // at least starts with those 4 bytes...
+        return (CoAP::Header*) header_state.bytes;
+    }
+
 public:
     CoAPGenerator(pipeline_t& output) :
             // FIX: temporarily marking as HeaderDone, since the header handling
@@ -100,6 +107,19 @@ public:
 
     void output_payload_begin() {}
     bool output_payload_iterate(const pipeline::MemoryChunk& chunk);
+
+
+    void output_token_begin()
+    {
+    }
+
+
+    bool output_token_iterate(const pipeline::MemoryChunk& chunk)
+    {
+        // FIX: For now, this code presumes that chunk represents exactly
+        // the right number of token bytes (not a segmented/batched chunk)
+        return output.write(chunk);
+    }
 
 
     void _output(const option_t& option)

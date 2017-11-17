@@ -13,20 +13,45 @@
 
 namespace moducom { namespace pipeline {
 
-class MemoryChunk
+class MemoryChunkBase
+{
+public:
+    size_t length;
+};
+
+class MemoryChunk : public MemoryChunkBase
 {
 public:
     uint8_t* data;
-    size_t length;
 
-    MemoryChunk(uint8_t* data, size_t length) : data(data), length(length) {}
+    MemoryChunk(uint8_t* data, size_t length) : data(data)
+    {
+        this->length = length;
+    }
     MemoryChunk() {}
 
     inline void memset(uint8_t c, size_t length) { ::memset(data, c, length); }
     inline void memset(uint8_t c) { memset(c, length); }
 };
 
+// TODO: Oops, this should be layer3 since it has pointer *and* size fields
 namespace layer2
+{
+// TODO: Update code to use layer3, then change this to not extend pipeline::MemoryChunk
+template <size_t buffer_length>
+class MemoryChunk : public pipeline::MemoryChunk
+{
+    uint8_t buffer[buffer_length];
+
+public:
+    MemoryChunk() : pipeline::MemoryChunk(buffer, buffer_length) {}
+
+    inline void memset(uint8_t c) { ::memset(buffer, c, buffer_length); }
+};
+
+}
+
+namespace layer3
 {
 template <size_t buffer_length>
 class MemoryChunk : public pipeline::MemoryChunk
@@ -317,7 +342,7 @@ namespace layer3
 // emptied completely out before new space is available
 class SimpleBufferedPipeline : public IPipeline
 {
-    MemoryChunk buffer;
+    pipeline::MemoryChunk buffer;
     size_t length_used;
 
     // Be careful though, because holding a status that we send out
@@ -331,7 +356,7 @@ class SimpleBufferedPipeline : public IPipeline
     PipelineMessage::CopiedStatus copied_status;
 
 public:
-    SimpleBufferedPipeline(const MemoryChunk& buffer) :
+    SimpleBufferedPipeline(const pipeline::MemoryChunk& buffer) :
             buffer(buffer),
             length_used(0)
     {
@@ -390,7 +415,7 @@ class BufferProviderPipeline : public pipeline::experimental::IBufferProviderPip
     PipelineMessage::CopiedStatus copied_status;
 
 public:
-    BufferProviderPipeline(const MemoryChunk& chunk) : buffer(chunk)
+    BufferProviderPipeline(const pipeline::MemoryChunk& chunk) : buffer(chunk)
     {
     }
 
@@ -401,9 +426,9 @@ public:
         return buffer;
     }
 
-    virtual MemoryChunk advance(size_t length, PipelineMessage::CopiedStatus copied_status) OVERRIDE;
+    virtual pipeline::MemoryChunk advance(size_t length, PipelineMessage::CopiedStatus copied_status) OVERRIDE;
 
-    virtual bool get_buffer(MemoryChunk** chunk) OVERRIDE;
+    virtual bool get_buffer(pipeline::MemoryChunk** chunk) OVERRIDE;
 
     virtual bool is_buffer_preferred(size_t size) OVERRIDE
     {

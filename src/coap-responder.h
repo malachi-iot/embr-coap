@@ -14,6 +14,9 @@ namespace moducom { namespace coap {
 class GeneratorResponder : public CoAP::IResponder
 {
 protected:
+    // FIX: instead reuse someone else's allocated token if we can
+    // *and* if it's practical
+
     CoAPGenerator generator;
 
 public:

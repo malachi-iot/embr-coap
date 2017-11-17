@@ -10,14 +10,14 @@ namespace moducom { namespace pipeline {
 
 namespace layer3 { namespace experimental {
 
-bool BufferProviderPipeline::get_buffer(MemoryChunk **memory_chunk)
+bool BufferProviderPipeline::get_buffer(pipeline::MemoryChunk **memory_chunk)
 {
     return false;
 }
 
-MemoryChunk BufferProviderPipeline::advance(size_t size, PipelineMessage::CopiedStatus status)
+pipeline::MemoryChunk BufferProviderPipeline::advance(size_t size, PipelineMessage::CopiedStatus status)
 {
-    MemoryChunk chunk;
+    pipeline::MemoryChunk chunk;
 
     chunk.data = NULLPTR;
 

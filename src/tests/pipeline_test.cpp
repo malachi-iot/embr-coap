@@ -9,7 +9,7 @@
 
 using namespace moducom::pipeline;
 using namespace moducom::pipeline::experimental;
-using namespace moducom::pipeline::layer3;
+//using namespace moducom::pipeline::layer3;
 using namespace moducom::pipeline::layer3::experimental;
 
 TEST_CASE("Pipeline basic tests", "[pipeline]")
@@ -17,7 +17,7 @@ TEST_CASE("Pipeline basic tests", "[pipeline]")
     SECTION("1")
     {
         MemoryChunk chunk;
-        SimpleBufferedPipeline p(chunk);
+        layer3::SimpleBufferedPipeline p(chunk);
     }
     SECTION("experimental")
     {
