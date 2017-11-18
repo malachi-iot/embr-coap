@@ -38,14 +38,6 @@ public:
 #endif
 
 private:
-    // FIX: lift this out of here, because we have explicit 'begins'
-    // for the different state sections, we're able to initialize which
-    // substate we're in
-    CoAP::Parser::State _state;
-
-    CoAP::Parser::State state() const { return _state; }
-    void state(CoAP::Parser::State state) { _state = state; }
-
     struct header_state_t : public payload_state_t
     {
         uint8_t bytes[4];
@@ -83,9 +75,6 @@ public:
     }
 
     CoAPGenerator(pipeline_t& output) :
-            // FIX: temporarily marking as HeaderDone, since the header handling
-            // code isn't ready yet
-            _state(state_t::HeaderDone),
             output(output) {}
 
     // for raw access , useful for optimized zero copy scenarios
@@ -120,7 +109,7 @@ public:
 
     bool output_header_iterate();
 
-    void output_payload_begin() {}
+    void output_payload_begin() { payload_state.pos = 0; }
     bool output_payload_iterate(const pipeline::MemoryChunk& chunk);
 
 

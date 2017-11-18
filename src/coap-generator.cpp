@@ -128,13 +128,6 @@ bool CoAPGenerator::output_option_iterate()
 
 bool CoAPGenerator::output_payload_iterate(const pipeline::MemoryChunk& chunk)
 {
-    if(state() != state_t::Payload)
-    {
-        // FIX: cheap and nasty payload mode init, but it's a start
-        payload_state.pos = 0;
-        state(state_t::Payload);
-    }
-
     /*
      * TODO: For IBufferProviderPipeline
     size_t advanceable = output.advanceable();

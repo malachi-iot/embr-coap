@@ -63,7 +63,6 @@ void TestResponder2::process()
     generator.output_option_begin(option);
     generator.output_option();
 
-    // FIX: option number is getting generated wrong
     option.value_string = "TESTPAT2";
     generator.output_option_next(option);
     generator.output_option();
@@ -89,6 +88,14 @@ TEST_CASE("CoAP daemon tests", "[coap-daemon]")
     }
     SECTION("Generator Responder")
     {
+        static uint8_t output[] =
+        {
+                0x40, 0x00, 0x00, 0x00, // 4: fully blank header
+                0xB8, // option 11, length 8
+                'T', 'E', 'S', 'T', 'P', 'A', 'T', 'H',
+                0x08, // stay on option 11, another length 8
+                'T', 'E', 'S', 'T', 'P', 'A', 'T', '2',
+        };
         moducom::pipeline::layer3::MemoryChunk<1024> buffer_out;
 
         layer3::SimpleBufferedPipeline net_out(buffer_out);
@@ -99,6 +106,12 @@ TEST_CASE("CoAP daemon tests", "[coap-daemon]")
         parseToResponder.process(buffer_16bit_delta, sizeof(buffer_16bit_delta));
         while(!responder.process_iterate());
         responder.process();
+
+        for(int i = 0; i < sizeof(output); i++)
+        {
+            INFO("i = " << i);
+            REQUIRE(buffer_out.data[i] == output[i]);
+        }
 
         // Just so I can observe stuff in debugger
         REQUIRE(1 == 1);
