@@ -139,6 +139,7 @@ OptionGenerator::StateMachine::output_t OptionGenerator::StateMachine::generate_
         }
 
         case CoAP::Parser::OptionDeltaAndLengthDone:
+            current_option_number = option_base.number;
 
         case CoAP::Parser::OptionLengthDone:
             pos = 0;

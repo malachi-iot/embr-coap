@@ -64,6 +64,18 @@ bool CoAPGenerator::output_option_next(const experimental::layer2::OptionBase& o
 }
 
 
+bool CoAPGenerator::output_option_begin(const experimental::layer2::OptionBase& option)
+{
+    typedef _option_state_t statemachine_t;
+
+    new (get_option_state_ptr()) statemachine_t(option);
+
+    _option_state_t& option_state = get_option_state();
+
+    return true;
+}
+
+
 bool CoAPGenerator::output_option_iterate()
 {
     typedef _option_state_t statemachine_t;
@@ -72,66 +84,46 @@ bool CoAPGenerator::output_option_iterate()
     statemachine_t& option_state = get_option_state();
     const option_t& option = option_state.get_option_base();
 
-    switch(state())
+    CoAP::Parser::SubState sub_state = option_state.sub_state();
+    /*
+     * TODO: For IBufferProviderPipeline
+    size_t advanceable = output.advanceable();
+
+    if(advanceable == 0) return false;
+
+    if(sub_state == substate_t::OptionLengthDone)
     {
-        case state_t::HeaderDone:
-            // signals initialization of options phase
-
-            // placement new to get around union C++03 limitation
-            new (get_option_state_ptr()) statemachine_t(option);
-
-            state(state_t::Options);
-            return false;
-
-        case state_t::Options:
+        if(option.length < advanceable)
         {
-            CoAP::Parser::SubState sub_state = option_state.sub_state();
-            /*
-             * TODO: For IBufferProviderPipeline
-            size_t advanceable = output.advanceable();
-
-            if(advanceable == 0) return false;
-
-            if(sub_state == substate_t::OptionLengthDone)
-            {
-                if(option.length < advanceable)
-                {
-                    // TODO: must also check to see if option is a string or opaque type
-                    // NOTE: this isn't handling zero copy as well as we'd like, this
-                    // suggests a copy every time for at least the value portion of the
-                    // option.  Instead, we need a specialized output_option_iterate
-                    // which only takes length and number (type) and then we manually
-                    // stuff value through similar to a payload
-                    //output.write(option.value_opaque, option.length);
-                }
-            }
-            else */
-            // signals end of option
-            if(sub_state == substate_t::OptionValueDone)
-            {
-                // signals completion of this particular option to caller
-                // probably can be optimized
-                return true;
-            }
-
-            output_t out = option_state.generate_iterate();
-
-            // TODO: sloppy, clean this code up.  Regardless of option_state machine
-            // output, we report back "still processing" until OptionValueDone is
-            // reached
-            if(out == statemachine_t::signal_continue) return false;
-
-            // copy operation of one character is much preferred to buffer availability
-            // juggling
-            output.write((uint8_t)out);
-            return false;
+            // TODO: must also check to see if option is a string or opaque type
+            // NOTE: this isn't handling zero copy as well as we'd like, this
+            // suggests a copy every time for at least the value portion of the
+            // option.  Instead, we need a specialized output_option_iterate
+            // which only takes length and number (type) and then we manually
+            // stuff value through similar to a payload
+            //output.write(option.value_opaque, option.length);
         }
-        case state_t::OptionsDone:
-            // probably we won't actually know this here
-            // for completeness would like to do a placement delete, but I forgot
-            // the syntax
-            break;
     }
+    else */
+    // signals end of option
+    if(sub_state == substate_t::OptionValueDone)
+    {
+        // signals completion of this particular option to caller
+        // probably can be optimized
+        return true;
+    }
+
+    output_t out = option_state.generate_iterate();
+
+    // TODO: sloppy, clean this code up.  Regardless of option_state machine
+    // output, we report back "still processing" until OptionValueDone is
+    // reached
+    if(out == statemachine_t::signal_continue) return false;
+
+    // copy operation of one character is much preferred to buffer availability
+    // juggling
+    output.write((uint8_t)out);
+    return false;
 }
 
 bool CoAPGenerator::output_payload_iterate(const pipeline::MemoryChunk& chunk)

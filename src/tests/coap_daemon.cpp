@@ -60,11 +60,13 @@ void TestResponder2::process()
     option.value_string = "TESTPATH";
     option.length = 8;
 
-    generator._output(option);
+    generator.output_option_begin(option);
+    generator.output_option();
 
     // FIX: option number is getting generated wrong
     option.value_string = "TESTPAT2";
-    generator._output(option);
+    generator.output_option_next(option);
+    generator.output_option();
 }
 
 

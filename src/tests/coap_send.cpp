@@ -86,6 +86,7 @@ TEST_CASE("CoAP message construction tests", "[coap-send]")
         option.value_string = "TEST";
         option.length = option_length;
 
+        generator.output_option_begin(option);
         generator._output(option);
 
         i = 0;

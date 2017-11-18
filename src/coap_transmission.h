@@ -139,8 +139,10 @@ public:
 
         void next(const OptionBase& option)
         {
+            // specifically leaves option_number alone
             _sub_state = CoAP::Parser::OptionSize;
-            pos = 0;
+            // pos gets reset by state machine, so leave it out
+            //pos = 0;
             option_base = &option;
         }
     };

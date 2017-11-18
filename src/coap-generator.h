@@ -102,11 +102,20 @@ public:
     // and figure out a new option is present by some other means
     bool output_option_iterate();
     bool output_option_next(const option_t& option);
+    bool output_option_begin(const option_t& option);
 
     bool output_header_begin(const CoAP::Header& header)
     {
         header_state.pos = 0;
         memcpy(header_state.bytes, header.bytes, 4);
+    }
+
+    void output_option()
+    {
+        while(!output_option_iterate())
+        {
+            // TODO: place a yield statement in here since this is a spinwait
+        }
     }
 
     bool output_header_iterate();
