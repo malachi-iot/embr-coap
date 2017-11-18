@@ -59,6 +59,8 @@ public:
     // handle header/token portion
     bool process_iterate();
 
+    bool option_iterate(const option_t& option);
+
     virtual void OnHeader(const CoAP::Header header) OVERRIDE;
     virtual void OnToken(const uint8_t message[], size_t length) OVERRIDE;
 };

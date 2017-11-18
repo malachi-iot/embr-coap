@@ -52,6 +52,16 @@ bool GeneratorResponder::process_iterate()
     return false;
 }
 
+
+bool GeneratorResponder::option_iterate(const option_t &option)
+{
+    switch(state())
+    {
+
+    }
+}
+
+
 void GeneratorResponder::OnHeader(const CoAP::Header header)
 {
     memcpy(extra.header.bytes, header.bytes, 4);
