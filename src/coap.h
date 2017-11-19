@@ -618,6 +618,7 @@ public:
             HeaderDone,
             Token,
             TokenDone,
+            OptionsStart,
             Options,
             OptionsDone, // all options are done being processed
             Payload // Note that Payload is *NOT* handled by this class, since its length is defined by transport layer

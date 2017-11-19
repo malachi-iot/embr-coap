@@ -50,6 +50,8 @@ protected:
     state_t state() const { return _state; }
     void state(state_t state) { _state = state; }
 
+    bool is_first_option() { return state() == _state_t::OptionsStart; }
+
 public:
     GeneratorResponder(pipeline::IPipeline& output) :
         _state(_state_t::Header),
@@ -64,6 +66,53 @@ public:
     virtual void OnHeader(const CoAP::Header header) OVERRIDE;
     virtual void OnToken(const uint8_t message[], size_t length) OVERRIDE;
 };
+
+
+class ISender
+{
+public:
+    // response headers shall be preloaded with token and message id
+    // use this method to specify header 'code' for request or response
+    virtual void adjust_header(CoAP::Header* header) = 0;
+};
+
+class IBlockingSender : public ISender
+{
+public:
+    // send options and payload
+    virtual void send() = 0;
+};
+
+class INonBlockingSender : public ISender
+{
+public:
+    // iteratively send all options.  returns true when option send is complete
+    virtual bool send_option() = 0;
+
+    // iteratively send payload.  returns true when payload is fully sent
+    virtual bool send_payload() = 0;
+};
+
+
+namespace experimental
+{
+
+class IReceiver
+{
+public:
+};
+
+class IBlockingReceiver : public IReceiver
+{
+public:
+};
+
+class INonBlockingReceiver : public IReceiver
+{
+public:
+};
+
+}
 
 }}
 

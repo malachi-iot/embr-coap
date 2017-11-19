@@ -26,7 +26,7 @@ bool GeneratorResponder::process_iterate()
             }
             else
             {
-                state(_state_t::Options);
+                state(_state_t::OptionsStart);
             }
 
             break;
@@ -41,7 +41,10 @@ bool GeneratorResponder::process_iterate()
         }
 
         case _state_t::TokenDone:
-        case _state_t::Options:
+            state(_state_t::OptionsStart);
+            break;
+
+        case _state_t::OptionsStart:
             return true;
 
             // FIX: Put assert here, shouldn't get here
@@ -55,10 +58,12 @@ bool GeneratorResponder::process_iterate()
 
 bool GeneratorResponder::option_iterate(const option_t &option)
 {
-    switch(state())
+    if(state() == _state_t::OptionsStart)
     {
-
+        generator.output_option_begin(option);
+        state(_state_t::Options);
     }
+    // FIX: Rest of option_iterate needs to be build out
 }
 
 
