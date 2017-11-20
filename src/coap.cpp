@@ -390,6 +390,8 @@ void CoAP::ParseToIResponder::process(const uint8_t message[], size_t length)
 
 
 // FIX: Not ready!  Does not account for incoming chunks which *ARENT* the whole message
+// TODO: there's a special way the multi-part coap messages work which I forgot, read
+// up on that before actually trying to tackle contiguous CoAP messages
 bool CoAP::ParseIterateToIResponder::process_iterate(const pipeline::MemoryChunk& incoming)
 {
     option_state_t& option = state.option;
@@ -449,7 +451,15 @@ bool CoAP::ParseIterateToIResponder::process_iterate(const pipeline::MemoryChunk
                                 // FIX: This is glitchy, because we reach this status *before*
                                 // consuming byte, therefore we're off by one (because OptionSize
                                 // is not consuming byte as it should)
-                                option.value = &message[i + 1];
+                                // FIX: rough idea, but needs fine tuning
+                                if(length - i > option.length)
+                                {
+                                    option.value = &message[i + 1];
+                                }
+                                else
+                                {
+                                    // TBD: how to handle boundary-span
+                                }
 
                             case Parser::OptionDeltaDone:
                             {
@@ -462,7 +472,15 @@ bool CoAP::ParseIterateToIResponder::process_iterate(const pipeline::MemoryChunk
                                 // FIX: only do this if chunk actually has entire
                                 // option present
                                 option.length = parser.option_length();
-                                option.value = &message[i];
+                                // FIX: rough idea, but needs fine tuning
+                                if(length - i > option.length)
+                                {
+                                    option.value = &message[i];
+                                }
+                                else
+                                {
+                                    // TBD: how to handle boundary-span
+                                }
                                 break;
 
                             case Parser::OptionValueDone:

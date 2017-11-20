@@ -72,6 +72,8 @@ namespace experimental
 
 bool NonBlockingPipelineDaemon::process_incoming()
 {
+    // FIX: At present, input must not span
+    // into a 2nd CoAP packet.
     pipeline::PipelineMessage input = incoming.read();
     if(input.length > 0)
     {
@@ -100,9 +102,17 @@ bool NonBlockingPipelineDaemon::process_outgoing()
             break;
 
         case Finish:
-            // If no further senders are present
-            return true;
+            sender = next_sender();
+
+            // If no further senders are present, then we can say done for now (returns true)
+            if(sender == NULLPTR)
+                return true;
+            else
+                // otherwise, we've got the next sender so go into SendingStart mode
+                send_state = Start;
     }
+
+    return false;
 }
 
 }
