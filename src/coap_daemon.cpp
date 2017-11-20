@@ -3,6 +3,7 @@
 //
 
 #include "coap_daemon.h"
+#include "coap-responder.h"
 
 using namespace moducom::pipeline;
 
@@ -64,6 +65,46 @@ bool PipelineDaemon::process_iterate()
 
     // FIX: return value not worked out properly yet for this function
     return false;
+}
+
+namespace experimental
+{
+
+bool NonBlockingPipelineDaemon::process_incoming()
+{
+    pipeline::PipelineMessage input = incoming.read();
+    if(input.length > 0)
+    {
+        incoming_parser.process_iterate(input);
+    }
+    else
+        return false;
+}
+
+bool NonBlockingPipelineDaemon::process_outgoing()
+{
+    switch(send_state)
+    {
+        case Start:
+            send_state = SendingOptions;
+            break;
+
+        case SendingOptions:
+            if(sender->send_option())
+                send_state = SendingPayload;
+            break;
+
+        case SendingPayload:
+            if(sender->send_payload())
+                send_state = Finish;
+            break;
+
+        case Finish:
+            // If no further senders are present
+            return true;
+    }
+}
+
 }
 
 }}

@@ -773,6 +773,13 @@ public:
         {
             responder->OnCompleted();
         }
+
+        void reset_experimental(IResponder* responder)
+        {
+            // TODO: see if there's a convenient way to do this (in place delete/new...)
+            //this->responder = responder;
+        }
+
     };
 
     class OptionParser

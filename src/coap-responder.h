@@ -97,6 +97,14 @@ public:
 namespace experimental
 {
 
+class NonBlockingSender :
+        public IBlockingSender,
+        public INonBlockingSender
+{
+public:
+    virtual void send() OVERRIDE;
+};
+
 class IReceiver
 {
 public:

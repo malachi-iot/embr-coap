@@ -96,4 +96,16 @@ void GeneratorResponder::OnToken(const uint8_t* message, size_t length)
     generator.output_token_begin();
 }
 
+
+namespace experimental
+{
+
+void NonBlockingSender::send()
+{
+    while(!send_option());
+    while(!send_payload());
+}
+
+}
+
 }}

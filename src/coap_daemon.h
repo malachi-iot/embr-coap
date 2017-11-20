@@ -118,17 +118,26 @@ public:
 };
 
 
-class PipelineDaemon //: public DaemonBase
+class PipelineDaemonBase
 {
-    experimental::DispatchingResponder responder;
-    CoAP::ParseToIResponder incoming_parser;
-    //CoAPGenerator generator;
-
+protected:
     // incoming represents data coming into daemon from outside source, outside source could
     // possibly ultimately be lwip or similar
     IPipeline& incoming;
     // outgoing represents data emerging from daemon to outside source,
     IPipeline& outgoing;
+
+    PipelineDaemonBase(IPipeline& incoming, IPipeline& outgoing)
+        :       incoming(incoming),
+                outgoing(outgoing)
+    {}
+};
+
+class PipelineDaemon : public PipelineDaemonBase
+{
+    experimental::DispatchingResponder responder;
+    CoAP::ParseToIResponder incoming_parser;
+    //CoAPGenerator generator;
 
     // NOTE: may want to track pushers out in daemon instead of responder
     Pusher* pusher_head;
@@ -141,8 +150,7 @@ class PipelineDaemon //: public DaemonBase
 
 public:
     PipelineDaemon(IPipeline& incoming, IPipeline& outgoing)
-            :   incoming(incoming),
-                outgoing(outgoing),
+            :   PipelineDaemonBase(incoming, outgoing),
                 pusher_head(NULLPTR),
                 pusher_tail(NULLPTR),
                 incoming_parser(&responder)
@@ -185,6 +193,51 @@ public:
         PipelineDaemon(incoming, outgoing) {}
 
 };
+
+class INonBlockingSender;
+
+namespace experimental {
+
+class NonBlockingPipelineDaemon : public PipelineDaemonBase
+{
+    CoAP::ParseIterateToIResponder incoming_parser;
+    INonBlockingSender* sender;
+
+    enum SendState
+    {
+        Start,
+        SendingOptions,
+        SendingPayload,
+        Finish
+    };
+
+    SendState send_state;
+
+protected:
+    // Acquire next sender, or null if none is ready to go
+    virtual INonBlockingSender* next_sender() = 0;
+    // Acquire next receiver, or null if none is ready to go
+    // [extra experimental, pretty sure we need to evaluate incoming header to know which receiver we're itnerested in]
+    virtual CoAP::IResponder* next_receiver() = 0;
+
+public:
+    NonBlockingPipelineDaemon(IPipeline& incoming, IPipeline& outgoing) :
+            PipelineDaemonBase(incoming, outgoing),
+            send_state(Start),
+            incoming_parser(NULLPTR),
+            sender(NULLPTR)
+    {}
+
+    // process as much as we can from incoming pipeline without blocking
+    // if pipeline is totally empty, return true.
+    bool process_incoming();
+
+    // push as much as we can into outgoing pipeline without blocking.
+    // if no further pending output, return true
+    bool process_outgoing();
+};
+
+}
 
 
 }}
