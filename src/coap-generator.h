@@ -175,13 +175,17 @@ class OptionEncoderHelper
 
     int state;
     uint16_t next_number;
-    option_t option;
+    //option_t option;
+    uint8_t _option[sizeof(option_t)];
+
+    option_t& option() const { return *(option_t*) _option; }
 
 protected:
     // sets up option instance for next operation
     // returns what next option shall be. 0 means we're done with options
     // be sure to return & process options in correct order
-    virtual uint16_t option_start_callback();
+    // TODO: Make this an = 0 abstract
+    virtual uint16_t option_start_callback() { return 0; }
 
 #ifdef UNUSED
     // sample
@@ -203,18 +207,25 @@ protected:
     }
 #endif
 
+public:
+    void initialize() { state = 0; }
+
     bool process_iterate(CoAPGenerator& encoder)
     {
+        option_t& o = option();
+
         switch(state)
         {
             case 0:
-                encoder.output_option_begin(option);
+                new (&o) option_t(0);
+                encoder.output_option_begin(o);
                 next_number = option_start_callback();
                 state = 2;
                 break;
             case 1:
+                new (&o) option_t(next_number);
                 // TODO: Make an output_option_next which doesnt reassign
-                encoder.output_option_next(option);
+                encoder.output_option_next(o);
                 next_number = option_start_callback();
                 state = 2;
                 break;

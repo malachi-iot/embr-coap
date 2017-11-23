@@ -102,4 +102,14 @@ TEST_CASE("CoAP message construction tests", "[coap-send]")
         REQUIRE(chunk.data[i++] == 'S');
         REQUIRE(chunk.data[i++] == 'T');
     }
+    SECTION("OptionEncoderHelper")
+    {
+        layer3::MemoryChunk<128> chunk;
+        SimpleBufferedPipeline output(chunk);
+        CoAPGenerator generator(output);
+        moducom::coap::experimental::OptionEncoderHelper oeh;
+
+        oeh.initialize();
+        oeh.process_iterate(generator);
+    }
 }
