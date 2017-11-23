@@ -58,12 +58,28 @@ bool GeneratorResponder::process_header_and_token_iterate()
 
 bool GeneratorResponder::option_iterate(const option_t &option)
 {
+    bool retVal = false;
+
     if(state() == _state_t::OptionsStart)
     {
         generator.output_option_begin(option);
         state(_state_t::Options);
     }
-    // FIX: Rest of option_iterate needs to be build out
+    else if(state() == _state_t::Options)
+    {
+        generator.output_option_iterate();
+
+        CoAP::Parser::SubState sub_state = generator.get_option_state().sub_state();
+
+        if(sub_state == CoAP::Parser::OptionValueDone)
+        {
+            // FIX: Not perfect, since this very well may be the last option
+            state(_state_t::OptionsStart);
+            retVal = true;
+        }
+    }
+
+    return retVal;
 }
 
 

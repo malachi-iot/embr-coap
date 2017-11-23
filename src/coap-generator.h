@@ -13,6 +13,9 @@ namespace moducom { namespace coap {
 // Non-blocking coap message generator state machine wrapper
 class CoAPGenerator
 {
+    // FIX: Don't like this friend here
+    friend class GeneratorResponder;
+
     //typedef pipeline::experimental::IBufferProviderPipeline pipeline_t;
     typedef pipeline::IPipeline pipeline_t;
 
@@ -93,7 +96,7 @@ public:
     bool output_option_next(const option_t& option);
     bool output_option_begin(const option_t& option);
 
-    bool output_header_begin(const CoAP::Header& header)
+    void output_header_begin(const CoAP::Header& header)
     {
         header_state.pos = 0;
         memcpy(header_state.bytes, header.bytes, 4);

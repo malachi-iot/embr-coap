@@ -769,7 +769,7 @@ public:
         ParseIterateToIResponder(IResponder* responder) : ParseToIResponder(responder) {}
 
         bool process_iterate(const pipeline::MemoryChunk& incoming);
-        bool process_done()
+        void process_done()
         {
             responder->OnCompleted();
         }
