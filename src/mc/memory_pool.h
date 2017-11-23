@@ -58,8 +58,7 @@ class MemoryPool : public IMemory
 
     void* lock_index2(handle_opaque_t handle)
     {
-        get_sys_page_index2().lock(handle, pages[0], page_size);
-
+        return get_sys_page_index2().lock(handle, pages[0], page_size);
     }
 
 public:

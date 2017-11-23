@@ -28,6 +28,7 @@ TEST_CASE("General memory tests", "[memory]")
 //        struct mallinfo mi = mallinfo();
 #endif
 
+        // FIX: no destructor is gonna get called cuz not yet a virtual
         delete memory;
     }
 }

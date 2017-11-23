@@ -485,8 +485,8 @@ bool CoAP::ParseIterateToIResponder::process_iterate(const pipeline::MemoryChunk
 
                             case Parser::OptionValueDone:
                             {
-                                OptionExperimental option(option.number, option.length, option.value);
-                                responder->OnOption(option);
+                                OptionExperimental _o(option.number, option.length, option.value);
+                                responder->OnOption(_o);
                                 break;
                             }
                         }
