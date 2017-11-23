@@ -104,7 +104,7 @@ TEST_CASE("CoAP daemon tests", "[coap-daemon]")
         CoAP::ParseToIResponder parseToResponder(&responder);
 
         parseToResponder.process(buffer_16bit_delta, sizeof(buffer_16bit_delta));
-        while(!responder.process_iterate());
+        while(!responder.process_header_and_token_iterate());
         responder.process();
 
         for(int i = 0; i < sizeof(output); i++)

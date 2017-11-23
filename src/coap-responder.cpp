@@ -6,7 +6,7 @@
 
 namespace moducom { namespace coap {
 
-bool GeneratorResponder::process_iterate()
+bool GeneratorResponder::process_header_and_token_iterate()
 {
     switch(state())
     {
@@ -71,9 +71,9 @@ void GeneratorResponder::OnHeader(const CoAP::Header header)
 {
     memcpy(extra.header.bytes, header.bytes, 4);
     // beware that because I am using unions for extra.** that OnToken
-    // cannot happen until after process_iterate has serviced this header, so in
+    // cannot happen until after process_header_and_token_iterate has serviced this header, so in
     // other words currently The OnX functions must be synchronized with
-    // process_iterate
+    // process_header_and_token_iterate
     //
     // that being said, we don't actually use the extra.header portion
     // (header is cached in the generator) and it's looking like it might

@@ -59,7 +59,7 @@ public:
     {}
 
     // handle header/token portion
-    bool process_iterate();
+    bool process_header_and_token_iterate();
 
     bool option_iterate(const option_t& option);
 
