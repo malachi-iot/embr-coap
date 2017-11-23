@@ -93,6 +93,9 @@ public:
     // TODO: Make a version of this which can re-use same option over and over again
     // and figure out a new option is present by some other means
     bool output_option_iterate();
+
+    // need a separate next/begin because one initializes option generator state,
+    // while the other advances forward while leaving current option number alnne
     bool output_option_next(const option_t& option);
     bool output_option_begin(const option_t& option);
 
@@ -163,7 +166,73 @@ public:
     }
 };
 
+namespace experimental {
 
+class OptionEncoderHelper
+{
+    //typedef CoAP::OptionExperimental option_t;
+    typedef layer2::OptionBase option_t;
+
+    int state;
+    uint16_t next_number;
+    option_t option;
+
+protected:
+    // sets up option instance for next operation
+    // returns what next option shall be. 0 means we're done with options
+    // be sure to return & process options in correct order
+    virtual uint16_t option_start_callback();
+
+#ifdef UNUSED
+    // sample
+    virtual uint16_t option_start_callback() OVERRIDE
+    {
+        switch(option.number)
+        {
+            case 0:
+            case UriPath:
+                // set up URI info
+                return ContentFormat;
+
+            case ContentFormat:
+                // set up Content format for subsequent outgoing handling
+
+            default:
+                return 0;
+        }
+    }
+#endif
+
+    bool process_iterate(CoAPGenerator& encoder)
+    {
+        switch(state)
+        {
+            case 0:
+                encoder.output_option_begin(option);
+                next_number = option_start_callback();
+                state = 2;
+                break;
+            case 1:
+                // TODO: Make an output_option_next which doesnt reassign
+                encoder.output_option_next(option);
+                next_number = option_start_callback();
+                state = 2;
+                break;
+            case 2:
+                // If option has been completely emitted
+                if(encoder.output_option_iterate())
+                    // rotate to state 1: next option header
+                    state = 1;
+                break;
+        }
+
+        if(next_number == 0) return true;
+
+        return false;
+    }
+
+};
+}
 }}
 
 #endif //MC_COAP_TEST_COAP_GENERATOR_H

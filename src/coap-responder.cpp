@@ -56,6 +56,7 @@ bool GeneratorResponder::process_header_and_token_iterate()
 }
 
 
+// NOTE: This is outdated, to be replaced by isolated OptionEncoderHelper
 bool GeneratorResponder::option_iterate(const option_t &option)
 {
     bool retVal = false;
@@ -67,9 +68,16 @@ bool GeneratorResponder::option_iterate(const option_t &option)
     }
     else if(state() == _state_t::Options)
     {
+        CoAP::Parser::SubState sub_state = generator.get_option_state().sub_state();
+
+        if(sub_state == CoAP::Parser::OptionValueDone)
+        {
+            generator.output_option_next(option);
+        }
+
         generator.output_option_iterate();
 
-        CoAP::Parser::SubState sub_state = generator.get_option_state().sub_state();
+        sub_state = generator.get_option_state().sub_state();
 
         if(sub_state == CoAP::Parser::OptionValueDone)
         {
