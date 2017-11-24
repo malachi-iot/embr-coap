@@ -142,10 +142,17 @@ OptionGenerator::StateMachine::output_t OptionGenerator::StateMachine::generate_
             current_option_number = option_base.number;
 
         case CoAP::Parser::OptionLengthDone:
+            if (option_base.length == 0)
+            {
+                sub_state(CoAP::Parser::OptionValueDone);
+                return signal_continue;
+            }
+
             pos = 0;
             sub_state(CoAP::Parser::OptionValue);
 
         case CoAP::Parser::OptionValue:
+            // TODO: Document why we're doing length - 1 here
             if (pos == option_base.length - 1)
                 sub_state(CoAP::Parser::OptionValueDone);
 
