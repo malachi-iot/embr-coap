@@ -32,6 +32,11 @@ public:
 
     inline void memset(uint8_t c, size_t length) { ::memset(data, c, length); }
     inline void memset(uint8_t c) { memset(c, length); }
+
+    inline uint8_t& operator[](size_t index)
+    {
+        return data[index];
+    }
 };
 
 // TODO: Oops, this should be layer3 since it has pointer *and* size fields
@@ -252,6 +257,45 @@ public:
 
 
 namespace experimental {
+
+
+//! Connects an encoder (which spits out bytes) to an output pipeline
+//! \tparam TEncoder
+template <class TEncoder>
+class PipelineEncoderAdapter
+{
+    IPipeline& output;
+    TEncoder& encoder;
+
+    typedef TEncoder encoder_t;
+    typedef typename encoder_t::output_t encoder_output_t;
+
+public:
+    PipelineEncoderAdapter(IPipeline& output, TEncoder& encoder)
+            :
+    output(output),
+    encoder(encoder)
+    {}
+
+
+    bool process_iterate();
+
+    void process() { while(!process_iterate()); }
+};
+
+
+template <class TEncoder>
+bool PipelineEncoderAdapter<TEncoder>::process_iterate()
+{
+    encoder_output_t out = encoder.process_iterate();
+
+    if(out == TEncoder::signal_continue) return false;
+
+    // TODO: look into advanceable/buffer code
+    output.write(out);
+
+    return true;
+}
 
 
 // Augmented pipeline which also provides a preferred buffer (similar to a

@@ -12,6 +12,24 @@ using namespace moducom::pipeline::experimental;
 //using namespace moducom::pipeline::layer3;
 using namespace moducom::pipeline::layer3::experimental;
 
+class BasicTestEncoder
+{
+    uint8_t counter;
+
+public:
+    typedef int16_t output_t;
+
+    static CONSTEXPR output_t signal_continue = -1;
+
+    output_t process_iterate()
+    {
+        if(counter++ == 10)
+            counter = 0;
+
+        return counter;
+    }
+};
+
 TEST_CASE("Pipeline basic tests", "[pipeline]")
 {
     SECTION("1")
@@ -50,5 +68,17 @@ TEST_CASE("Pipeline basic tests", "[pipeline]")
         msg.boundary();
 
 #endif
+    }
+    SECTION("Pipeline Encoder Adapter")
+    {
+        layer3::MemoryChunk<128> chunk;
+        layer3::SimpleBufferedPipeline p(chunk);
+        BasicTestEncoder encoder;
+        PipelineEncoderAdapter<BasicTestEncoder> adapter(p, encoder);
+
+        // Not ready for testing just yet
+        adapter.process();
+
+        //REQUIRE(chunk[0] == 1);
     }
 }
