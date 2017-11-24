@@ -152,6 +152,11 @@ public:
             //pos = 0;
             option_base = &option;
         }
+
+        void reset()
+        {
+            initialize();
+        }
     };
 
 public:

@@ -7,6 +7,7 @@
 
 #include "mc/pipeline.h"
 #include "coap_transmission.h"
+#include "coap-encoder.h"
 
 namespace moducom { namespace coap {
 
@@ -178,6 +179,9 @@ public:
 
 namespace experimental {
 
+// Keep in mind a developing vocabulary:
+// Encoder spits out bytes
+// Generator pushes out through a pipeline
 class OptionEncoderHelper
 {
     //typedef CoAP::OptionExperimental option_t;
@@ -227,25 +231,41 @@ public:
         next_number = option_start_callback();
     }
 
-    void initialize(CoAPGenerator::_option_state_t& encoder, uint16_t option_number = 0)
+    void initialize(OptionEncoder& encoder, uint16_t option_number = 0)
     {
         this->next_number = option_number;
         option_t& o = option();
         new (&o) option_t(next_number);
+        // FIX: Really should be an initialization of encoder, but will do for now
         encoder.next(o);
-
-        /*
-        state = 2;
-        this->next_number = option_number;
-        option_t& o = option();
-        new (&o) option_t(next_number);
-        encoder.output_option_begin(o);
-        next_number = option_start_callback(); */
     }
 
-    bool process_iterate(CoAPGenerator::_option_state_t& encoder)
+    OptionEncoder::output_t process_iterate(OptionEncoder& encoder)
     {
-        return false;
+        switch(state)
+        {
+            case 1:
+            {
+                option_t &o = option();
+                new(&o) option_t(next_number);
+                encoder.next();
+                next_number = option_start_callback();
+                state = 2;
+                break;
+            }
+            case 2:
+                // If option has been completely emitted
+                if(encoder.generate_iterate() != OptionEncoder::signal_continue)
+                    // rotate to state 1: next option header
+                    state = 3;
+                break;
+
+            case 3:
+                if(next_number == 0) return true;
+                break;
+        }
+
+        return OptionEncoder::signal_continue;
     }
 
     bool process_iterate(CoAPGenerator& encoder)
