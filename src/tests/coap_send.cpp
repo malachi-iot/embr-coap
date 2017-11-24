@@ -13,6 +13,15 @@ using namespace moducom::pipeline::experimental;
 using namespace moducom::pipeline::layer3;
 using namespace moducom::pipeline::layer3::experimental;
 
+class TestOptionEncoderHelper : public OptionEncoderHelper
+{
+public:
+    virtual uint16_t option_start_callback() OVERRIDE
+    {
+        return 0;
+    }
+};
+
 TEST_CASE("CoAP message construction tests", "[coap-send]")
 {
     SECTION("1")
@@ -107,9 +116,12 @@ TEST_CASE("CoAP message construction tests", "[coap-send]")
         layer3::MemoryChunk<128> chunk;
         SimpleBufferedPipeline output(chunk);
         CoAPGenerator generator(output);
-        moducom::coap::experimental::OptionEncoderHelper oeh;
+        TestOptionEncoderHelper oeh;
 
         oeh.initialize();
-        oeh.process_iterate(generator);
+        while(!oeh.process_iterate(generator))
+        {
+
+        }
     }
 }

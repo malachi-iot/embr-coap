@@ -184,8 +184,7 @@ protected:
     // sets up option instance for next operation
     // returns what next option shall be. 0 means we're done with options
     // be sure to return & process options in correct order
-    // TODO: Make this an = 0 abstract
-    virtual uint16_t option_start_callback() { return 0; }
+    virtual uint16_t option_start_callback() = 0;
 
 #ifdef UNUSED
     // sample
@@ -208,7 +207,11 @@ protected:
 #endif
 
 public:
-    void initialize() { state = 0; }
+    void initialize(uint16_t option_number = 0)
+    {
+        state = 0;
+        this->next_number = option_number;
+    }
 
     bool process_iterate(CoAPGenerator& encoder)
     {
@@ -217,7 +220,7 @@ public:
         switch(state)
         {
             case 0:
-                new (&o) option_t(0);
+                new (&o) option_t(next_number);
                 encoder.output_option_begin(o);
                 next_number = option_start_callback();
                 state = 2;
