@@ -10,11 +10,16 @@
 
 namespace moducom { namespace coap {
 
+namespace experimental {
+class OptionEncoderHelper;
+}
+
 // Non-blocking coap message generator state machine wrapper
 class CoAPGenerator
 {
     // FIX: Don't like this friend here
     friend class GeneratorResponder;
+    friend class experimental::OptionEncoderHelper;
 
     //typedef pipeline::experimental::IBufferProviderPipeline pipeline_t;
     typedef pipeline::IPipeline pipeline_t;
@@ -220,6 +225,27 @@ public:
         new (&o) option_t(next_number);
         encoder.output_option_begin(o);
         next_number = option_start_callback();
+    }
+
+    void initialize(CoAPGenerator::_option_state_t& encoder, uint16_t option_number = 0)
+    {
+        this->next_number = option_number;
+        option_t& o = option();
+        new (&o) option_t(next_number);
+        encoder.next(o);
+
+        /*
+        state = 2;
+        this->next_number = option_number;
+        option_t& o = option();
+        new (&o) option_t(next_number);
+        encoder.output_option_begin(o);
+        next_number = option_start_callback(); */
+    }
+
+    bool process_iterate(CoAPGenerator::_option_state_t& encoder)
+    {
+        return false;
     }
 
     bool process_iterate(CoAPGenerator& encoder)
