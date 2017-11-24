@@ -115,11 +115,11 @@ TEST_CASE("CoAP message construction tests", "[coap-send]")
     {
         layer3::MemoryChunk<128> chunk;
         SimpleBufferedPipeline output(chunk);
-        CoAPGenerator generator(output);
+        CoAPGenerator encoder(output);
         TestOptionEncoderHelper oeh;
 
-        oeh.initialize();
-        while(!oeh.process_iterate(generator))
+        oeh.initialize(encoder);
+        while(!oeh.process_iterate(encoder))
         {
 
         }

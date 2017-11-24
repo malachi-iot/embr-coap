@@ -97,6 +97,11 @@ public:
     // need a separate next/begin because one initializes option generator state,
     // while the other advances forward while leaving current option number alnne
     bool output_option_next(const option_t& option);
+    void output_option_next()
+    {
+        _option_state_t& option_state = get_option_state();
+        option_state.next();
+    }
     bool output_option_begin(const option_t& option);
 
     void output_header_begin(const CoAP::Header& header)
@@ -207,40 +212,40 @@ protected:
 #endif
 
 public:
-    void initialize(uint16_t option_number = 0)
+    void initialize(CoAPGenerator& encoder, uint16_t option_number = 0)
     {
-        state = 0;
+        state = 2;
         this->next_number = option_number;
+        option_t& o = option();
+        new (&o) option_t(next_number);
+        encoder.output_option_begin(o);
+        next_number = option_start_callback();
     }
 
     bool process_iterate(CoAPGenerator& encoder)
     {
-        option_t& o = option();
-
         switch(state)
         {
-            case 0:
-                new (&o) option_t(next_number);
-                encoder.output_option_begin(o);
-                next_number = option_start_callback();
-                state = 2;
-                break;
             case 1:
-                new (&o) option_t(next_number);
-                // TODO: Make an output_option_next which doesnt reassign
-                encoder.output_option_next(o);
+            {
+                option_t &o = option();
+                new(&o) option_t(next_number);
+                encoder.output_option_next();
                 next_number = option_start_callback();
                 state = 2;
                 break;
+            }
             case 2:
                 // If option has been completely emitted
                 if(encoder.output_option_iterate())
                     // rotate to state 1: next option header
-                    state = 1;
+                    state = 3;
+                break;
+
+            case 3:
+                if(next_number == 0) return true;
                 break;
         }
-
-        if(next_number == 0) return true;
 
         return false;
     }
