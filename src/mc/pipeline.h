@@ -158,14 +158,17 @@ public:
 };
 
 
-// borrowing concept for .NET low-level pipelining underneath ASP.NET Core
-// very similar to message queuing
-class IPipeline
+class IPipelineReader
 {
 public:
     // returns a memory chunk with NULLS if no pipeline data was present
     virtual PipelineMessage read() = 0;
+};
 
+
+class IPipelineWriter
+{
+public:
     // returns true when memory could be written to pipeline,
     // false otherwise
     virtual bool write(const PipelineMessage& chunk) = 0;
@@ -182,6 +185,15 @@ public:
 
     // TODO: move advanceable (or perhaps rename to canwrite) here
     // to increase non-blocking abilities
+};
+
+
+// borrowing concept for .NET low-level pipelining underneath ASP.NET Core
+// very similar to message queuing
+class IPipeline :
+        public IPipelineReader,
+        public IPipelineWriter
+{
 };
 
 // TODO: Find a better name
@@ -264,14 +276,14 @@ namespace experimental {
 template <class TEncoder>
 class PipelineEncoderAdapter
 {
-    IPipeline& output;
+    IPipelineWriter& output;
     TEncoder& encoder;
 
     typedef TEncoder encoder_t;
     typedef typename encoder_t::output_t encoder_output_t;
 
 public:
-    PipelineEncoderAdapter(IPipeline& output, TEncoder& encoder)
+    PipelineEncoderAdapter(IPipelineWriter& output, TEncoder& encoder)
             :
     output(output),
     encoder(encoder)
@@ -295,6 +307,37 @@ bool PipelineEncoderAdapter<TEncoder>::process_iterate()
     output.write(out);
 
     return true;
+}
+
+
+//! Connects an input pipline to a decoder (which consumes raw encoded bytes)
+//! \tparam TDecoder
+template <class TDecoder>
+class PipelineDecoderAdapter
+{
+    IPipelineReader& input;
+    TDecoder& decoder;
+
+public:
+    bool process_iterate();
+};
+
+
+
+template <class TDecoder>
+bool PipelineDecoderAdapter<TDecoder>::process_iterate()
+{
+    // TODO: check input.available() once that exists for proper non blocking behavior
+    PipelineMessage chunk = input.read();
+
+    if(chunk.length > 0)
+    {
+        // TODO: need to hold on to this PipelineMessage somewhere so that we can
+        // properly iterate over it.  May also need to establish paradigm where
+        // called process_iterate returns how many bytes were actually processed
+        // (to advance forward through the message chunk)
+        decoder.process_iterate(chunk);
+    }
 }
 
 
