@@ -107,6 +107,8 @@ public:
     State state() const { return _state; }
 
     bool process_iterate(uint8_t value);
+
+    bool process_iterate(pipeline::IBufferedPipelineReader& reader);
 };
 
 }}

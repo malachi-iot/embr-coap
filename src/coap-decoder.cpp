@@ -162,6 +162,16 @@ bool OptionDecoder::process_iterate(uint8_t value)
 }
 
 
+bool OptionDecoder::process_iterate(pipeline::IBufferedPipelineReader& reader)
+{
+    pipeline::PipelineMessage msg = reader.peek();
+
+    if(msg.length == 0) return false;
+
+    // FIX: Build this out.  We need to be mindful of state boundaries so that
+    // we can stop and let caller take action on state changes
+    return false;
+}
 
 
 }}
