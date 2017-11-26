@@ -11,6 +11,7 @@
 namespace moducom { namespace coap {
 
 
+// Not really used
 template <size_t buffer_size>
 class RawDecoder
 {
@@ -21,6 +22,21 @@ class RawDecoder
     {
         buffer[pos++] = value;
         return pos == max_size;
+    }
+};
+
+
+class HeaderDecoder : public CoAP::Header
+{
+    uint8_t pos;
+
+public:
+    HeaderDecoder() : pos(0) {}
+
+    inline bool process_iterate(uint8_t value)
+    {
+        bytes[pos++] = value;
+        return pos == 4;
     }
 };
 
