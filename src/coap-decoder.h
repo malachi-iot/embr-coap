@@ -10,6 +10,20 @@
 
 namespace moducom { namespace coap {
 
+
+template <size_t buffer_size>
+class RawDecoder
+{
+    uint8_t pos;
+    uint8_t buffer[buffer_size];
+
+    inline bool process_iterate(uint8_t value, size_t max_size)
+    {
+        buffer[pos++] = value;
+        return pos == max_size;
+    }
+};
+
 // processes bytes input to then reveal more easily digestible coap options
 // same code that was in CoAP::Parser but dedicated only to option processing
 // enough of a divergence I didn't want to gut the old one, thus the copy/paste
@@ -45,12 +59,17 @@ class OptionDecoder
     uint8_t raw_delta() const { return buffer[0] >> 4; }
     uint8_t raw_length() const { return buffer[0] & 0x0F; }
 
+public:
+    uint16_t option_delta() const
+    {
+        return CoAP::Option_OLD::get_value(raw_delta(), &buffer[1], NULLPTR);
+    }
+
     uint16_t option_length() const
     {
         return CoAP::Option_OLD::get_value(raw_length(), &buffer[1], NULLPTR);
     }
 
-public:
     enum State
     {
         OptionSize, // header portion.  This serves also as OptionSizeBegin, since OptionSize is only one byte ever
