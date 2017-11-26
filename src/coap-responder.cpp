@@ -68,7 +68,7 @@ bool GeneratorResponder::option_iterate(const option_t &option)
     }
     else if(state() == _state_t::Options)
     {
-        CoAP::Parser::SubState sub_state = generator.get_option_state().sub_state();
+        CoAP::Parser::SubState sub_state = generator.get_option_state().state();
 
         if(sub_state == CoAP::Parser::OptionValueDone)
         {
@@ -77,7 +77,7 @@ bool GeneratorResponder::option_iterate(const option_t &option)
 
         generator.output_option_iterate();
 
-        sub_state = generator.get_option_state().sub_state();
+        sub_state = generator.get_option_state().state();
 
         if(sub_state == CoAP::Parser::OptionValueDone)
         {

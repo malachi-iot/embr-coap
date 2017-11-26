@@ -118,7 +118,7 @@ TEST_CASE("CoAP tests", "[coap]")
 
         experimental::layer2::OptionGenerator::StateMachine sm(o);
 
-        while(sm.sub_state() != CoAP::Parser::OptionValueDone)
+        while(sm.state() != CoAP::Parser::OptionValueDone)
         {
             buffer[counter++] = sm.generate();
         }
@@ -139,7 +139,7 @@ TEST_CASE("CoAP tests", "[coap]")
 
         experimental::layer2::OptionGenerator::StateMachine sm(o);
 
-        while(sm.sub_state() != CoAP::Parser::OptionValueDone)
+        while(sm.state() != CoAP::Parser::OptionValueDone)
         {
             buffer[counter++] = sm.generate();
         }

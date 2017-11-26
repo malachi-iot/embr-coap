@@ -18,12 +18,9 @@ bool OptionEncoder::process_iterate(pipeline::IBufferedPipelineWriter& writer)
         output.data[length++] = value;
     }
 
-    if(length > 0)
-    {
-        writer.advance_write(length);
-    }
+    if(length > 0)  writer.advance_write(length);
 
-    return sub_state() == CoAP::Parser::OptionValueDone;
+    return state() == CoAP::Parser::OptionValueDone;
 }
 
 }}

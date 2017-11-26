@@ -84,7 +84,7 @@ bool CoAPGenerator::output_option_iterate()
     statemachine_t& option_state = get_option_state();
     const option_t& option = option_state.get_option_base();
 
-    CoAP::Parser::SubState sub_state = option_state.sub_state();
+    CoAP::Parser::SubState sub_state = option_state.state();
     /*
      * TODO: For IBufferProviderPipeline
     size_t advanceable = output.advanceable();
