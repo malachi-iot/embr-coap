@@ -166,6 +166,23 @@ public:
 };
 
 
+class IBufferedPipelineReader : public IPipelineReader
+{
+public:
+    // inspect what we would get if we performed a read() operation
+    // be careful because status operations are still "live" as with
+    // a regular read
+    virtual PipelineMessage peek() = 0;
+
+    // move read pointer forward, expected consumer will heed
+    // result of peek and then advance past "paid attention to"
+    // data from peek.  If length == MemoryChunk::length on
+    // first iteration of a peek()/advance_read() combo then
+    // operation is implicitly identical to regular read()
+    virtual bool advance_read(size_t length) = 0;
+};
+
+
 class IPipelineWriter
 {
 public:
@@ -185,6 +202,18 @@ public:
 
     // TODO: move advanceable (or perhaps rename to canwrite) here
     // to increase non-blocking abilities
+};
+
+
+class IBufferedPipelineWriter : public IPipelineWriter
+{
+public:
+    // Inspect destination buffer where a future write would go
+    virtual MemoryChunk peek_write() = 0;
+
+    // Advance write buffer by length amount (expects that
+    // peek_write buffer was utilized that much)
+    virtual bool advance_write(size_t length) = 0;
 };
 
 
