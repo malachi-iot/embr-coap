@@ -125,7 +125,7 @@ public:
         uint32_t user : 8;
 
         // boundary indicates a signal to a pipeline consumer (the one doing reads) that
-        // possibly an action needs to be taken (boundary reached)
+        // possibly an action needs to be taken (boundary reached).  End of chunk is the boundary
         // boundaries tend to be application specific, so use this for boundary types 1-7, 0 being
         // no boundary.  Only restriction is that in buffered situations, larger boundary types will "eat"
         // smaller ones until buffer is read back out again:
@@ -172,7 +172,7 @@ public:
     // inspect what we would get if we performed a read() operation
     // be careful because status operations are still "live" as with
     // a regular read
-    virtual PipelineMessage peek() = 0;
+    virtual const PipelineMessage& peek() = 0;
 
     // move read pointer forward, expected consumer will heed
     // result of peek and then advance past "paid attention to"

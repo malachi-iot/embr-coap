@@ -3,6 +3,7 @@
 //
 
 #include "coap-decoder.h"
+#include "coap_transmission.h"
 
 namespace moducom { namespace coap {
 
@@ -162,14 +163,42 @@ bool OptionDecoder::process_iterate(uint8_t value)
 }
 
 
-bool OptionDecoder::process_iterate(pipeline::IBufferedPipelineReader& reader)
+bool OptionDecoder::process_iterate(pipeline::IBufferedPipelineReader& reader, OptionExperimental* built_option)
 {
     pipeline::PipelineMessage msg = reader.peek();
 
+    size_t count = 0;
+
     if(msg.length == 0) return false;
+
+    while(msg.length-- > 0)
+    {
+        count++;
+        process_iterate(*msg.data++);
+
+        switch(state())
+        {
+            case OptionDeltaDone:
+                built_option->number_delta += option_delta();
+                break;
+
+            case OptionLengthDone:
+                built_option->length = option_length();
+                // we're done at this point
+                reader.advance_read(count);
+                return true;
+
+            case OptionValue:
+            case OptionValueDone:
+                ASSERT_ERROR(false, true, "Should not reach here");
+                break;
+        }
+    }
+
 
     // FIX: Build this out.  We need to be mindful of state boundaries so that
     // we can stop and let caller take action on state changes
+    reader.advance_read(count);
     return false;
 }
 

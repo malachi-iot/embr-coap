@@ -46,6 +46,25 @@ public:
 // gut the old one once this is proven working
 class OptionDecoder
 {
+public:
+    // Need this because all other Option classes I've made are const'd out,
+    // but we do need a data entity we can build slowly/iteratively, so that's
+    // this --- for now
+    // Only reporting number & length since value portion is directly accessible via pipeline
+    // coap uint's are a little unusual, but still quite easy to process
+    // (https://tools.ietf.org/html/rfc7252#section-3.2)
+    struct OptionExperimental
+    {
+        // delta, not absolute, number.  external party will have to translate this
+        // to absolute.  Plot twist: we *add* to this as we go, so if we pass in same
+        // OptionExperimental, then that's enough to qualify as an external party
+        // consequence: be sure number_delta is initialized at the beginning with 0
+        uint16_t number_delta;
+        // length of option value portion
+        uint16_t length;
+    };
+
+private:
     // small temporary buffer needed for OPTION and HEADER processing
     union
     {
@@ -108,8 +127,119 @@ public:
 
     bool process_iterate(uint8_t value);
 
-    bool process_iterate(pipeline::IBufferedPipelineReader& reader);
+    bool process_iterate(pipeline::IBufferedPipelineReader& reader, OptionExperimental* built_option);
 };
+
+// re-write and decomposition of IResponder
+struct IHeaderInput
+{
+    virtual void on_header(CoAP::Header header) = 0;
+};
+
+
+struct ITokenInput
+{
+    // get called repeatedly until all portion of token is provided
+    // Not called if header reports a token length of 0
+    virtual void on_token(const pipeline::PipelineMessage* token_part) = 0;
+};
+
+struct IOptionInput
+{
+    typedef CoAP::OptionExperimental::Numbers number_t;
+
+    // gets called once per discovered option, followed optionally by the
+    // on_option value portion taking a pipeline message
+    virtual void on_option(number_t number, uint16_t length) = 0;
+
+    // will get called repeatedly until option_value is completely provided
+    // Not called if option_header.length() == 0
+    virtual void on_option(const pipeline::PipelineMessage* option_value_part) = 0;
+};
+
+
+struct IPayloadInput
+{
+    // will get called repeatedly until payload is completely provided
+    // IMPORTANT: if no payload is present, then payload_part is nullptr
+    // this call ultimately marks the end of the coap message (unless I missed something
+    // for chunked/multipart coap messages... which I may have)
+    virtual void on_payload(const pipeline::PipelineMessage* payload_part) = 0;
+};
+
+namespace experimental
+{
+
+class PipelineReaderDecoderBase
+{
+protected:
+};
+
+// FIX: crap name
+template <class TDecoder>
+class PipelineReaderDecoder {};
+
+template <>
+class PipelineReaderDecoder<OptionDecoder>
+{
+    OptionDecoder::OptionExperimental built_option;
+    OptionDecoder decoder;
+
+public:
+    PipelineReaderDecoder<OptionDecoder>()
+    {
+        built_option.number_delta = 0;
+    }
+
+    bool process_iterate(pipeline::IBufferedPipelineReader& reader)
+    {
+        // FIX: pretty sure OptionDecoder doesn't discover end of options/beginning of payload
+        // marker like we'll need it to
+        return decoder.process_iterate(reader, &built_option);
+    }
+
+    const OptionDecoder::OptionExperimental& option() const { return built_option; }
+
+    uint16_t number_delta() const { return built_option.number_delta; }
+    uint16_t length() const { return built_option.length; }
+};
+
+
+template <>
+class PipelineReaderDecoder<HeaderDecoder>
+{
+    HeaderDecoder decoder;
+
+public:
+    bool process_iterate(pipeline::IBufferedPipelineReader& reader)
+    {
+        pipeline::PipelineMessage msg = reader.peek();
+
+        size_t counter = 0;
+
+        while(msg.length--)
+        {
+            if(decoder.process_iterate(msg[counter++]))
+            {
+                reader.advance_read(counter);
+                return true;
+            }
+        }
+
+        reader.advance_read(counter);
+        return false;
+    }
+
+    const CoAP::Header& header() const { return decoder; }
+};
+
+/*
+inline bool decode_to_input_iterate(PipelineReaderDecoder<OptionDecoder>& decoder, pipeline::IBufferedPipelineReader& reader, IOptionInput& input)
+{
+    decoder.process_iterate(reader);
+}
+*/
+}
 
 }}
 
