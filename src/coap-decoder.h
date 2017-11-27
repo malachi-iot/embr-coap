@@ -122,11 +122,18 @@ private:
 
     void state(State s) { _state = s; }
 
+    // set state specifically to OptionValueDone
+    // useful for when we fast-forward past value portion and want to restart our state machine
+    // NOTE: perhaps we'd rather do in-place new instead
+    void done() { state(OptionValueDone); }
+
 public:
     State state() const { return _state; }
 
     bool process_iterate(uint8_t value);
 
+    // only processes until the beginning of value (if present) and depends on caller to read in
+    // and advance pipeline past value.  Therefore, sets state machine to OptionValueDone "prematurely"
     bool process_iterate(pipeline::IBufferedPipelineReader& reader, OptionExperimental* built_option);
 };
 

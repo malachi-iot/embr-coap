@@ -46,6 +46,12 @@ bool OptionDecoder::process_iterate(uint8_t value)
 
         case OptionSize:
         {
+            // TODO: In this new form of option decoder, we need to look for payload marker here
+            if(value = 0xFF)
+            {
+                // TODO: set state to payload marker. this and end of data are only way we know to STOP processing options
+            }
+
             buffer[0] = value;
             pos = 1;
 
@@ -55,7 +61,7 @@ bool OptionDecoder::process_iterate(uint8_t value)
             // but we want to reveal whether we want to report
             // OptionDelta, OptionDeltaDone or OptionDeltaAndLengthDone
             // once we stabalize the "iterative" state machine behavior more hopefully this
-            // will shake out and we can revert this back to false
+            // will shake out and we can revert this back to true
             return false;
         }
 
@@ -186,6 +192,9 @@ bool OptionDecoder::process_iterate(pipeline::IBufferedPipelineReader& reader, O
                 built_option->length = option_length();
                 // we're done at this point
                 reader.advance_read(count);
+                // "prematurely" set to value done, since we expect caller to manually
+                // retrieve value when using the explicit reader technique
+                state(OptionValueDone);
                 return true;
 
             case OptionValue:
