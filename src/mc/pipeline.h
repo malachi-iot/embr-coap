@@ -19,6 +19,9 @@ public:
     size_t length;
 };
 
+// TODO: Split out naming for MemoryChunk and something like MemoryBuffer
+// MemoryBuffer always includes data* but may or may not be responsible for actual buffer itself
+// MemoryChunk always includes buffer too - and perhaps (havent decided yet) may not necessarily include data*
 class MemoryChunk : public MemoryChunkBase
 {
 public:
@@ -32,6 +35,10 @@ public:
 
     inline void memset(uint8_t c, size_t length) { ::memset(data, c, length); }
     inline void memset(uint8_t c) { memset(c, length); }
+    inline void memcpy(const uint8_t* copy_from, size_t length)
+    {
+        ::memcpy(data, copy_from, length);
+    }
 
     inline uint8_t& operator[](size_t index)
     {
@@ -172,7 +179,7 @@ public:
     // inspect what we would get if we performed a read() operation
     // be careful because status operations are still "live" as with
     // a regular read
-    virtual const PipelineMessage& peek() = 0;
+    virtual PipelineMessage peek() = 0;
 
     // move read pointer forward, expected consumer will heed
     // result of peek and then advance past "paid attention to"
@@ -454,12 +461,20 @@ public:
 namespace layer3
 {
 
+
 // No fancy queue-like behavior, just fills a buffer and expects buffer to be
 // emptied completely out before new space is available
-class SimpleBufferedPipeline : public IPipeline
+// FIX: IBufferedPipelineReader is 100% experimental
+class SimpleBufferedPipeline : public IPipeline,
+                               public IBufferedPipelineReader
 {
     pipeline::MemoryChunk buffer;
+    // How much memory of the specified buffer is actually available/written to
     size_t length_used;
+
+    // FIX: kludgey just to get buffered pipeline reader happy, represents how
+    // far into buffer we've read so far
+    size_t length_read;
 
     // Be careful though, because holding a status that we send out
     // with the read operation may get overwritten by an incoming
@@ -472,11 +487,36 @@ class SimpleBufferedPipeline : public IPipeline
     PipelineMessage::CopiedStatus copied_status;
 
 public:
-    SimpleBufferedPipeline(const pipeline::MemoryChunk& buffer) :
+    SimpleBufferedPipeline(const pipeline::MemoryChunk& buffer, size_t length_used = 0) :
             buffer(buffer),
-            length_used(0)
+            length_used(length_used),
+            length_read(0)
     {
         copied_status.boundary = 0;
+    }
+
+
+    virtual PipelineMessage peek() OVERRIDE
+    {
+        PipelineMessage msg;
+
+        if(length_used == 0)
+            msg.data = NULLPTR;
+        else
+            msg.data = buffer.data + length_read;
+
+        msg.length = length_used - length_read;
+        msg.status = NULLPTR;
+        msg.copied_status = copied_status;
+
+        return msg;
+    }
+
+
+    virtual bool advance_read(size_t count) OVERRIDE
+    {
+        length_read += count;
+        return true;
     }
 
     virtual PipelineMessage read() OVERRIDE
