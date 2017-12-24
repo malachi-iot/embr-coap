@@ -306,50 +306,6 @@ public:
 
 namespace experimental {
 
-
-//! Connects an encoder (which spits out bytes) to an output pipeline
-//! \tparam TEncoder
-template <class TEncoder>
-class PipelineEncoderAdapter
-{
-    IPipelineWriter& output;
-    TEncoder& encoder;
-
-    typedef TEncoder encoder_t;
-    typedef typename encoder_t::output_t encoder_output_t;
-
-public:
-    PipelineEncoderAdapter(IPipelineWriter& output, TEncoder& encoder)
-            :
-    output(output),
-    encoder(encoder)
-    {}
-
-
-    // returns true when something was processed,
-    // false when we cannot process any more at this time
-    // FIX: resolve how process_iterate return flag is not homogenous in its
-    // behavior (consider using an enum instead)
-    bool process_iterate();
-
-    void process() { while(process_iterate()); }
-};
-
-
-template <class TEncoder>
-bool PipelineEncoderAdapter<TEncoder>::process_iterate()
-{
-    encoder_output_t out = encoder.process_iterate();
-
-    if(out == TEncoder::signal_continue) return false;
-
-    // TODO: look into advanceable/buffer code
-    output.write(out);
-
-    return true;
-}
-
-
 //! Connects an input pipline to a decoder (which consumes raw encoded bytes)
 //! \tparam TDecoder
 template <class TDecoder>

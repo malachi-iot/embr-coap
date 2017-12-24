@@ -5,6 +5,7 @@
 #include <catch.hpp>
 
 #include "../mc/pipeline.h"
+#include "../mc/pipeline-encoder.h"
 #include <stdio.h>
 
 using namespace moducom::pipeline;
@@ -86,5 +87,20 @@ TEST_CASE("Pipeline basic tests", "[pipeline]")
 
         REQUIRE(chunk[0] == 1);
         REQUIRE(chunk[9] == 10);
+    }
+    SECTION("Buffered Pipeline Encoder Adapter")
+    {
+        layer3::MemoryChunk<128> chunk;
+        layer3::SimpleBufferedPipeline p(chunk);
+        BasicTestEncoder encoder;
+        /*
+        BufferedPipelineEncoderAdapter<BasicTestEncoder> adapter(p, encoder);
+
+        // Not ready for testing just yet
+        adapter.process();
+
+        REQUIRE(chunk[0] == 1);
+        REQUIRE(chunk[9] == 10);
+         */
     }
 }
