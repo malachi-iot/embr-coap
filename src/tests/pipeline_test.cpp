@@ -17,6 +17,8 @@ class BasicTestEncoder
     uint8_t counter;
 
 public:
+    BasicTestEncoder() : counter(0) {}
+
     typedef int16_t output_t;
 
     static CONSTEXPR output_t signal_continue = -1;
@@ -24,7 +26,10 @@ public:
     output_t process_iterate()
     {
         if(counter++ == 10)
+        {
             counter = 0;
+            return signal_continue;
+        }
 
         return counter;
     }
@@ -79,6 +84,7 @@ TEST_CASE("Pipeline basic tests", "[pipeline]")
         // Not ready for testing just yet
         adapter.process();
 
-        //REQUIRE(chunk[0] == 1);
+        REQUIRE(chunk[0] == 1);
+        REQUIRE(chunk[9] == 10);
     }
 }

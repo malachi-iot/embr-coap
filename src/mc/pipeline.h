@@ -326,9 +326,13 @@ public:
     {}
 
 
+    // returns true when something was processed,
+    // false when we cannot process any more at this time
+    // FIX: resolve how process_iterate return flag is not homogenous in its
+    // behavior (consider using an enum instead)
     bool process_iterate();
 
-    void process() { while(!process_iterate()); }
+    void process() { while(process_iterate()); }
 };
 
 
