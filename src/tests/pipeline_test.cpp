@@ -78,7 +78,7 @@ TEST_CASE("Pipeline basic tests", "[pipeline]")
     SECTION("Pipeline Encoder Adapter")
     {
         layer3::MemoryChunk<128> chunk;
-        layer3::SimpleBufferedPipeline p(chunk);
+        layer3::SimpleBufferedPipelineWriter p(chunk);
         BasicTestEncoder encoder;
         PipelineEncoderAdapter<BasicTestEncoder> adapter(p, encoder);
 

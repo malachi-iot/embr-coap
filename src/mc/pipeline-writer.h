@@ -53,6 +53,8 @@ class SimpleBufferedPipelineWriter : public IBufferedPipelineWriter
     // How much memory of the specified buffer is actually available/written to
     size_t length_used;
 
+    uint8_t* data() { return buffer.data + length_used; }
+
 public:
     SimpleBufferedPipelineWriter(const pipeline::MemoryChunk& buffer)
             :
@@ -65,20 +67,23 @@ public:
 
     virtual bool write(const PipelineMessage& chunk)
     {
-        memcpy(buffer.data, chunk.data, chunk.length);
+        memcpy(data(), chunk.data, chunk.length);
+        length_used += chunk.length;
         return true;
     }
 
 
     virtual pipeline::MemoryChunk peek_write()
     {
-        pipeline::MemoryChunk chunk(buffer.data + length_used, buffer.length - length_used);
+        pipeline::MemoryChunk chunk(data(), buffer.length - length_used);
         return chunk;
     }
 
 
     virtual bool advance_write(size_t length) OVERRIDE
     {
+        if(length > length_used + buffer.length) return false;
+
         length_used += length;
         return true;
     }

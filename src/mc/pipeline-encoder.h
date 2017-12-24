@@ -91,7 +91,7 @@ bool BufferedPipelineEncoderAdapter<TEncoder>::process_iterate()
 
     MemoryChunk chunk = output.peek_write();
 
-    *chunk.data = out;
+    chunk[0] = out;
 
     return output.advance_write(1);
 }
