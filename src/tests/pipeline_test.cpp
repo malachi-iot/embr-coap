@@ -91,9 +91,9 @@ TEST_CASE("Pipeline basic tests", "[pipeline]")
     SECTION("Buffered Pipeline Encoder Adapter")
     {
         layer3::MemoryChunk<128> chunk;
-        layer3::SimpleBufferedPipeline p(chunk);
+        layer3::SimpleBufferedPipelineWriter p(chunk);
         BasicTestEncoder encoder;
-        /*
+
         BufferedPipelineEncoderAdapter<BasicTestEncoder> adapter(p, encoder);
 
         // Not ready for testing just yet
@@ -101,6 +101,5 @@ TEST_CASE("Pipeline basic tests", "[pipeline]")
 
         REQUIRE(chunk[0] == 1);
         REQUIRE(chunk[9] == 10);
-         */
     }
 }
