@@ -65,7 +65,7 @@ public:
     }
 
 
-    virtual bool write(const PipelineMessage& chunk)
+    virtual bool write(const PipelineMessage& chunk) OVERRIDE
     {
         memcpy(data(), chunk.data, chunk.length);
         length_used += chunk.length;
@@ -73,7 +73,7 @@ public:
     }
 
 
-    virtual pipeline::MemoryChunk peek_write()
+    virtual pipeline::MemoryChunk peek_write() OVERRIDE
     {
         pipeline::MemoryChunk chunk(data(), buffer.length - length_used);
         return chunk;
