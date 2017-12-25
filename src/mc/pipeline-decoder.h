@@ -40,6 +40,36 @@ bool PipelineDecoderAdapter<TDecoder>::process_iterate()
     }
 }
 
+//! Connects an input pipline to a decoder (which consumes raw encoded bytes)
+//! \tparam TDecoder
+template <class TDecoder>
+class BufferedPipelineDecoderAdapter
+{
+    IBufferedPipelineReader& input;
+    TDecoder& decoder;
+
+public:
+    bool process_iterate();
+};
+
+
+template <class TDecoder>
+bool BufferedPipelineDecoderAdapter<TDecoder>::process_iterate()
+{
+    // TODO: check input.available() once that exists for proper non blocking behavior
+    PipelineMessage chunk = input.peek();
+
+    if(chunk.length > 0)
+    {
+        // TODO: need to hold on to this PipelineMessage somewhere so that we can
+        // properly iterate over it.  May also need to establish paradigm where
+        // called process_iterate returns how many bytes were actually processed
+        // (to advance forward through the message chunk)
+        decoder.process_iterate(chunk);
+
+        // TODO: Need to advance it now too
+    }
+}
 
 
 

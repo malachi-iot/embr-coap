@@ -11,6 +11,8 @@ class IPipelineReader
 {
 public:
     // returns a memory chunk with NULLS if no pipeline data was present
+    // TODO: Consider turning this into a more traditional read(buf, len) operation and save
+    // the more advanced one for IBufferedPipelineReader
     virtual PipelineMessage read() = 0;
 };
 
