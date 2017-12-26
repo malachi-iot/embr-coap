@@ -40,6 +40,7 @@ bool OptionDecoder::process_iterate(uint8_t value)
 
     switch (state())
     {
+        // Auto-reset back to looking for size portion of header
         case OptionValueDone:
             state(OptionSize);
             return false;
@@ -211,5 +212,51 @@ bool OptionDecoder::process_iterate(pipeline::IBufferedPipelineReader& reader, O
     return false;
 }
 
+size_t OptionDecoder::process_iterate(const pipeline::MemoryChunk& chunk, OptionExperimental* built_option)
+{
+    size_t length = chunk.length; // represents remaining length to be processed
+    size_t value_processed = 0;
+    const uint8_t* data = chunk.data;
+
+    // NOTE: semi-copy paste of above iterate, for now
+    // NOTE: Beef up state machine a lot, since we are putting a lot of faith into this semi-infinite-loop
+    while(length > 0)
+    {
+        bool processed = process_iterate(*data);
+
+        if(processed)
+        {
+            data++;
+            length--;
+        }
+
+        // take special actions during particular states during chunk processing
+        switch(state())
+        {
+            case OptionDeltaDone:
+                built_option->number_delta += option_delta();
+                break;
+
+            case OptionDeltaAndLengthDone:
+                built_option->number_delta += option_delta();
+
+            case OptionLengthDone:
+                built_option->length = option_length();
+                // we stop here, since caller will likely want to take prepatory action
+                // now that option number/delta and option length are available
+                return data - chunk.data;
+
+                // remember option value processing amounts to skipping past the number of option value
+                // bytes present
+
+                // for now, also indicates completion of entire option.  Splitting out a separate OptionDone
+                // state would be a little more cycling around, but better organized
+            case OptionValueDone:
+                return data - chunk.data;
+        }
+    }
+
+    return data - chunk.data;
+}
 
 }}

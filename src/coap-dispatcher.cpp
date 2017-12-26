@@ -51,8 +51,7 @@ void Dispatcher::dispatch(const pipeline::MemoryChunk& chunk)
             break;
 
         case Options:
-            // FIX: Not ready for primetime, lots of state not heeded here
-            //optionDecoder.process_iterate(chunk, &optionHolder);
+            dispatch_option(chunk);
             state(OptionsDone);
             break;
 
@@ -79,31 +78,54 @@ void Dispatcher::dispatch(const pipeline::MemoryChunk& chunk)
 
 void Dispatcher::dispatch_header()
 {
-    // once we have tagged an interested handler, we should never
-    // receive another header
-    if(interested)  return;
-
     handler_t* handler = head();
 
     while(handler != NULLPTR)
     {
         handler->on_header(headerDecoder);
-
-        if(handler->interested())
-        {
-            interested = handler;
-            return;
-        }
+        handler = handler->next();
     }
 }
 
-
+// also handles pre-dispatch processing
+// 100% untested
 void Dispatcher::dispatch_option(const pipeline::MemoryChunk& optionChunk)
 {
-    if(interested)
+    optionDecoder.process_iterate(optionChunk, &optionHolder);
+
+    handler_t* handler = head();
+
+    while(handler != NULLPTR)
     {
-        //interested->on_option(optionDecoder.option_delta(), optionDecoder.option_length());
-        //interested->on_option();
+        if(handler->is_interested())
+        {
+            switch (optionDecoder.state())
+            {
+                case OptionDecoder::OptionLengthDone:
+                case OptionDecoder::OptionDeltaAndLengthDone:
+                    handler->on_option((IOptionInput::number_t) optionHolder.number_delta, optionHolder.length);
+                    // TODO: Need to demarkate boundary here too so that on_option knows where boundary starts
+                    break;
+
+                case OptionDecoder::OptionValue:
+                    // Not yet supported
+                    break;
+
+                case OptionDecoder::OptionValueDone:
+                {
+                    // FIX: Not quite correct code.  We need to suss out how large
+                    // the chunk we're passing through really is and of course
+                    // at what boundary it starts
+                    pipeline::PipelineMessage msg(optionChunk);
+                    handler->on_option(&msg);
+                    break;
+                }
+
+                default:break;
+            }
+        }
+
+        handler = handler->next();
     }
 }
 

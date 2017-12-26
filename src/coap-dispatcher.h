@@ -25,10 +25,24 @@ class IDispatcherHandler :
     public IPayloadInput
 {
 public:
+    enum InterestedEnum
+    {
+        Always,
+        Currently,
+        NotRightNow,
+        Never
+    };
     // NOTE: Experimental
     // flags dispatcher to know that this particular handler wants to be the main handler
     // for remainder of CoAP processing
-    virtual bool interested() = 0;
+    virtual InterestedEnum interested() = 0;
+
+    inline bool is_interested()
+    {
+        InterestedEnum i = interested();
+
+        return i == Always || i == Currently;
+    }
 };
 
 

@@ -90,6 +90,7 @@ private:
     union
     {
         // By the time we use option size, we've extracted it from buffer and no longer use buffer
+        // we use this primarily as a countdown to skip past value
         uint16_t option_size;
         // buffer needs only be:
         //  3 for option processing
@@ -161,7 +162,13 @@ public:
     // though (as would the preceding two versions of this function).  However, since caller
     // is one providing data, it may be reasonable to expect caller to assemble the value themselves
     // and merely allow process_iterate to detect where the boundaries are
-    bool process_iterate(const pipeline::MemoryChunk& input, OptionExperimental* built_option);
+    //
+    // returns number of raw bytes processed.  May return before processing entire option in order
+    // to give caller chance to prepare for option value contents.  Specifically, we stop on
+    // OptionLengthDone, OptionDeltaAndLengthDone and OptionValueDone boundaries.  Eventually
+    // we will also stop on OptionValue occasionally if option-value size is larger than the
+    // input chunk
+    size_t process_iterate(const pipeline::MemoryChunk& input, OptionExperimental* built_option);
 };
 
 // re-write and decomposition of IResponder
