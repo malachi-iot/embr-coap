@@ -28,9 +28,44 @@ class IDispatcherHandler :
 };
 
 
-class Dispatcher :
-    public moducom::experimental::forward_list<IDispatcherHandler>
+template <class TState>
+class StateHelper
 {
+    TState _state;
+
+protected:
+    void state(TState _state) { this->_state = _state; }
+
+public:
+    TState state() const { return _state; }
+};
+
+class DispatcherBase
+{
+public:
+    // Copy/paste from old "Parser" class
+    enum State
+    {
+        Header,
+        HeaderDone,
+        Token,
+        TokenDone,
+        OptionsStart,
+        Options,
+        OptionsDone, // all options are done being processed
+        Payload
+    };
+
+    typedef State state_t;
+};
+
+// Dispatches one CoAP message at a time based on externally provided input
+class Dispatcher :
+    public moducom::experimental::forward_list<IDispatcherHandler>,
+    public StateHelper<DispatcherBase::state_t>
+{
+public:
+    //Dispatcher()
 
 };
 
