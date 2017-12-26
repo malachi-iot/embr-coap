@@ -14,8 +14,10 @@ namespace experimental {
 //   and consider also returning a bool flag to assist callers in that
 void Dispatcher::dispatch(const pipeline::MemoryChunk& chunk)
 {
-    size_t pos = 0;
+    size_t pos = 0; // how far into chunk our locus of processing should be
     bool process_done = false;
+
+    // FIX: Need to wrap this in a while loop and bump pos up more often
 
     switch(state())
     {
@@ -31,21 +33,35 @@ void Dispatcher::dispatch(const pipeline::MemoryChunk& chunk)
                 process_done = headerDecoder.process_iterate(chunk[pos++]);
             }
 
+            // FIX: likely need to bump pos++ again if !process_done on entry
+
             break;
 
         case HeaderDone:
             dispatch_header();
             if(headerDecoder.token_length() > 0)
+            {
                 state(Token);
+                // TODO: If necessary, initialize token decoder
+            }
             else
                 state(OptionsStart);
             break;
 
         case Token:
-            state(TokenDone);
+            while(pos < chunk.length && !process_done)
+            {
+                process_done = tokenDecoder.process_iterate(chunk[pos++], headerDecoder.token_length());
+            }
+
+            // FIX: likely need to bump pos++ again if !process_done on entry
+
+            if(process_done) state(TokenDone);
             break;
 
         case TokenDone:
+            dispatch_token();
+
             state(OptionsStart);
             break;
 
@@ -56,12 +72,14 @@ void Dispatcher::dispatch(const pipeline::MemoryChunk& chunk)
             break;
 
         case Options:
-            dispatch_option(chunk);
+            pos += dispatch_option(chunk);
 
             // FIX: We need to check for the 0xFF payload marker still
 
             if(optionDecoder.state() == OptionDecoder::OptionValueDone)
+            {
                 state(OptionsDone);
+            }
 
             break;
 
@@ -75,7 +93,13 @@ void Dispatcher::dispatch(const pipeline::MemoryChunk& chunk)
         {
             // FIX: Need this clued in by caller due to streaming possibility
             bool last_payload_chunk = true;
-            dispatch_payload(chunk, last_payload_chunk);
+            if(pos == 0)
+                dispatch_payload(chunk, last_payload_chunk);
+            else
+            {
+                pipeline::MemoryChunk partialChunk(chunk.data + pos, chunk.length - pos);
+                dispatch_payload(partialChunk, last_payload_chunk);
+            }
             state(PayloadDone);
             break;
         }
@@ -104,7 +128,7 @@ void Dispatcher::dispatch_header()
 
 // also handles pre-dispatch processing
 // 100% untested
-void Dispatcher::dispatch_option(const pipeline::MemoryChunk& optionChunk)
+size_t Dispatcher::dispatch_option(const pipeline::MemoryChunk& optionChunk)
 {
     size_t processed_length = optionDecoder.process_iterate(optionChunk, &optionHolder);
 
@@ -168,6 +192,9 @@ void Dispatcher::dispatch_option(const pipeline::MemoryChunk& optionChunk)
 
         handler = handler->next();
     }
+
+    // FIX: Need to account for needs_value_processed condition
+    return processed_length;
 }
 
 
@@ -179,7 +206,25 @@ void Dispatcher::dispatch_payload(const pipeline::MemoryChunk& payloadChunk, boo
 
     while(handler != NULLPTR)
     {
-        //handler->on_payload()
+        if(handler->is_interested())
+        {
+            handler->on_payload(payloadChunk, last_chunk);
+        }
+    }
+}
+
+
+void Dispatcher::dispatch_token()
+{
+    handler_t* handler = head();
+    pipeline::MemoryChunk chunk(tokenDecoder.data(), headerDecoder.token_length());
+
+    while(handler != NULLPTR)
+    {
+        if(handler->is_interested())
+        {
+            handler->on_token(chunk, true);
+        }
     }
 }
 

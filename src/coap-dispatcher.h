@@ -94,14 +94,17 @@ class Dispatcher :
     void dispatch(const pipeline::MemoryChunk& chunk);
 
     void dispatch_header();
+    void dispatch_token();
+
     // optionChunk is a subset/processed version of dispatch(chunk)
-    void dispatch_option(const pipeline::MemoryChunk& optionChunk);
+    size_t dispatch_option(const pipeline::MemoryChunk& optionChunk);
     void dispatch_payload(const pipeline::MemoryChunk& payloadChunk, bool last_chunk);
 
     // TODO: Union-ize this  Not doing so now because of C++03 trickiness
     HeaderDecoder headerDecoder;
     OptionDecoder optionDecoder;
     OptionDecoder::OptionExperimental optionHolder;
+    TokenDecoder tokenDecoder;
 
 public:
     typedef IDispatcherHandler handler_t;

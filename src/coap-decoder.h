@@ -20,30 +20,40 @@ class CounterDecoder
 {
     TCounter pos;
 
+protected:
+    TCounter position() const { return pos; }
+
 public:
     CounterDecoder() : pos(0) {}
 
     inline bool process_iterate(TCounter max_size)
     {
-        return ++pos < max_size;
+        return ++pos >= max_size;
     }
 
     void reset() { pos = 0; }
 };
 
-// Not really used
-template <size_t buffer_size>
-class RawDecoder
+
+template <size_t buffer_size, typename TCounter=uint8_t>
+class RawDecoder : protected CounterDecoder<TCounter>
 {
-    uint8_t pos;
     uint8_t buffer[buffer_size];
 
-    inline bool process_iterate(uint8_t value, size_t max_size)
+public:
+    typedef CounterDecoder<TCounter> base_t;
+
+    uint8_t* data() { return buffer; }
+
+    // returns true when all bytes finally accounted for
+    inline bool process_iterate(uint8_t value, TCounter max_size)
     {
-        buffer[pos++] = value;
-        return pos == max_size;
+        buffer[base_t::position()] = value;
+        return base_t::process_iterate(max_size);
     }
 };
+
+typedef RawDecoder<8> TokenDecoder;
 
 
 class HeaderDecoder : public CoAP::Header
@@ -182,7 +192,7 @@ struct ITokenInput
 {
     // get called repeatedly until all portion of token is provided
     // Not called if header reports a token length of 0
-    virtual void on_token(const pipeline::PipelineMessage* token_part) = 0;
+    virtual void on_token(const pipeline::MemoryChunk& token_part, bool last_chunk) = 0;
 };
 
 struct IOptionInput
