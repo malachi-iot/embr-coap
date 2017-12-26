@@ -24,7 +24,11 @@ class IDispatcherHandler :
     public IOptionInput,
     public IPayloadInput
 {
-
+public:
+    // NOTE: Experimental
+    // flags dispatcher to know that this particular handler wants to be the main handler
+    // for remainder of CoAP processing
+    virtual bool interested() = 0;
 };
 
 
@@ -58,7 +62,10 @@ public:
         OptionsStart,
         Options,
         OptionsDone, // all options are done being processed
-        Payload
+        Payload,
+        PayloadDone,
+        // Denotes completion of entire CoAP message
+        Done,
     };
 
     typedef State state_t;
@@ -70,11 +77,33 @@ class Dispatcher :
     public moducom::experimental::forward_list<IDispatcherHandler>,
     public StateHelper<DispatcherBase::state_t>
 {
+    void dispatch(const pipeline::MemoryChunk& chunk);
+
+    void dispatch_header();
+    // optionChunk is a subset/processed version of dispatch(chunk)
+    void dispatch_option(const pipeline::MemoryChunk& optionChunk);
+
+    // TODO: Union-ize this  Not doing so now because of C++03 trickiness
+    HeaderDecoder headerDecoder;
+    OptionDecoder optionDecoder;
+    OptionDecoder::OptionExperimental optionHolder;
+
+public:
+    typedef IDispatcherHandler handler_t;
+
+private:
+    handler_t*  interested;
+
+    void reset()
+    {
+        interested = NULLPTR;
+    }
+
 public:
     Dispatcher() : StateHelper(Uninitialized)
     {
+        reset();
     }
-
 };
 
 }

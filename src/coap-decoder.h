@@ -33,6 +33,7 @@ class HeaderDecoder : public CoAP::Header
 public:
     HeaderDecoder() : pos(0) {}
 
+    // returns true when complete
     inline bool process_iterate(uint8_t value)
     {
         bytes[pos++] = value;

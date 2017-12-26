@@ -37,7 +37,7 @@ public:
         ::memcpy(data, copy_from, length);
     }
 
-    inline uint8_t& operator[](size_t index)
+    inline uint8_t& operator[](size_t index) const
     {
         return data[index];
     }

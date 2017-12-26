@@ -35,7 +35,9 @@
       </extensions>
     </Objective-C-extensions>
     <codeStyleSettings language="ObjectiveC">
+      <option name="BRACE_STYLE" value="5" />
       <option name="CLASS_BRACE_STYLE" value="5" />
+      <option name="WHILE_BRACE_FORCE" value="1" />
     </codeStyleSettings>
   </code_scheme>
 </component>
