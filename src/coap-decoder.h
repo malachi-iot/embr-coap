@@ -195,7 +195,7 @@ struct IOptionInput
 
     // will get called repeatedly until option_value is completely provided
     // Not called if option_header.length() == 0
-    virtual void on_option(const pipeline::PipelineMessage* option_value_part) = 0;
+    virtual void on_option(const pipeline::MemoryChunk& option_value_part, bool last_chunk) = 0;
 };
 
 
@@ -205,7 +205,7 @@ struct IPayloadInput
     // IMPORTANT: if no payload is present, then payload_part is nullptr
     // this call ultimately marks the end of the coap message (unless I missed something
     // for chunked/multipart coap messages... which I may have)
-    virtual void on_payload(const pipeline::PipelineMessage* payload_part) = 0;
+    virtual void on_payload(const pipeline::MemoryChunk& payload_part, bool last_chunk) = 0;
 };
 
 namespace experimental

@@ -222,6 +222,9 @@ size_t OptionDecoder::process_iterate(const pipeline::MemoryChunk& chunk, Option
     // NOTE: Beef up state machine a lot, since we are putting a lot of faith into this semi-infinite-loop
     while(length > 0)
     {
+        // processed represents specifically whether byte was consumed,
+        // but not whether it was evaluated (bytes are always assumed to
+        // be evaluated)
         bool processed = process_iterate(*data);
 
         if(processed)
