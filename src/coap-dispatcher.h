@@ -82,6 +82,7 @@ class Dispatcher :
     void dispatch_header();
     // optionChunk is a subset/processed version of dispatch(chunk)
     void dispatch_option(const pipeline::MemoryChunk& optionChunk);
+    void dispatch_payload(const pipeline::MemoryChunk& payloadChunk);
 
     // TODO: Union-ize this  Not doing so now because of C++03 trickiness
     HeaderDecoder headerDecoder;

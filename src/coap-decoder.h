@@ -11,6 +11,26 @@
 namespace moducom { namespace coap {
 
 
+// TODO: Move this into a better namespace
+/*!
+ * Simply counts down number of bytes as a "decode" operation
+ */
+template <typename TCounter = size_t>
+class CounterDecoder
+{
+    TCounter pos;
+
+public:
+    CounterDecoder() : pos(0) {}
+
+    inline bool process_iterate(TCounter max_size)
+    {
+        return ++pos < max_size;
+    }
+
+    void reset() { pos = 0; }
+};
+
 // Not really used
 template <size_t buffer_size>
 class RawDecoder

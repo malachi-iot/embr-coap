@@ -67,6 +67,7 @@ void Dispatcher::dispatch(const pipeline::MemoryChunk& chunk)
             break;
 
         case PayloadDone:
+            dispatch_payload(chunk);
             state(Done);
             break;
 
@@ -104,6 +105,12 @@ void Dispatcher::dispatch_option(const pipeline::MemoryChunk& optionChunk)
         //interested->on_option(optionDecoder.option_delta(), optionDecoder.option_length());
         //interested->on_option();
     }
+}
+
+
+void Dispatcher::dispatch_payload(const pipeline::MemoryChunk& payloadChunk)
+{
+    
 }
 
 }
