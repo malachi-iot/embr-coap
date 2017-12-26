@@ -36,7 +36,11 @@ class StateHelper
 protected:
     void state(TState _state) { this->_state = _state; }
 
+    StateHelper(TState _state) { state(_state); }
+
 public:
+    StateHelper() {}
+
     TState state() const { return _state; }
 };
 
@@ -46,6 +50,7 @@ public:
     // Copy/paste from old "Parser" class
     enum State
     {
+        Uninitialized,
         Header,
         HeaderDone,
         Token,
@@ -61,11 +66,14 @@ public:
 
 // Dispatches one CoAP message at a time based on externally provided input
 class Dispatcher :
+    public DispatcherBase,
     public moducom::experimental::forward_list<IDispatcherHandler>,
     public StateHelper<DispatcherBase::state_t>
 {
 public:
-    //Dispatcher()
+    Dispatcher() : StateHelper(Uninitialized)
+    {
+    }
 
 };
 
