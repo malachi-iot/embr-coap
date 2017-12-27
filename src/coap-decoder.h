@@ -57,18 +57,18 @@ public:
 typedef RawDecoder<8> TokenDecoder;
 
 
-class HeaderDecoder : public CoAP::Header
+class HeaderDecoder : 
+    public CoAP::Header,
+    public CounterDecoder<uint8_t>
 {
-    uint8_t pos;
+    typedef CounterDecoder<uint8_t> base_t;
 
 public:
-    HeaderDecoder() : pos(0) {}
-
     // returns true when complete
     inline bool process_iterate(uint8_t value)
     {
-        bytes[pos++] = value;
-        return pos == 4;
+        bytes[base_t::position()] = value;
+        return base_t::process_iterate(4);
     }
 };
 
