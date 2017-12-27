@@ -12,8 +12,13 @@
 namespace moducom { namespace experimental {
 
 template <class TNode>
+class forward_list;
+
+template <class TNode>
 class forward_node
 {
+    friend class forward_list<TNode>;
+
     TNode* _next;
 
 protected:
@@ -21,6 +26,8 @@ protected:
     void next(TNode* _next) { this->_next = _next; }
 
 public:
+    forward_node() : _next(NULLPTR) {}
+
     TNode* next() const { return  _next; }
 };
 

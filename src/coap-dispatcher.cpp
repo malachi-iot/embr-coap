@@ -88,16 +88,19 @@ bool Dispatcher::dispatch_iterate(Context& context)
             break;
 
         case Options:
-            pos += dispatch_option(chunk);
+        {
+            pipeline::MemoryChunk optionChunk(chunk.data + pos, chunk.length - pos);
+            pos += dispatch_option(optionChunk);
 
             // FIX: We need to check for the 0xFF payload marker still
 
-            if(optionDecoder.state() == OptionDecoder::OptionValueDone)
+            if (optionDecoder.state() == OptionDecoder::OptionValueDone)
             {
                 state(OptionsDone);
             }
 
             break;
+        }
 
         case OptionsDone:
             // TODO: Need to peer into incoming data stream to determine if a payload is on the way
@@ -159,7 +162,10 @@ size_t Dispatcher::dispatch_option(const pipeline::MemoryChunk& optionChunk)
     // FIX: Kludgey, can really be cleaned up and optimized
     // ensures that our linked list doesn't execute process_iterate multiple times to acquire
     // option-value.  Instead, our linked list looping might need to happen per state() switched on
+    // Will also cause problems if there are no registered handlers, since count will be off as
+    // value is never processed
     bool needs_value_processed = true;
+    size_t total_length = processed_length;
 
     handler_t* handler = head();
 
@@ -179,6 +185,7 @@ size_t Dispatcher::dispatch_option(const pipeline::MemoryChunk& optionChunk)
                     if(needs_value_processed)
                     {
                         processed_length = optionDecoder.process_iterate(optionChunk, &optionHolder);
+                        total_length += processed_length;
                         needs_value_processed = false;
                     }
 
@@ -217,8 +224,7 @@ size_t Dispatcher::dispatch_option(const pipeline::MemoryChunk& optionChunk)
         handler = handler->next();
     }
 
-    // FIX: Need to account for needs_value_processed condition
-    return processed_length;
+    return total_length;
 }
 
 
