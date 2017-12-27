@@ -52,6 +52,11 @@ public:
     {
         return MemoryChunk(data + pos, length - pos);
     }
+
+    // Would prefer memorychunk itself to be more constant, perhaps we can
+    // have a "ProcessedMemoryChunk" which includes a pos in it... ? or maybe
+    // instead a ConstMemoryChunk just for those occasions..
+    void advance_experimental(size_t pos) { data += pos; length -= pos; }
 };
 
 // TODO: Oops, this should be layer3 since it has pointer *and* size fields

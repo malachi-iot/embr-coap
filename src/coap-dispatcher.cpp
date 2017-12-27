@@ -25,14 +25,11 @@ bool Dispatcher::dispatch_iterate(Context& context)
             break;
 
         case Header:
-            // NOTE: Untested code
             while(pos < chunk.length && !process_done)
             {
                 process_done = headerDecoder.process_iterate(chunk[pos]);
 
                 // FIX: This meaning I believe is reversed from non decoder process calls
-                //if(!process_done) pos++;
-
                 // FIX: process_done does not designate whether bytes were consumed, for
                 // headerDecoder and tokenDecoder, byte is always consumed
                 pos++;
@@ -57,11 +54,10 @@ bool Dispatcher::dispatch_iterate(Context& context)
         case Token:
             while(pos < chunk.length && !process_done)
             {
+                // TODO: Utilize a simpler counter and chunk out token
                 process_done = tokenDecoder.process_iterate(chunk[pos], headerDecoder.token_length());
 
                 // FIX: This meaning I believe is reversed from non decoder process calls
-                //if(!process_done) pos++;
-
                 // FIX: process_done does not designate whether bytes were consumed, for
                 // headerDecoder and tokenDecoder, byte is always consumed
                 pos++;
@@ -88,12 +84,19 @@ bool Dispatcher::dispatch_iterate(Context& context)
         {
             pos += dispatch_option(chunk.remainder(pos));
 
-            // handle option a.1) or b.1) described below
+            // handle option a.1), a.2) or b.1) described below
             if ((pos == chunk.length && context.last_chunk) || chunk[pos] == 0xFF)
             {
                 ASSERT_ERROR(OptionDecoder::OptionValueDone, optionDecoder.state(), "Must always be optionValueDone here");
                 // will check again for 0xFF
                 state(OptionsDone);
+            }
+            else
+            {
+                // UNSUPPORTED
+                // b.2 means we are not sure if another option or an incoming chunk[0] == 0xFF is coming
+                // MAY need an OptionsBoundary state, but hopefully not
+                // better would be to beef up OptionDecoder awareness of Payload marker
             }
 
             break;
@@ -103,10 +106,10 @@ bool Dispatcher::dispatch_iterate(Context& context)
             // TODO: Need to peer into incoming data stream to determine if a payload is on the way
             // or not - specifically need to also check size.  Here there are 3 possibilities:
             //
-            // a.1) payload marker present, so process a payload, entire chunk present
-            // a.2) payload marker present, but only partial chunk present, so perhaps 0xFF cut off
+            // a.1) payload marker present, so process a payload, entire chunk / datagram remainder present
+            // a.2) payload marker present, but only partial chunk present, so more payload to process
             // b.1) end of datagram - entire chunk present
-            // b.2) end of datagram - only partial chunk present
+            // b.2) end of chunk - only partial chunk present
             // c) as-yet-to-be-determined streaming end of chunk marker
             if (pos == chunk.length && context.last_chunk)
             {
@@ -117,7 +120,7 @@ bool Dispatcher::dispatch_iterate(Context& context)
             {
                 pos++;
 
-                // this is for condition a.1
+                // this is for condition a.1 or 1.2
                 state(Payload);
             }
             else
@@ -134,8 +137,11 @@ bool Dispatcher::dispatch_iterate(Context& context)
             bool last_payload_chunk = context.last_chunk;
 
             if(pos == 0)
+                // arrives here in the unlikely case payload starts on new chunk
+                // boundary
                 dispatch_payload(chunk, last_payload_chunk);
             else
+                // typically represents an a.1 scenario, but doesn't have to
                 dispatch_payload(chunk.remainder(pos), last_payload_chunk);
 
             // pos not advanced since we expect caller to separate out streaming coap payload end from

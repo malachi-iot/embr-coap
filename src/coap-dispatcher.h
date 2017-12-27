@@ -93,6 +93,10 @@ class Dispatcher :
 {
     struct Context
     {
+        // TODO: optimize by making this a value not a ref, and bump up "data" pointer
+        // (and down length) instead of bumping up pos.  A little more fiddly, but then
+        // we less frequently have to create new temporary memorychunks on the stack
+
         const pipeline::MemoryChunk& chunk;
 
         // current processing position.  Should be chunk.length once processing is done
