@@ -97,13 +97,10 @@ bool Dispatcher::dispatch_iterate(Context& context)
 
         case Options:
         {
-            //pipeline::MemoryChunk optionChunk(chunk.data + pos, chunk.length - pos);
             pos += dispatch_option(chunk.remainder(pos));
 
-            // FIX: We need to check for the 0xFF payload marker still
-
             // handle option a.1) or b.1) described below
-            if (pos == chunk.length || chunk.data[pos] == 0xFF)
+            if ((pos == chunk.length && context.last_chunk) || chunk[pos] == 0xFF)
             {
                 ASSERT_ERROR(OptionDecoder::OptionValueDone, optionDecoder.state(), "Must always be optionValueDone here");
                 // will check again for 0xFF
@@ -122,12 +119,12 @@ bool Dispatcher::dispatch_iterate(Context& context)
             // b.1) end of datagram - entire chunk present
             // b.2) end of datagram - only partial chunk present
             // c) as-yet-to-be-determined streaming end of chunk marker
-            if (pos == chunk.length)
+            if (pos == chunk.length && context.last_chunk)
             {
                 // this is for condition b.1)
                 state(Done);
             }
-            else if (chunk.data[pos] == 0xFF)
+            else if (chunk[pos] == 0xFF)
             {
                 pos++;
 
@@ -145,15 +142,13 @@ bool Dispatcher::dispatch_iterate(Context& context)
 
         case Payload:
         {
-            // FIX: Need this clued in by caller due to streaming possibility
-            bool last_payload_chunk = true;
+            bool last_payload_chunk = context.last_chunk;
+
             if(pos == 0)
                 dispatch_payload(chunk, last_payload_chunk);
             else
-            {
-                //pipeline::MemoryChunk partialChunk(chunk.data + pos, chunk.length - pos);
                 dispatch_payload(chunk.remainder(pos), last_payload_chunk);
-            }
+
             // pos not advanced since we expect caller to separate out streaming coap payload end from
             // next coap begin and create an artificial chunk boundary
             pos = chunk.length;
