@@ -130,6 +130,21 @@ class Dispatcher :
     OptionDecoder::OptionExperimental optionHolder;
     TokenDecoder tokenDecoder;
 
+    inline void init_header_decoder() { new (&headerDecoder) HeaderDecoder; }
+
+    // NOTE: Initial reset redundant since class initializes with 0, though this
+    // may well change when we union-ize the decoders.  Likely though instead we'll
+    // use an in-place new
+    inline void init_token_decoder() { tokenDecoder.reset(); }
+
+    // NOTE: reset might be more useful if we plan on not auto-resetting
+    // option decoder from within its own state machine
+    inline void init_option_decoder()
+    {
+        new (&optionDecoder) OptionDecoder;
+        //optionDecoder.reset();
+    }
+
 public:
     typedef IDispatcherHandler handler_t;
 

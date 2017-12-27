@@ -10,22 +10,18 @@ namespace experimental {
 
 // TODO: Need a smooth way to ascertain end of CoAP message (remember multipart/streaming
 // won't have a discrete message boundary)
-// NOTE: This should be dispatch_process since it may well require multiple calls per chunk
-//   and consider also returning a bool flag to assist callers in that
 bool Dispatcher::dispatch_iterate(Context& context)
 {
     const pipeline::MemoryChunk& chunk = context.chunk;
     size_t& pos = context.pos; // how far into chunk our locus of processing should be
     bool process_done = false;
 
-    // FIX: Need to wrap this in a while loop and bump pos up more often
-
     switch(state())
     {
         case Uninitialized:
             // If necessary, initialize header decoder
             state(Header);
-            new (&headerDecoder) HeaderDecoder;
+            init_header_decoder();
             break;
 
         case Header:
@@ -52,11 +48,7 @@ bool Dispatcher::dispatch_iterate(Context& context)
             {
                 state(Token);
                 // TODO: May want a TokenStart state
-                // NOTE: Initial reset redundant since class initializes with 0, though this
-                // may well change when we union-ize the decoders.  Likely though instead we'll
-                // use an in-place new
-                //new (&tokenDecoder) TokenDecoder();
-                tokenDecoder.reset();
+                init_token_decoder();
             }
             else
                 state(OptionsStart);
@@ -86,10 +78,7 @@ bool Dispatcher::dispatch_iterate(Context& context)
             break;
 
         case OptionsStart:
-            // NOTE: reset might be more useful if we plan on not auto-resetting
-            // option decoder from within its own state machine
-            new (&optionDecoder) OptionDecoder;
-            //optionDecoder.reset();
+            init_option_decoder();
             optionHolder.number_delta = 0;
             optionHolder.length = 0;
             state(Options);
