@@ -57,7 +57,7 @@ TEST_CASE("CoAP dispatcher tests", "[coap-dispatcher]")
         MemoryChunk chunk(buffer_16bit_delta, sizeof(buffer_16bit_delta));
 
         dispatcher.head(&dispatcherHandler);
-        dispatcher.dispatch(chunk);
+        //dispatcher.dispatch(chunk);
 
 
     }

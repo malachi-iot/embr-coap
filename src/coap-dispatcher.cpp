@@ -35,7 +35,11 @@ bool Dispatcher::dispatch_iterate(Context& context)
                 process_done = headerDecoder.process_iterate(chunk[pos]);
 
                 // FIX: This meaning I believe is reversed from non decoder process calls
-                if(!process_done) pos++;
+                //if(!process_done) pos++;
+
+                // FIX: process_done does not designate whether bytes were consumed, for
+                // headerDecoder and tokenDecoder, byte is always consumed
+                pos++;
             }
 
             if(process_done) state(HeaderDone);
@@ -64,7 +68,11 @@ bool Dispatcher::dispatch_iterate(Context& context)
                 process_done = tokenDecoder.process_iterate(chunk[pos], headerDecoder.token_length());
 
                 // FIX: This meaning I believe is reversed from non decoder process calls
-                if(!process_done) pos++;
+                //if(!process_done) pos++;
+
+                // FIX: process_done does not designate whether bytes were consumed, for
+                // headerDecoder and tokenDecoder, byte is always consumed
+                pos++;
             }
 
             if(process_done) state(TokenDone);

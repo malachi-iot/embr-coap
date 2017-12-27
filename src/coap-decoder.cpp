@@ -58,12 +58,9 @@ bool OptionDecoder::process_iterate(uint8_t value)
 
             state(OptionSizeDone);
 
-            // FIX: normally we'd return true here since we have "processed" the value
-            // but we want to reveal whether we want to report
-            // OptionDelta, OptionDeltaDone or OptionDeltaAndLengthDone
-            // once we stabalize the "iterative" state machine behavior more hopefully this
-            // will shake out and we can revert this back to true
-            return false;
+            // NOTE: Importantly, diverges from previous decoder in that now we return true
+            // to properly reflect a consumption of the byte
+            return true;
         }
 
         case OptionSizeDone:

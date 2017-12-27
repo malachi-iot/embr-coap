@@ -107,7 +107,7 @@ private:
         //  3 for option processing
         //  4 for header processing
         //  8 for token processing
-        uint8_t buffer[8];
+        uint8_t buffer[4];
     };
     uint8_t pos;
 
