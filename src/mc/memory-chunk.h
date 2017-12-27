@@ -41,6 +41,17 @@ public:
     {
         return data[index];
     }
+
+    // generate a new MemoryChunk which is a subset of the current one
+    // may be more trouble than it's worth calling this function
+    inline MemoryChunk carve_experimental(size_t pos, size_t len) const { return MemoryChunk(data + pos, len); }
+
+    // generate a new MemoryChunk with just the remainder of data starting
+    // at pos
+    inline MemoryChunk remainder(size_t pos) const
+    {
+        return MemoryChunk(data + pos, length - pos);
+    }
 };
 
 // TODO: Oops, this should be layer3 since it has pointer *and* size fields

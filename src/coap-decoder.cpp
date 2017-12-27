@@ -89,9 +89,8 @@ bool OptionDecoder::process_iterate(uint8_t value)
                 // visible)
                 state(OptionDeltaAndLengthDone);
 
-            // FIX: eventually this should return a *false* as reflected in
-            // OptionSize comments
-            return true;
+            // No byte actually consumed here, so returns false
+            return false;
         }
 
         case OptionDelta:

@@ -97,13 +97,16 @@ bool Dispatcher::dispatch_iterate(Context& context)
 
         case Options:
         {
-            pipeline::MemoryChunk optionChunk(chunk.data + pos, chunk.length - pos);
-            pos += dispatch_option(optionChunk);
+            //pipeline::MemoryChunk optionChunk(chunk.data + pos, chunk.length - pos);
+            pos += dispatch_option(chunk.remainder(pos));
 
             // FIX: We need to check for the 0xFF payload marker still
 
-            if (optionDecoder.state() == OptionDecoder::OptionValueDone)
+            // handle option a.1) or b.1) described below
+            if (pos == chunk.length || chunk.data[pos] == 0xFF)
             {
+                ASSERT_ERROR(OptionDecoder::OptionValueDone, optionDecoder.state(), "Must always be optionValueDone here");
+                // will check again for 0xFF
                 state(OptionsDone);
             }
 
@@ -112,8 +115,32 @@ bool Dispatcher::dispatch_iterate(Context& context)
 
         case OptionsDone:
             // TODO: Need to peer into incoming data stream to determine if a payload is on the way
-            // or not
-            state(Payload);
+            // or not - specifically need to also check size.  Here there are 3 possibilities:
+            //
+            // a.1) payload marker present, so process a payload, entire chunk present
+            // a.2) payload marker present, but only partial chunk present, so perhaps 0xFF cut off
+            // b.1) end of datagram - entire chunk present
+            // b.2) end of datagram - only partial chunk present
+            // c) as-yet-to-be-determined streaming end of chunk marker
+            if (pos == chunk.length)
+            {
+                // this is for condition b.1)
+                state(Done);
+            }
+            else if (chunk.data[pos] == 0xFF)
+            {
+                pos++;
+
+                // this is for condition a.1
+                state(Payload);
+            }
+            else
+            {
+                // UNSUPPORTED
+                // falls through to condition c, but could get a false positive on header 0xFF
+                // so this is unsupported.  Plus we can't really get here properly from Options state
+                state(Done);
+            }
             break;
 
         case Payload:
@@ -124,8 +151,8 @@ bool Dispatcher::dispatch_iterate(Context& context)
                 dispatch_payload(chunk, last_payload_chunk);
             else
             {
-                pipeline::MemoryChunk partialChunk(chunk.data + pos, chunk.length - pos);
-                dispatch_payload(partialChunk, last_payload_chunk);
+                //pipeline::MemoryChunk partialChunk(chunk.data + pos, chunk.length - pos);
+                dispatch_payload(chunk.remainder(pos), last_payload_chunk);
             }
             // pos not advanced since we expect caller to separate out streaming coap payload end from
             // next coap begin and create an artificial chunk boundary
@@ -166,6 +193,7 @@ void Dispatcher::dispatch_header()
 size_t Dispatcher::dispatch_option(const pipeline::MemoryChunk& optionChunk)
 {
     size_t processed_length = optionDecoder.process_iterate(optionChunk, &optionHolder);
+    size_t value_pos = processed_length;
 
     // FIX: Kludgey, can really be cleaned up and optimized
     // ensures that our linked list doesn't execute process_iterate multiple times to acquire
@@ -187,8 +215,6 @@ size_t Dispatcher::dispatch_option(const pipeline::MemoryChunk& optionChunk)
                 case OptionDecoder::OptionDeltaAndLengthDone:
                 {
                     handler->on_option((IOptionInput::number_t) optionHolder.number_delta, optionHolder.length);
-                    // TODO: Need to demarkate boundary here too so that on_option knows where boundary starts
-                    pipeline::MemoryChunk partialChunk(optionChunk.data + processed_length, 0);
 
                     if(needs_value_processed)
                     {
@@ -197,7 +223,9 @@ size_t Dispatcher::dispatch_option(const pipeline::MemoryChunk& optionChunk)
                         needs_value_processed = false;
                     }
 
-                    partialChunk.length = processed_length;
+                    // TODO: Need to demarkate boundary here too so that on_option knows where boundary starts
+                    pipeline::MemoryChunk partialChunk(optionChunk.data + value_pos, processed_length);
+
                     bool full_option_value = optionDecoder.state() == OptionDecoder::OptionValueDone;
                     handler->on_option(partialChunk, full_option_value);
                     break;
@@ -248,6 +276,8 @@ void Dispatcher::dispatch_payload(const pipeline::MemoryChunk& payloadChunk, boo
         {
             handler->on_payload(payloadChunk, last_chunk);
         }
+
+        handler = handler->next();
     }
 }
 
@@ -261,8 +291,16 @@ void Dispatcher::dispatch_token()
     {
         if(handler->is_interested())
         {
+            // this dispatcher does not chunk out token, we gather the whole thing in a local buffer
+            // FIX: really though we SHOULD chunk it out (if necessary) and avoid allocating a buffer
+            // entirely - under the right circumstances
+            // for character-by-character scenarios though we DO prefer to have this mini-buffered
+            // version.  As such, we probably want a separate dispatcher which is optimized for character
+            // by character dispatching which uses this TokenDecoder
             handler->on_token(chunk, true);
         }
+
+        handler = handler->next();
     }
 }
 
