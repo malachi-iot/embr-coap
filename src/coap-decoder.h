@@ -26,6 +26,7 @@ protected:
 public:
     CounterDecoder() : pos(0) {}
 
+    // returns true when we achieve our desired count
     inline bool process_iterate(TCounter max_size)
     {
         return ++pos >= max_size;

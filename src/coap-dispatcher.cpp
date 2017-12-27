@@ -12,9 +12,10 @@ namespace experimental {
 // won't have a discrete message boundary)
 // NOTE: This should be dispatch_process since it may well require multiple calls per chunk
 //   and consider also returning a bool flag to assist callers in that
-void Dispatcher::dispatch(const pipeline::MemoryChunk& chunk)
+void Dispatcher::dispatch_iterate(Context& context)
 {
-    size_t pos = 0; // how far into chunk our locus of processing should be
+    const pipeline::MemoryChunk& chunk = context.chunk;
+    size_t& pos = context.pos; // how far into chunk our locus of processing should be
     bool process_done = false;
 
     // FIX: Need to wrap this in a while loop and bump pos up more often
@@ -30,10 +31,13 @@ void Dispatcher::dispatch(const pipeline::MemoryChunk& chunk)
             // NOTE: Untested code
             while(pos < chunk.length && !process_done)
             {
-                process_done = headerDecoder.process_iterate(chunk[pos++]);
+                process_done = headerDecoder.process_iterate(chunk[pos]);
+
+                // FIX: This meaning I believe is reversed from non decoder process calls
+                if(!process_done) pos++;
             }
 
-            // FIX: likely need to bump pos++ again if !process_done on entry
+            if(process_done) state(HeaderDone);
 
             break;
 
@@ -51,12 +55,14 @@ void Dispatcher::dispatch(const pipeline::MemoryChunk& chunk)
         case Token:
             while(pos < chunk.length && !process_done)
             {
-                process_done = tokenDecoder.process_iterate(chunk[pos++], headerDecoder.token_length());
+                process_done = tokenDecoder.process_iterate(chunk[pos], headerDecoder.token_length());
+
+                // FIX: This meaning I believe is reversed from non decoder process calls
+                if(!process_done) pos++;
             }
 
-            // FIX: likely need to bump pos++ again if !process_done on entry
-
             if(process_done) state(TokenDone);
+
             break;
 
         case TokenDone:

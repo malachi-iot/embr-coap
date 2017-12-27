@@ -48,7 +48,7 @@ bool OptionDecoder::process_iterate(uint8_t value)
         case OptionSize:
         {
             // TODO: In this new form of option decoder, we need to look for payload marker here
-            if(value = 0xFF)
+            if(value == 0xFF)
             {
                 // TODO: set state to payload marker. this and end of data are only way we know to STOP processing options
             }

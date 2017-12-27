@@ -91,7 +91,22 @@ class Dispatcher :
     public moducom::experimental::forward_list<IDispatcherHandler>,
     public StateHelper<DispatcherBase::state_t>
 {
-    void dispatch(const pipeline::MemoryChunk& chunk);
+    struct Context
+    {
+        const pipeline::MemoryChunk& chunk;
+        size_t pos;
+
+    public:
+        Context(const pipeline::MemoryChunk& chunk) : chunk(chunk), pos(0) {}
+    };
+
+    void dispatch_iterate(Context& context);
+    void dispatch(const pipeline::MemoryChunk& chunk)
+    {
+        Context context(chunk);
+
+        dispatch_iterate(context);
+    }
 
     void dispatch_header();
     void dispatch_token();
