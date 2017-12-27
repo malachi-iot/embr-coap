@@ -7,6 +7,8 @@
 #ifndef MC_COAP_TEST_LINKEDLIST_H
 #define MC_COAP_TEST_LINKEDLIST_H
 
+#include "../platform.h"
+
 namespace moducom { namespace experimental {
 
 template <class TNode>
@@ -28,7 +30,13 @@ class forward_list
     TNode* _head;
 
 public:
-    void head(TNode* _head) { this->_head = _head; }
+    void head(TNode* _head)
+    {
+        if(this->_head != NULLPTR)
+            _head->next(this->_head);
+
+        this->_head = _head;
+    }
     TNode* head() const { return _head; }
 };
 

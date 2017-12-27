@@ -104,13 +104,6 @@ class Dispatcher :
     // returns true once it has
     bool dispatch_iterate(Context& context);
 
-    void dispatch(const pipeline::MemoryChunk& chunk)
-    {
-        Context context(chunk);
-
-        while(!dispatch_iterate(context));
-    }
-
     void dispatch_header();
     void dispatch_token();
 
@@ -133,6 +126,16 @@ private:
     }
 
 public:
+    // returns number of bytes processed from chunk
+    size_t dispatch(const pipeline::MemoryChunk& chunk)
+    {
+        Context context(chunk);
+
+        while(!dispatch_iterate(context) && state() != Done);
+
+        return context.pos;
+    }
+
     Dispatcher() : StateHelper(Uninitialized)
     {
         reset();
