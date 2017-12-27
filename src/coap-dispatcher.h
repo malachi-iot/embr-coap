@@ -100,12 +100,15 @@ class Dispatcher :
         Context(const pipeline::MemoryChunk& chunk) : chunk(chunk), pos(0) {}
     };
 
-    void dispatch_iterate(Context& context);
+    // returns false while chunk/context has not been exhausted
+    // returns true once it has
+    bool dispatch_iterate(Context& context);
+
     void dispatch(const pipeline::MemoryChunk& chunk)
     {
         Context context(chunk);
 
-        dispatch_iterate(context);
+        while(!dispatch_iterate(context));
     }
 
     void dispatch_header();

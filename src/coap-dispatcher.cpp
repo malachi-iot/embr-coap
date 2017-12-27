@@ -12,7 +12,7 @@ namespace experimental {
 // won't have a discrete message boundary)
 // NOTE: This should be dispatch_process since it may well require multiple calls per chunk
 //   and consider also returning a bool flag to assist callers in that
-void Dispatcher::dispatch_iterate(Context& context)
+bool Dispatcher::dispatch_iterate(Context& context)
 {
     const pipeline::MemoryChunk& chunk = context.chunk;
     size_t& pos = context.pos; // how far into chunk our locus of processing should be
@@ -118,6 +118,7 @@ void Dispatcher::dispatch_iterate(Context& context)
             }
             // pos not advanced since we expect caller to separate out streaming coap payload end from
             // next coap begin and create an artificial chunk boundary
+            pos = chunk.length;
             state(PayloadDone);
             break;
         }
@@ -131,6 +132,11 @@ void Dispatcher::dispatch_iterate(Context& context)
             state(Uninitialized);
             break;
     }
+
+    // TODO: Do an assert to make sure pos never is >
+    ASSERT_ERROR(true, pos <= chunk.length, "pos should never exceed chunk length");
+
+    return pos == chunk.length;
 }
 
 void Dispatcher::dispatch_header()
