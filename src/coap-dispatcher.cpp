@@ -25,6 +25,7 @@ void Dispatcher::dispatch_iterate(Context& context)
         case Uninitialized:
             // If necessary, initialize header decoder
             state(Header);
+            new (&headerDecoder) HeaderDecoder;
             break;
 
         case Header:
@@ -46,7 +47,12 @@ void Dispatcher::dispatch_iterate(Context& context)
             if(headerDecoder.token_length() > 0)
             {
                 state(Token);
-                // TODO: If necessary, initialize token decoder
+                // TODO: May want a TokenStart state
+                // NOTE: Initial reset redundant since class initializes with 0, though this
+                // may well change when we union-ize the decoders.  Likely though instead we'll
+                // use an in-place new
+                //new (&tokenDecoder) TokenDecoder();
+                tokenDecoder.reset();
             }
             else
                 state(OptionsStart);
@@ -72,6 +78,10 @@ void Dispatcher::dispatch_iterate(Context& context)
             break;
 
         case OptionsStart:
+            // NOTE: reset might be more useful if we plan on not auto-resetting
+            // option decoder from within its own state machine
+            new (&optionDecoder) OptionDecoder;
+            //optionDecoder.reset();
             optionHolder.number_delta = 0;
             optionHolder.length = 0;
             state(Options);
@@ -106,6 +116,8 @@ void Dispatcher::dispatch_iterate(Context& context)
                 pipeline::MemoryChunk partialChunk(chunk.data + pos, chunk.length - pos);
                 dispatch_payload(partialChunk, last_payload_chunk);
             }
+            // pos not advanced since we expect caller to separate out streaming coap payload end from
+            // next coap begin and create an artificial chunk boundary
             state(PayloadDone);
             break;
         }

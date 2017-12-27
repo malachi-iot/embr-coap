@@ -37,7 +37,7 @@ public:
 
 
 template <size_t buffer_size, typename TCounter=uint8_t>
-class RawDecoder : protected CounterDecoder<TCounter>
+class RawDecoder : public CounterDecoder<TCounter>
 {
     uint8_t buffer[buffer_size];
 

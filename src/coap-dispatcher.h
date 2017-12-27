@@ -125,11 +125,8 @@ public:
     typedef IDispatcherHandler handler_t;
 
 private:
-    handler_t*  interested;
-
     void reset()
     {
-        interested = NULLPTR;
     }
 
 public:
