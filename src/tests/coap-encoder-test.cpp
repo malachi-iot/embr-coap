@@ -8,6 +8,28 @@ using namespace moducom::pipeline;
 
 typedef CoAP::OptionExperimental::Numbers number_t;
 
+// NOTE: Too dumb to live
+class ExperimentalPrototypeBlockingHeaderEncoder1
+{
+public:
+    void header(IPipelineWriter& writer, const CoAP::Header& header)
+    {
+        writer.write(header.bytes, 4);
+    }
+};
+
+
+// NOTE: Too dumb to live
+class ExperimentalPrototypeBlockingTokenEncoder1
+{
+public:
+    void token(IPipelineWriter& writer, const MemoryChunk& value)
+    {
+        writer.write(value);
+    }
+};
+
+
 class ExperimentalPrototypeOptionEncoder1
 {
 protected:
@@ -44,23 +66,74 @@ public:
     }
 };
 
+
+class ExperimentalPrototypeBlockingPayloadEncoder1
+{
+    bool marker_written;
+
+public:
+    ExperimentalPrototypeBlockingPayloadEncoder1() : marker_written(false) {}
+
+    void payload(IPipelineWriter& writer, const MemoryChunk& chunk);
+};
+
+
 class ExperimentalPrototypeBlockingEncoder1
 {
 private:
+    typedef CoAP::Parser::State state_t;
+    typedef CoAP::Parser _state_t;
+
+#ifdef DEBUG
+    state_t consistency;
+
+    void state(state_t c) { consistency = c; }
+    void assert_state(state_t c)
+    {
+        ASSERT_ERROR(c, consistency, "State mismatch");
+    }
+    void assert_not_state(state_t c)
+    {
+        ASSERT_ERROR(true, c != consistency, "Invalid state");
+    }
+#else
+    void state(state_t) {}
+    void assert_state(state_t) {}
+    void assert_not_state(state_t) {}
+
+#endif
+
     ExperimentalPrototypeBlockingOptionEncoder1 optionEncoder;
+    ExperimentalPrototypeBlockingPayloadEncoder1 payloadEncoder;
 
     IPipelineWriter& writer;
 
+
+
 public:
-    ExperimentalPrototypeBlockingEncoder1(IPipelineWriter& writer) : writer(writer) {}
+    ExperimentalPrototypeBlockingEncoder1(IPipelineWriter& writer) :
+            consistency(_state_t::Header),
+            writer(writer) {}
 
-    void header(void* header);
+    void header(const CoAP::Header& header)
+    {
+        assert_state(_state_t::Header);
+        writer.write(header.bytes, 4);
+        state(_state_t::HeaderDone);
+    }
 
-    void token(const MemoryChunk& value);
+    void token(const MemoryChunk& value)
+    {
+        assert_state(_state_t::HeaderDone);
+        writer.write(value);
+        state(_state_t::TokenDone);
+    }
 
     void option(number_t number, const MemoryChunk& value)
     {
+        assert_not_state(_state_t::Header);
         optionEncoder.option(writer, number, value);
+        state(_state_t::Options);
     }
 
     void option(number_t number)
@@ -74,7 +147,15 @@ public:
         option(number, chunk);
     }
 
-    void payload(const MemoryChunk& value);
+    void payload(const MemoryChunk& value)
+    {
+        payloadEncoder.payload(writer, value);
+    }
+
+    void payload(const char* str)
+    {
+        payload(MemoryChunk((uint8_t*)str, strlen(str)));
+    }
 };
 
 
@@ -141,6 +222,17 @@ bool ExperimentalPrototypeNonBlockingOptionEncoder1::option(IBufferedPipelineWri
     //writer.writable();
 }
 
+void ExperimentalPrototypeBlockingPayloadEncoder1::payload(IPipelineWriter& writer, const MemoryChunk& chunk)
+{
+    if(!marker_written)
+    {
+        writer.write(0xFF);
+        marker_written = true;
+    }
+
+    writer.write(chunk);
+}
+
 TEST_CASE("CoAP encoder tests", "[coap-encoder]")
 {
     typedef CoAP::OptionExperimental number_t;
@@ -150,11 +242,20 @@ TEST_CASE("CoAP encoder tests", "[coap-encoder]")
         layer3::MemoryChunk<128> chunk;
         layer3::SimpleBufferedPipelineWriter writer(chunk);
         ExperimentalPrototypeBlockingEncoder1 encoder(writer);
+        CoAP::Header header;
+
+        encoder.header(header);
 
         encoder.option(number_t::ETag, "etag");
         encoder.option(number_t::UriPath, "query");
 
-        REQUIRE(chunk[0] == 0x44);
-        REQUIRE(chunk[5] == 0x75);
+        const int option_pos = 4;
+
+        REQUIRE(chunk[option_pos + 0] == 0x44);
+        REQUIRE(chunk[option_pos + 5] == 0x75);
+
+        encoder.payload("A payload");
+
+        REQUIRE(chunk[option_pos + 6] == 'q');
     }
 }
