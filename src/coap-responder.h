@@ -120,6 +120,30 @@ class INonBlockingReceiver : public IReceiver
 public:
 };
 
+
+template <class TTokenOutput>
+struct INonBlockingTokenOutput
+{
+    virtual bool on_token(TTokenOutput& output);
+};
+
+template <class TOptionOutput>
+struct INonBlockingOptionOutput
+{
+    virtual bool on_options(TOptionOutput& output);
+};
+
+
+template <class TPayloadOutput>
+struct INonBlockingPayloadOutput
+{
+    virtual bool on_paylod(TPayloadOutput& output);
+};
+
+
+struct INonBlockingOutput {};
+
+
 }
 
 }}
