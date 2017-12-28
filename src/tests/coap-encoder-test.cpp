@@ -14,6 +14,9 @@ class ExperimentalPrototypeBlockingOptionEncoder1
     generator_t generator;
 
     // option helper
+    uint8_t option(uint8_t* output, number_t number, uint16_t length);
+
+    // option helper
     void option(IPipelineWriter& writer, number_t number, uint16_t length);
 
 public:
@@ -60,7 +63,7 @@ public:
 };
 
 
-void ExperimentalPrototypeBlockingOptionEncoder1::option(IPipelineWriter& writer, number_t number, uint16_t length)
+uint8_t ExperimentalPrototypeBlockingOptionEncoder1::option(uint8_t* output_data, number_t number, uint16_t length)
 {
     moducom::coap::experimental::layer2::OptionBase optionBase(number);
 
@@ -68,7 +71,6 @@ void ExperimentalPrototypeBlockingOptionEncoder1::option(IPipelineWriter& writer
 
     generator.next(optionBase);
 
-    uint8_t buffer[8];
     uint8_t pos = 0;
 
     // OptionValueDone is for non-value version benefit (always reached, whether value is present or not)
@@ -80,8 +82,17 @@ void ExperimentalPrototypeBlockingOptionEncoder1::option(IPipelineWriter& writer
         generator_t::output_t output = generator.generate_iterate();
 
         if (output != generator_t::signal_continue)
-            buffer[pos++] = output;
+            output_data[pos++] = output;
     }
+
+    return pos;
+}
+
+
+void ExperimentalPrototypeBlockingOptionEncoder1::option(IPipelineWriter& writer, number_t number, uint16_t length)
+{
+    uint8_t buffer[8];
+    uint8_t pos = option(buffer, number, length);
 
     writer.write(buffer, pos); // generated header-ish portions of option, sans value
 }
@@ -105,5 +116,8 @@ TEST_CASE("CoAP encoder tests", "[coap-encoder]")
 
         encoder.option(number_t::ETag, "etag");
         encoder.option(number_t::UriPath, "query");
+
+        REQUIRE(chunk[0] == 0x44);
+        REQUIRE(chunk[5] == 0x75);
     }
 }
