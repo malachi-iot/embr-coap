@@ -47,10 +47,13 @@ bool OptionDecoder::process_iterate(uint8_t value)
 
         case OptionSize:
         {
-            // TODO: In this new form of option decoder, we need to look for payload marker here
+            // NOTE: Not yet activated by current Dispatcher as it aborts before we reach here
             if(value == 0xFF)
             {
-                // TODO: set state to payload marker. this and end of data are only way we know to STOP processing options
+                // Set state to payload marker.  Also designates as processed, so this
+                // implies a tiny bit of payload processing responsibility is on OptionDecoder
+                state(Payload);
+                return true;
             }
 
             buffer[0] = value;

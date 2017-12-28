@@ -243,6 +243,10 @@ size_t Dispatcher::dispatch_option(const pipeline::MemoryChunk& optionChunk)
                     break;
                 }
 
+                case OptionDecoder::Payload:
+                    // NOTE: Not yet used, we don't iterate enough to get here
+                    break;
+
                 default:break;
             }
         }
