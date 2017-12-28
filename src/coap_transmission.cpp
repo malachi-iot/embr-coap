@@ -150,6 +150,7 @@ OptionGenerator::StateMachine::output_t OptionGenerator::StateMachine::generate_
 
             pos = 0;
             state(CoAP::Parser::OptionValue);
+            // TODO: Do a return signal_continue here, for continuity
 
         case CoAP::Parser::OptionValue:
             // TODO: Document why we're doing length - 1 here
