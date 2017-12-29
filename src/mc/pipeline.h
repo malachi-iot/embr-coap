@@ -92,6 +92,12 @@ public:
 
         return true;
     }
+
+    virtual bool write_experimental(const pipeline::MemoryChunk& chunk) OVERRIDE
+    {
+        PipelineMessage message(chunk);
+        return write(chunk);
+    }
 };
 
 
@@ -282,6 +288,12 @@ public:
         return false;
     }
 
+    virtual bool write_experimental(const pipeline::MemoryChunk& chunk) OVERRIDE
+    {
+        PipelineMessage message(chunk);
+        return write(chunk);
+    }
+
 };
 
 namespace experimental {
@@ -362,6 +374,12 @@ public:
         }
 
         return true;
+    }
+
+    virtual bool write_experimental(const pipeline::MemoryChunk& chunk) OVERRIDE
+    {
+        PipelineMessage message(chunk);
+        return write(chunk);
     }
 
     // FIX

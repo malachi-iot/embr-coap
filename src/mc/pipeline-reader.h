@@ -7,6 +7,16 @@
 
 namespace moducom { namespace pipeline {
 
+namespace experimental {
+
+struct IReader
+{
+    // regular classic stream oriented read
+    virtual size_t read_experimental(MemoryChunk& chunk);
+};
+
+}
+
 class IPipelineReader
 {
 public:

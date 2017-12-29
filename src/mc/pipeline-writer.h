@@ -9,7 +9,16 @@
 
 namespace moducom { namespace pipeline {
 
-class IPipelineWriter
+namespace experimental {
+class IWriter
+{
+public:
+    // regular stream-oriented write
+    virtual bool write_experimental(const MemoryChunk& chunk) = 0;
+};
+}
+
+class IPipelineWriter : public experimental::IWriter
 {
 public:
     // returns true when memory could be written to pipeline,
@@ -85,6 +94,13 @@ public:
         if(length > length_used + buffer.length) return false;
 
         length_used += length;
+        return true;
+    }
+
+    virtual bool write_experimental(const pipeline::MemoryChunk& chunk) OVERRIDE
+    {
+        memcpy(data(), chunk.data, chunk.length);
+        length_used += chunk.length;
         return true;
     }
 };
