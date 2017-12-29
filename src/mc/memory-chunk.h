@@ -59,6 +59,24 @@ public:
     void advance_experimental(size_t pos) { data += pos; length -= pos; }
 };
 
+namespace layer1 {
+
+template <size_t buffer_length>
+class MemoryChunk
+{
+    uint8_t buffer[buffer_length];
+
+public:
+    size_t length() const { return buffer_length; }
+    uint8_t* data() { return buffer; }
+
+    inline void memcpy(const uint8_t* copy_from, size_t length)
+    {
+        ::memcpy(buffer, copy_from, length);
+    }
+};
+
+}
 // TODO: Oops, this should be layer3 since it has pointer *and* size fields
 namespace layer2 {
 // TODO: Update code to use layer3, then change this to not extend pipeline::MemoryChunk

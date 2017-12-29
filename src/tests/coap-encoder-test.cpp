@@ -133,6 +133,18 @@ public:
         this->header(header);
     }
 
+
+    void header(CoAP::Header::Code::Codes response_method, CoAP::Header::TypeEnum c = CoAP::Header::Confirmable)
+    {
+        CoAP::Header header(c);
+
+        header.response_code(response_method);
+
+        this->header(header);
+    }
+
+
+    // remember that, for now, we have to explicitly set token length in header too
     void token(const MemoryChunk& value)
     {
         assert_state(_state_t::HeaderDone);
