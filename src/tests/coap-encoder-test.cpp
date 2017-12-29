@@ -2,13 +2,14 @@
 #include "../coap-encoder.h"
 #include "../mc/memory.h"
 #include "../coap_transmission.h"
+#include "../coap-token.h"
 
 using namespace moducom::coap;
 using namespace moducom::pipeline;
 
-// semi-duplicate of one in coap_transmission
-class ExperimentalToken : public moducom::pipeline::layer2::MemoryChunk<8, uint8_t>
+class ExperimentalSessionContext
 {
+    moducom::coap::layer2::Token token;
 };
 
 typedef CoAP::OptionExperimental::Numbers number_t;
@@ -158,7 +159,7 @@ public:
     }
 
 
-    void token(const ExperimentalToken& value)
+    void token(const moducom::coap::layer2::Token& value)
     {
         assert_state(_state_t::HeaderDone);
         writer.write(value.data(), value.length());
@@ -294,7 +295,7 @@ TEST_CASE("CoAP encoder tests", "[coap-encoder]")
     }
     SECTION("Token test")
     {
-        ExperimentalToken token;
+        moducom::coap::layer2::Token token;
 
         token.set(0);
 

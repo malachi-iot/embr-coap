@@ -5,6 +5,9 @@
 #ifndef MC_COAP_TEST_MEMORY_CHUNK_H
 #define MC_COAP_TEST_MEMORY_CHUNK_H
 
+// for size_t
+#include <stddef.h>
+
 namespace moducom { namespace pipeline {
 
 template <typename custom_size_t = size_t>
@@ -16,6 +19,8 @@ public:
 
     // FIX: Temporary name until we refactor all usages away from raw field
     custom_size_t _length() const { return length; }
+
+    void _length(custom_size_t l) { length = l; }
 };
 
 // TODO: Split out naming for MemoryChunk and something like MemoryBuffer
@@ -76,7 +81,7 @@ class MemoryChunk
 
 public:
     size_t length() const { return buffer_length; }
-    const uint8_t* data() const { return buffer; }
+    const uint8_t* data(size_t offset = 0) const { return buffer + offset; }
 
     inline void memcpy(const uint8_t* copy_from, size_t length)
     {
