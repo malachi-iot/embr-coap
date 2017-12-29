@@ -242,7 +242,9 @@ TEST_CASE("CoAP encoder tests", "[coap-encoder]")
         layer3::MemoryChunk<128> chunk;
         layer3::SimpleBufferedPipelineWriter writer(chunk);
         ExperimentalPrototypeBlockingEncoder1 encoder(writer);
-        CoAP::Header header;
+        CoAP::Header header(CoAP::Header::Confirmable);
+
+        header.code(CoAP::Header::Get);
 
         encoder.header(header);
 
