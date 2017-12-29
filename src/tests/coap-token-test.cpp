@@ -10,12 +10,24 @@ TEST_CASE("CoAP token tests", "[coap-token]")
 {
     SECTION("UInt tests")
     {
-        moducom::pipeline::layer2::MemoryChunk<8> chunk;
+        SECTION("Test 1")
+        {
+            moducom::pipeline::layer2::MemoryChunk<8> chunk;
 
-        int bytes_used = moducom::coap::experimental::OptionUInt::set_uint32_t(0xFEDCBA, chunk);
+            int bytes_used = moducom::coap::experimental::UInt::set(0xFEDCBA, chunk);
 
-        REQUIRE(bytes_used == 3);
-        REQUIRE(chunk[0] == 0xFE);
+            REQUIRE(bytes_used == 3);
+            REQUIRE(chunk[0] == 0xFE);
+        }
+        SECTION("Test 2")
+        {
+            moducom::coap::experimental::UInt uint_val;
+
+            uint_val.set(0xFEDCBA);
+
+            REQUIRE(uint_val.length() == 3);
+            REQUIRE(uint_val[0] == 0xFE);
+        }
     }
     SECTION("1")
     {

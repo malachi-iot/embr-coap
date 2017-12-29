@@ -16,9 +16,11 @@ namespace experimental {
 // FIX: technically this would be a layer2 uint then
 // also we may want larger than 4 at some point, but that's
 // as big as is convenient for now
-class OptionUInt : pipeline::layer2::MemoryChunk<4, uint8_t>
+class UInt : pipeline::layer2::MemoryChunk<4, uint8_t>
 {
 public:
+    inline uint8_t length() const { return this->_length(); }
+
     // copy-pastes from OptionExperimental
     uint8_t get_uint8_t() const
     {
@@ -94,8 +96,8 @@ public:
         return get_uint32_t(value);
     }
 
-    template <class TOutput>
-    inline static uint8_t set_uint32_t(uint32_t input, TOutput& output)
+    template <class TInput, class TOutput>
+    inline static uint8_t set(TInput input, TOutput& output)
     {
         uint8_t bytes_used;
 
@@ -118,6 +120,19 @@ public:
 
         return bytes_used;
     }
+
+    template <class TInput>
+    inline uint8_t set(TInput input)
+    {
+        uint8_t* data = this->writable_data_experimental();
+        uint8_t byte_length = set(input, data);
+        _length(byte_length);
+    }
+
+    inline uint8_t operator[](size_t index) const
+    {
+        return *(data(index));
+    }
 };
 
 }
@@ -127,7 +142,7 @@ class BlockOption
     // CoAP-formatted UInt
     //uint8_t buffer[3];
     pipeline::layer1::MemoryChunk<3> buffer;
-    //experimental::OptionUInt data;
+    //experimental::UInt data;
 
 public:
     // all these helper functions expect zero padding in network byte order
@@ -144,7 +159,7 @@ public:
     // aka Block Number
     inline uint32_t sequence_number() const
     {
-        return experimental::OptionUInt::get_uint24_t(buffer.data()) >> 4;
+        return experimental::UInt::get_uint24_t(buffer.data()) >> 4;
     }
 };
 

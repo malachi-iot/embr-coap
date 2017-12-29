@@ -79,6 +79,10 @@ class MemoryChunk
 {
     uint8_t buffer[buffer_length];
 
+protected:
+    uint8_t* writable_data_experimental(size_t offset = 0) { return buffer + offset; }
+
+
 public:
     size_t length() const { return buffer_length; }
     const uint8_t* data(size_t offset = 0) const { return buffer + offset; }
