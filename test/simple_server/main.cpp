@@ -57,7 +57,11 @@ void TestResponder::OnCompleted()
 
 class TestDispatcherHandler : public moducom::coap::experimental::IDispatcherHandler
 {
+    experimental::BlockingEncoder& encoder;
+
 public:
+    TestDispatcherHandler(experimental::BlockingEncoder& encoder) : encoder(encoder) {}
+
     virtual void on_header(CoAP::Header header)
     {
 
@@ -150,13 +154,16 @@ int main()
         if(n > 0)
             parser2.process(buffer, n);
 #else
+        moducom::pipeline::MemoryChunk inbuf(buffer, sizeof(buffer));
         moducom::pipeline::layer3::MemoryChunk<256> outbuf;
         moducom::pipeline::layer3::SimpleBufferedPipelineWriter writer(outbuf);
         experimental::Dispatcher dispatcher;
+        experimental::BlockingEncoder encoder(writer);
 
-        TestDispatcherHandler handler;
+        TestDispatcherHandler handler(encoder);
 
         dispatcher.head(&handler);
+        dispatcher.dispatch(inbuf, true);
 #endif
         //close(newsockfd);
     }
