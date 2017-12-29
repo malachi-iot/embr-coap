@@ -7,6 +7,8 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 
+#define V2
+
 // bits adapted from http://www.linuxhowtos.org/data/6/server.c
 // and https://www.cs.rutgers.edu/~pxk/417/notes/sockets/udp.html
 
@@ -17,6 +19,10 @@ void error(const char *msg)
 }
 
 using namespace moducom::coap;
+
+
+
+#ifdef V1
 
 class TestResponder : public CoAP::IResponder
 {
@@ -40,9 +46,58 @@ void TestResponder::OnCompleted()
 {
     std::cout << "Finished CoAP processing" << std::endl;
 }
+#else
+#include "../../src/coap-decoder.h"
+#include "../../src/coap-encoder.h"
+#include "../../src/coap-dispatcher.h"
+#include "../../src/coap-token.h"
+#include "../../src/mc/pipeline-reader.h"
+#include "../../src/mc/pipeline-decoder.h"
+#include "../../src/mc/memory-chunk.h"
+
+class TestDispatcherHandler : public moducom::coap::experimental::IDispatcherHandler
+{
+public:
+    virtual void on_header(CoAP::Header header)
+    {
+
+    }
+
+
+    virtual void on_token(const moducom::pipeline::MemoryChunk& chunk, bool last_chunk)
+    {
+
+    }
+
+
+    // gets called once per discovered option, followed optionally by the
+    // on_option value portion taking a pipeline message
+    virtual void on_option(number_t number, uint16_t length) OVERRIDE
+    {
+
+    }
+
+    // will get called repeatedly until option_value is completely provided
+    // Not called if option_header.length() == 0
+    virtual void on_option(const moducom::pipeline::MemoryChunk& option_value_part, bool last_chunk)
+    {
+
+    };
+
+
+    virtual void on_payload(const moducom::pipeline::MemoryChunk& chunk, bool last_chunk) OVERRIDE
+    {
+
+    }
+
+    virtual InterestedEnum interested() OVERRIDE { return Always; }
+};
+
+#endif
 
 int main()
 {
+#ifdef V1
     //moducom::coap::CoAP::Header header;
     experimental::OutgoingResponseHandler out_handler(nullptr);
     experimental::TestResponder responder;
@@ -50,6 +105,8 @@ int main()
     CoAP::Parser parser;
 
     responder.add_handle("basic/", &user_responder);
+#else
+#endif
 
     std::cout << "Hello, World!" << std::endl;
 
@@ -87,11 +144,20 @@ int main()
 
         std::cout << "Got packet: " << n << " bytes" << std::endl;
 
+#ifdef V1
         CoAP::ParseToIResponder parser2(&responder);
 
         if(n > 0)
             parser2.process(buffer, n);
+#else
+        moducom::pipeline::layer3::MemoryChunk<256> outbuf;
+        moducom::pipeline::layer3::SimpleBufferedPipelineWriter writer(outbuf);
+        experimental::Dispatcher dispatcher;
 
+        TestDispatcherHandler handler;
+
+        dispatcher.head(&handler);
+#endif
         //close(newsockfd);
     }
 
