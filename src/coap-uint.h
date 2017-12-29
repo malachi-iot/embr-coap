@@ -30,6 +30,44 @@ public:
         return v;
     }
 
+    // untested
+    template <class TInput, class TOutput>
+    inline static void set_padded(TInput input, TOutput& output, size_t output_size)
+    {
+        uint8_t bytes_used;
+
+        // TODO: Could optimize by detecting type/sizeof(type) and only checking
+        // if type is capable of holding values that large
+        if(input == 0)
+        {
+            for(int i = 0; i < output_size; i++)
+                output[i] = 0;
+            return;
+        }
+        else if(input <= 0xFF)
+            bytes_used = 1;
+        else if(input <= 0xFFFF)
+            bytes_used = 2;
+        else if(input <= 0XFFFFFF)
+            bytes_used = 3;
+        else
+            bytes_used = 4;
+
+        uint8_t bytes_pad = output_size - bytes_used;
+
+        for(int i = 0; i < bytes_pad; i++)
+        {
+            output[i] = 0;
+        }
+
+        // NOTE: Not yet tested
+        for(int i = output_size; i-- > bytes_pad; i)
+        {
+            output[i] = input & 0xFF;
+            input >>= 8;
+        }
+    }
+
 
     template <class TInput, class TOutput>
     inline static uint8_t set(TInput input, TOutput& output)
@@ -59,14 +97,48 @@ public:
     }
 };
 
+
+namespace layer1 {
+
+template <size_t buffer_size>
+class UInt : public pipeline::layer1::MemoryChunk<buffer_size>
+{
+    typedef pipeline::layer1::MemoryChunk<buffer_size> base_t;
+
+public:
+    inline uint8_t operator[](size_t index) const
+    {
+        return *(base_t::data(index));
+    }
+
+    template <class TMemoryChunk>
+    void set(const TMemoryChunk& chunk)
+    {
+        // input as chunk doesn't work because chunk is raw bytes, not converted int
+        // furthermore we WANT raw bytes instead of fiddling with converting back
+        // and forth to int
+        //moducom::coap::UInt::set_padded(chunk, *this, chunk._length());
+    }
+
+    template <typename TReturn>
+    TReturn get() const
+    {
+        // TODO: Needs assert
+        return moducom::coap::UInt::get<TReturn>(base_t::data(), base_t::length());
+    }
+};
+
+}
+
 namespace layer2 {
 
 // FIX: technically this would be a layer2 uint then
 // also we may want larger than 4 at some point, but that's
 // as big as is convenient for now
-class UInt : pipeline::layer2::MemoryChunk<4, uint8_t>
+template <size_t buffer_size = 4>
+class UInt : pipeline::layer2::MemoryChunk<buffer_size, uint8_t>
 {
-    typedef pipeline::layer2::MemoryChunk<4, uint8_t> base_t;
+    typedef pipeline::layer2::MemoryChunk<buffer_size, uint8_t> base_t;
 
 public:
     inline uint8_t length() const { return this->_length(); }
@@ -118,7 +190,14 @@ public:
     {
         uint8_t* data = this->writable_data_experimental();
         uint8_t byte_length = moducom::coap::UInt::set(input, data);
-        _length(byte_length);
+        base_t::_length(byte_length);
+    }
+
+    template <typename TReturn>
+    TReturn get() const
+    {
+        // TODO: Needs assert
+        return moducom::coap::UInt::get<TReturn>(base_t::data(), base_t::length());
     }
 
     inline uint8_t operator[](size_t index) const

@@ -21,7 +21,7 @@ TEST_CASE("CoAP token tests", "[coap-token]")
         }
         SECTION("Test 2")
         {
-            moducom::coap::layer2::UInt uint_val;
+            moducom::coap::layer2::UInt<> uint_val;
 
             uint_val.set(0xFEDCBA);
 

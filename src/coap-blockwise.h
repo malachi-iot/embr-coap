@@ -15,9 +15,7 @@ namespace moducom { namespace coap {
 class BlockOption
 {
     // CoAP-formatted UInt
-    //uint8_t buffer[3];
-    pipeline::layer1::MemoryChunk<3> buffer;
-    //experimental::UInt data;
+    layer1::UInt<3> option_value;
 
 public:
     // all these helper functions expect zero padding in network byte order
@@ -26,15 +24,15 @@ public:
     // received byte
 
     // Aka Block Size.  Compute as real block size = 2**(size_exponent + 4)
-    inline uint8_t size_exponent() const { return *buffer.data(2) & 0x7; }
+    inline uint8_t size_exponent() const { return option_value[2] & 0x7; }
 
     // aka More Flag ("not last block")
-    inline bool more() const { return *buffer.data(2) & 0x08; }
+    inline bool more() const { return option_value[2] & 0x08; }
 
     // aka Block Number
     inline uint32_t sequence_number() const
     {
-        return UInt::get<uint32_t>(buffer.data(), buffer.length()) >> 4;
+        return option_value.get<uint32_t>();
     }
 };
 
