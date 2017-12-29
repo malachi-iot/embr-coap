@@ -10,7 +10,19 @@
 #include "platform.h"
 #include "mc/memory-chunk.h"
 
-namespace moducom { namespace coap { namespace layer2 {
+namespace moducom { namespace coap {
+
+namespace layer1 {
+
+// https://tools.ietf.org/html/rfc7252#section-5.3.1
+// semi-duplicate of one in coap_transmission
+class Token : public moducom::pipeline::layer1::MemoryChunk<8>
+{
+};
+
+}
+
+namespace layer2 {
 
 // https://tools.ietf.org/html/rfc7252#section-5.3.1
 // semi-duplicate of one in coap_transmission

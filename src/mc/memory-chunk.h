@@ -92,6 +92,13 @@ public:
         ::memcpy(buffer, copy_from, length);
     }
 
+
+    inline void copy_from(const pipeline::MemoryChunk& chunk)
+    {
+        ::memcpy(buffer, chunk._data(), chunk._length());
+    }
+
+
     inline void set(uint8_t c) { ::memset(buffer, c, buffer_length); }
 
     inline int compare(const void* compare_against, size_t length)

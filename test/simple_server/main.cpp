@@ -58,6 +58,8 @@ void TestResponder::OnCompleted()
 class TestDispatcherHandler : public moducom::coap::experimental::IDispatcherHandler
 {
     experimental::BlockingEncoder& encoder;
+    CoAP::Header outgoing_header;
+    layer2::Token token;
 
 public:
     TestDispatcherHandler(experimental::BlockingEncoder& encoder) : encoder(encoder) {}
@@ -70,20 +72,21 @@ public:
 
         ASSERT_ERROR(CoAP::Header::Confirmable, type, "Expected confirmable");
 
+        // FIX: raw clearing/initializing something necessary that we aren't yet
+        outgoing_header.raw = header.raw;
+
         // assuming we were requested with confirmable
-        CoAP::Header outgoing_header(CoAP::Header::Acknowledgement);
+        outgoing_header.type(CoAP::Header::Acknowledgement);
 
-        outgoing_header.response_code(CoAP::Header::Code::Valid);
-        outgoing_header.token_length(token_length);
-        outgoing_header.message_id(mid);
-
-        encoder.header(outgoing_header);
+        // RAW copy covers this portion
+        //outgoing_header.token_length(token_length);
+        //outgoing_header.message_id(mid);
     }
 
 
     virtual void on_token(const moducom::pipeline::MemoryChunk& chunk, bool last_chunk)
     {
-        encoder.token(chunk);
+        token.copy_from(chunk);
     }
 
 
@@ -91,6 +94,11 @@ public:
     // on_option value portion taking a pipeline message
     virtual void on_option(number_t number, uint16_t length) OVERRIDE
     {
+        outgoing_header.response_code(CoAP::Header::Code::Valid);
+        encoder.header(outgoing_header);
+        if(outgoing_header.token_length() > 0)
+            // FIX: Broken, _length vs (not yet made) length-used
+            encoder.token(token);
         encoder.payload("Response payload");
     }
 
