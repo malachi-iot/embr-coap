@@ -34,7 +34,7 @@ public:
     // aka Block Number
     inline uint32_t sequence_number() const
     {
-        return layer2::UInt::get_uint24_t(buffer.data()) >> 4;
+        return UInt::get<uint32_t>(buffer.data(), buffer.length()) >> 4;
     }
 };
 

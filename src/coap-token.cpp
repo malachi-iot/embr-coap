@@ -12,7 +12,7 @@ void SimpleTokenGenerator::generate(layer2::Token* token)
     //uint8_t* data = (uint8_t*)token->data();
     // FIX: Optimize, set up a prepar operation elsewhere
     layer2::Token& data = *token;
-    int bytes_used = layer2::UInt::set(current++, data);
+    int bytes_used = UInt::set(current++, data);
     token->_length(bytes_used);
 }
 
