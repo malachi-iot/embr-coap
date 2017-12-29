@@ -64,10 +64,15 @@ public:
 
     virtual void on_header(CoAP::Header header) OVERRIDE
     {
+        CoAP::Header::TypeEnum type = header.type();
+        uint8_t token_length = header.token_length();
+
+        ASSERT_ERROR(CoAP::Header::Confirmable, type, "Expected confirmable");
+
         // assuming we were requested with confirmable
         CoAP::Header outgoing_header(CoAP::Header::Acknowledgement);
 
-        outgoing_header.token_length(header.token_length());
+        outgoing_header.token_length(token_length);
 
         encoder.header(outgoing_header);
     }
@@ -158,7 +163,9 @@ int main()
         if(n > 0)
             parser2.process(buffer, n);
 #else
-        moducom::pipeline::MemoryChunk inbuf(buffer, sizeof(buffer));
+        if(n <= 0) continue;
+
+        moducom::pipeline::MemoryChunk inbuf(buffer, n);
         moducom::pipeline::layer3::MemoryChunk<256> outbuf;
         moducom::pipeline::layer3::SimpleBufferedPipelineWriter writer(outbuf);
         experimental::Dispatcher dispatcher;
@@ -171,7 +178,12 @@ int main()
 
         // send(...) is for connection oriented
         //send(newsockfd, outbuf._data(), outbuf._length(), 0);
-        sendto(newsockfd, outbuf._data(), outbuf._length(), 0, (sockaddr*) &cli_addr, clilen);
+
+        size_t send_bytes = writer.length_experimental();
+
+        std::cout << "Responding with " << send_bytes << " bytes" << std::endl;
+
+        sendto(newsockfd, outbuf._data(), send_bytes, 0, (sockaddr*) &cli_addr, clilen);
 #endif
         //close(newsockfd);
     }

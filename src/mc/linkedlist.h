@@ -37,6 +37,8 @@ class forward_list
     TNode* _head;
 
 public:
+    forward_list() : _head(NULLPTR) {}
+
     void head(TNode* _head)
     {
         if(this->_head != NULLPTR)

@@ -65,6 +65,10 @@ class SimpleBufferedPipelineWriter : public IBufferedPipelineWriter
     uint8_t* data() { return buffer.data + length_used; }
 
 public:
+    // number accumulated bytes.  Not sold on this API surface
+    size_t length_experimental() const { return length_used; }
+
+
     SimpleBufferedPipelineWriter(const pipeline::MemoryChunk& buffer)
             :
             buffer(buffer),
