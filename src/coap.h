@@ -465,6 +465,11 @@ public:
             UriQuery = 15,
             Accept = 17,
             LocationQuery = 20,
+            // https://tools.ietf.org/html/rfc7959#section-2.1
+            // request payload block-wise
+            Block1 = 23,
+            // response payload block-wise
+            Block2 = 27,
             ProxyUri = 35,
             ProxyScheme = 39,
             Size1 = 60
@@ -491,6 +496,11 @@ public:
                 case LocationPath:    return String;
                 case UriPath:         return String;
                 case ContentFormat:   return UInt;
+
+                case Block1:
+                case Block2:
+                    return UInt;
+
                 default:
                     return Unknown;
             }
@@ -518,6 +528,7 @@ public:
                 value_uint(value_uint)
         {}
 
+        // FIX: beware, we have a duplicate of these helpers in coap-blockwise::experimental
         uint8_t get_uint8_t() const
         {
             ASSERT_ERROR(1, length, "Incorrect length");
