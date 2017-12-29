@@ -13,6 +13,9 @@ class MemoryChunkBase
 protected:
 public:
     custom_size_t length;
+
+    // FIX: Temporary name until we refactor all usages away from raw field
+    custom_size_t _length() const { return length; }
 };
 
 // TODO: Split out naming for MemoryChunk and something like MemoryBuffer
@@ -23,6 +26,9 @@ class MemoryChunk : public MemoryChunkBase<>
 public:
     uint8_t* data;
 
+    // FIX: Temporary name until we refactor all usages away from raw field
+    const uint8_t* _data() const { return data; }
+
     MemoryChunk(uint8_t* data, size_t length) : data(data)
     {
         this->length = length;
@@ -30,9 +36,9 @@ public:
 
     MemoryChunk() {}
 
-    inline void memset(uint8_t c, size_t length) { ::memset(data, c, length); }
+    inline void set(uint8_t c, size_t length) { ::memset(data, c, length); }
 
-    inline void memset(uint8_t c) { memset(c, length); }
+    inline void set(uint8_t c) { set(c, length); }
 
     inline void memcpy(const uint8_t* copy_from, size_t length)
     {

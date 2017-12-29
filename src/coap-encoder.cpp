@@ -15,7 +15,7 @@ bool OptionEncoder::process_iterate(pipeline::IBufferedPipelineWriter& writer)
 
     while((value = generate_iterate() != signal_continue) && output.length-- > 0)
     {
-        output.data[length++] = value;
+        output[length++] = value;
     }
 
     if(length > 0)  writer.advance_write(length);
