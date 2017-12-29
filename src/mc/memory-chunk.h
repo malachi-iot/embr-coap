@@ -7,16 +7,18 @@
 
 namespace moducom { namespace pipeline {
 
+template <typename custom_size_t = size_t>
 class MemoryChunkBase
 {
+protected:
 public:
-    size_t length;
+    custom_size_t length;
 };
 
 // TODO: Split out naming for MemoryChunk and something like MemoryBuffer
 // MemoryBuffer always includes data* but may or may not be responsible for actual buffer itself
 // MemoryChunk always includes buffer too - and perhaps (havent decided yet) may not necessarily include data*
-class MemoryChunk : public MemoryChunkBase
+class MemoryChunk : public MemoryChunkBase<>
 {
 public:
     uint8_t* data;
@@ -68,27 +70,44 @@ class MemoryChunk
 
 public:
     size_t length() const { return buffer_length; }
-    uint8_t* data() { return buffer; }
+    const uint8_t* data() const { return buffer; }
 
     inline void memcpy(const uint8_t* copy_from, size_t length)
     {
         ::memcpy(buffer, copy_from, length);
     }
+
+    inline void set(uint8_t c) { ::memset(buffer, c, buffer_length); }
+
+    inline int compare(const void* compare_against, size_t length)
+    {
+        return ::memcmp(buffer, compare_against, length);
+    }
+
+    inline uint8_t& operator[](size_t index)
+    {
+        return buffer[index];
+    }
 };
 
 }
-// TODO: Oops, this should be layer3 since it has pointer *and* size fields
+
 namespace layer2 {
-// TODO: Update code to use layer3, then change this to not extend pipeline::MemoryChunk
-template<size_t buffer_length>
-class MemoryChunk : public pipeline::MemoryChunk
+// Variant of layer2.  buffer pointer NOT used, but size field IS used
+template<size_t buffer_length, typename custom_size_t = size_t>
+class MemoryChunk :
+        public MemoryChunkBase<custom_size_t>,
+        public layer1::MemoryChunk<buffer_length>
 {
-    uint8_t buffer[buffer_length];
+    typedef layer1::MemoryChunk<buffer_length> base_t;
 
 public:
-    MemoryChunk() : pipeline::MemoryChunk(buffer, buffer_length) {}
+    inline custom_size_t length() const { return MemoryChunkBase<custom_size_t>::length; }
 
-    inline void memset(uint8_t c) { ::memset(buffer, c, buffer_length); }
+    inline int compare(const void* compare_against)
+    {
+        return base_t::compare(compare_against, length());
+    }
 };
 
 }

@@ -59,7 +59,7 @@ TEST_CASE("CoAP message construction tests", "[coap-send]")
     }
     SECTION("2")
     {
-        moducom::pipeline::layer2::MemoryChunk<128> chunk;
+        moducom::pipeline::layer3::MemoryChunk<128> chunk;
         //BufferProviderPipeline p(chunk);
         SimpleBufferedPipeline p(chunk);
         CoAPGenerator generator(p);

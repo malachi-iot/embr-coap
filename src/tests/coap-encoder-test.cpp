@@ -6,6 +6,11 @@
 using namespace moducom::coap;
 using namespace moducom::pipeline;
 
+// semi-duplicate of one in coap_transmission
+class ExperimentalToken : public moducom::pipeline::layer2::MemoryChunk<8, uint8_t>
+{
+};
+
 typedef CoAP::OptionExperimental::Numbers number_t;
 
 // NOTE: Too dumb to live
@@ -152,6 +157,14 @@ public:
         state(_state_t::TokenDone);
     }
 
+
+    void token(const ExperimentalToken& value)
+    {
+        assert_state(_state_t::HeaderDone);
+        writer.write(value.data(), value.length());
+        state(_state_t::TokenDone);
+    }
+
     void option(number_t number, const MemoryChunk& value)
     {
         assert_not_state(_state_t::Header);
@@ -278,5 +291,15 @@ TEST_CASE("CoAP encoder tests", "[coap-encoder]")
         REQUIRE(chunk[option_pos + 0] == 0x44);
         REQUIRE(chunk[option_pos + 5] == 0x75);
         REQUIRE(chunk[option_pos + 6] == 'q');
+    }
+    SECTION("Token test")
+    {
+        ExperimentalToken token;
+
+        token.set(0);
+
+        token[0] = '3';
+
+        REQUIRE(token[0] == '3');
     }
 }
