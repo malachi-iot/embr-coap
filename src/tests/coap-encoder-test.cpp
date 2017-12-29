@@ -122,6 +122,17 @@ public:
         state(_state_t::HeaderDone);
     }
 
+
+    void header(CoAP::Header::RequestMethodEnum request_method, CoAP::Header::TypeEnum c = CoAP::Header::Confirmable)
+    {
+        // initializes with no token and no message id
+        CoAP::Header header(c);
+
+        header.code(request_method);
+
+        this->header(header);
+    }
+
     void token(const MemoryChunk& value)
     {
         assert_state(_state_t::HeaderDone);
@@ -242,22 +253,18 @@ TEST_CASE("CoAP encoder tests", "[coap-encoder]")
         layer3::MemoryChunk<128> chunk;
         layer3::SimpleBufferedPipelineWriter writer(chunk);
         ExperimentalPrototypeBlockingEncoder1 encoder(writer);
-        CoAP::Header header(CoAP::Header::Confirmable);
 
-        header.code(CoAP::Header::Get);
-
-        encoder.header(header);
+        encoder.header(CoAP::Header::Get);
 
         encoder.option(number_t::ETag, "etag");
         encoder.option(number_t::UriPath, "query");
+
+        encoder.payload("A payload");
 
         const int option_pos = 4;
 
         REQUIRE(chunk[option_pos + 0] == 0x44);
         REQUIRE(chunk[option_pos + 5] == 0x75);
-
-        encoder.payload("A payload");
-
         REQUIRE(chunk[option_pos + 6] == 'q');
     }
 }
