@@ -66,13 +66,16 @@ public:
     {
         CoAP::Header::TypeEnum type = header.type();
         uint8_t token_length = header.token_length();
+        uint16_t mid = header.message_id();
 
         ASSERT_ERROR(CoAP::Header::Confirmable, type, "Expected confirmable");
 
         // assuming we were requested with confirmable
         CoAP::Header outgoing_header(CoAP::Header::Acknowledgement);
 
+        outgoing_header.response_code(CoAP::Header::Code::Valid);
         outgoing_header.token_length(token_length);
+        outgoing_header.message_id(mid);
 
         encoder.header(outgoing_header);
     }
