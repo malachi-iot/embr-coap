@@ -62,15 +62,20 @@ class TestDispatcherHandler : public moducom::coap::experimental::IDispatcherHan
 public:
     TestDispatcherHandler(experimental::BlockingEncoder& encoder) : encoder(encoder) {}
 
-    virtual void on_header(CoAP::Header header)
+    virtual void on_header(CoAP::Header header) OVERRIDE
     {
+        // assuming we were requested with confirmable
+        CoAP::Header outgoing_header(CoAP::Header::Acknowledgement);
 
+        outgoing_header.token_length(header.token_length());
+
+        encoder.header(outgoing_header);
     }
 
 
     virtual void on_token(const moducom::pipeline::MemoryChunk& chunk, bool last_chunk)
     {
-
+        encoder.token(chunk);
     }
 
 
@@ -78,14 +83,13 @@ public:
     // on_option value portion taking a pipeline message
     virtual void on_option(number_t number, uint16_t length) OVERRIDE
     {
-
+        encoder.payload("Response payload");
     }
 
     // will get called repeatedly until option_value is completely provided
     // Not called if option_header.length() == 0
     virtual void on_option(const moducom::pipeline::MemoryChunk& option_value_part, bool last_chunk)
     {
-
     };
 
 
@@ -164,6 +168,10 @@ int main()
 
         dispatcher.head(&handler);
         dispatcher.dispatch(inbuf, true);
+
+        // send(...) is for connection oriented
+        //send(newsockfd, outbuf._data(), outbuf._length(), 0);
+        sendto(newsockfd, outbuf._data(), outbuf._length(), 0, (sockaddr*) &cli_addr, clilen);
 #endif
         //close(newsockfd);
     }
