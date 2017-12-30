@@ -1,12 +1,15 @@
 ﻿<Properties StartupConfiguration="{DEB8C90D-1012-44CC-843B-A25468EA743B}|Default">
-  <MonoDevelop.Ide.Workbench ActiveDocument="Program.cs">
+  <MonoDevelop.Ide.Workbench ActiveDocument="MainWindow.cs">
     <Files>
-      <File FileName="Program.cs" Line="17" Column="1" />
+      <File FileName="Program.cs" Line="10" Column="17" />
+      <File FileName="MainWindow.cs" Line="26" Column="42" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug|x86" />
   <MonoDevelop.Ide.DebuggingService.Breakpoints>
-    <BreakpointStore />
+    <BreakpointStore>
+      <Breakpoint file="/Users/malachi/Projects/moducom/mc-coap/test/Tester.net/MainWindow.cs" relfile="MainWindow.cs" line="22" column="1" />
+    </BreakpointStore>
   </MonoDevelop.Ide.DebuggingService.Breakpoints>
   <MonoDevelop.Ide.ItemProperties.Tester.net PreferredExecutionTarget="MonoDevelop.Default" />
   <MonoDevelop.Ide.DebuggingService.PinnedWatches />
