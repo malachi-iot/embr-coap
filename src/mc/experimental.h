@@ -94,6 +94,57 @@ public:
     }
 };
 
+
+template <typename custom_size_t = size_t>
+class ProcessedMemoryChunkBase
+{
+    custom_size_t _processed;
+
+public:
+    ProcessedMemoryChunkBase(custom_size_t p = 0) : _processed(p) {}
+
+    custom_size_t processed() const { return _processed; }
+    void processed(custom_size_t p) { _processed = p; }
+};
+
+// length = total buffer size
+// processed = "valid" buffer size, size of buffer actually used
+class ProcessedMemoryChunk :
+    public pipeline::MemoryChunk,
+    public ProcessedMemoryChunkBase<>
+{
+public:
+    ProcessedMemoryChunk(const pipeline::MemoryChunk& chunk) : pipeline::MemoryChunk(chunk) {}
+
+};
+
+
+namespace layer1 {
+
+template <size_t buffer_size, typename custom_size_t = size_t>
+class ProcessedMemoryChunk :
+    public pipeline::layer1::MemoryChunk<buffer_size>,
+    public ProcessedMemoryChunkBase<custom_size_t>
+{
+public:
+};
+
+}
+
+
+namespace layer2 {
+
+template <size_t buffer_size, typename custom_size_t = size_t>
+class ProcessedMemoryChunk :
+        public pipeline::layer2::MemoryChunk<buffer_size, custom_size_t>,
+        public ProcessedMemoryChunkBase<custom_size_t>
+{
+public:
+};
+
+}
+
+
 }}}
 
 #endif //MC_COAP_TEST_EXPERIMENTAL_H
