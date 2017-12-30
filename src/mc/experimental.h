@@ -154,13 +154,16 @@ class BufferedBlockingEncoder :
     // ensure header and token are advanced past
     void flush_token(state_t s)
     {
+        // TODO: Get rid of BufferedEncoderBase::state since BlockingEncoder
+        // already has a state machine (though it's debug only so be careful)
         if(BufferedEncoderBase::state == _state_t::Header)
         {
             uint8_t token_length = _header.token_length();
-
-            writer.write(_header.bytes, 4);
+            base_t::header(_header);
             if(token_length > 0)
-                writer.write(_token.data(), token_length);
+                writer.write(_token.data(), _header.token_length());
+
+            base_t::state(_state_t::TokenDone);
         }
 
         BufferedEncoderBase::state = s;
@@ -182,6 +185,25 @@ public:
         writer.write(_token.data(), _header.token_length());
         base_t::state(_state_t::TokenDone);
     } */
+
+    inline void option(number_t number, const pipeline::MemoryChunk& value)
+    {
+        flush_token(_state_t::Options);
+        base_t::option(number, value);
+    }
+
+    inline void option(number_t number)
+    {
+        flush_token(_state_t::Options);
+        base_t::option(number);
+    }
+
+    inline void option(number_t number, const char* str)
+    {
+        flush_token(_state_t::Options);
+        base_t::option(number, str);
+    }
+
 };
 
 
