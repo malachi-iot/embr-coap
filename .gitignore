@@ -42,6 +42,7 @@ src/build/
 
 # Visual Studio specific
 .vs/
+*.userprefs
 bin/
 obj/
 test/**/packages/
