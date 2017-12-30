@@ -42,3 +42,6 @@ src/build/
 
 # Visual Studio specific
 .vs/
+bin/
+obj/
+test/**/packages/
