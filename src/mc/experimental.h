@@ -14,6 +14,7 @@
 namespace moducom { namespace coap { namespace experimental {
 
 // NOTE: very experimental.  Seems to burn up more memory and cycles than it saves
+// this attempts to buffer right within IBufferedPipelineWriter itself
 class BufferedEncoder
 {
     typedef CoAP::OptionExperimental::Numbers number_t;
@@ -62,6 +63,34 @@ public:
     void payload_marker()
     {
         writer.write(0xFF);
+    }
+};
+
+
+
+// This buffers more traditionally, outside the writer
+// only buffers header and token
+class BufferedBlockingEncoder : public BlockingEncoder
+{
+    CoAP::Header _header;
+    moducom::coap::layer1::Token _token;
+
+    typedef BlockingEncoder base_t;
+
+public:
+    BufferedBlockingEncoder(pipeline::IPipelineWriter& writer) : BlockingEncoder(writer) {}
+
+    CoAP::Header* header() { return &_header; }
+
+    moducom::coap::layer1::Token* token() { return &_token; }
+
+    // called even if "no" token.  It should be noted that RFC 7252 says there is *always* a
+    // token, even if it is a zero length token...
+    void token_complete()
+    {
+        base_t::header(_header);
+        writer.write(_token.data(), _header.token_length());
+        state(_state_t::TokenDone);
     }
 };
 

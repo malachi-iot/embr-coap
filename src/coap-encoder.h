@@ -102,7 +102,7 @@ public:
 
 class BlockingEncoder
 {
-private:
+protected:
     typedef CoAP::Parser::State state_t;
     typedef CoAP::Parser _state_t;
 
@@ -125,6 +125,7 @@ private:
 
 #endif
 
+protected:
     ExperimentalPrototypeBlockingOptionEncoder1 optionEncoder;
     ExperimentalPrototypeBlockingPayloadEncoder1 payloadEncoder;
 
