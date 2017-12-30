@@ -74,7 +74,11 @@ protected:
 
 class ExperimentalPrototypeBlockingOptionEncoder1 : public ExperimentalPrototypeOptionEncoder1
 {
-    // option helper
+public:
+
+    // FIX: Only public so that experimental BufferedEncoder can use it
+    // option helper.  Either completely writes a 0 length value option, or
+    // prepares for a write of a > 0 length value option
     void option(pipeline::IPipelineWriter& writer, number_t number, uint16_t length);
 
 public:
