@@ -10,11 +10,25 @@
 
 namespace moducom { namespace pipeline {
 
-template <typename custom_size_t = size_t>
+namespace experimental {
+
+// remember this is experimental, not sure we really want to commit to using this down the line
+struct memory_chunk_traits
+{
+    // true = length field represents entire size of buffer, even if only a portion of it is used
+    // false = length field represents portion of buffer
+    static bool is_length_absolute() { return true; }
+};
+
+}
+
+template <typename custom_size_t = size_t, class TTraits = experimental::memory_chunk_traits>
 class MemoryChunkBase
 {
 protected:
 public:
+    typedef TTraits traits_t;
+
     custom_size_t length;
 
     // FIX: Temporary name until we refactor all usages away from raw field

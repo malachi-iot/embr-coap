@@ -98,6 +98,7 @@ public:
 template <typename custom_size_t = size_t>
 class ProcessedMemoryChunkBase
 {
+protected:
     custom_size_t _processed;
 
 public:

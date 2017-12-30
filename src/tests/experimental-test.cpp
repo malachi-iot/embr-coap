@@ -10,9 +10,16 @@ using namespace moducom::coap;
 
 TEST_CASE("experimental tests", "[experimental]")
 {
-    SECTION("1")
+    SECTION("layer1")
     {
         experimental::layer1::ProcessedMemoryChunk<128> chunk;
+
+        chunk[0] = 1;
+        chunk.processed(1);
+    }
+    SECTION("layer2")
+    {
+        experimental::layer2::ProcessedMemoryChunk<128> chunk;
 
         chunk[0] = 1;
         chunk.processed(1);
