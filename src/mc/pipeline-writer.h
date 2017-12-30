@@ -44,7 +44,7 @@ class IBufferedPipelineWriter : public IPipelineWriter
 {
 public:
     // Inspect destination buffer where a future write would go
-    virtual MemoryChunk peek_write() = 0;
+    virtual MemoryChunk peek_write(size_t preferred_minimum_length = 0) = 0;
 
     // Advance write buffer by length amount (expects that
     // peek_write buffer was utilized that much)
@@ -86,7 +86,7 @@ public:
     }
 
 
-    virtual pipeline::MemoryChunk peek_write() OVERRIDE
+    virtual pipeline::MemoryChunk peek_write(size_t preferred_minimum_length = 0) OVERRIDE
     {
         pipeline::MemoryChunk chunk(data(), buffer.length - length_used);
         return chunk;
