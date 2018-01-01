@@ -40,6 +40,20 @@
             <property name="Y">23</property>
           </packing>
         </child>
+        <child>
+          <widget class="Gtk.CheckButton" id="chkConfirmable">
+            <property name="MemberName" />
+            <property name="CanFocus">True</property>
+            <property name="Label" translatable="yes">Confirmable</property>
+            <property name="DrawIndicator">True</property>
+            <property name="HasLabel">True</property>
+            <property name="UseUnderline">True</property>
+          </widget>
+          <packing>
+            <property name="X">167</property>
+            <property name="Y">91</property>
+          </packing>
+        </child>
       </widget>
     </child>
   </widget>

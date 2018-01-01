@@ -9,6 +9,8 @@ public partial class MainWindow
 
 	private global::Gtk.ComboBoxEntry lstURI;
 
+	private global::Gtk.CheckButton chkConfirmable;
+
 	protected virtual void Build()
 	{
 		global::Stetic.Gui.Initialize(this);
@@ -37,6 +39,17 @@ public partial class MainWindow
 		global::Gtk.Fixed.FixedChild w2 = ((global::Gtk.Fixed.FixedChild)(this.fixed1[this.lstURI]));
 		w2.X = 164;
 		w2.Y = 23;
+		// Container child fixed1.Gtk.Fixed+FixedChild
+		this.chkConfirmable = new global::Gtk.CheckButton();
+		this.chkConfirmable.CanFocus = true;
+		this.chkConfirmable.Name = "chkConfirmable";
+		this.chkConfirmable.Label = global::Mono.Unix.Catalog.GetString("Confirmable");
+		this.chkConfirmable.DrawIndicator = true;
+		this.chkConfirmable.UseUnderline = true;
+		this.fixed1.Add(this.chkConfirmable);
+		global::Gtk.Fixed.FixedChild w3 = ((global::Gtk.Fixed.FixedChild)(this.fixed1[this.chkConfirmable]));
+		w3.X = 167;
+		w3.Y = 91;
 		this.Add(this.fixed1);
 		if ((this.Child != null))
 		{
