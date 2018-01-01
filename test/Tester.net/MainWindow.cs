@@ -4,6 +4,7 @@ using Gtk;
 using CoAPNet;
 using CoAPNet.Udp;
 using System.Threading.Tasks;
+using System.Linq;
 using System.Text;
 
 public partial class MainWindow : Gtk.Window
@@ -25,9 +26,11 @@ public partial class MainWindow : Gtk.Window
 
         var requestor = Task.Run(async () =>
         {
-            Console.WriteLine("Issuing request");
+            var uri = lstURI.ActiveText;
 
-            CoapMessageIdentifier messageId = await client.GetAsync("coap://127.0.0.1/hello");
+            Console.WriteLine($"Issuing request: {uri}");
+
+            CoapMessageIdentifier messageId = await client.GetAsync(uri);
 
             var response = await client.GetResponseAsync(messageId);
 

@@ -6,7 +6,7 @@
   <import>
     <widget-library name="../bin/Debug/Tester.net.exe" internal="true" />
   </import>
-  <widget class="Gtk.Window" id="MainWindow" design-size="400 300">
+  <widget class="Gtk.Window" id="MainWindow" design-size="422 300">
     <property name="MemberName" />
     <property name="Title" translatable="yes">MainWindow</property>
     <property name="WindowPosition">CenterOnParent</property>
@@ -20,13 +20,24 @@
             <property name="MemberName" />
             <property name="CanFocus">True</property>
             <property name="Type">TextOnly</property>
-            <property name="Label" translatable="yes">GtkButton</property>
+            <property name="Label" translatable="yes">Request</property>
             <property name="UseUnderline">True</property>
             <signal name="Clicked" handler="OnButton2Clicked" />
           </widget>
           <packing>
             <property name="X">33</property>
             <property name="Y">25</property>
+          </packing>
+        </child>
+        <child>
+          <widget class="Gtk.ComboBoxEntry" id="lstURI">
+            <property name="MemberName" />
+            <property name="IsTextCombo">True</property>
+            <property name="Items" translatable="yes" />
+          </widget>
+          <packing>
+            <property name="X">164</property>
+            <property name="Y">23</property>
           </packing>
         </child>
       </widget>

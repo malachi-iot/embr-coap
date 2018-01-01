@@ -7,6 +7,8 @@ public partial class MainWindow
 
 	private global::Gtk.Button button2;
 
+	private global::Gtk.ComboBoxEntry lstURI;
+
 	protected virtual void Build()
 	{
 		global::Stetic.Gui.Initialize(this);
@@ -23,17 +25,24 @@ public partial class MainWindow
 		this.button2.CanFocus = true;
 		this.button2.Name = "button2";
 		this.button2.UseUnderline = true;
-		this.button2.Label = global::Mono.Unix.Catalog.GetString("GtkButton");
+		this.button2.Label = global::Mono.Unix.Catalog.GetString("Request");
 		this.fixed1.Add(this.button2);
 		global::Gtk.Fixed.FixedChild w1 = ((global::Gtk.Fixed.FixedChild)(this.fixed1[this.button2]));
 		w1.X = 33;
 		w1.Y = 25;
+		// Container child fixed1.Gtk.Fixed+FixedChild
+		this.lstURI = global::Gtk.ComboBoxEntry.NewText();
+		this.lstURI.Name = "lstURI";
+		this.fixed1.Add(this.lstURI);
+		global::Gtk.Fixed.FixedChild w2 = ((global::Gtk.Fixed.FixedChild)(this.fixed1[this.lstURI]));
+		w2.X = 164;
+		w2.Y = 23;
 		this.Add(this.fixed1);
 		if ((this.Child != null))
 		{
 			this.Child.ShowAll();
 		}
-		this.DefaultWidth = 400;
+		this.DefaultWidth = 422;
 		this.DefaultHeight = 300;
 		this.Show();
 		this.DeleteEvent += new global::Gtk.DeleteEventHandler(this.OnDeleteEvent);
