@@ -263,7 +263,13 @@ size_t Dispatcher::dispatch_option(const pipeline::MemoryChunk& optionChunk)
                 case OptionDecoder::OptionLengthDone:
                 case OptionDecoder::OptionDeltaAndLengthDone:
                 {
-                    handler->on_option((IOptionInput::number_t) optionHolder.number_delta, optionHolder.length);
+                    IOptionInput::number_t option_number = (IOptionInput::number_t) optionHolder.number_delta;
+                    uint16_t option_length = optionHolder.length;
+#ifdef DEBUG2
+                    std::clog << "Dispatching option: " << option_number << " with length " << optionHolder.length;
+                    std::clog << std::endl;
+#endif
+                    handler->on_option(option_number, option_length);
 
                     if(needs_value_processed)
                     {
@@ -273,14 +279,33 @@ size_t Dispatcher::dispatch_option(const pipeline::MemoryChunk& optionChunk)
                         needs_value_processed = false;
                     }
 
-                    // TODO: Need to demarkate boundary here too so that on_option knows where boundary starts
-                    pipeline::MemoryChunk partialChunk(optionChunk.data + value_pos, processed_length);
+                    ASSERT_WARN(option_length, processed_length, "option length mismatch with processed bytes");
 
-                    // FIX: We are arriving here with values of OptionSize(Done?) and OptionValue
-                    // suggesting strongly we aren't iterating completely or fast-forwarding past
-                    // value when we need to
-                    bool full_option_value = optionDecoder.state() == OptionDecoder::OptionValueDone;
-                    handler->on_option(partialChunk, full_option_value);
+                    if(option_length > 0)
+                    {
+                        // TODO: Need to demarkate boundary here too so that on_option knows where boundary starts
+                        pipeline::MemoryChunk partialChunk(optionChunk.data + value_pos, processed_length);
+
+#ifdef DEBUG2
+                        std::clog << "Dispatching option: data = ";
+
+                        // once we resolve the two different OptionExperimentals, use this
+                        //CoAP::OptionExperimental::get_format()
+                        //optionHolder.get_format();
+                        // for now, just assume everything is a string
+                        for(int i = 0; i < option_length; i++)
+                        {
+                            std::clog << (char)partialChunk[i];
+                        }
+
+                        std::clog << std::endl;
+#endif
+                        // FIX: We are arriving here with values of OptionSize(Done?) and OptionValue
+                        // suggesting strongly we aren't iterating completely or fast-forwarding past
+                        // value when we need to
+                        bool full_option_value = optionDecoder.state() == OptionDecoder::OptionValueDone;
+                        handler->on_option(partialChunk, full_option_value);
+                    }
                     break;
                 }
 
