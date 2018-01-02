@@ -26,7 +26,7 @@ bool OptionEncoder::process_iterate(pipeline::IBufferedPipelineWriter& writer)
 
 namespace experimental {
 
-uint8_t ExperimentalPrototypeOptionEncoder1::_option(uint8_t* output_data, number_t number, uint16_t length)
+uint8_t ExperimentalPrototypeOptionEncoder1::_option(uint8_t* output_data, option_number_t number, uint16_t length)
 {
     moducom::coap::experimental::layer2::OptionBase optionBase(number);
 
@@ -52,7 +52,7 @@ uint8_t ExperimentalPrototypeOptionEncoder1::_option(uint8_t* output_data, numbe
 }
 
 
-void ExperimentalPrototypeBlockingOptionEncoder1::option(pipeline::IPipelineWriter& writer, number_t number, uint16_t length)
+void ExperimentalPrototypeBlockingOptionEncoder1::option(pipeline::IPipelineWriter& writer, option_number_t number, uint16_t length)
 {
     uint8_t buffer[8];
     // NOTE: Needs underscore on _option as overloading logic can't resolve uint8* vs IPipelineWriter& for some reason
@@ -63,14 +63,14 @@ void ExperimentalPrototypeBlockingOptionEncoder1::option(pipeline::IPipelineWrit
 
 
 void
-ExperimentalPrototypeBlockingOptionEncoder1::option(pipeline::IPipelineWriter& writer, number_t number, const pipeline::MemoryChunk& value)
+ExperimentalPrototypeBlockingOptionEncoder1::option(pipeline::IPipelineWriter& writer, option_number_t number, const pipeline::MemoryChunk& value)
 {
     option(writer, number, value.length);
     writer.write(value); // value portion
 }
 
 
-bool ExperimentalPrototypeNonBlockingOptionEncoder1::option(pipeline::IBufferedPipelineWriter& writer, number_t number,
+bool ExperimentalPrototypeNonBlockingOptionEncoder1::option(pipeline::IBufferedPipelineWriter& writer, option_number_t number,
                                                             const pipeline::MemoryChunk& value)
 {
     // Need mini-state machine to determine if we are writing value chunk or

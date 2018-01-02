@@ -41,12 +41,12 @@ static void empty_fn()
 }
 
 
-class TestResponder : public CoAP::IResponder
+class TestResponder : public CoAP::IResponderDeprecated
 {
 public:
     virtual void OnHeader(const CoAP::Header header);
     virtual void OnToken(const uint8_t message[], size_t length) OVERRIDE;
-    virtual void OnOption(const CoAP::OptionExperimental& option);
+    virtual void OnOption(const CoAP::OptionExperimentalDeprecated& option);
     virtual void OnPayload(const uint8_t message[], size_t length);
 };
 
@@ -61,7 +61,7 @@ void TestResponder::OnToken(const uint8_t *message, size_t length)
 
 }
 
-void TestResponder::OnOption(const CoAP::OptionExperimental& option)
+void TestResponder::OnOption(const CoAP::OptionExperimentalDeprecated& option)
 {
     switch (option.number)
     {
@@ -73,7 +73,7 @@ void TestResponder::OnOption(const CoAP::OptionExperimental& option)
             REQUIRE(option.length == 2);
             break;
 
-        case CoAP::OptionExperimental::UriPath:
+        case CoAP::OptionExperimentalDeprecated::UriPath:
             // FIX: First failure is option.length coming in
             // at 3, which suggests the TEST portion is not
             // coming through properly (have a feeling it's
@@ -95,7 +95,7 @@ void TestResponder::OnPayload(const uint8_t message[], size_t length)
 
 TEST_CASE("CoAP tests", "[coap]")
 {
-    SECTION("Parsing to IResponder")
+    SECTION("Parsing to IResponderDeprecated")
     {
         typedef CoAP::Parser parser_t;
 

@@ -421,7 +421,7 @@ public:
 
     // FIX: Need better name
     /// Represents higher level fully built out option for processing at an application level
-    class OptionExperimental
+    class OptionExperimentalDeprecated
     {
     public:
         enum ValueFormats
@@ -517,7 +517,7 @@ public:
             const uint16_t value_uint;
         };
 
-        OptionExperimental(uint16_t number, uint16_t length, const uint8_t* value) :
+        OptionExperimentalDeprecated(uint16_t number, uint16_t length, const uint8_t* value) :
             number(number),
             length(length),
             value_uint(0)
@@ -525,7 +525,7 @@ public:
         	this->value = value;
         }
 
-        OptionExperimental(uint16_t number, uint16_t length, const uint16_t value_uint) :
+        OptionExperimentalDeprecated(uint16_t number, uint16_t length, const uint16_t value_uint) :
                 number(number),
                 length(length),
                 value_uint(value_uint)
@@ -585,7 +585,7 @@ public:
     // TODO: Rename this to something more like "IncomingMessageHandler"
     // since "Response" carries particular meaning in CoAP request/response behavior
     // TODO: Rename the OnX functions to on_x
-    class IResponder
+    class IResponderDeprecated
     {
     public:
         //! Responds to a header found in a CoAP message
@@ -596,7 +596,7 @@ public:
         //! \param length
         // NOTE: technically we have token length from header...
         virtual void OnToken(const uint8_t message[], size_t length) = 0;
-        virtual void OnOption(const OptionExperimental& option) = 0;
+        virtual void OnOption(const OptionExperimentalDeprecated& option) = 0;
         virtual void OnPayload(const uint8_t message[], size_t length) = 0;
         // NOTE: Would like the convenience of OnPayload and OnCompleted combined, but that
         // breaks consistency with the naming.  I suppose I could name it OnPayloadAndOrCompleted
@@ -747,11 +747,11 @@ public:
     class ParseToIResponder
     {
     protected:
-        IResponder* const responder;
+        IResponderDeprecated* const responder;
         Parser parser;
 
     public:
-        ParseToIResponder(IResponder* responder) : responder(responder)
+        ParseToIResponder(IResponderDeprecated* responder) : responder(responder)
         {
 
         }
@@ -780,7 +780,7 @@ public:
 
 
     public:
-        ParseIterateToIResponder(IResponder* responder) : ParseToIResponder(responder) {}
+        ParseIterateToIResponder(IResponderDeprecated* responder) : ParseToIResponder(responder) {}
 
         bool process_iterate(const pipeline::MemoryChunk& incoming);
         void process_done()
@@ -788,7 +788,7 @@ public:
             responder->OnCompleted();
         }
 
-        void reset_experimental(IResponder* responder)
+        void reset_experimental(IResponderDeprecated* responder)
         {
             // TODO: see if there's a convenient way to do this (in place delete/new...)
             //this->responder = responder;

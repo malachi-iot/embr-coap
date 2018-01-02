@@ -21,12 +21,19 @@ public:
 
 namespace experimental {
 
+typedef CoAP::OptionExperimentalDeprecated::Numbers option_number_t;
+typedef CoAP::OptionExperimentalDeprecated::ValueFormats option_value_format_t;
+typedef CoAP::OptionExperimentalDeprecated::ContentFormats option_content_format_t;
+
+typedef CoAP::Header::TypeEnum header_type_t;
+typedef CoAP::Header::Code::Codes header_response_code_t;
+typedef CoAP::Header::RequestMethodEnum header_request_code_t;
+
+
 class ExperimentalSessionContext
 {
     moducom::coap::layer2::Token token;
 };
-
-typedef CoAP::OptionExperimental::Numbers number_t;
 
 // NOTE: Too dumb to live
 class ExperimentalPrototypeBlockingHeaderEncoder1
@@ -57,7 +64,7 @@ protected:
     generator_t generator;
 
     // option helper, fills output with non-value portion of option
-    uint8_t _option(uint8_t* output, number_t number, uint16_t length);
+    uint8_t _option(uint8_t* output, option_number_t number, uint16_t length);
 
     ExperimentalPrototypeOptionEncoder1() : generator(0) {}
 };
@@ -68,7 +75,7 @@ class ExperimentalPrototypeNonBlockingOptionEncoder1 : public ExperimentalProtot
     uint8_t buffer[8];
 
 protected:
-    bool option(pipeline::IBufferedPipelineWriter& writer, number_t number, const pipeline::MemoryChunk& value);
+    bool option(pipeline::IBufferedPipelineWriter& writer, option_number_t number, const pipeline::MemoryChunk& value);
 };
 
 
@@ -79,12 +86,12 @@ public:
     // FIX: Only public so that experimental BufferedEncoder can use it
     // option helper.  Either completely writes a 0 length value option, or
     // prepares for a write of a > 0 length value option
-    void option(pipeline::IPipelineWriter& writer, number_t number, uint16_t length);
+    void option(pipeline::IPipelineWriter& writer, option_number_t number, uint16_t length);
 
 public:
 
-    void option(pipeline::IPipelineWriter& writer, number_t number, const pipeline::MemoryChunk& value);
-    void option(pipeline::IPipelineWriter& writer, number_t number)
+    void option(pipeline::IPipelineWriter& writer, option_number_t number, const pipeline::MemoryChunk& value);
+    void option(pipeline::IPipelineWriter& writer, option_number_t number)
     {
         option(writer, number, 0);
     }
@@ -187,19 +194,19 @@ public:
         state(_state_t::TokenDone);
     }
 
-    void option(number_t number, const pipeline::MemoryChunk& value)
+    void option(option_number_t number, const pipeline::MemoryChunk& value)
     {
         assert_not_state(_state_t::Header);
         optionEncoder.option(writer, number, value);
         state(_state_t::Options);
     }
 
-    void option(number_t number)
+    void option(option_number_t number)
     {
         optionEncoder.option(writer, number);
     }
 
-    void option(number_t number, const char* str)
+    void option(option_number_t number, const char* str)
     {
         pipeline::MemoryChunk chunk((uint8_t*) str, strlen(str));
         option(number, chunk);

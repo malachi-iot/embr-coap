@@ -31,14 +31,14 @@ public:
     TestResponder2(IPipeline& output) : GeneratorResponder(output) {}
 
 
-    virtual void OnOption(const CoAP::OptionExperimental& option);
+    virtual void OnOption(const CoAP::OptionExperimentalDeprecated& option);
     virtual void OnPayload(const uint8_t message[], size_t length);
 
     // spit out options and payload
     void process();
 };
 
-void TestResponder2::OnOption(const CoAP::OptionExperimental& option)
+void TestResponder2::OnOption(const CoAP::OptionExperimentalDeprecated& option)
 {
 
 }

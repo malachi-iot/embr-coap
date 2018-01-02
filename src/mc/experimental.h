@@ -26,7 +26,7 @@ protected:
 // this attempts to buffer right within IBufferedPipelineWriter itself
 class BufferedEncoder
 {
-    typedef CoAP::OptionExperimental::Numbers number_t;
+    typedef CoAP::OptionExperimentalDeprecated::Numbers number_t;
     typedef CoAP::Parser::State state_t;
     typedef CoAP::Parser _state_t;
 
@@ -186,19 +186,19 @@ public:
         base_t::state(_state_t::TokenDone);
     } */
 
-    inline void option(number_t number, const pipeline::MemoryChunk& value)
+    inline void option(option_number_t number, const pipeline::MemoryChunk& value)
     {
         flush_token(_state_t::Options);
         base_t::option(number, value);
     }
 
-    inline void option(number_t number)
+    inline void option(option_number_t number)
     {
         flush_token(_state_t::Options);
         base_t::option(number);
     }
 
-    inline void option(number_t number, const char* str)
+    inline void option(option_number_t number, const char* str)
     {
         flush_token(_state_t::Options);
         base_t::option(number, str);

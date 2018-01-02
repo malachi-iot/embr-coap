@@ -292,7 +292,7 @@ size_t Dispatcher::dispatch_option(const pipeline::MemoryChunk& optionChunk)
                         std::clog << "Dispatching option: data = ";
 
                         // once we resolve the two different OptionExperimentals, use this
-                        //CoAP::OptionExperimental::get_format()
+                        //CoAP::OptionExperimentalDeprecated::get_format()
                         //optionHolder.get_format();
                         // for now, just assume everything is a string
                         for(int i = 0; i < option_length; i++)

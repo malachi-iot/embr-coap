@@ -179,7 +179,7 @@ void DispatchingResponder::OnHeader(const coap::CoAP::Header header)
 {
 }
 
-void DispatchingResponder::OnOption(const coap::CoAP::OptionExperimental& option)
+void DispatchingResponder::OnOption(const coap::CoAP::OptionExperimentalDeprecated& option)
 {
 #ifdef __CPP11__
     typedef CoAP::Header::TypeEnum type_t;
@@ -212,12 +212,12 @@ void DispatchingResponder::OnOption(const coap::CoAP::OptionExperimental& option
     }
 }
 
-void DispatchingResponder::OnOptionRequest(const coap::CoAP::OptionExperimental& option)
+void DispatchingResponder::OnOptionRequest(const coap::CoAP::OptionExperimentalDeprecated& option)
 {
 #ifdef __CPP11__
-    typedef coap::CoAP::OptionExperimental::Numbers enum_t;
+    typedef coap::CoAP::OptionExperimentalDeprecated::Numbers enum_t;
 #else
-    typedef coap::CoAP::OptionExperimental enum_t;
+    typedef coap::CoAP::OptionExperimentalDeprecated enum_t;
 #endif    
 
     switch (option.get_number())
@@ -349,12 +349,12 @@ void DispatchingResponder::OnToken(const uint8_t *token, size_t length)
 }
 
 
-void DispatchingResponder::OnOptionResponse(const CoAP::OptionExperimental &option)
+void DispatchingResponder::OnOptionResponse(const CoAP::OptionExperimentalDeprecated &option)
 {
 #ifdef __CPP11__
-    typedef coap::CoAP::OptionExperimental::Numbers enum_t;
+    typedef coap::CoAP::OptionExperimentalDeprecated::Numbers enum_t;
 #else
-    typedef coap::CoAP::OptionExperimental enum_t;
+    typedef coap::CoAP::OptionExperimentalDeprecated enum_t;
 #endif
 
 #ifdef COAP_FEATURE_SUBSCRIPTIONS

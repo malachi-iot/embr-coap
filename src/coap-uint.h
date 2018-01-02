@@ -144,7 +144,7 @@ public:
     inline uint8_t length() const { return this->_length(); }
     const uint8_t* data() const { return base_t::data(); }
 
-    // copy-pastes from OptionExperimental
+    // copy-pastes from OptionExperimentalDeprecated
     uint8_t get_uint8_t() const
     {
         ASSERT_ERROR(1, length(), "Incorrect length");

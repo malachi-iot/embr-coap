@@ -36,7 +36,7 @@ class CoAPGenerator
 
 public:
     typedef experimental::layer2::OptionBase option_t;
-    typedef coap::CoAP::OptionExperimental::number_t option_number_t;
+    typedef coap::CoAP::OptionExperimentalDeprecated::number_t option_number_t;
 
 #ifdef __CPP11__
     typedef CoAP::Parser::State state_t;
@@ -184,7 +184,7 @@ namespace experimental {
 // Generator pushes out through a pipeline
 class OptionEncoderHelper
 {
-    //typedef CoAP::OptionExperimental option_t;
+    //typedef CoAP::OptionExperimentalDeprecated option_t;
     typedef layer2::OptionBase option_t;
 
     int state;

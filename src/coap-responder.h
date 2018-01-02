@@ -11,7 +11,7 @@
 namespace moducom { namespace coap {
 
 
-class GeneratorResponder : public CoAP::IResponder
+class GeneratorResponder : public CoAP::IResponderDeprecated
 {
 protected:
     struct header_state_t

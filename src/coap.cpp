@@ -351,7 +351,7 @@ void CoAP::ParseToIResponder::process(const uint8_t message[], size_t length)
 
                             case Parser::OptionValueDone:
                             {
-                                OptionExperimental option(option_number, option_length, option_value);
+                                OptionExperimentalDeprecated option(option_number, option_length, option_value);
                                 responder->OnOption(option);
                                 break;
                             }
@@ -485,7 +485,7 @@ bool CoAP::ParseIterateToIResponder::process_iterate(const pipeline::MemoryChunk
 
                             case Parser::OptionValueDone:
                             {
-                                OptionExperimental _o(option.number, option.length, option.value);
+                                OptionExperimentalDeprecated _o(option.number, option.length, option.value);
                                 responder->OnOption(_o);
                                 break;
                             }

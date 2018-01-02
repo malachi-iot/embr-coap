@@ -173,7 +173,7 @@ class OptionUriHost : public OptionString,
                       public OptionNumber
 {
 public:
-    OptionUriHost(char* value) : OptionNumber(CoAP::OptionExperimental::UriHost)
+    OptionUriHost(char* value) : OptionNumber(CoAP::OptionExperimentalDeprecated::UriHost)
     {
         value_string = value;
     }
@@ -250,14 +250,14 @@ public:
 class OptionIfMatch : public OptionOpaque
 {
 public:
-    OptionIfMatch() : OptionOpaque(CoAP::OptionExperimental::IfMatch) {}
+    OptionIfMatch() : OptionOpaque(CoAP::OptionExperimentalDeprecated::IfMatch) {}
 };
 
 
 class OptionUriHost : public OptionString
 {
 public:
-    OptionUriHost() : OptionString(CoAP::OptionExperimental::UriHost) {}
+    OptionUriHost() : OptionString(CoAP::OptionExperimentalDeprecated::UriHost) {}
 };
 
 // pure data entity for conveniently holding an outgoing coap message
@@ -315,7 +315,7 @@ struct RequestContext
     // NOTE: not active yet
     const uint16_t message_id;
 
-    CoAP::IResponder* responder;
+    CoAP::IResponderDeprecated* responder;
 
     bool is_server;
 
@@ -355,7 +355,7 @@ public:
     {
     }
 
-    const Token* add(const uint8_t* token, uint8_t length, CoAP::IResponder* responder)
+    const Token* add(const uint8_t* token, uint8_t length, CoAP::IResponderDeprecated* responder)
     {
         Token& t = tokens[0];
 
@@ -385,7 +385,7 @@ public:
 
 class TestOutgoingMessageHandler;
 
-// Note there 2 scenarios for memory handled from the one calling IResponder:
+// Note there 2 scenarios for memory handled from the one calling IResponderDeprecated:
 //
 // 1. memory only lasts as long as the OnXXX call (streaming)
 // 2. memory only lasts as long as all the OnXXX calls (datagram/buffer based)
@@ -401,9 +401,9 @@ class TestOutgoingMessageHandler;
 // This option might be interesting for say copying a UDP datagram to allow scavenging
 // of the original UDP pool, but then let us process at our leisure without (potentially)
 // additional allocations (we could treat it like #2 but have some benefit of #1)
-class DispatchingResponder : public CoAP::IResponder
+class DispatchingResponder : public CoAP::IResponderDeprecated
 {
-    CoAP::IResponder* user_responder;
+    CoAP::IResponderDeprecated* user_responder;
     //TokenManager& token_manager;
     // TODO: Eventually pass in a shared token manager, just making this an inline
     // instance here for convenience as we build out things
@@ -431,8 +431,8 @@ class DispatchingResponder : public CoAP::IResponder
     }
 
     // Hmm there's no specific equality version... so how do we find stuff?
-    //typedef ::std::map<std::string, CoAP::IResponder*, comp_fn> map_t;
-    typedef ::std::map<std::string, CoAP::IResponder*> map_t;
+    //typedef ::std::map<std::string, CoAP::IResponderDeprecated*, comp_fn> map_t;
+    typedef ::std::map<std::string, CoAP::IResponderDeprecated*> map_t;
 
     // put THIS into a map of ports, otherwise the key must get more complicated and include port
     map_t uri_list;
@@ -442,13 +442,13 @@ class DispatchingResponder : public CoAP::IResponder
     void deregister_subscriber() { context->subscribed = false; }
 #endif
 
-    void OnOptionRequest(const CoAP::OptionExperimental& option);
-    void OnOptionResponse(const CoAP::OptionExperimental& option);
+    void OnOptionRequest(const CoAP::OptionExperimentalDeprecated& option);
+    void OnOptionResponse(const CoAP::OptionExperimentalDeprecated& option);
 
 public:
     virtual void OnHeader(const CoAP::Header header) OVERRIDE;
     virtual void OnToken(const uint8_t message[], size_t length) OVERRIDE;
-    virtual void OnOption(const CoAP::OptionExperimental& option) OVERRIDE;
+    virtual void OnOption(const CoAP::OptionExperimentalDeprecated& option) OVERRIDE;
     virtual void OnPayload(const uint8_t message[], size_t length) OVERRIDE;
     virtual void OnCompleted();
 
@@ -461,7 +461,7 @@ public:
     {}
 
     // Doesn't handle port yet
-    void add_handle(const std::string& uri, CoAP::IResponder* ur)
+    void add_handle(const std::string& uri, CoAP::IResponderDeprecated* ur)
     {
         uri_list[uri] = ur;
     }

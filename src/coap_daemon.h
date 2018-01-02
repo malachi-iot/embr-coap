@@ -218,7 +218,7 @@ protected:
     virtual INonBlockingSender* next_sender() = 0;
     // Acquire next receiver, or null if none is ready to go
     // [extra experimental, pretty sure we need to evaluate incoming header to know which receiver we're itnerested in]
-    virtual CoAP::IResponder* next_receiver() = 0;
+    virtual CoAP::IResponderDeprecated* next_receiver() = 0;
 
 public:
     NonBlockingPipelineDaemon(IPipeline& incoming, IPipeline& outgoing) :

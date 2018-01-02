@@ -85,11 +85,13 @@ public:
     // Only reporting number & length since value portion is directly accessible via pipeline
     // coap uint's are a little unusual, but still quite easy to process
     // (https://tools.ietf.org/html/rfc7252#section-3.2)
+    // FIX: Find a good name.  "Option" or "OptionRaw" not quite right because this excludes
+    // the value portion.  Perhaps "OptionPrefix"
     struct OptionExperimental
     {
         // delta, not absolute, number.  external party will have to translate this
         // to absolute.  Plot twist: we *add* to this as we go, so if we pass in same
-        // OptionExperimental, then that's enough to qualify as an external party
+        // OptionExperimentalDeprecated, then that's enough to qualify as an external party
         // consequence: be sure number_delta is initialized at the beginning with 0
         uint16_t number_delta;
         // length of option value portion
@@ -186,7 +188,7 @@ public:
     size_t process_iterate(const pipeline::MemoryChunk& input, OptionExperimental* built_option);
 };
 
-// re-write and decomposition of IResponder
+// re-write and decomposition of IResponderDeprecated
 struct IHeaderInput
 {
     virtual void on_header(CoAP::Header header) = 0;
@@ -202,7 +204,7 @@ struct ITokenInput
 
 struct IOptionInput
 {
-    typedef CoAP::OptionExperimental::Numbers number_t;
+    typedef CoAP::OptionExperimentalDeprecated::Numbers number_t;
 
     // gets called once per discovered option, followed optionally by the
     // on_option value portion taking a pipeline message
