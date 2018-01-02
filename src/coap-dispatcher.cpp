@@ -1,3 +1,5 @@
+#define DEBUG2
+
 //
 // Created by Malachi Burke on 12/26/17.
 //
@@ -7,6 +9,50 @@
 namespace moducom { namespace coap {
 
 namespace experimental {
+
+const char* get_description(OptionDecoder::State state)
+{
+    switch(state)
+    {
+        case OptionDecoder::OptionSize:
+            return "Inspecting initial option data";
+
+        case OptionDecoder::OptionDeltaDone:
+            return "Delta (option number) found";
+
+        case OptionDecoder::Payload:
+            return "Payload marker found";
+
+        case OptionDecoder::OptionDelta:
+            return "Delta found";
+
+        case OptionDecoder::OptionValue:
+            return "Inspecting value data";
+
+        case OptionDecoder::OptionValueDone:
+            return "Value data complete";
+
+        case OptionDecoder::OptionDeltaAndLengthDone:
+            return "Delta and length simultaneously done";
+
+        default:
+            return NULLPTR;
+    }
+}
+
+#ifdef DEBUG2
+std::ostream& operator <<(std::ostream& out, OptionDecoder::State state)
+{
+    const char* description = get_description(state);
+
+    if(description != NULLPTR)
+        out << description;
+    else
+        out << (int)state;
+
+    return out;
+}
+#endif
 
 // TODO: Need a smooth way to ascertain end of CoAP message (remember multipart/streaming
 // won't have a discrete message boundary)
@@ -82,7 +128,15 @@ bool Dispatcher::dispatch_iterate(Context& context)
 
         case Options:
         {
+#ifdef DEBUG2
+            std::clog << __func__ << ": 1 optionDecoder state = " << (optionDecoder.state()) << std::endl;
+#endif
+
             pos += dispatch_option(chunk.remainder(pos));
+
+#ifdef DEBUG2
+            std::clog << __func__ << ": 2 optionDecoder state = " << (optionDecoder.state()) << std::endl;
+#endif
 
             // handle option a.1), a.2) or b.1) described below
             if ((pos == chunk.length && context.last_chunk) || chunk[pos] == 0xFF)

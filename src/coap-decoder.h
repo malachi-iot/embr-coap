@@ -163,6 +163,8 @@ private:
     void done() { state(OptionValueDone); }
 
 public:
+    OptionDecoder() : _state(OptionSize) {}
+
     State state() const { return _state; }
 
     bool process_iterate(uint8_t value);
