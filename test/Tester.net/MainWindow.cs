@@ -24,12 +24,15 @@ public partial class MainWindow : Gtk.Window
         {
             var mruuris = File.ReadAllLines(mruuripath);
 
-            //lstURI.a
-
             foreach(var uri in mruuris)
             {
-                if(!string.IsNullOrWhiteSpace(uri))
+                if (!string.IsNullOrWhiteSpace(uri))
+                {
                     lstURI.AppendText(uri);
+                    // AppendText doesn't cascade down into listURI.Cast<Entry> and strangely neither does the
+                    // following.  I need to learn more about GtkSharp evidently
+                    // lstURI.Add(new Entry(uri) { Text = uri });
+                }
             }
         }
     }
@@ -37,6 +40,8 @@ public partial class MainWindow : Gtk.Window
     protected void OnDeleteEvent(object sender, DeleteEventArgs a)
     {
         Application.Quit();
+        //var dbg = lstURI.Cast<System.Object>().ToArray(); // only reveals the one entry anyway, 
+        // and Children also only has the one
         var entries = lstURI.Cast<Entry>();
 
         using (var writer = new StreamWriter(mruuripath))
@@ -59,9 +64,15 @@ public partial class MainWindow : Gtk.Window
         var confirmable = chkConfirmable.Active;
         bool coaps = false;
 
-        var uri = (coaps ? "coaps" : "coap") + "://" + lstURI.ActiveText;
+        var uriHost = (coaps ? "coaps" : "coap") + "://" + lstURI.ActiveText;
         var uriPath = "";
         string uriArgs = null;
+
+        // TODO: This one is more organized for our needs
+        if (uriArgs != null)
+            uriPath += "?" + uriArgs;
+
+        var uri = new Uri(new Uri(uriHost), uriPath);
 
         var message = new CoapMessage();
 
@@ -70,13 +81,7 @@ public partial class MainWindow : Gtk.Window
 
         try
         {
-            // TODO: This one is more organized for our needs
-            //var uri = new Uri("", )
-            if (uriArgs != null)
-                uriPath += "?" + uriArgs;
-
-            message.SetUri(uri + "/" + uriPath);
-            //message.SetUri()
+            message.SetUri(uri);
         }
         catch(Exception _e)
         {
@@ -109,6 +114,10 @@ public partial class MainWindow : Gtk.Window
 
         requestor.ContinueWith(x => 
         {
+            Gtk.Application.Invoke(delegate
+            {
+                // Display exception on screen
+            });
             if(x.IsFaulted)
             {
                 Console.WriteLine($"Got an error: {x.Exception.InnerException.Message}");
