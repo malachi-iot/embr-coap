@@ -279,6 +279,8 @@ size_t Dispatcher::dispatch_option(const pipeline::MemoryChunk& optionChunk)
                         needs_value_processed = false;
                     }
 
+                    // this will happen normally during multi-chunk operations
+                    // we shouldn't be seeing that for a while, however
                     ASSERT_WARN(option_length, processed_length, "option length mismatch with processed bytes");
 
                     if(option_length > 0)
@@ -304,7 +306,7 @@ size_t Dispatcher::dispatch_option(const pipeline::MemoryChunk& optionChunk)
                         // suggesting strongly we aren't iterating completely or fast-forwarding past
                         // value when we need to
                         bool full_option_value = optionDecoder.state() == OptionDecoder::OptionValueDone;
-                        handler->on_option(partialChunk, full_option_value);
+                        handler->on_option(option_number, partialChunk, full_option_value);
                     }
                     break;
                 }
@@ -320,7 +322,8 @@ size_t Dispatcher::dispatch_option(const pipeline::MemoryChunk& optionChunk)
                     //pipeline::MemoryChunk partialChunk(optionChunk.data, processed_length);
                     //bool full_option_value = optionDecoder.state() == OptionDecoder::OptionValueDone;
                     //handler->on_option(partialChunk, full_option_value);
-                    handler->on_option(optionChunk, false);
+                    IOptionInput::number_t option_number = (IOptionInput::number_t) optionHolder.number_delta;
+                    handler->on_option(option_number, optionChunk, false);
                     break;
                 }
 
@@ -331,7 +334,8 @@ size_t Dispatcher::dispatch_option(const pipeline::MemoryChunk& optionChunk)
                     // the chunk we're passing through really is and of course
                     // at what boundary it starts
                     //processed_length = optionDecoder.process_iterate(optionChunk, NULLPTR);
-                    handler->on_option(optionChunk, true);
+                    IOptionInput::number_t option_number = (IOptionInput::number_t) optionHolder.number_delta;
+                    handler->on_option(option_number, optionChunk, true);
                     break;
                 }
 
