@@ -1,4 +1,4 @@
-#define DEBUG2
+//#define DEBUG2
 
 //
 // Created by Malachi Burke on 12/26/17.
