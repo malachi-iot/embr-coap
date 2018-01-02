@@ -52,6 +52,7 @@ typedef double float64_t;
 // This will generate a warning and issue a 'return' statement immediately
 #define ASSERT_ABORT(expected, actual, message)
 // This will halt the program with a message
+// One may *carefully* use << syntax within message
 #define ASSERT_ERROR(expected, actual, message) if((expected) != (actual)) \
 { ::std::cerr << "ERROR: (" << __func__ << ") " << message << ::std::endl; }
 #else

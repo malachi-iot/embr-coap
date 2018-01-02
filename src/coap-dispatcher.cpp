@@ -141,7 +141,10 @@ bool Dispatcher::dispatch_iterate(Context& context)
             // handle option a.1), a.2) or b.1) described below
             if ((pos == chunk.length && context.last_chunk) || chunk[pos] == 0xFF)
             {
-                ASSERT_ERROR(OptionDecoder::OptionValueDone, optionDecoder.state(), "Must always be optionValueDone here");
+                ASSERT_ERROR(true,
+                             (optionDecoder.state() == OptionDecoder::OptionValueDone) ||
+                             (optionDecoder.state() == OptionDecoder::OptionDeltaAndLengthDone),
+                             "Must be either optionValueDone or optionDeltaAndlengthDone.  Got: " << optionDecoder.state());
                 // will check again for 0xFF
                 state(OptionsDone);
             }
