@@ -97,9 +97,11 @@ public:
         outgoing_header.response_code(CoAP::Header::Code::Valid);
         encoder.header(outgoing_header);
         if(outgoing_header.token_length() > 0)
+        {
             // FIX: Broken, _length vs (not yet made) length-used
             encoder.token(token);
-        encoder.payload("Response payload");
+            encoder.payload("Response payload");
+        }
     }
 
     // will get called repeatedly until option_value is completely provided

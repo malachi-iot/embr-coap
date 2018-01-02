@@ -182,6 +182,8 @@ void Dispatcher::dispatch_header()
 // 100% untested
 size_t Dispatcher::dispatch_option(const pipeline::MemoryChunk& optionChunk)
 {
+    // FIX: we generally expect to be at OptionSize state here, however in the future this
+    // requirement should go away (once we clean up needs_value_processed behavior)
     size_t processed_length = optionDecoder.process_iterate(optionChunk, &optionHolder);
     size_t value_pos = processed_length;
 
@@ -208,7 +210,8 @@ size_t Dispatcher::dispatch_option(const pipeline::MemoryChunk& optionChunk)
 
                     if(needs_value_processed)
                     {
-                        processed_length = optionDecoder.process_iterate(optionChunk, &optionHolder);
+                        // Getting here
+                        processed_length = optionDecoder.process_iterate(optionChunk.remainder(processed_length), &optionHolder);
                         total_length += processed_length;
                         needs_value_processed = false;
                     }
@@ -216,10 +219,17 @@ size_t Dispatcher::dispatch_option(const pipeline::MemoryChunk& optionChunk)
                     // TODO: Need to demarkate boundary here too so that on_option knows where boundary starts
                     pipeline::MemoryChunk partialChunk(optionChunk.data + value_pos, processed_length);
 
+                    // FIX: We are arriving here with values of OptionSize(Done?) and OptionValue
+                    // suggesting strongly we aren't iterating completely or fast-forwarding past
+                    // value when we need to
                     bool full_option_value = optionDecoder.state() == OptionDecoder::OptionValueDone;
                     handler->on_option(partialChunk, full_option_value);
                     break;
                 }
+
+                case OptionDecoder::OptionSizeDone:
+
+                    break;
 
                 case OptionDecoder::OptionValue:
                 {
