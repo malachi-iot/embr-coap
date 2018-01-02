@@ -16,12 +16,21 @@ public partial class MainWindow : Gtk.Window
     {
         Build();
 
+        // TODO: Do this in GUI Design editor later
+        chkConfirmable.Active = true;
+
         // read in mru URI list, if present
         if (File.Exists(mruuripath))
         {
             var mruuris = File.ReadAllLines(mruuripath);
 
             //lstURI.a
+
+            foreach(var uri in mruuris)
+            {
+                if(!string.IsNullOrWhiteSpace(uri))
+                    lstURI.AppendText(uri);
+            }
         }
     }
 
@@ -48,8 +57,11 @@ public partial class MainWindow : Gtk.Window
         var client = new CoapClient(endpoint);
 
         var confirmable = chkConfirmable.Active;
+        bool coaps = false;
 
-        var uri = lstURI.ActiveText;
+        var uri = (coaps ? "coaps" : "coap") + "://" + lstURI.ActiveText;
+        var uriPath = "";
+        string uriArgs = null;
 
         var message = new CoapMessage();
 
@@ -58,7 +70,13 @@ public partial class MainWindow : Gtk.Window
 
         try
         {
-            message.SetUri(uri);
+            // TODO: This one is more organized for our needs
+            //var uri = new Uri("", )
+            if (uriArgs != null)
+                uriPath += "?" + uriArgs;
+
+            message.SetUri(uri + "/" + uriPath);
+            //message.SetUri()
         }
         catch(Exception _e)
         {
@@ -77,6 +95,8 @@ public partial class MainWindow : Gtk.Window
             Console.WriteLine($"Issuing request: {uri}");
 
             await client.SendAsync(message);
+
+            Console.WriteLine($"Phase 1");
 
             var response = await client.ReceiveAsync();
             //CoapMessageIdentifier messageId = await client.GetAsync(uri);
