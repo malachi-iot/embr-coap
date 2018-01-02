@@ -8,7 +8,7 @@
 //#include "../coap_transmission.h"
 #include "../platform.h"
 #include <stdint.h>
-#include <memory.h>
+#include <string.h>
 #include "memory-chunk.h"
 #include "pipeline-reader.h"
 #include "pipeline-writer.h"

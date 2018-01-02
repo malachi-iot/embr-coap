@@ -6,6 +6,7 @@
 #include "mc/pipeline.h"
 #include <stdint.h>
 #include <stdlib.h>
+#include <new>
 
 #ifndef SRC_COAP_H
 #define SRC_COAP_H
@@ -245,7 +246,9 @@ public:
 
         Code& code_experimental() const
         {
-            return *new ((void*)&bytes[1]) Code();
+        	void* buffer = (void*)&bytes[1];
+        	Code* instance = new (buffer) Code;
+            return *instance;
         }
 
         bool is_request() const

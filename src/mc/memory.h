@@ -23,7 +23,9 @@ public:
     typedef uint16_t handle_opaque_t;
 #endif
 
-    static CONSTEXPR handle_opaque_t invalid_handle = -1;
+	// NOTE: We allow this brute force of negative here because we are 100%
+	// OK with it also being the "top" of whatever bitness our words are
+    static CONSTEXPR handle_opaque_t invalid_handle = (handle_opaque_t)-1;
 
     // TODO: Move this out of IMemory abstract class
     enum TierEnum
