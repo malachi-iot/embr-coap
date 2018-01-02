@@ -82,6 +82,14 @@ namespace Tester.WinForms.net
                 Console.WriteLine(Encoding.UTF8.GetString(response.Message.Payload));
             });
 
+            requestor.ContinueWith(t =>
+            {
+                if (t.IsFaulted)
+                {
+                    Console.WriteLine($"Error: {t.Exception.InnerException.Message}");
+                }
+            });
+
         }
 
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
