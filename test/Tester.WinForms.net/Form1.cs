@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -15,10 +16,22 @@ namespace Tester.WinForms.net
 {
     public partial class Form1 : Form
     {
+        const string mruUriFile = "mruuri.txt";
+
         public Form1()
         {
             InitializeComponent();
+
+            if(File.Exists(mruUriFile))
+            {
+                var mruLines = File.ReadAllLines(mruUriFile);
+                mruUris.AddRange(mruLines);
+            }
+
+            cmbURI.DataSource = mruUris;
         }
+
+        List<string> mruUris = new List<string>();
 
         private void btnRequest_Click(object sender, EventArgs e)
         {
@@ -69,6 +82,11 @@ namespace Tester.WinForms.net
                 Console.WriteLine(Encoding.UTF8.GetString(response.Message.Payload));
             });
 
+        }
+
+        private void Form1_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            File.WriteAllLines(mruUriFile, mruUris);
         }
     }
 }
