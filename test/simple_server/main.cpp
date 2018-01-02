@@ -89,29 +89,39 @@ public:
         token.copy_from(chunk);
     }
 
+    // FIX: just crappy test code, don't do this in real life
+    bool header_sent = false;
 
     // gets called once per discovered option, followed optionally by the
     // on_option value portion taking a pipeline message
     virtual void on_option(number_t number, uint16_t length) OVERRIDE
     {
         outgoing_header.response_code(CoAP::Header::Code::Valid);
-        encoder.header(outgoing_header);
-        if(outgoing_header.token_length() > 0)
-            // FIX: Broken, _length vs (not yet made) length-used
-            encoder.token(token);
-        encoder.payload("Response payload");
+        if(!header_sent)
+        {
+            encoder.header(outgoing_header);
+            if (outgoing_header.token_length() > 0)
+            {
+                // FIX: Broken, _length vs (not yet made) length-used
+                encoder.token(token);
+            }
+
+            encoder.payload("Response payload");
+
+            header_sent = true;
+        }
     }
 
     // will get called repeatedly until option_value is completely provided
     // Not called if option_header.length() == 0
-    virtual void on_option(const moducom::pipeline::MemoryChunk& option_value_part, bool last_chunk)
+    virtual void on_option(number_t number, const moducom::pipeline::MemoryChunk& option_value_part, bool last_chunk) OVERRIDE
     {
     };
 
 
+    // FIX: Not getting called, but we need some kind of "message done" signal -
     virtual void on_payload(const moducom::pipeline::MemoryChunk& chunk, bool last_chunk) OVERRIDE
     {
-
     }
 
     virtual InterestedEnum interested() OVERRIDE { return Always; }

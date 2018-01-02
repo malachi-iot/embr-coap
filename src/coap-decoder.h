@@ -163,6 +163,8 @@ private:
     void done() { state(OptionValueDone); }
 
 public:
+    OptionDecoder() : _state(OptionSize) {}
+
     State state() const { return _state; }
 
     bool process_iterate(uint8_t value);
@@ -208,7 +210,7 @@ struct IOptionInput
 
     // will get called repeatedly until option_value is completely provided
     // Not called if option_header.length() == 0
-    virtual void on_option(const pipeline::MemoryChunk& option_value_part, bool last_chunk) = 0;
+    virtual void on_option(number_t number, const pipeline::MemoryChunk& option_value_part, bool last_chunk) = 0;
 };
 
 

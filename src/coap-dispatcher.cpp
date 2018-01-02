@@ -1,3 +1,5 @@
+#define DEBUG2
+
 //
 // Created by Malachi Burke on 12/26/17.
 //
@@ -7,6 +9,50 @@
 namespace moducom { namespace coap {
 
 namespace experimental {
+
+const char* get_description(OptionDecoder::State state)
+{
+    switch(state)
+    {
+        case OptionDecoder::OptionSize:
+            return "Inspecting initial option data";
+
+        case OptionDecoder::OptionDeltaDone:
+            return "Delta (option number) found";
+
+        case OptionDecoder::Payload:
+            return "Payload marker found";
+
+        case OptionDecoder::OptionDelta:
+            return "Delta found";
+
+        case OptionDecoder::OptionValue:
+            return "Inspecting value data";
+
+        case OptionDecoder::OptionValueDone:
+            return "Value data complete";
+
+        case OptionDecoder::OptionDeltaAndLengthDone:
+            return "Delta and length simultaneously done";
+
+        default:
+            return NULLPTR;
+    }
+}
+
+#ifdef DEBUG2
+std::ostream& operator <<(std::ostream& out, OptionDecoder::State state)
+{
+    const char* description = get_description(state);
+
+    if(description != NULLPTR)
+        out << description;
+    else
+        out << (int)state;
+
+    return out;
+}
+#endif
 
 // TODO: Need a smooth way to ascertain end of CoAP message (remember multipart/streaming
 // won't have a discrete message boundary)
@@ -82,12 +128,23 @@ bool Dispatcher::dispatch_iterate(Context& context)
 
         case Options:
         {
+#ifdef DEBUG2
+            std::clog << __func__ << ": 1 optionDecoder state = " << (optionDecoder.state()) << std::endl;
+#endif
+
             pos += dispatch_option(chunk.remainder(pos));
+
+#ifdef DEBUG2
+            std::clog << __func__ << ": 2 optionDecoder state = " << (optionDecoder.state()) << std::endl;
+#endif
 
             // handle option a.1), a.2) or b.1) described below
             if ((pos == chunk.length && context.last_chunk) || chunk[pos] == 0xFF)
             {
-                ASSERT_ERROR(OptionDecoder::OptionValueDone, optionDecoder.state(), "Must always be optionValueDone here");
+                ASSERT_ERROR(true,
+                             (optionDecoder.state() == OptionDecoder::OptionValueDone) ||
+                             (optionDecoder.state() == OptionDecoder::OptionDeltaAndLengthDone),
+                             "Must be either optionValueDone or optionDeltaAndlengthDone.  Got: " << optionDecoder.state());
                 // will check again for 0xFF
                 state(OptionsDone);
             }
@@ -182,6 +239,8 @@ void Dispatcher::dispatch_header()
 // 100% untested
 size_t Dispatcher::dispatch_option(const pipeline::MemoryChunk& optionChunk)
 {
+    // FIX: we generally expect to be at OptionSize state here, however in the future this
+    // requirement should go away (once we clean up needs_value_processed behavior)
     size_t processed_length = optionDecoder.process_iterate(optionChunk, &optionHolder);
     size_t value_pos = processed_length;
 
@@ -204,22 +263,57 @@ size_t Dispatcher::dispatch_option(const pipeline::MemoryChunk& optionChunk)
                 case OptionDecoder::OptionLengthDone:
                 case OptionDecoder::OptionDeltaAndLengthDone:
                 {
-                    handler->on_option((IOptionInput::number_t) optionHolder.number_delta, optionHolder.length);
+                    IOptionInput::number_t option_number = (IOptionInput::number_t) optionHolder.number_delta;
+                    uint16_t option_length = optionHolder.length;
+#ifdef DEBUG2
+                    std::clog << "Dispatching option: " << option_number << " with length " << optionHolder.length;
+                    std::clog << std::endl;
+#endif
+                    handler->on_option(option_number, option_length);
 
                     if(needs_value_processed)
                     {
-                        processed_length = optionDecoder.process_iterate(optionChunk, &optionHolder);
+                        // Getting here
+                        processed_length = optionDecoder.process_iterate(optionChunk.remainder(processed_length), &optionHolder);
                         total_length += processed_length;
                         needs_value_processed = false;
                     }
 
-                    // TODO: Need to demarkate boundary here too so that on_option knows where boundary starts
-                    pipeline::MemoryChunk partialChunk(optionChunk.data + value_pos, processed_length);
+                    // this will happen normally during multi-chunk operations
+                    // we shouldn't be seeing that for a while, however
+                    ASSERT_WARN(option_length, processed_length, "option length mismatch with processed bytes");
 
-                    bool full_option_value = optionDecoder.state() == OptionDecoder::OptionValueDone;
-                    handler->on_option(partialChunk, full_option_value);
+                    if(option_length > 0)
+                    {
+                        // TODO: Need to demarkate boundary here too so that on_option knows where boundary starts
+                        pipeline::MemoryChunk partialChunk(optionChunk.data + value_pos, processed_length);
+
+#ifdef DEBUG2
+                        std::clog << "Dispatching option: data = ";
+
+                        // once we resolve the two different OptionExperimentals, use this
+                        //CoAP::OptionExperimental::get_format()
+                        //optionHolder.get_format();
+                        // for now, just assume everything is a string
+                        for(int i = 0; i < option_length; i++)
+                        {
+                            std::clog << (char)partialChunk[i];
+                        }
+
+                        std::clog << std::endl;
+#endif
+                        // FIX: We are arriving here with values of OptionSize(Done?) and OptionValue
+                        // suggesting strongly we aren't iterating completely or fast-forwarding past
+                        // value when we need to
+                        bool full_option_value = optionDecoder.state() == OptionDecoder::OptionValueDone;
+                        handler->on_option(option_number, partialChunk, full_option_value);
+                    }
                     break;
                 }
+
+                case OptionDecoder::OptionSizeDone:
+
+                    break;
 
                 case OptionDecoder::OptionValue:
                 {
@@ -228,7 +322,8 @@ size_t Dispatcher::dispatch_option(const pipeline::MemoryChunk& optionChunk)
                     //pipeline::MemoryChunk partialChunk(optionChunk.data, processed_length);
                     //bool full_option_value = optionDecoder.state() == OptionDecoder::OptionValueDone;
                     //handler->on_option(partialChunk, full_option_value);
-                    handler->on_option(optionChunk, false);
+                    IOptionInput::number_t option_number = (IOptionInput::number_t) optionHolder.number_delta;
+                    handler->on_option(option_number, optionChunk, false);
                     break;
                 }
 
@@ -239,7 +334,8 @@ size_t Dispatcher::dispatch_option(const pipeline::MemoryChunk& optionChunk)
                     // the chunk we're passing through really is and of course
                     // at what boundary it starts
                     //processed_length = optionDecoder.process_iterate(optionChunk, NULLPTR);
-                    handler->on_option(optionChunk, true);
+                    IOptionInput::number_t option_number = (IOptionInput::number_t) optionHolder.number_delta;
+                    handler->on_option(option_number, optionChunk, true);
                     break;
                 }
 

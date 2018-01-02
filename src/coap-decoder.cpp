@@ -61,9 +61,14 @@ bool OptionDecoder::process_iterate(uint8_t value)
 
             state(OptionSizeDone);
 
-            // NOTE: Importantly, diverges from previous decoder in that now we return true
-            // to properly reflect a consumption of the byte
-            return true;
+            // NOTE: Because consumers need to inspect OptionSizeDone state occasionally,
+            // and importantly because cusomers ALSO need to process
+            // OptionDelta/OptionDeltaDone/OptionDeltaAndLengthDone, we mark this as a NON
+            // processed byte (return false).  This bends but does not break the "processed" flag
+            // rule, as technically we really AREN'T done processing value byte right now.
+            // NOTE: This means we could perhaps optimize OptionDecoder since caller is managing
+            // the supply of the byte for the next call too
+            return false;
         }
 
         case OptionSizeDone:
@@ -86,14 +91,16 @@ bool OptionDecoder::process_iterate(uint8_t value)
                 state(OptionDeltaDone);
             }
             else
+            {
                 // no extended delta or length
                 // NOTE: this state might go away if we force everyone to participate in "iterative"
                 // state machine behavior (since then discrete delta/length states will *always* be
                 // visible)
                 state(OptionDeltaAndLengthDone);
+            }
 
-            // No byte actually consumed here, so returns false
-            return false;
+            // Byte is considered fully processed NOW (see big comment in OptionSize)
+            return true;
         }
 
         case OptionDelta:

@@ -44,7 +44,7 @@ public:
         }
     }
 
-    virtual void on_option(const MemoryChunk& option_value_part, bool last_chunk) OVERRIDE
+    virtual void on_option(number_t number, const MemoryChunk& option_value_part, bool last_chunk) OVERRIDE
     {
         switch(option_test_number++)
         {
