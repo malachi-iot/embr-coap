@@ -320,7 +320,10 @@ public:
         while(!process_iterate(context));
     }
 
-    OptionDecoder::State option_state() const { optionDecoder.state(); }
+    OptionDecoder::State option_state() const 
+    { 
+        return optionDecoder.state(); 
+    }
 };
 
 namespace experimental
