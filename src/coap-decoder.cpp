@@ -371,7 +371,7 @@ bool Decoder::process_iterate(Context& context)
 
         case Options:
         {
-            pos += optionDecoder.process_iterate(chunk, &optionHolder);
+            pos += optionDecoder.process_iterate(chunk.remainder(pos), &optionHolder);
 
 // handle option a.1), a.2) or b.1) described below
             if ((pos == chunk.length && last_chunk) || chunk[pos] == 0xFF)

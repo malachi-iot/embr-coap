@@ -54,76 +54,22 @@ std::ostream& operator <<(std::ostream& out, OptionDecoder::State state)
 }
 #endif
 
-// TODO: Need a smooth way to ascertain end of CoAP message (remember multipart/streaming
-// won't have a discrete message boundary)
 bool Dispatcher::dispatch_iterate(Context& context)
 {
     const pipeline::MemoryChunk& chunk = context.chunk;
     size_t& pos = context.pos; // how far into chunk our locus of processing should be
-    bool process_done = false;
 
     switch(state())
     {
-        case Uninitialized:
-            // If necessary, initialize header decoder
-            state(Header);
-            init_header_decoder();
-            break;
-
-        case Header:
-            while(pos < chunk.length && !process_done)
-            {
-                process_done = headerDecoder.process_iterate(chunk[pos]);
-
-                // FIX: This meaning I believe is reversed from non decoder process calls
-                // FIX: process_done does not designate whether bytes were consumed, for
-                // headerDecoder and tokenDecoder, byte is always consumed
-                pos++;
-            }
-
-            if(process_done) state(HeaderDone);
-
-            break;
-
         case HeaderDone:
             dispatch_header();
-            if(headerDecoder.token_length() > 0)
-            {
-                state(Token);
-                // TODO: May want a TokenStart state
-                init_token_decoder();
-            }
-            else
-                state(OptionsStart);
-            break;
-
-        case Token:
-            while(pos < chunk.length && !process_done)
-            {
-                // TODO: Utilize a simpler counter and chunk out token
-                process_done = tokenDecoder.process_iterate(chunk[pos], headerDecoder.token_length());
-
-                // FIX: This meaning I believe is reversed from non decoder process calls
-                // FIX: process_done does not designate whether bytes were consumed, for
-                // headerDecoder and tokenDecoder, byte is always consumed
-                pos++;
-            }
-
-            if(process_done) state(TokenDone);
-
+            process_iterate(context);
             break;
 
         case TokenDone:
             dispatch_token();
 
             state(OptionsStart);
-            break;
-
-        case OptionsStart:
-            init_option_decoder();
-            optionHolder.number_delta = 0;
-            optionHolder.length = 0;
-            state(Options);
             break;
 
         case Options:
@@ -159,36 +105,6 @@ bool Dispatcher::dispatch_iterate(Context& context)
             break;
         }
 
-        case OptionsDone:
-            // TODO: Need to peer into incoming data stream to determine if a payload is on the way
-            // or not - specifically need to also check size.  Here there are 3 possibilities:
-            //
-            // a.1) payload marker present, so process a payload, entire chunk / datagram remainder present
-            // a.2) payload marker present, but only partial chunk present, so more payload to process
-            // b.1) end of datagram - entire chunk present
-            // b.2) end of chunk - only partial chunk present
-            // c) as-yet-to-be-determined streaming end of chunk marker
-            if (pos == chunk.length && context.last_chunk)
-            {
-                // this is for condition b.1)
-                state(Done);
-            }
-            else if (chunk[pos] == 0xFF)
-            {
-                pos++;
-
-                // this is for condition a.1 or 1.2
-                state(Payload);
-            }
-            else
-            {
-                // UNSUPPORTED
-                // falls through to condition c, but could get a false positive on header 0xFF
-                // so this is unsupported.  Plus we can't really get here properly from Options state
-                state(Done);
-            }
-            break;
-
         case Payload:
         {
             bool last_payload_chunk = context.last_chunk;
@@ -201,20 +117,12 @@ bool Dispatcher::dispatch_iterate(Context& context)
                 // typically represents an a.1 scenario, but doesn't have to
                 dispatch_payload(chunk.remainder(pos), last_payload_chunk);
 
-            // pos not advanced since we expect caller to separate out streaming coap payload end from
-            // next coap begin and create an artificial chunk boundary
-            pos = chunk.length;
-            state(PayloadDone);
+            process_iterate(context);
             break;
         }
 
-        case PayloadDone:
-            //dispatch_payload(chunk, true);
-            state(Done);
-            break;
-
-        case Done:
-            state(Uninitialized);
+        default:
+            process_iterate(context);
             break;
     }
 
