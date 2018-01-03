@@ -91,31 +91,7 @@ class Dispatcher :
     public Decoder,
     public moducom::experimental::forward_list<IDispatcherHandler>
 {
-    struct Context
-    {
-        // TODO: optimize by making this a value not a ref, and bump up "data" pointer
-        // (and down length) instead of bumping up pos.  A little more fiddly, but then
-        // we less frequently have to create new temporary memorychunks on the stack
 
-        const pipeline::MemoryChunk& chunk;
-
-        // current processing position.  Should be chunk.length once processing is done
-        size_t pos;
-
-        // flag which indicates this is the last chunk to be processed for this message
-        // does NOT indicate if a boundary demarkates the end of the coap message BEFORE
-        // the chunk itself end
-        bool last_chunk;
-
-        // Unused helper function
-        const uint8_t* data() const { return chunk.data + pos; }
-
-    public:
-        Context(const pipeline::MemoryChunk& chunk, bool last_chunk) :
-                chunk(chunk),
-                last_chunk(last_chunk),
-                pos(0) {}
-    };
 
     // returns false while chunk/context has not been exhausted
     // returns true once it has
