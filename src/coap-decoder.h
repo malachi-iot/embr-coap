@@ -11,6 +11,25 @@
 namespace moducom { namespace coap {
 
 
+template <class TState>
+class StateHelper
+{
+    TState _state;
+
+protected:
+    void state(TState _state) { this->_state = _state; }
+
+    StateHelper(TState _state) { state(_state); }
+
+public:
+    StateHelper() {}
+
+    TState state() const { return _state; }
+};
+
+
+
+
 // TODO: Move this into a better namespace
 /*!
  * Simply counts down number of bytes as a "decode" operation
@@ -72,11 +91,34 @@ public:
     }
 };
 
+class OptionDecoderBase
+{
+public:
+    // copy/pasted from "ParserDeprecated"
+    enum State
+    {
+        //OptionStart, // header portion for pre processing
+                OptionSize, // header portion.  This serves also as OptionSizeBegin, since OptionSize is only one byte ever
+        OptionSizeDone, // done processing size-header portion
+        OptionDelta, // processing delta portion (after header, if applicable)
+        OptionDeltaDone, // done with delta portion, ready to move on to Length
+        OptionLength, // processing length portion (after header, if applicable)
+        OptionLengthDone, // done with length portion
+        OptionDeltaAndLengthDone, // done with both length and size, happens only when no extended values are used
+        OptionValue, // processing value portion (this decoder merely skips value, outer processors handle it)
+        OptionValueDone, // done with value portion.  Also indicates completion of option, even with zero-length value
+        Payload // payload marker found
+    };
+
+};
+
 // processes bytes input to then reveal more easily digestible coap options
 // same code that was in CoAP::ParserDeprecated but dedicated only to option processing
 // enough of a divergence I didn't want to gut the old one, thus the copy/paste
 // gut the old one once this is proven working
-class OptionDecoder
+class OptionDecoder :
+        public OptionDecoderBase,
+        public StateHelper<OptionDecoderBase::State>
 {
 public:
     typedef CoAP::OptionExperimentalDeprecated _number_t;
@@ -195,35 +237,14 @@ public:
         return get_value(raw_length(), &buffer[1], NULLPTR);
     }
 
-    // copy/pasted from "ParserDeprecated"
-    enum State
-    {
-        //OptionStart, // header portion for pre processing
-        OptionSize, // header portion.  This serves also as OptionSizeBegin, since OptionSize is only one byte ever
-        OptionSizeDone, // done processing size-header portion
-        OptionDelta, // processing delta portion (after header, if applicable)
-        OptionDeltaDone, // done with delta portion, ready to move on to Length
-        OptionLength, // processing length portion (after header, if applicable)
-        OptionLengthDone, // done with length portion
-        OptionDeltaAndLengthDone, // done with both length and size, happens only when no extended values are used
-        OptionValue, // processing value portion (this decoder merely skips value, outer processors handle it)
-        OptionValueDone, // done with value portion.  Also indicates completion of option, even with zero-length value
-        Payload // payload marker found
-    };
 private:
-    State _state;
-
-    void state(State s) { _state = s; }
-
     // set state specifically to OptionValueDone
     // useful for when we fast-forward past value portion and want to restart our state machine
     // NOTE: perhaps we'd rather do in-place new instead
     void done() { state(OptionValueDone); }
 
 public:
-    OptionDecoder() : _state(OptionSize) {}
-
-    State state() const { return _state; }
+    OptionDecoder() : StateHelper(OptionSize) {}
 
     static ValueFormats get_format(experimental::option_number_t number)
     {
@@ -264,23 +285,6 @@ public:
     // we will also stop on OptionValue occasionally if option-value size is larger than the
     // input chunk
     size_t process_iterate(const pipeline::MemoryChunk& input, OptionExperimental* built_option);
-};
-
-
-template <class TState>
-class StateHelper
-{
-    TState _state;
-
-protected:
-    void state(TState _state) { this->_state = _state; }
-
-    StateHelper(TState _state) { state(_state); }
-
-public:
-    StateHelper() {}
-
-    TState state() const { return _state; }
 };
 
 
