@@ -10,7 +10,7 @@ namespace moducom { namespace coap {
 
 void OptionEncoder::initialize()
 {
-    _sub_state = CoAP::ParserDeprecated::OptionSize;
+    _sub_state = FirstByte;
     current_option_number = 0;
     pos = 0;
 }
@@ -55,15 +55,15 @@ OptionEncoder::output_t OptionEncoder::generate_iterate()
 
     switch (state())
     {
-        case _state_t::OptionSize:
+        case _state_t::FirstByte:
             pos = 0;
-            state(_state_t::OptionSizeDone);
+            state(_state_t::FirstByteDone);
 
             option_length_root |= option_delta_root << 4;
 
             return option_length_root;
 
-        case _state_t::OptionSizeDone:
+        case _state_t::FirstByteDone:
             if (option_delta_root >= _state_t::Extended8Bit)
                 state(_state_t::OptionDelta);
             else if (option_length_root >= _state_t::Extended8Bit)
@@ -176,7 +176,7 @@ uint8_t ExperimentalPrototypeOptionEncoder1::_option(uint8_t* output_data, optio
 
     // OptionValueDone is for non-value version benefit (always reached, whether value is present or not)
     // OptionValue is for value version benefit, as we manually handle value output
-    CoAP::ParserDeprecated::SubState isDone = length > 0 ? CoAP::ParserDeprecated::OptionValue : CoAP::ParserDeprecated::OptionValueDone;
+    Option::State isDone = length > 0 ? Option::OptionValue : Option::OptionValueDone;
 
     while (generator.state() != isDone)
     {
@@ -213,7 +213,7 @@ bool ExperimentalPrototypeNonBlockingOptionEncoder1::option(pipeline::IBufferedP
 {
     // Need mini-state machine to determine if we are writing value chunk or
     // pre-value chunk
-    if (generator.state() == CoAP::ParserDeprecated::OptionSize)
+    if (generator.state() == Option::FirstByte)
     {
         _option(buffer, number, value.length);
     }

@@ -13,14 +13,13 @@
 namespace moducom { namespace coap {
 
 //typedef experimental::layer2::OptionGenerator::StateMachine OptionEncoder;
-class OptionEncoder : public experimental::layer2::OptionGenerator::StateMachine
+class OptionEncoder : public Option
 {
-    typedef experimental::layer2::OptionGenerator::StateMachine base_t;
     typedef experimental::layer2::OptionBase option_base_t;
 public:
     // TODO: Utilize StateHelper
-    typedef CoAP::ParserDeprecated::SubState state_t;
-    typedef CoAP::ParserDeprecated _state_t;
+    typedef State state_t;
+    typedef Option _state_t;
 
     uint16_t current_option_number;
     uint8_t pos;
@@ -85,7 +84,7 @@ public:
     void next()
     {
         // specifically leaves option_number alone
-        _sub_state = _state_t::OptionSize;
+        _sub_state = _state_t::FirstByte;
 
     }
 

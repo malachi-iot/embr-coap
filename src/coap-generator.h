@@ -44,7 +44,7 @@ public:
     typedef CoAP::ParserDeprecated::SubState substate_t;
 #else
     typedef CoAP::ParserDeprecated state_t;
-    typedef CoAP::ParserDeprecated substate_t;
+    typedef Option substate_t;
 #endif
 
 private:

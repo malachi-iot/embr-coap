@@ -68,9 +68,9 @@ bool GeneratorResponder::option_iterate(const option_t &option)
     }
     else if(state() == _state_t::Options)
     {
-        CoAP::ParserDeprecated::SubState sub_state = generator.get_option_state().state();
+        Option::State sub_state = generator.get_option_state().state();
 
-        if(sub_state == CoAP::ParserDeprecated::OptionValueDone)
+        if(sub_state == Option::OptionValueDone)
         {
             generator.output_option_next(option);
         }
@@ -79,7 +79,7 @@ bool GeneratorResponder::option_iterate(const option_t &option)
 
         sub_state = generator.get_option_state().state();
 
-        if(sub_state == CoAP::ParserDeprecated::OptionValueDone)
+        if(sub_state == Option::OptionValueDone)
         {
             // FIX: Not perfect, since this very well may be the last option
             state(_state_t::OptionsStart);
