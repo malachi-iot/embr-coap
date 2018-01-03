@@ -20,7 +20,7 @@ bool OptionEncoder::process_iterate(pipeline::IBufferedPipelineWriter& writer)
 
     if(length > 0)  writer.advance_write(length);
 
-    return state() == CoAP::Parser::OptionValueDone;
+    return state() == CoAP::ParserDeprecated::OptionValueDone;
 }
 
 
@@ -38,7 +38,7 @@ uint8_t ExperimentalPrototypeOptionEncoder1::_option(uint8_t* output_data, optio
 
     // OptionValueDone is for non-value version benefit (always reached, whether value is present or not)
     // OptionValue is for value version benefit, as we manually handle value output
-    CoAP::Parser::SubState isDone = length > 0 ? CoAP::Parser::OptionValue : CoAP::Parser::OptionValueDone;
+    CoAP::ParserDeprecated::SubState isDone = length > 0 ? CoAP::ParserDeprecated::OptionValue : CoAP::ParserDeprecated::OptionValueDone;
 
     while (generator.state() != isDone)
     {
@@ -75,7 +75,7 @@ bool ExperimentalPrototypeNonBlockingOptionEncoder1::option(pipeline::IBufferedP
 {
     // Need mini-state machine to determine if we are writing value chunk or
     // pre-value chunk
-    if (generator.state() == CoAP::Parser::OptionSize)
+    if (generator.state() == CoAP::ParserDeprecated::OptionSize)
     {
         _option(buffer, number, value.length);
     }

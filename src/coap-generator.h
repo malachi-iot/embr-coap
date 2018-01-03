@@ -39,11 +39,11 @@ public:
     typedef coap::CoAP::OptionExperimentalDeprecated::number_t option_number_t;
 
 #ifdef __CPP11__
-    typedef CoAP::Parser::State state_t;
-    typedef CoAP::Parser::SubState substate_t;
+    typedef CoAP::ParserDeprecated::State state_t;
+    typedef CoAP::ParserDeprecated::SubState substate_t;
 #else
-    typedef CoAP::Parser state_t;
-    typedef CoAP::Parser substate_t;
+    typedef CoAP::ParserDeprecated state_t;
+    typedef CoAP::ParserDeprecated substate_t;
 #endif
 
 private:

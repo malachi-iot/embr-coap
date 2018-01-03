@@ -80,9 +80,9 @@ public:
         uint16_t current_option_number;
         uint8_t pos;
         const OptionBase* option_base;
-        CoAP::Parser::SubState _sub_state;
+        CoAP::ParserDeprecated::SubState _sub_state;
 
-        void state(CoAP::Parser::SubState _sub_state)
+        void state(CoAP::ParserDeprecated::SubState _sub_state)
         {
             this->_sub_state = _sub_state;
         }
@@ -119,7 +119,7 @@ public:
             return result;
         }
 
-        CoAP::Parser::SubState state() const { return _sub_state; }
+        CoAP::ParserDeprecated::SubState state() const { return _sub_state; }
 
         // do really do this might have to use my fancy FRAB in-place init
         // helper, but then we'd be losing "current_option_number" so
@@ -140,7 +140,7 @@ public:
         void next()
         {
             // specifically leaves option_number alone
-            _sub_state = CoAP::Parser::OptionSize;
+            _sub_state = CoAP::ParserDeprecated::OptionSize;
 
         }
 

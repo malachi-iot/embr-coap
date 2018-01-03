@@ -65,7 +65,7 @@ public:
 class DispatcherBase
 {
 public:
-    // Copy/paste from old "Parser" class
+    // Copy/paste from old "ParserDeprecated" class
     enum State
     {
         Uninitialized,

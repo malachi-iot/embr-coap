@@ -41,7 +41,7 @@ TEST_CASE("CoAP low level tests", "[coap-lowlevel]")
     }
     SECTION("Basic parsing")
     {
-        typedef CoAP::Parser parser_t;
+        typedef CoAP::ParserDeprecated parser_t;
 
         uint8_t buffer[] = {
                 0x40, 0x00, 0x00, 0x00, // fully blank header
@@ -100,7 +100,7 @@ TEST_CASE("CoAP low level tests", "[coap-lowlevel]")
     }
     SECTION("Basic Parsing: 16 bit")
     {
-        typedef CoAP::Parser parser_t;
+        typedef CoAP::ParserDeprecated parser_t;
 
         uint8_t* buffer = buffer_16bit_delta;
 

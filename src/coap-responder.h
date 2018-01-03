@@ -35,14 +35,14 @@ protected:
 
     CoAPGenerator generator;
 
-    typedef CoAP::Parser::State state_t;
+    typedef CoAP::ParserDeprecated::State state_t;
     typedef CoAPGenerator::option_t option_t;
     typedef CoAPGenerator::option_number_t option_number_t;
 
 #ifdef __CPP11__
     typedef state_t _state_t;
 #else
-    typedef CoAP::Parser _state_t;
+    typedef CoAP::ParserDeprecated _state_t;
 #endif
 
     state_t _state;

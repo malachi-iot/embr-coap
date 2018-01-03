@@ -417,13 +417,13 @@ public:
 
     };
 
-    class Parser;
+    class ParserDeprecated;
 
-    // FIX: Need better name
     /// Represents higher level fully built out option for processing at an application level
     class OptionExperimentalDeprecated
     {
     public:
+        // TODO: Move this to OptionDecoder
         enum ValueFormats
         {
             Unknown = -1,
@@ -434,6 +434,7 @@ public:
         };
 
 
+        // TODO: Move this to a better home
         enum ContentFormats
         {
             // RFC 7252 Section 12.3
@@ -610,7 +611,12 @@ public:
 
     };
 
-    class Parser
+    // this class is deprecated, but not fully functionally replaced yet
+    // rework this to an overall "Decoder" class to sit alongside OptionDecoder,
+    // HeaderDecoder, etc.  Right now the new experimental::Dispatcher fuses in
+    // what will eventually be the Decoder class, which does 99% of what this Parser
+    // does, but in a more discrete and organized way
+    class ParserDeprecated
     {
         // FIX: temporarily making this public
     public:
@@ -721,7 +727,7 @@ public:
             while (!process_iterate(value));
         }
 
-        Parser();
+        ParserDeprecated();
 
         State state() const { return _state; }
         SubState sub_state() const { return _sub_state;  }
@@ -748,7 +754,7 @@ public:
     {
     protected:
         IResponderDeprecated* const responder;
-        Parser parser;
+        ParserDeprecated parser;
 
     public:
         ParseToIResponder(IResponderDeprecated* responder) : responder(responder)

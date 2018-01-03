@@ -8,7 +8,7 @@ namespace coap {
 // Operations are done in "network byte order" according to CoAP spec, which in turn is
 // big endian as suggested by https://stackoverflow.com/questions/13514614/why-is-network-byte-order-defined-to-be-big-endian
 // TODO: Looks like we might be able to consolidate this a little with the generator_helper function
-bool CoAP::Parser::processOptionSize(uint8_t size_root)
+bool CoAP::ParserDeprecated::processOptionSize(uint8_t size_root)
 {
     switch (size_root)
     {
@@ -62,7 +62,7 @@ bool CoAP::Parser::processOptionSize(uint8_t size_root)
     } */
 }
 
-bool CoAP::Parser::processOption(uint8_t value)
+bool CoAP::ParserDeprecated::processOption(uint8_t value)
 {
     // We have to determine right here if we have extended Delta and/or
     // extended Lengths
@@ -191,7 +191,7 @@ bool CoAP::Parser::processOption(uint8_t value)
     return true;
 }
 
-bool CoAP::Parser::process_iterate(uint8_t value)
+bool CoAP::ParserDeprecated::process_iterate(uint8_t value)
 {
     switch (_state)
     {
@@ -272,7 +272,7 @@ bool CoAP::Parser::process_iterate(uint8_t value)
 }
 
 
-CoAP::Parser::Parser()
+CoAP::ParserDeprecated::ParserDeprecated()
 {
     _state = Header;
     pos = 0;
@@ -286,11 +286,11 @@ void CoAP::ParseToIResponder::process(const uint8_t message[], size_t length)
 
     for (int i = 0; i < length; i++)
     {
-        Parser::State state = parser.state();
+        ParserDeprecated::State state = parser.state();
 
         // FIX: Need something a little clearer, since we get this status when we
         // are end-of-message that never had a payload also
-        if (state != Parser::Payload)
+        if (state != ParserDeprecated::Payload)
         {
             bool processed;
 
@@ -301,10 +301,10 @@ void CoAP::ParseToIResponder::process(const uint8_t message[], size_t length)
 
                 switch (parser.state())
                 {
-                    case Parser::Header:
+                    case ParserDeprecated::Header:
                         break;
 
-                    case Parser::HeaderDone:
+                    case ParserDeprecated::HeaderDone:
                     {
                         // we *just* finished processing header, so extract it
                         Header* header = (Header*) parser.header();
@@ -313,43 +313,43 @@ void CoAP::ParseToIResponder::process(const uint8_t message[], size_t length)
                         break;
                     }
 
-                    case Parser::TokenDone:
+                    case ParserDeprecated::TokenDone:
                     {
                         responder->OnToken(parser.token(), parser.token_length());
                         break;
                     }
 
-                    case Parser::Options:
+                    case ParserDeprecated::Options:
                     {
-                        Parser::SubState sub_state = parser.sub_state();
+                        ParserDeprecated::SubState sub_state = parser.sub_state();
                         switch (sub_state)
                         {
-                            case Parser::OptionSize:
-                            case Parser::OptionSizeDone:
-                            case Parser::OptionDelta:
+                            case ParserDeprecated::OptionSize:
+                            case ParserDeprecated::OptionSizeDone:
+                            case ParserDeprecated::OptionDelta:
                                 // we see these, but don't care about them
                                 break;
 
-                            case Parser::OptionDeltaAndLengthDone:
+                            case ParserDeprecated::OptionDeltaAndLengthDone:
                                 option_length = parser.option_length();
                                 // FIX: This is glitchy, because we reach this status *before*
                                 // consuming byte, therefore we're off by one (because OptionSize
                                 // is not consuming byte as it should)
                                 option_value = &message[i + 1];
 
-                            case Parser::OptionDeltaDone:
+                            case ParserDeprecated::OptionDeltaDone:
                             {
                                 uint16_t option_delta = parser.option_delta();
                                 option_number += option_delta;
                                 break;
                             }
 
-                            case Parser::OptionLengthDone:
+                            case ParserDeprecated::OptionLengthDone:
                                 option_length = parser.option_length();
                                 option_value = &message[i];
                                 break;
 
-                            case Parser::OptionValueDone:
+                            case ParserDeprecated::OptionValueDone:
                             {
                                 OptionExperimentalDeprecated option(option_number, option_length, option_value);
                                 responder->OnOption(option);
@@ -360,14 +360,14 @@ void CoAP::ParseToIResponder::process(const uint8_t message[], size_t length)
                     }
 
                     // effectively same as payload ready
-                    case Parser::OptionsDone:
-                        // parser.state(Parser::Payload);
+                    case ParserDeprecated::OptionsDone:
+                        // parser.state(ParserDeprecated::Payload);
                         // FIX: brute force into Payload immediately so we don't waste time
                         // processing and ignoring another character
                         // also it will trigger an assert, since we're not supposed to process OptionsDone in there
                         break;
 
-                    case Parser::Payload:
+                    case ParserDeprecated::Payload:
                         // Should see this once and only once
 
                         // i + 1 because payload content starts one after this payload marker
@@ -400,11 +400,11 @@ bool CoAP::ParseIterateToIResponder::process_iterate(const pipeline::MemoryChunk
 
     for (int i = 0; i < length; i++)
     {
-        Parser::State state = parser.state();
+        ParserDeprecated::State state = parser.state();
 
         // FIX: Need something a little clearer, since we get this status when we
         // are end-of-message that never had a payload also
-        if (state != Parser::Payload)
+        if (state != ParserDeprecated::Payload)
         {
             bool processed;
 
@@ -415,10 +415,10 @@ bool CoAP::ParseIterateToIResponder::process_iterate(const pipeline::MemoryChunk
 
                 switch (parser.state())
                 {
-                    case Parser::Header:
+                    case ParserDeprecated::Header:
                         break;
 
-                    case Parser::HeaderDone:
+                    case ParserDeprecated::HeaderDone:
                     {
                         // we *just* finished processing header, so extract it
                         Header* header = (Header*) parser.header();
@@ -427,24 +427,24 @@ bool CoAP::ParseIterateToIResponder::process_iterate(const pipeline::MemoryChunk
                         break;
                     }
 
-                    case Parser::TokenDone:
+                    case ParserDeprecated::TokenDone:
                     {
                         responder->OnToken(parser.token(), parser.token_length());
                         break;
                     }
 
-                    case Parser::Options:
+                    case ParserDeprecated::Options:
                     {
-                        Parser::SubState sub_state = parser.sub_state();
+                        ParserDeprecated::SubState sub_state = parser.sub_state();
                         switch (sub_state)
                         {
-                            case Parser::OptionSize:
-                            case Parser::OptionSizeDone:
-                            case Parser::OptionDelta:
+                            case ParserDeprecated::OptionSize:
+                            case ParserDeprecated::OptionSizeDone:
+                            case ParserDeprecated::OptionDelta:
                                 // we see these, but don't care about them
                                 break;
 
-                            case Parser::OptionDeltaAndLengthDone:
+                            case ParserDeprecated::OptionDeltaAndLengthDone:
                                 option.length = parser.option_length();
                                 // FIX: only do this if chunk actually has entire
                                 // option present
@@ -461,14 +461,14 @@ bool CoAP::ParseIterateToIResponder::process_iterate(const pipeline::MemoryChunk
                                     // TBD: how to handle boundary-span
                                 }
 
-                            case Parser::OptionDeltaDone:
+                            case ParserDeprecated::OptionDeltaDone:
                             {
                                 uint16_t option_delta = parser.option_delta();
                                 option.number += option_delta;
                                 break;
                             }
 
-                            case Parser::OptionLengthDone:
+                            case ParserDeprecated::OptionLengthDone:
                                 // FIX: only do this if chunk actually has entire
                                 // option present
                                 option.length = parser.option_length();
@@ -483,7 +483,7 @@ bool CoAP::ParseIterateToIResponder::process_iterate(const pipeline::MemoryChunk
                                 }
                                 break;
 
-                            case Parser::OptionValueDone:
+                            case ParserDeprecated::OptionValueDone:
                             {
                                 OptionExperimentalDeprecated _o(option.number, option.length, option.value);
                                 responder->OnOption(_o);
@@ -494,14 +494,14 @@ bool CoAP::ParseIterateToIResponder::process_iterate(const pipeline::MemoryChunk
                     }
 
                         // effectively same as payload ready
-                    case Parser::OptionsDone:
-                        // parser.state(Parser::Payload);
+                    case ParserDeprecated::OptionsDone:
+                        // parser.state(ParserDeprecated::Payload);
                         // FIX: brute force into Payload immediately so we don't waste time
                         // processing and ignoring another character
                         // also it will trigger an assert, since we're not supposed to process OptionsDone in there
                         break;
 
-                    case Parser::Payload:
+                    case ParserDeprecated::Payload:
                         // Should see this once and only once
 
                         // i + 1 because payload content starts one after this payload marker

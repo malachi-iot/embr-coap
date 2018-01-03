@@ -97,7 +97,7 @@ TEST_CASE("CoAP tests", "[coap]")
 {
     SECTION("Parsing to IResponderDeprecated")
     {
-        typedef CoAP::Parser parser_t;
+        typedef CoAP::ParserDeprecated parser_t;
 
         TestResponder responder;
 
@@ -118,7 +118,7 @@ TEST_CASE("CoAP tests", "[coap]")
 
         experimental::layer2::OptionGenerator::StateMachine sm(o);
 
-        while(sm.state() != CoAP::Parser::OptionValueDone)
+        while(sm.state() != CoAP::ParserDeprecated::OptionValueDone)
         {
             buffer[counter++] = sm.generate();
         }
@@ -139,7 +139,7 @@ TEST_CASE("CoAP tests", "[coap]")
 
         experimental::layer2::OptionGenerator::StateMachine sm(o);
 
-        while(sm.state() != CoAP::Parser::OptionValueDone)
+        while(sm.state() != CoAP::ParserDeprecated::OptionValueDone)
         {
             buffer[counter++] = sm.generate();
         }
@@ -158,7 +158,7 @@ TEST_CASE("CoAP tests", "[coap]")
         responder.add_handle("test", &user_responder);
         responder.add_handle("TEST/POS/", &user_responder);
 
-        typedef CoAP::Parser parser_t;
+        typedef CoAP::ParserDeprecated parser_t;
 
         CoAP::ParseToIResponder p(&responder);
 

@@ -16,8 +16,8 @@ namespace moducom { namespace coap { namespace experimental {
 class BufferedEncoderBase
 {
 protected:
-    typedef CoAP::Parser::State state_t;
-    typedef CoAP::Parser _state_t;
+    typedef CoAP::ParserDeprecated::State state_t;
+    typedef CoAP::ParserDeprecated _state_t;
 
     state_t state;
 };
@@ -27,8 +27,8 @@ protected:
 class BufferedEncoder
 {
     typedef CoAP::OptionExperimentalDeprecated::Numbers number_t;
-    typedef CoAP::Parser::State state_t;
-    typedef CoAP::Parser _state_t;
+    typedef CoAP::ParserDeprecated::State state_t;
+    typedef CoAP::ParserDeprecated _state_t;
 
     pipeline::IBufferedPipelineWriter& writer;
 
@@ -143,8 +143,8 @@ class BufferedBlockingEncoder :
     public BufferedEncoderBase
 
 {
-    typedef CoAP::Parser::State state_t;
-    typedef CoAP::Parser _state_t;
+    typedef CoAP::ParserDeprecated::State state_t;
+    typedef CoAP::ParserDeprecated _state_t;
 
     CoAP::Header _header;
     moducom::coap::layer1::Token _token;

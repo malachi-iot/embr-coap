@@ -73,7 +73,7 @@ public:
 };
 
 // processes bytes input to then reveal more easily digestible coap options
-// same code that was in CoAP::Parser but dedicated only to option processing
+// same code that was in CoAP::ParserDeprecated but dedicated only to option processing
 // enough of a divergence I didn't want to gut the old one, thus the copy/paste
 // gut the old one once this is proven working
 class OptionDecoder
