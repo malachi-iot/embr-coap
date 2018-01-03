@@ -59,9 +59,9 @@ class BufferedEncoder
 
 public:
     // acquire header for external processing
-    CoAP::Header* header()
+    Header* header()
     {
-        return reinterpret_cast<CoAP::Header*>(buffer.data);
+        return reinterpret_cast<Header*>(buffer.data);
     }
 
 
@@ -69,7 +69,7 @@ public:
             state(_state_t::Header),
             writer(writer)
     {
-        CONSTEXPR size_t minimum_length = (sizeof(CoAP::Header) + sizeof(layer1::Token));
+        CONSTEXPR size_t minimum_length = (sizeof(Header) + sizeof(layer1::Token));
 
         buffer = writer.peek_write(minimum_length);
 
@@ -154,7 +154,7 @@ class BufferedBlockingEncoder :
     typedef BufferedEncoderBase::state_t state_t;
     typedef BufferedEncoderBase::_state_t _state_t;
 
-    CoAP::Header _header;
+    Header _header;
     moducom::coap::layer1::Token _token;
 
     typedef BlockingEncoder base_t;
@@ -180,7 +180,7 @@ class BufferedBlockingEncoder :
 public:
     BufferedBlockingEncoder(pipeline::IPipelineWriter& writer) : BlockingEncoder(writer) {}
 
-    CoAP::Header* header() { return &_header; }
+    Header* header() { return &_header; }
 
     moducom::coap::layer1::Token* token() { return &_token; }
 

@@ -13,14 +13,14 @@ TEST_CASE("CoAP low level tests", "[coap-lowlevel]")
 {
     SECTION("Basic header construction")
     {
-        CoAP::Header header(CoAP::Header::Confirmable);
+        Header header(Header::Confirmable);
 
         REQUIRE(header.bytes[0] == 0x40);
         REQUIRE(header.bytes[1] == 0);
         REQUIRE(header.bytes[2] == 0);
         REQUIRE(header.bytes[3] == 0);
 
-        header.type(CoAP::Header::NonConfirmable);
+        header.type(Header::NonConfirmable);
 
         REQUIRE(header.bytes[0] == 0x50);
         REQUIRE(header.bytes[1] == 0);

@@ -21,7 +21,7 @@ TEST_CASE("CoAP encoder tests", "[coap-encoder]")
         layer3::SimpleBufferedPipelineWriter writer(chunk);
         moducom::coap::experimental::BlockingEncoder encoder(writer);
 
-        encoder.header(CoAP::Header::Get);
+        encoder.header(Header::Get);
 
         encoder.option(number_t::ETag, "etag");
         encoder.option(number_t::UriPath, "query");
@@ -39,12 +39,12 @@ TEST_CASE("CoAP encoder tests", "[coap-encoder]")
         layer3::MemoryChunk<128> chunk;
         layer3::SimpleBufferedPipelineWriter writer(chunk);
         moducom::coap::experimental::BufferedEncoder encoder(writer);
-        CoAP::Header& header = *encoder.header();
+        Header& header = *encoder.header();
         moducom::coap::layer1::Token& token = *encoder.token();
 
         header.token_length(2);
-        header.type(CoAP::Header::Confirmable);
-        header.code(CoAP::Header::Get);
+        header.type(Header::Confirmable);
+        header.code(Header::Get);
         header.message_id(0xAA);
 
         token[0] = 1;

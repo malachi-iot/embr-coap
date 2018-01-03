@@ -67,7 +67,7 @@ TEST_CASE("CoAP message construction tests", "[coap-send]")
         CoAPGenerator generator(p);
         // FIX: default constructor leaves header uninitialized
         // would very much prefer to avoid that if possible
-        CoAP::Header header;
+        Header header;
 
         header.raw = 0;
 
@@ -78,7 +78,7 @@ TEST_CASE("CoAP message construction tests", "[coap-send]")
         header.message_id(1);
         header.token_length(4);
         header.code(0x77);
-        header.type(CoAP::Header::NonConfirmable);
+        header.type(Header::NonConfirmable);
 
         int i = 0;
 

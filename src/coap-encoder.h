@@ -116,7 +116,7 @@ class ExperimentalSessionContext
 class ExperimentalPrototypeBlockingHeaderEncoder1
 {
 public:
-    void header(pipeline::IPipelineWriter& writer, const CoAP::Header& header)
+    void header(pipeline::IPipelineWriter& writer, const Header& header)
     {
         writer.write(header.bytes, 4);
     }
@@ -228,7 +228,7 @@ public:
             consistency(_state_t::Header),
             writer(writer) {}
 
-    void header(const CoAP::Header& header)
+    void header(const Header& header)
     {
         assert_state(_state_t::Header);
         writer.write(header.bytes, 4);
@@ -236,10 +236,10 @@ public:
     }
 
 
-    void header(CoAP::Header::RequestMethodEnum request_method, CoAP::Header::TypeEnum c = CoAP::Header::Confirmable)
+    void header(Header::RequestMethodEnum request_method, Header::TypeEnum c = Header::Confirmable)
     {
         // initializes with no token and no message id
-        CoAP::Header header(c);
+        Header header(c);
 
         header.code(request_method);
 
@@ -247,9 +247,9 @@ public:
     }
 
 
-    void header(CoAP::Header::Code::Codes response_method, CoAP::Header::TypeEnum c = CoAP::Header::Confirmable)
+    void header(Header::Code::Codes response_method, Header::TypeEnum c = Header::Confirmable)
     {
-        CoAP::Header header(c);
+        Header header(c);
 
         header.response_code(response_method);
 

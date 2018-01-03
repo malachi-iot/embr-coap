@@ -77,7 +77,7 @@ typedef RawDecoder<8> TokenDecoder;
 
 
 class HeaderDecoder : 
-    public CoAP::Header,
+    public Header,
     public CounterDecoder<uint8_t>
 {
     typedef CounterDecoder<uint8_t> base_t;
@@ -382,7 +382,7 @@ public:
         return false;
     }
 
-    const CoAP::Header& header() const { return decoder; }
+    const Header& header() const { return decoder; }
 };
 
 /*

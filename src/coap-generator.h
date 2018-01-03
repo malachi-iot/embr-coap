@@ -78,11 +78,11 @@ private:
     }
 
 public:
-    CoAP::Header* get_header() const
+    Header* get_header() const
     {
         // NOTE: Be very careful with this cast! Make sure Header class itself
         // at least starts with those 4 bytes...
-        return (CoAP::Header*) header_state.bytes;
+        return (Header*) header_state.bytes;
     }
 
     CoAPGenerator(pipeline_t& output) :
@@ -112,7 +112,7 @@ public:
     }
     bool output_option_begin(const option_t& option);
 
-    void output_header_begin(const CoAP::Header& header)
+    void output_header_begin(const Header& header)
     {
         header_state.pos = 0;
         memcpy(header_state.bytes, header.bytes, 4);
@@ -168,7 +168,7 @@ public:
     }
 
 
-    void _output(const CoAP::Header& header)
+    void _output(const Header& header)
     {
         output_header_begin(header);
 

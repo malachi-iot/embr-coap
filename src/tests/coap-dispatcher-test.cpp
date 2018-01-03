@@ -18,7 +18,7 @@ class TestDispatcherHandler : public IDispatcherHandler
 public:
     TestDispatcherHandler() : option_test_number(0) {}
 
-    virtual void on_header(CoAP::Header header) OVERRIDE
+    virtual void on_header(Header header) OVERRIDE
     {
         REQUIRE(header.is_request());
     }

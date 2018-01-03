@@ -13,7 +13,7 @@ namespace moducom { namespace coap {
 // re-write and decomposition of IResponderDeprecated
 struct IHeaderInput
 {
-    virtual void on_header(CoAP::Header header) = 0;
+    virtual void on_header(Header header) = 0;
 };
 
 
