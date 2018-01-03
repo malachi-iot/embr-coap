@@ -371,6 +371,7 @@ public:
         };
 
     public:
+        // DEPRECATED - use the one in OptionDecoder instead
         static uint16_t get_value(uint8_t nonextended, const uint8_t* extended, uint8_t* index_bump)
         {
             if (nonextended < Extended8Bit)
@@ -392,7 +393,7 @@ public:
 
                 // Always coming in from network byte order (big endian)
                 uint16_t _extended = extended[0];
-                
+
                 _extended <<= 8;
                 _extended |= extended[1];
 
@@ -423,17 +424,6 @@ public:
     class OptionExperimentalDeprecated
     {
     public:
-        // TODO: Move this to OptionDecoder
-        enum ValueFormats
-        {
-            Unknown = -1,
-            Empty,
-            Opaque,
-            UInt,
-            String
-        };
-
-
         // TODO: Move this to a better home
         enum ContentFormats
         {
@@ -485,30 +475,7 @@ public:
 
         Numbers get_number() const { return (Numbers)number; }
 
-        typedef ValueFormats vf_t;
         typedef Numbers number_t;
-
-        ValueFormats get_format() const 
-        {
-            switch (get_number())
-            {
-                case IfMatch:         return Opaque;
-                case UriHost:         return String;
-                case ETag:            return Opaque;
-                case IfNoneMatch:     return Empty;
-                case UriPort:         return UInt;
-                case LocationPath:    return String;
-                case UriPath:         return String;
-                case ContentFormat:   return UInt;
-
-                case Block1:
-                case Block2:
-                    return UInt;
-
-                default:
-                    return Unknown;
-            }
-        }
 
         union
         {
@@ -810,6 +777,19 @@ public:
 
 
 };
+
+namespace experimental {
+
+
+typedef CoAP::OptionExperimentalDeprecated::Numbers option_number_t;
+//typedef CoAP::OptionExperimentalDeprecated::ValueFormats option_value_format_t;
+typedef CoAP::OptionExperimentalDeprecated::ContentFormats option_content_format_t;
+
+typedef CoAP::Header::TypeEnum header_type_t;
+typedef CoAP::Header::Code::Codes header_response_code_t;
+typedef CoAP::Header::RequestMethodEnum header_request_code_t;
+
+}
 
 }
 }

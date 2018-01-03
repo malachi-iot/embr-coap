@@ -79,6 +79,20 @@ public:
 class OptionDecoder
 {
 public:
+    typedef CoAP::OptionExperimentalDeprecated _number_t;
+
+    // TODO: Move this to OptionDecoder
+    enum ValueFormats
+    {
+        Unknown = -1,
+        Empty,
+        Opaque,
+        UInt,
+        String
+    };
+
+
+
     // Need this because all other Option classes I've made are const'd out,
     // but we do need a data entity we can build slowly/iteratively, so that's
     // this --- for now
@@ -130,14 +144,55 @@ private:
     uint8_t raw_length() const { return buffer[0] & 0x0F; }
 
 public:
+    static uint16_t get_value(uint8_t nonextended, const uint8_t* extended, uint8_t* index_bump)
+    {
+        if (nonextended < Extended8Bit)
+        {
+            // Just use literal value, not extended
+            return nonextended;
+        }
+        else if (nonextended == Extended8Bit)
+        {
+            //(*index_bump)++;
+            return 13 + *extended;
+            //return  *extended;
+        }
+        else if (nonextended == Extended16Bit)
+        {
+            // FIX: BEWARE of endian issue!!
+            //uint16_t _extended = *((uint16_t*)extended);
+            //uint16_t _extended = COAP_UINT16_FROM_NBYTES(extended[0], extended[1]);
+
+            // Always coming in from network byte order (big endian)
+            uint16_t _extended = extended[0];
+
+            _extended <<= 8;
+            _extended |= extended[1];
+
+            //(*index_bump)+=2;
+
+            //return 269 + _extended;
+            return 269 + _extended;
+        }
+        else // RESERVED
+        {
+            ASSERT_ERROR(Reserved, nonextended, "Code broken - incorrectly assess value as RESERVED");
+            ASSERT_ERROR(0, 15, "Invalid length/delta value");
+            // TODO: register as an error
+        }
+
+        return 0;
+    }
+
+
     uint16_t option_delta() const
     {
-        return CoAP::Option_OLD::get_value(raw_delta(), &buffer[1], NULLPTR);
+        return get_value(raw_delta(), &buffer[1], NULLPTR);
     }
 
     uint16_t option_length() const
     {
-        return CoAP::Option_OLD::get_value(raw_length(), &buffer[1], NULLPTR);
+        return get_value(raw_length(), &buffer[1], NULLPTR);
     }
 
     enum State
@@ -168,6 +223,28 @@ public:
     OptionDecoder() : _state(OptionSize) {}
 
     State state() const { return _state; }
+
+    static ValueFormats get_format(experimental::option_number_t number)
+    {
+        switch (number)
+        {
+            case _number_t::IfMatch:         return Opaque;
+            case _number_t::UriHost:         return String;
+            case _number_t::ETag:            return Opaque;
+            case _number_t::IfNoneMatch:     return Empty;
+            case _number_t::UriPort:         return UInt;
+            case _number_t::LocationPath:    return String;
+            case _number_t::UriPath:         return String;
+            case _number_t::ContentFormat:   return UInt;
+
+            case _number_t::Block1:
+            case _number_t::Block2:
+                return UInt;
+
+            default:
+                return Unknown;
+        }
+    }
 
     bool process_iterate(uint8_t value);
 

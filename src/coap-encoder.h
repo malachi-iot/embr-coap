@@ -21,15 +21,6 @@ public:
 
 namespace experimental {
 
-typedef CoAP::OptionExperimentalDeprecated::Numbers option_number_t;
-typedef CoAP::OptionExperimentalDeprecated::ValueFormats option_value_format_t;
-typedef CoAP::OptionExperimentalDeprecated::ContentFormats option_content_format_t;
-
-typedef CoAP::Header::TypeEnum header_type_t;
-typedef CoAP::Header::Code::Codes header_response_code_t;
-typedef CoAP::Header::RequestMethodEnum header_request_code_t;
-
-
 class ExperimentalSessionContext
 {
     moducom::coap::layer2::Token token;
