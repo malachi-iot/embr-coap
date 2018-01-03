@@ -1,6 +1,7 @@
 //
 // Created by malachi on 10/29/17.
 //
+#define CLEANUP_COAP_CPP
 #include <catch.hpp>
 
 #include "../coap.h"

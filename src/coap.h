@@ -13,9 +13,6 @@
 #ifndef SRC_COAP_H
 #define SRC_COAP_H
 
-// temporary cleanup flag.  get rid of this before merging out of cleanup branch
-#define CLEANUP_COAP_CPP
-
 namespace moducom {
 namespace coap {
 
