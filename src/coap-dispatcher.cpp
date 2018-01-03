@@ -260,8 +260,9 @@ size_t Dispatcher::dispatch_option(const pipeline::MemoryChunk& optionChunk)
         {
             switch (optionDecoder.state())
             {
-                case OptionDecoder::OptionLengthDone:
-                case OptionDecoder::OptionDeltaAndLengthDone:
+                //case OptionDecoder::OptionLengthDone:
+                //case OptionDecoder::OptionDeltaAndLengthDone:
+                case OptionDecoder::ValueStart:
                 {
                     IOptionInput::number_t option_number = (IOptionInput::number_t) optionHolder.number_delta;
                     uint16_t option_length = optionHolder.length;

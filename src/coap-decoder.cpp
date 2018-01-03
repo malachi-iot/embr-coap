@@ -198,7 +198,7 @@ bool OptionDecoder::process_iterate(uint8_t value)
     return true;
 }
 
-
+#ifdef UNUSED
 bool OptionDecoder::process_iterate(pipeline::IBufferedPipelineReader& reader, OptionExperimental* built_option)
 {
     pipeline::PipelineMessage msg = reader.peek();
@@ -240,6 +240,7 @@ bool OptionDecoder::process_iterate(pipeline::IBufferedPipelineReader& reader, O
     reader.advance_read(count);
     return false;
 }
+#endif
 
 size_t OptionDecoder::process_iterate(const pipeline::MemoryChunk& chunk, OptionExperimental* built_option)
 {
@@ -276,6 +277,10 @@ size_t OptionDecoder::process_iterate(const pipeline::MemoryChunk& chunk, Option
                 built_option->length = option_length();
                 // we stop here, since caller will likely want to take prepatory action
                 // now that option number/delta and option length are available
+                return data - chunk._data();
+
+                // pause here so consumer has a chance to act on a completed delta/length gather
+            case ValueStart:
                 return data - chunk._data();
 
                 // remember option value processing amounts to skipping past the number of option value
