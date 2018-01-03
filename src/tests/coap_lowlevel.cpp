@@ -124,7 +124,13 @@ TEST_CASE("CoAP low level tests", "[coap-lowlevel]")
     }
     SECTION("Basic Parsing: 16 bit")
     {
+#ifdef CLEANUP
+        typedef Decoder parser_t;
+        typedef OptionDecoder option_parser_t;
+#else
         typedef CoAP::ParserDeprecated parser_t;
+        typedef CoAP::ParserDeprecated option_parser_t;
+#endif
 
         uint8_t* buffer = buffer_16bit_delta;
 
@@ -132,15 +138,29 @@ TEST_CASE("CoAP low level tests", "[coap-lowlevel]")
 
         for (int i = 0; i < sizeof(buffer_16bit_delta); i++)
         {
-            uint8_t value = buffer[i];
+            uint8_t& value = buffer[i];
 
+#ifdef CLEANUP
+            // A little clunky but should work, just to stay 1:1 with old test
+            moducom::pipeline::MemoryChunk temp_chunk(&value, 1);
+            parser.process(temp_chunk, i == sizeof(buffer_16bit_delta) - 1);
+#else
             parser.process(value);
+#endif
 
             parser_t::State state = parser.state();
+
+#ifdef CLEANUP
+            OptionDecoder::State sub_state = parser.option_state();
+
+            uint16_t option_delta = parser.optionHolder.number_delta;
+            uint16_t option_length = parser.optionHolder.length;
+#else
             parser_t::SubState sub_state = parser.sub_state();
 
             uint16_t option_delta = parser.option_delta();
             uint16_t option_length = parser.option_length();
+#endif
 
             switch (i + 1)
             {
@@ -152,18 +172,18 @@ TEST_CASE("CoAP low level tests", "[coap-lowlevel]")
                     REQUIRE(state == parser_t::Options);
                     // TODO: Fix clumsiness of state inspection here with "non processed" mode
                     // where process returns false
-                    REQUIRE(sub_state == parser_t::OptionDelta);
+                    REQUIRE(sub_state == option_parser_t::OptionDelta);
                     REQUIRE(option_length == 1);
                     break;
 
                 case 6:
                     REQUIRE(state == parser_t::Options);
-                    REQUIRE(sub_state == parser_t::OptionDelta);
+                    REQUIRE(sub_state == option_parser_t::OptionDelta);
                     break;
 
                 case 7:
                     REQUIRE(state == parser_t::Options);
-                    REQUIRE(sub_state == parser_t::OptionDeltaDone);
+                    REQUIRE(sub_state == option_parser_t::OptionDeltaDone);
                     REQUIRE(option_delta == 270);
                     break;
 
@@ -173,24 +193,32 @@ TEST_CASE("CoAP low level tests", "[coap-lowlevel]")
                     // Because it's only one byte, we don't get to see OptionValue since it's 1:1 with
                     // OptionLengthDone/OptionDeltaAndLengthDone
                     REQUIRE(state == parser_t::Options);
-                    REQUIRE(sub_state == parser_t::OptionValueDone);
+                    REQUIRE(sub_state == option_parser_t::OptionValueDone);
                     break;
 
                 case 9:
                     REQUIRE(state == parser_t::Options);
-                    REQUIRE(sub_state == parser_t::OptionDeltaAndLengthDone);
+                    REQUIRE(sub_state == option_parser_t::OptionDeltaAndLengthDone);
+#ifdef CLEANUP
+                    REQUIRE(option_delta == 271);
+#else
                     REQUIRE(option_delta == 1);
+#endif
                     REQUIRE(option_length == 2);
                     break;
 
                 case 10:
                     REQUIRE(state == parser_t::Options);
-                    REQUIRE(sub_state == parser_t::OptionValue);
+                    REQUIRE(sub_state == option_parser_t::OptionValue);
                     break;
 
                 case 11:
+#ifdef CLEANUP
+                    REQUIRE(state == parser_t::OptionsDone);
+#else
                     REQUIRE(state == parser_t::Options);
-                    REQUIRE(sub_state == parser_t::OptionValueDone);
+#endif
+                    REQUIRE(sub_state == option_parser_t::OptionValueDone);
                     break;
             }
         }
