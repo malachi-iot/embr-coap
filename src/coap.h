@@ -11,6 +11,9 @@
 #ifndef SRC_COAP_H
 #define SRC_COAP_H
 
+// temporary cleanup flag.  get rid of this before merging out of cleanup branch
+//#define CLEANUP_COAP_CPP
+
 namespace moducom {
 namespace coap {
 
@@ -549,7 +552,7 @@ public:
         }
     };
 
-
+#ifndef CLEANUP_COAP_CPP
     // TODO: Rename this to something more like "IncomingMessageHandler"
     // since "Response" carries particular meaning in CoAP request/response behavior
     // TODO: Rename the OnX functions to on_x
@@ -774,7 +777,7 @@ public:
     public:
         void process(uint8_t value);
     };
-
+#endif
 
 };
 

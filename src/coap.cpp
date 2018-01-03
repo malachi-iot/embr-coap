@@ -4,6 +4,7 @@
 namespace moducom {
 namespace coap {
 
+#ifndef CLEANUP_COAP_CPP
 
 // Operations are done in "network byte order" according to CoAP spec, which in turn is
 // big endian as suggested by https://stackoverflow.com/questions/13514614/why-is-network-byte-order-defined-to-be-big-endian
@@ -523,6 +524,6 @@ bool CoAP::ParseIterateToIResponderDeprecated::process_iterate(const pipeline::M
 
     return false;
 }
-
+#endif
 }
 }
