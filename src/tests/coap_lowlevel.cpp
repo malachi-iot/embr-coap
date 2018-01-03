@@ -188,7 +188,7 @@ TEST_CASE("CoAP low level tests", "[coap-lowlevel]")
                     break;
 
                 case 8:
-                    // Because option length was handled during OptionSize (not extended)
+                    // Because option length was handled during FirstByte (not extended)
                     // then we jump right to OptionValue
                     // Because it's only one byte, we don't get to see OptionValue since it's 1:1 with
                     // OptionLengthDone/OptionDeltaAndLengthDone

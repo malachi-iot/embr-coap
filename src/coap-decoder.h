@@ -98,9 +98,9 @@ public:
     enum State
     {
         //OptionStart, // header portion for pre processing
-                OptionSize, // header portion.  This serves also as OptionSizeBegin, since OptionSize is only one byte ever
-        OptionSizeDone, // done processing size-header portion
-        OptionDelta, // processing delta portion (after header, if applicable)
+        FirstByte, // first-byte portion.  This serves also as OptionSizeBegin, since FirstByte is only one byte ever
+        FirstByteDone, // done processing first-byte-header portion
+        OptionDelta, // processing delta portion (after first-byte, if applicable)
         OptionDeltaDone, // done with delta portion, ready to move on to Length
         OptionLength, // processing length portion (after header, if applicable)
         OptionLengthDone, // done with length portion
@@ -245,7 +245,7 @@ private:
     void done() { state(OptionValueDone); }
 
 public:
-    OptionDecoder() : StateHelper(OptionSize) {}
+    OptionDecoder() : StateHelper(FirstByte) {}
 
     static ValueFormats get_format(number_t number)
     {

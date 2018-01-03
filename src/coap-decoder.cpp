@@ -42,10 +42,10 @@ bool OptionDecoder::process_iterate(uint8_t value)
     {
         // Auto-reset back to looking for size portion of header
         case OptionValueDone:
-            state(OptionSize);
+            state(FirstByte);
             return false;
 
-        case OptionSize:
+        case FirstByte:
         {
             // NOTE: Not yet activated by current Dispatcher as it aborts before we reach here
             if(value == 0xFF)
@@ -59,9 +59,9 @@ bool OptionDecoder::process_iterate(uint8_t value)
             buffer[0] = value;
             pos = 1;
 
-            state(OptionSizeDone);
+            state(FirstByteDone);
 
-            // NOTE: Because consumers need to inspect OptionSizeDone state occasionally,
+            // NOTE: Because consumers need to inspect FirstByteDone state occasionally,
             // and importantly because cusomers ALSO need to process
             // OptionDelta/OptionDeltaDone/OptionDeltaAndLengthDone, we mark this as a NON
             // processed byte (return false).  This bends but does not break the "processed" flag
@@ -71,7 +71,7 @@ bool OptionDecoder::process_iterate(uint8_t value)
             return false;
         }
 
-        case OptionSizeDone:
+        case FirstByteDone:
         {
             bool delta_extended = raw_delta >= Extended8Bit;
             bool length_extended = raw_length >= Extended8Bit;
@@ -99,7 +99,7 @@ bool OptionDecoder::process_iterate(uint8_t value)
                 state(OptionDeltaAndLengthDone);
             }
 
-            // Byte is considered fully processed NOW (see big comment in OptionSize)
+            // Byte is considered fully processed NOW (see big comment in FirstByte)
             return true;
         }
 

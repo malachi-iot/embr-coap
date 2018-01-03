@@ -14,7 +14,7 @@ const char* get_description(OptionDecoder::State state)
 {
     switch(state)
     {
-        case OptionDecoder::OptionSize:
+        case OptionDecoder::FirstByte:
             return "Inspecting initial option data";
 
         case OptionDecoder::OptionDeltaDone:
@@ -239,7 +239,7 @@ void Dispatcher::dispatch_header()
 // 100% untested
 size_t Dispatcher::dispatch_option(const pipeline::MemoryChunk& optionChunk)
 {
-    // FIX: we generally expect to be at OptionSize state here, however in the future this
+    // FIX: we generally expect to be at FirstByte state here, however in the future this
     // requirement should go away (once we clean up needs_value_processed behavior)
     size_t processed_length = optionDecoder.process_iterate(optionChunk, &optionHolder);
     size_t value_pos = processed_length;
@@ -302,7 +302,7 @@ size_t Dispatcher::dispatch_option(const pipeline::MemoryChunk& optionChunk)
 
                         std::clog << std::endl;
 #endif
-                        // FIX: We are arriving here with values of OptionSize(Done?) and OptionValue
+                        // FIX: We are arriving here with values of FirstByte(Done?) and OptionValue
                         // suggesting strongly we aren't iterating completely or fast-forwarding past
                         // value when we need to
                         bool full_option_value = optionDecoder.state() == OptionDecoder::OptionValueDone;
@@ -311,7 +311,7 @@ size_t Dispatcher::dispatch_option(const pipeline::MemoryChunk& optionChunk)
                     break;
                 }
 
-                case OptionDecoder::OptionSizeDone:
+                case OptionDecoder::FirstByteDone:
 
                     break;
 
