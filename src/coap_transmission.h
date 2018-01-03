@@ -96,7 +96,7 @@ class OptionUriHost : public OptionString,
                       public OptionNumber
 {
 public:
-    OptionUriHost(char* value) : OptionNumber(CoAP::OptionExperimentalDeprecated::UriHost)
+    OptionUriHost(char* value) : OptionNumber(Option::UriHost)
     {
         value_string = value;
     }
@@ -173,14 +173,14 @@ public:
 class OptionIfMatch : public OptionOpaque
 {
 public:
-    OptionIfMatch() : OptionOpaque(CoAP::OptionExperimentalDeprecated::IfMatch) {}
+    OptionIfMatch() : OptionOpaque(Option::IfMatch) {}
 };
 
 
 class OptionUriHost : public OptionString
 {
 public:
-    OptionUriHost() : OptionString(CoAP::OptionExperimentalDeprecated::UriHost) {}
+    OptionUriHost() : OptionString(Option::UriHost) {}
 };
 
 // pure data entity for conveniently holding an outgoing coap message

@@ -13,7 +13,7 @@ using namespace moducom::pipeline;
 
 TEST_CASE("CoAP encoder tests", "[coap-encoder]")
 {
-    typedef CoAP::OptionExperimentalDeprecated number_t;
+    typedef Option number_t;
 
     SECTION("1")
     {

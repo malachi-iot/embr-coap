@@ -49,6 +49,96 @@ namespace coap {
 
 #define COAP_FEATURE_SUBSCRIPTIONS
 
+// Base helper class to assist with ALL option related things.  Mainly
+// a holder for enums
+class Option
+{
+public:
+    enum ExtendedMode
+#ifdef __CPP11__
+        : uint8_t
+#endif
+    {
+        Extended8Bit = 13,
+        Extended16Bit = 14,
+        Reserved = 15
+    };
+
+    // TODO: Move this to a better home
+    enum ContentFormats
+    {
+        // RFC 7252 Section 12.3
+        TextPlain               = 0,
+        ApplicationLinkFormat   = 40,
+        ApplicationXml          = 41,
+        ApplicationOctetStream  = 42,
+        ApplicationExi          = 43,
+        ApplicationJson         = 44,
+
+        // RFC 7049
+        ApplicationCbor         = 60
+    };
+
+    enum Numbers
+    {
+        /// format: opaque
+        IfMatch = 1,
+        // format: string
+        UriHost = 3,
+        // format: opaque
+        ETag = 4,
+        IfNoneMatch = 5,
+        // https://tools.ietf.org/html/rfc7641#section-2
+        // format: uint 0-3 bytes
+        Observe = 6,
+        UriPort = 7,
+        LocationPath = 8,
+        UriPath = 11,
+        ContentFormat = 12,
+        MaxAge = 14,
+        UriQuery = 15,
+        Accept = 17,
+        LocationQuery = 20,
+        // https://tools.ietf.org/html/rfc7959#section-2.1
+        // request payload block-wise
+        Block1 = 23,
+        // response payload block-wise
+        Block2 = 27,
+        ProxyUri = 35,
+        ProxyScheme = 39,
+        Size1 = 60
+    };
+
+
+    enum State
+    {
+        //OptionStart, // header portion for pre processing
+        FirstByte, // first-byte portion.  This serves also as OptionSizeBegin, since FirstByte is only one byte ever
+        FirstByteDone, // done processing first-byte-header portion
+        OptionDelta, // processing delta portion (after first-byte, if applicable)
+        OptionDeltaDone, // done with delta portion, ready to move on to Length
+        OptionLength, // processing length portion (after header, if applicable)
+        OptionLengthDone, // done with length portion
+        OptionDeltaAndLengthDone, // done with both length and size, happens only when no extended values are used
+        ValueStart, // when we are ready to begin processing value.  This is reached even when no value is present
+        OptionValue, // processing value portion (this decoder merely skips value, outer processors handle it)
+        OptionValueDone, // done with value portion.  Also indicates completion of option, even with zero-length value
+        Payload // payload marker found
+    };
+
+
+    enum ValueFormats
+    {
+        Unknown = -1,
+        Empty,
+        Opaque,
+        UInt,
+        String
+    };
+};
+
+
+
 // potentially http://pubs.opengroup.org/onlinepubs/7908799/xns/htonl.html are of interest here
 // also endianness macros here if you are in GNU:
 // https://gcc.gnu.org/onlinedocs/cpp/Common-Predefined-Macros.html
@@ -358,20 +448,10 @@ public:
     };
 #endif
 
-    class Option_OLD
+    class Option_OLD : Option
     {
         uint8_t option_size;
         uint8_t bytes[];
-
-        enum ExtendedMode
-#ifdef __CPP11__
-                : uint8_t
-#endif
-        {
-            Extended8Bit = 13,
-            Extended16Bit = 14,
-            Reserved = 15
-        };
 
     public:
         // DEPRECATED - use the one in OptionDecoder instead
@@ -427,50 +507,9 @@ public:
     class OptionExperimentalDeprecated
     {
     public:
-        // TODO: Move this to a better home
-        enum ContentFormats
-        {
-            // RFC 7252 Section 12.3
-            TextPlain               = 0,
-            ApplicationLinkFormat   = 40,
-            ApplicationXml          = 41,
-            ApplicationOctetStream  = 42,
-            ApplicationExi          = 43,
-            ApplicationJson         = 44,
+        typedef Option::Numbers Numbers;
 
-            // RFC 7049
-            ApplicationCbor         = 60
-        };
 
-        enum Numbers
-        {
-            /// format: opaque
-            IfMatch = 1,
-            // format: string
-            UriHost = 3,
-            // format: opaque
-            ETag = 4,
-            IfNoneMatch = 5,
-            // https://tools.ietf.org/html/rfc7641#section-2
-            // format: uint 0-3 bytes
-            Observe = 6,
-            UriPort = 7,
-            LocationPath = 8,
-            UriPath = 11,
-            ContentFormat = 12,
-            MaxAge = 14,
-            UriQuery = 15,
-            Accept = 17,
-            LocationQuery = 20,
-            // https://tools.ietf.org/html/rfc7959#section-2.1
-            // request payload block-wise
-            Block1 = 23,
-            // response payload block-wise
-            Block2 = 27,
-            ProxyUri = 35,
-            ProxyScheme = 39,
-            Size1 = 60
-        };
 
         // Option Number as defined by RFC7252
         const uint16_t number;
@@ -784,9 +823,9 @@ public:
 namespace experimental {
 
 
-typedef CoAP::OptionExperimentalDeprecated::Numbers option_number_t;
+typedef Option::Numbers option_number_t;
 //typedef CoAP::OptionExperimentalDeprecated::ValueFormats option_value_format_t;
-typedef CoAP::OptionExperimentalDeprecated::ContentFormats option_content_format_t;
+typedef Option::ContentFormats option_content_format_t;
 
 typedef CoAP::Header::TypeEnum header_type_t;
 typedef CoAP::Header::Code::Codes header_response_code_t;

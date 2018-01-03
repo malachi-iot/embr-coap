@@ -76,7 +76,7 @@ void TestResponder::OnOption(const CoAP::OptionExperimentalDeprecated& option)
             REQUIRE(option.length == 2);
             break;
 
-        case CoAP::OptionExperimentalDeprecated::UriPath:
+        case Option::UriPath:
             // FIX: First failure is option.length coming in
             // at 3, which suggests the TEST portion is not
             // coming through properly (have a feeling it's

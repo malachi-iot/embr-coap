@@ -91,51 +91,17 @@ public:
     }
 };
 
-class OptionDecoderBase
-{
-public:
-    // copy/pasted from "ParserDeprecated"
-    enum State
-    {
-        //OptionStart, // header portion for pre processing
-        FirstByte, // first-byte portion.  This serves also as OptionSizeBegin, since FirstByte is only one byte ever
-        FirstByteDone, // done processing first-byte-header portion
-        OptionDelta, // processing delta portion (after first-byte, if applicable)
-        OptionDeltaDone, // done with delta portion, ready to move on to Length
-        OptionLength, // processing length portion (after header, if applicable)
-        OptionLengthDone, // done with length portion
-        OptionDeltaAndLengthDone, // done with both length and size, happens only when no extended values are used
-        ValueStart, // when we are ready to begin processing value.  This is reached even when no value is present
-        OptionValue, // processing value portion (this decoder merely skips value, outer processors handle it)
-        OptionValueDone, // done with value portion.  Also indicates completion of option, even with zero-length value
-        Payload // payload marker found
-    };
-
-};
-
 // processes bytes input to then reveal more easily digestible coap options
 // same code that was in CoAP::ParserDeprecated but dedicated only to option processing
 // enough of a divergence I didn't want to gut the old one, thus the copy/paste
 // gut the old one once this is proven working
 class OptionDecoder :
-        public OptionDecoderBase,
-        public StateHelper<OptionDecoderBase::State>
+        public Option,
+        public StateHelper<Option::State>
 {
 public:
-    typedef CoAP::OptionExperimentalDeprecated _number_t;
+    typedef Option _number_t;
     typedef experimental::option_number_t number_t;
-
-    // TODO: Move this to OptionDecoder
-    enum ValueFormats
-    {
-        Unknown = -1,
-        Empty,
-        Opaque,
-        UInt,
-        String
-    };
-
-
 
     // Need this because all other Option classes I've made are const'd out,
     // but we do need a data entity we can build slowly/iteratively, so that's
@@ -170,17 +136,6 @@ private:
         uint8_t buffer[4];
     };
     uint8_t pos;
-
-    enum ExtendedMode
-#ifdef __CPP11__
-        : uint8_t
-#endif
-    {
-        Extended8Bit = 13,
-        Extended16Bit = 14,
-        Reserved = 15
-    };
-
 
     bool processOptionSize(uint8_t size_root);
 
