@@ -321,7 +321,6 @@ protected:
     // TODO: Union-ize this  Not doing so now because of C++03 trickiness
     HeaderDecoder headerDecoder;
     OptionDecoder optionDecoder;
-    OptionDecoder::OptionExperimental optionHolder;
     TokenDecoder tokenDecoder;
 
 
@@ -369,9 +368,21 @@ protected:
 public:
     Decoder() : StateHelper(DecoderBase::Uninitialized) {}
 
+    // TODO: exposing this is not proper, get some accessor methods going
+    OptionDecoder::OptionExperimental optionHolder;
+
     // returns true when context.chunk is fully processed, even if it is not
     // the last_chunk
     bool process_iterate(Context& context);
+
+    void process(const pipeline::MemoryChunk& chunk, bool last_chunk = true)
+    {
+        Context context(chunk, last_chunk);
+
+        while(!process_iterate(context));
+    }
+
+    OptionDecoder::State option_state() const { optionDecoder.state(); }
 };
 
 namespace experimental
