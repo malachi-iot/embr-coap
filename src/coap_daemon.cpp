@@ -9,7 +9,7 @@ using namespace moducom::pipeline;
 
 namespace moducom { namespace coap {
 
-
+#ifndef CLEANUP_TRANSMISSION_CPP
 size_t PassiveDaemon::write(const uint8_t* data, size_t length)
 {
     incoming_parser.process(data, length);
@@ -116,5 +116,7 @@ bool NonBlockingPipelineDaemon::process_outgoing()
 }
 
 }
+
+#endif
 
 }}

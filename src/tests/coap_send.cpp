@@ -24,6 +24,7 @@ public:
 
 TEST_CASE("CoAP message construction tests", "[coap-send]")
 {
+#ifndef CLEANUP_TRANSMISSION_CPP
     SECTION("1")
     {
         uint8_t expected[] =
@@ -57,6 +58,7 @@ TEST_CASE("CoAP message construction tests", "[coap-send]")
             REQUIRE(expected_ch == result_ch);
         }
     }
+#endif
     SECTION("2")
     {
         moducom::pipeline::layer3::MemoryChunk<128> chunk;

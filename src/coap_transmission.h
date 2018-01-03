@@ -79,90 +79,7 @@ public:
      */
     class StateMachine
     {
-        // TODO: Utilize StateHelper
-        typedef CoAP::ParserDeprecated::SubState state_t;
-        typedef CoAP::ParserDeprecated _state_t;
 
-        uint16_t current_option_number;
-        uint8_t pos;
-        const OptionBase* option_base;
-        state_t _sub_state;
-
-        void state(state_t _sub_state)
-        {
-            this->_sub_state = _sub_state;
-        }
-
-        void initialize();
-
-    public:
-        StateMachine() { initialize(); }
-
-        StateMachine(const OptionBase& option_base) :
-                option_base(&option_base)
-        {
-            initialize();
-        }
-
-        typedef int16_t output_t;
-
-        static CONSTEXPR output_t signal_continue = -1;
-
-        const OptionBase& get_option_base() const
-        {
-            return *option_base;
-        }
-
-        output_t generate_iterate();
-        uint8_t generate()
-        {
-            output_t result;
-            do
-            {
-                result = generate_iterate();
-            } while(result == signal_continue);
-
-            return result;
-        }
-
-        state_t state() const { return _sub_state; }
-
-        // do really do this might have to use my fancy FRAB in-place init
-        // helper, but then we'd be losing "current_option_number" so
-        // really we probably need to un-isolate this generator behavior
-        // so that it may start up in a less initialized state, and be
-        // able to retain its state between options, or, in other words,
-        // turn this into a multi-option capable state machine
-        // TODO: make this option_base 'const' so that nothing can
-        // modify contents of option_base itself (having trouble
-        // figuring out syntax for that)
-        /*
-        void reset(const OptionBase& option)
-        {
-            option_base = option;
-            pos = 0;
-        } */
-
-        void next()
-        {
-            // specifically leaves option_number alone
-            _sub_state = _state_t::OptionSize;
-
-        }
-
-        void next(const OptionBase& option)
-        {
-            next();
-
-            // pos gets reset by state machine, so leave it out
-            //pos = 0;
-            option_base = &option;
-        }
-
-        void reset()
-        {
-            initialize();
-        }
     };
 
 public:
@@ -389,6 +306,7 @@ public:
 };
 
 
+#ifndef CLEANUP_TRANSMISSION_CPP
 class TestOutgoingMessageHandler;
 
 // Note there 2 scenarios for memory handled from the one calling IResponderDeprecated:
@@ -561,7 +479,7 @@ public:
     void send(CoAP::Header::RequestMethodEnum request_method, const uint8_t* payload, size_t length);
 
 };
-
+#endif
 
 }
 }

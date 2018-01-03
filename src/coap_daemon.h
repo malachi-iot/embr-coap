@@ -52,6 +52,7 @@ public:
     virtual bool read_packet(bool advance = false);
 };
 
+#ifndef CLEANUP_TRANSMISSION_CPP
 class DaemonBase
 {
 protected:
@@ -238,6 +239,6 @@ public:
 };
 
 }
-
+#endif
 
 }}

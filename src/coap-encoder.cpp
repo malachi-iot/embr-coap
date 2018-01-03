@@ -6,6 +6,144 @@
 
 namespace moducom { namespace coap {
 
+
+
+void OptionEncoder::initialize()
+{
+    _sub_state = CoAP::ParserDeprecated::OptionSize;
+    current_option_number = 0;
+    pos = 0;
+}
+
+
+uint8_t generator_helper(uint16_t value, int pos = 0)
+{
+    if (value < CoAP::ParserDeprecated::Extended8Bit)
+    {
+        return value;
+    }
+    else if (value < COAP_EXTENDED8_BIT_MAX)
+    {
+        if (pos == 0) return CoAP::ParserDeprecated::Extended8Bit;
+
+        value -= 13;
+
+        if (pos == 1) return value;
+    }
+    else if (value < COAP_EXTENDED16_BIT_MAX)
+    {
+        if (pos == 0) return CoAP::ParserDeprecated::Extended16Bit;
+
+        value -= 269;
+
+        if (pos == 1) return (value >> 8);
+        if (pos == 2) return (value & 0xFF);
+    }
+
+    ASSERT_ERROR(false, false, "Should not get here");
+    return -1;
+}
+
+// TODO: make all these ins and outs a different type
+// so that we can spit out -1 or similar indicating "more processing required"
+// so that we don't have to pull stunts to pop around extra steps
+OptionEncoder::output_t OptionEncoder::generate_iterate()
+{
+    const option_base_t& option_base = *this->option_base;
+    uint8_t option_delta_root = generator_helper(option_base.number - current_option_number);
+    uint8_t option_length_root = generator_helper(option_base.length);
+
+    switch (state())
+    {
+        case _state_t::OptionSize:
+            pos = 0;
+            state(_state_t::OptionSizeDone);
+
+            option_length_root |= option_delta_root << 4;
+
+            return option_length_root;
+
+        case _state_t::OptionSizeDone:
+            if (option_delta_root >= _state_t::Extended8Bit)
+                state(_state_t::OptionDelta);
+            else if (option_length_root >= _state_t::Extended8Bit)
+                state(_state_t::OptionDeltaDone);
+            else
+                state(_state_t::OptionDeltaAndLengthDone);
+
+            return signal_continue;
+
+        case _state_t::OptionDelta:
+        {
+            uint8_t option_delta_next = generator_helper(option_base.number - current_option_number, ++pos);
+            if (option_delta_root == _state_t::Extended8Bit)
+                state(_state_t::OptionDeltaDone);
+            else if (option_delta_root == _state_t::Extended16Bit && pos == 2)
+                state(_state_t::OptionDeltaDone);
+            else if (pos > 2)
+            {
+                ASSERT_ERROR(false, false, "Should not be here");
+            }
+            return option_delta_next;
+        }
+
+        case _state_t::OptionDeltaDone:
+            current_option_number = option_base.number;
+            if (option_length_root >= _state_t::Extended8Bit)
+                state(_state_t::OptionLength);
+            else
+                state(_state_t::OptionLengthDone);
+
+            return signal_continue;
+
+        case _state_t::OptionLength:
+        {
+            uint8_t option_length_next = generator_helper(option_base.length, ++pos);
+            if (option_length_next == _state_t::Extended8Bit)
+                state(_state_t::OptionLengthDone);
+            else if (option_length_next == _state_t::Extended16Bit && pos == 2)
+                state(_state_t::OptionLengthDone);
+            else if (pos > 2)
+            {
+                ASSERT_ERROR(false, false, "Should not be here");
+            }
+            return option_length_next;
+        }
+
+        case _state_t::OptionDeltaAndLengthDone:
+            current_option_number = option_base.number;
+
+        case _state_t::OptionLengthDone:
+            if (option_base.length == 0)
+            {
+                state(_state_t::OptionValueDone);
+            }
+            else
+            {
+                pos = 0;
+                state(_state_t::OptionValue);
+            }
+
+            return signal_continue;
+
+        case _state_t::OptionValue:
+            // TODO: Document why we're doing length - 1 here
+            if (pos == option_base.length - 1)
+                state(_state_t::OptionValueDone);
+
+            return option_base.value_opaque[pos++];
+
+        case _state_t::OptionValueDone:
+            // technically it's more like a signal_done but until a new option
+            // is loaded in, it's reasonable for state machine to iterate forever
+            // on OptionValueDone state
+            return this->signal_continue;
+    }
+
+    ASSERT_ERROR(false, false, "Should not get here");
+    return -1;
+}
+
 bool OptionEncoder::process_iterate(pipeline::IBufferedPipelineWriter& writer)
 {
     pipeline::PipelineMessage output = writer.peek_write();
@@ -20,7 +158,7 @@ bool OptionEncoder::process_iterate(pipeline::IBufferedPipelineWriter& writer)
 
     if(length > 0)  writer.advance_write(length);
 
-    return state() == CoAP::ParserDeprecated::OptionValueDone;
+    return state() == _state_t::OptionValueDone;
 }
 
 

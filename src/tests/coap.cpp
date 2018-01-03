@@ -161,6 +161,7 @@ TEST_CASE("CoAP tests", "[coap]")
         REQUIRE(buffer[3] == 'a');
         REQUIRE(counter == 4);
     }
+#ifndef CLEANUP_TRANSMISSION_CPP
     SECTION("Parsing thru experimental DispatchingResponder")
     {
         moducom::coap::experimental::DispatchingResponder responder;
@@ -187,4 +188,5 @@ TEST_CASE("CoAP tests", "[coap]")
         REQUIRE(code.get_class() == 5);
         REQUIRE(code.detail() == 05);
     }
+#endif
 }
