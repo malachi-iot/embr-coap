@@ -122,6 +122,7 @@ class OptionDecoder :
 {
 public:
     typedef CoAP::OptionExperimentalDeprecated _number_t;
+    typedef experimental::option_number_t number_t;
 
     // TODO: Move this to OptionDecoder
     enum ValueFormats
@@ -246,7 +247,7 @@ private:
 public:
     OptionDecoder() : StateHelper(OptionSize) {}
 
-    static ValueFormats get_format(experimental::option_number_t number)
+    static ValueFormats get_format(number_t number)
     {
         switch (number)
         {
