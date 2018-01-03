@@ -22,31 +22,6 @@ using namespace moducom::coap;
 
 
 
-#ifdef V1
-
-class TestResponder : public CoAP::IResponder
-{
-public:
-    virtual void OnHeader(const CoAP::Header header) OVERRIDE;
-    virtual void OnToken(const uint8_t message[], size_t length) OVERRIDE;
-    virtual void OnOption(const CoAP::OptionExperimental& option) OVERRIDE;
-    virtual void OnPayload(const uint8_t message[], size_t length) OVERRIDE;
-    virtual void OnCompleted() OVERRIDE;
-};
-
-void TestResponder::OnHeader(const CoAP::Header header) {}
-
-void TestResponder::OnOption(const CoAP::OptionExperimental &option) {}
-
-void TestResponder::OnPayload(const uint8_t *message, size_t length) {}
-
-void TestResponder::OnToken(const uint8_t *message, size_t length) {}
-
-void TestResponder::OnCompleted()
-{
-    std::cout << "Finished CoAP processing" << std::endl;
-}
-#else
 #include "../../src/coap-decoder.h"
 #include "../../src/coap-encoder.h"
 #include "../../src/coap-dispatcher.h"
@@ -58,25 +33,25 @@ void TestResponder::OnCompleted()
 class TestDispatcherHandler : public moducom::coap::experimental::IDispatcherHandler
 {
     experimental::BlockingEncoder& encoder;
-    CoAP::Header outgoing_header;
+    Header outgoing_header;
     layer2::Token token;
 
 public:
     TestDispatcherHandler(experimental::BlockingEncoder& encoder) : encoder(encoder) {}
 
-    virtual void on_header(CoAP::Header header) OVERRIDE
+    virtual void on_header(Header header) OVERRIDE
     {
-        CoAP::Header::TypeEnum type = header.type();
+        Header::TypeEnum type = header.type();
         uint8_t token_length = header.token_length();
         uint16_t mid = header.message_id();
 
-        ASSERT_ERROR(CoAP::Header::Confirmable, type, "Expected confirmable");
+        ASSERT_ERROR(Header::Confirmable, type, "Expected confirmable");
 
         // FIX: raw clearing/initializing something necessary that we aren't yet
         outgoing_header.raw = header.raw;
 
         // assuming we were requested with confirmable
-        outgoing_header.type(CoAP::Header::Acknowledgement);
+        outgoing_header.type(Header::Acknowledgement);
 
         // RAW copy covers this portion
         //outgoing_header.token_length(token_length);
@@ -96,7 +71,7 @@ public:
     // on_option value portion taking a pipeline message
     virtual void on_option(number_t number, uint16_t length) OVERRIDE
     {
-        outgoing_header.response_code(CoAP::Header::Code::Valid);
+        outgoing_header.response_code(Header::Code::Valid);
         if(!header_sent)
         {
             encoder.header(outgoing_header);
@@ -127,21 +102,9 @@ public:
     virtual InterestedEnum interested() OVERRIDE { return Always; }
 };
 
-#endif
 
 int main()
 {
-#ifdef V1
-    //moducom::coap::CoAP::Header header;
-    experimental::OutgoingResponseHandler out_handler(nullptr);
-    experimental::TestResponder responder;
-    TestResponder user_responder;
-    CoAP::Parser parser;
-
-    responder.add_handle("basic/", &user_responder);
-#else
-#endif
-
     std::cout << "Hello, World!" << std::endl;
 
     int sockfd = socket(AF_INET, SOCK_DGRAM, 0);
@@ -178,12 +141,6 @@ int main()
 
         std::cout << "Got packet: " << n << " bytes" << std::endl;
 
-#ifdef V1
-        CoAP::ParseToIResponder parser2(&responder);
-
-        if(n > 0)
-            parser2.process(buffer, n);
-#else
         if(n <= 0) continue;
 
         moducom::pipeline::MemoryChunk inbuf(buffer, n);
@@ -205,7 +162,6 @@ int main()
         std::cout << "Responding with " << send_bytes << " bytes" << std::endl;
 
         sendto(newsockfd, outbuf._data(), send_bytes, 0, (sockaddr*) &cli_addr, clilen);
-#endif
         //close(newsockfd);
     }
 
