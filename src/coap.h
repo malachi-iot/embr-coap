@@ -717,14 +717,14 @@ public:
 
     // FIX: Needs much better name
     /// This class is an adapter between low-level decoder and high level IResponder
-    class ParseToIResponder
+    class ParseToIResponderDeprecated
     {
     protected:
         IResponderDeprecated* const responder;
         ParserDeprecated parser;
 
     public:
-        ParseToIResponder(IResponderDeprecated* responder) : responder(responder)
+        ParseToIResponderDeprecated(IResponderDeprecated* responder) : responder(responder)
         {
 
         }
@@ -734,7 +734,7 @@ public:
 
 
     // FIX: Needs an even better name than its parent
-    class ParseIterateToIResponder : protected ParseToIResponder
+    class ParseIterateToIResponderDeprecated : protected ParseToIResponderDeprecated
     {
         // Experimental Anticipated maximum size of incoming option
         pipeline::layer3::MemoryChunk<64> chunk;
@@ -753,7 +753,7 @@ public:
 
 
     public:
-        ParseIterateToIResponder(IResponderDeprecated* responder) : ParseToIResponder(responder) {}
+        ParseIterateToIResponderDeprecated(IResponderDeprecated* responder) : ParseToIResponderDeprecated(responder) {}
 
         bool process_iterate(const pipeline::MemoryChunk& incoming);
         void process_done()

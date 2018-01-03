@@ -278,7 +278,7 @@ CoAP::ParserDeprecated::ParserDeprecated()
     pos = 0;
 }
 
-void CoAP::ParseToIResponder::process(const uint8_t message[], size_t length)
+void CoAP::ParseToIResponderDeprecated::process(const uint8_t message[], size_t length)
 {
     uint16_t option_number = 0;
     uint16_t option_length;
@@ -392,7 +392,7 @@ void CoAP::ParseToIResponder::process(const uint8_t message[], size_t length)
 // FIX: Not ready!  Does not account for incoming chunks which *ARENT* the whole message
 // TODO: there's a special way the multi-part coap messages work which I forgot, read
 // up on that before actually trying to tackle contiguous CoAP messages
-bool CoAP::ParseIterateToIResponder::process_iterate(const pipeline::MemoryChunk& incoming)
+bool CoAP::ParseIterateToIResponderDeprecated::process_iterate(const pipeline::MemoryChunk& incoming)
 {
     option_state_t& option = state.option;
     uint8_t* message = incoming.data;

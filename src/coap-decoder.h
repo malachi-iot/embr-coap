@@ -195,6 +195,7 @@ public:
         return get_value(raw_length(), &buffer[1], NULLPTR);
     }
 
+    // copy/pasted from "ParserDeprecated"
     enum State
     {
         //OptionStart, // header portion for pre processing

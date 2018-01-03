@@ -101,7 +101,7 @@ TEST_CASE("CoAP daemon tests", "[coap-daemon]")
         layer3::SimpleBufferedPipeline net_out(buffer_out);
         BasicPipeline net_in;
         TestResponder2 responder(net_out);
-        CoAP::ParseToIResponder parseToResponder(&responder);
+        CoAP::ParseToIResponderDeprecated parseToResponder(&responder);
 
         parseToResponder.process(buffer_16bit_delta, sizeof(buffer_16bit_delta));
         while(!responder.process_header_and_token_iterate());

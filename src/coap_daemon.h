@@ -56,7 +56,7 @@ class DaemonBase
 {
 protected:
     experimental::DispatchingResponder responder;
-    CoAP::ParseToIResponder incoming_parser;
+    CoAP::ParseToIResponderDeprecated incoming_parser;
     experimental::TestOutgoingMessageHandler outgoing_generator;
 
 public:
@@ -87,7 +87,7 @@ public:
 class Daemon
 {
     experimental::DispatchingResponder responder;
-    CoAP::ParseToIResponder incoming_parser;
+    CoAP::ParseToIResponderDeprecated incoming_parser;
     experimental::TestOutgoingMessageHandler outgoing_generator;
     IStream& stream;
     IStreamPacketInfo* stream_packet;
@@ -136,7 +136,7 @@ protected:
 class PipelineDaemon : public PipelineDaemonBase
 {
     experimental::DispatchingResponder responder;
-    CoAP::ParseToIResponder incoming_parser;
+    CoAP::ParseToIResponderDeprecated incoming_parser;
     //CoAPGenerator generator;
 
     // NOTE: may want to track pushers out in daemon instead of responder
@@ -200,7 +200,7 @@ namespace experimental {
 
 class NonBlockingPipelineDaemon : public PipelineDaemonBase
 {
-    CoAP::ParseIterateToIResponder incoming_parser;
+    CoAP::ParseIterateToIResponderDeprecated incoming_parser;
     INonBlockingSender* sender;
 
     enum SendState

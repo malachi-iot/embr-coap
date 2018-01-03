@@ -104,7 +104,7 @@ void GeneratorResponder::OnHeader(const CoAP::Header header)
     // be convenient to cache the token in the generator too (probably won't
     // take much extra information)
     //
-    // Be aware also that ParseToIResponder::process sends everything off
+    // Be aware also that ParseToIResponderDeprecated::process sends everything off
     // at once, which does not give us a chance to interleave.  Luckily because
     // of aforementioned trickery caching header bytes in the generator,
     // that doesn't hurt us

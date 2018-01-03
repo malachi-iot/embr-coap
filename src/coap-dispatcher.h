@@ -86,6 +86,8 @@ public:
 };
 
 // Dispatches one CoAP message at a time based on externally provided input
+// TODO: Break this out into Decoder base class, right now dispatching and decoding
+// are just a little bit too fused together
 class Dispatcher :
     public DispatcherBase,
     public moducom::experimental::forward_list<IDispatcherHandler>,

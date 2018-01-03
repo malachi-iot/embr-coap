@@ -101,7 +101,7 @@ TEST_CASE("CoAP tests", "[coap]")
 
         TestResponder responder;
 
-        CoAP::ParseToIResponder p(&responder);
+        CoAP::ParseToIResponderDeprecated p(&responder);
 
         p.process(buffer_16bit_delta, sizeof(buffer_16bit_delta));
 
@@ -160,7 +160,7 @@ TEST_CASE("CoAP tests", "[coap]")
 
         typedef CoAP::ParserDeprecated parser_t;
 
-        CoAP::ParseToIResponder p(&responder);
+        CoAP::ParseToIResponderDeprecated p(&responder);
 
         p.process(buffer_plausible, sizeof(buffer_plausible));
     }
