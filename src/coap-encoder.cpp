@@ -18,13 +18,13 @@ void OptionEncoder::initialize()
 
 uint8_t generator_helper(uint16_t value, int pos = 0)
 {
-    if (value < CoAP::ParserDeprecated::Extended8Bit)
+    if (value < experimental::_extended_mode_t::Extended8Bit)
     {
         return value;
     }
     else if (value < COAP_EXTENDED8_BIT_MAX)
     {
-        if (pos == 0) return CoAP::ParserDeprecated::Extended8Bit;
+        if (pos == 0) return experimental::_extended_mode_t::Extended8Bit;
 
         value -= 13;
 
@@ -32,7 +32,7 @@ uint8_t generator_helper(uint16_t value, int pos = 0)
     }
     else if (value < COAP_EXTENDED16_BIT_MAX)
     {
-        if (pos == 0) return CoAP::ParserDeprecated::Extended16Bit;
+        if (pos == 0) return experimental::_extended_mode_t::Extended16Bit;
 
         value -= 269;
 

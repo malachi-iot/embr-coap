@@ -12,7 +12,7 @@
 #define SRC_COAP_H
 
 // temporary cleanup flag.  get rid of this before merging out of cleanup branch
-//#define CLEANUP_COAP_CPP
+#define CLEANUP_COAP_CPP
 
 namespace moducom {
 namespace coap {
@@ -137,7 +137,28 @@ public:
     };
 };
 
+namespace experimental {
 
+class Root
+{
+public:
+    enum State
+    {
+        Header,
+        HeaderDone,
+        Token,
+        TokenDone,
+        OptionsStart,
+        Options,
+        OptionsDone, // all options are done being processed
+        Payload // Note that Payload is *NOT* handled by this class, since its length is defined by transport layer
+    };
+};
+
+typedef Root::State root_state_t;
+typedef Root _root_state_t;
+
+}
 
 // potentially http://pubs.opengroup.org/onlinepubs/7908799/xns/htonl.html are of interest here
 // also endianness macros here if you are in GNU:
@@ -830,6 +851,9 @@ typedef Option::ContentFormats option_content_format_t;
 typedef CoAP::Header::TypeEnum header_type_t;
 typedef CoAP::Header::Code::Codes header_response_code_t;
 typedef CoAP::Header::RequestMethodEnum header_request_code_t;
+
+typedef Option::ExtendedMode extended_mode_t;
+typedef Option _extended_mode_t;
 
 }
 

@@ -230,6 +230,7 @@ namespace coap {
 namespace experimental
 {
 
+#ifndef CLEANUP_TRANSMISSION_CPP
 // TODO: Can't find an official designation for this in CoAP, but the token
 // represents a kind of "dialog" or context.  Expect that RequestContext is 1:1
 // with a token
@@ -306,7 +307,6 @@ public:
 };
 
 
-#ifndef CLEANUP_TRANSMISSION_CPP
 class TestOutgoingMessageHandler;
 
 // Note there 2 scenarios for memory handled from the one calling IResponderDeprecated:

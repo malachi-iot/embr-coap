@@ -44,6 +44,7 @@ static void empty_fn()
 }
 
 
+#ifndef CLEANUP_COAP_CPP
 class TestResponder : public CoAP::IResponderDeprecated
 {
 public:
@@ -94,10 +95,11 @@ void TestResponder::OnPayload(const uint8_t message[], size_t length)
     REQUIRE(length == 7);
     REQUIRE(memcmp(&buffer_16bit_delta[12], message, length) == 0);
 }
-
+#endif
 
 TEST_CASE("CoAP tests", "[coap]")
 {
+#ifndef CLEANUP_COAP_CPP
     SECTION("Parsing to IResponderDeprecated")
     {
         typedef CoAP::ParserDeprecated parser_t;
@@ -109,6 +111,7 @@ TEST_CASE("CoAP tests", "[coap]")
         p.process(buffer_16bit_delta, sizeof(buffer_16bit_delta));
 
     }
+#endif
     SECTION("Basic generating single option")
     {
         uint8_t buffer[64];

@@ -6,6 +6,7 @@
 
 namespace moducom { namespace coap {
 
+#ifndef CLEANUP_COAP_CPP
 bool GeneratorResponder::process_header_and_token_iterate()
 {
     switch(state())
@@ -132,4 +133,5 @@ void NonBlockingSender::send()
 
 }
 
+#endif
 }}

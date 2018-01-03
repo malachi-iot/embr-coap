@@ -193,8 +193,8 @@ public:
 class BlockingEncoder
 {
 protected:
-    typedef CoAP::ParserDeprecated::State state_t;
-    typedef CoAP::ParserDeprecated _state_t;
+    typedef experimental::root_state_t state_t;
+    typedef experimental::_root_state_t _state_t;
 
 #ifdef DEBUG
     state_t consistency;

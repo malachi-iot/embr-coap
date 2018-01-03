@@ -10,7 +10,7 @@
 
 namespace moducom { namespace coap {
 
-
+#ifndef CLEANUP_COAP_CPP
 class GeneratorResponder : public CoAP::IResponderDeprecated
 {
 protected:
@@ -145,7 +145,7 @@ struct INonBlockingOutput {};
 
 
 }
-
+#endif
 }}
 
 

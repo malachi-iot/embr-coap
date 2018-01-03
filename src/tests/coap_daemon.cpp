@@ -11,7 +11,7 @@
 using namespace moducom::coap;
 using namespace moducom::pipeline;
 
-
+#ifndef CLEANUP_COAP_CPP
 class TestResponder2 : public GeneratorResponder
 {
 public:
@@ -54,7 +54,7 @@ void TestResponder2::process()
     generator.output_option_next(option);
     generator.output_option();
 }
-
+#endif
 
 TEST_CASE("CoAP daemon tests", "[coap-daemon]")
 {
@@ -75,6 +75,7 @@ TEST_CASE("CoAP daemon tests", "[coap-daemon]")
         daemon.process_iterate();
     }
 #endif
+#ifndef CLEANUP_COAP_CPP
     SECTION("Generator Responder")
     {
         static uint8_t output[] =
@@ -105,4 +106,5 @@ TEST_CASE("CoAP daemon tests", "[coap-daemon]")
         // Just so I can observe stuff in debugger
         REQUIRE(1 == 1);
     }
+#endif
 }
