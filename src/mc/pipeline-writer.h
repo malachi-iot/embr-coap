@@ -78,6 +78,14 @@ public:
     }
 
 
+    SimpleBufferedPipelineWriter(uint8_t* data, size_t length) :
+            buffer(data, length),
+            length_used(0)
+    {
+
+    }
+
+
     virtual bool write(const PipelineMessage& chunk) OVERRIDE
     {
         memcpy(data(), chunk.data, chunk.length);
