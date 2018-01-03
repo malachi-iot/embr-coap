@@ -1,8 +1,10 @@
 //
 // Created by malachi on 10/29/17.
 //
-
 #include <catch.hpp>
+
+#include "../coap.h"
+#ifndef CLEANUP_COAP_CPP
 
 #include "../coap_daemon.h"
 #include "../coap-responder.h"
@@ -108,3 +110,4 @@ TEST_CASE("CoAP daemon tests", "[coap-daemon]")
     }
 #endif
 }
+#endif

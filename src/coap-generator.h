@@ -16,6 +16,7 @@ class OptionEncoderHelper;
 }
 
 // Non-blocking coap message generator state machine wrapper
+// TODO: Combine this with upcoming Encoder code
 class CoAPGenerator
 {
     // FIX: Don't like this friend here
