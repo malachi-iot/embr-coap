@@ -79,7 +79,12 @@ bool OptionDecoder::process_iterate(uint8_t value)
             if (delta_extended)
             {
                 // extended delta and MAYBE extended length
-                state(OptionDelta);
+                if(length_extended)
+                    // then we expect to process extended delta THEN extended length
+                    state(OptionDelta);
+                else
+                    // then we expect to announce length done, THEN process extended delta
+                    state(OptionLengthDone);
             }
             else if (length_extended)
             {
@@ -122,9 +127,9 @@ bool OptionDecoder::process_iterate(uint8_t value)
 
             if (!length_extended)
             {
-                // If not an extended length flavor, move right away to OptionLengthDone
-                // and return so that consumer has a change to act on it
-                state(OptionLengthDone);
+                // If not an extended length flavor, then we're done processing both
+                // option and delta so move to evaluate OptionValue
+                state(ValueStart);
             }
             else
             {
@@ -133,7 +138,7 @@ bool OptionDecoder::process_iterate(uint8_t value)
                 state(OptionLength);
 
                 // FIX: would do this with an OptionLengthStart event if we had one
-                pos = 1; // re-use buffer for length processing
+                pos = 1; // re-use first-byte buffer for length processing
             }
 
             return false;
@@ -152,17 +157,35 @@ bool OptionDecoder::process_iterate(uint8_t value)
 
             return true;
 
-        case OptionDeltaAndLengthDone:
         case OptionLengthDone:
-            // NOTE: Be careful, option_size occupies same space as buffer[4]
-            option_size = option_length();
+        {
+            // if length_extended is false, we arrive here BEFORE any possible extended delta
+            // if length_extended is true, we arrive here AFTER any possible extended delta
+            bool length_extended = raw_length >= Extended8Bit;
+
+            if(length_extended)
+                state(ValueStart);
+            else
+                state(OptionDelta);
+
+            return false;
+
+        }
+
+        case OptionDeltaAndLengthDone:
+            state(ValueStart);
+            return false;
+
+        case ValueStart:
+            // NOTE: Be careful, value_length occupies same space as buffer[4]
+            value_length = option_length();
             state(OptionValue);
             return false;
 
         case OptionValue:
             // we've completed processing this option when option_size from
             // option length has finally gone to zero
-            if (--option_size == 0)
+            if (--value_length == 0)
             {
                 // NOTE: slight redundancy here in returning false also, perhaps optimize out
                 state(OptionValueDone);

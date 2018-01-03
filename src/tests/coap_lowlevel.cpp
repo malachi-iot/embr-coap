@@ -36,13 +36,13 @@ TEST_CASE("CoAP low level tests", "[coap-lowlevel]")
 #endif
 
         uint8_t buffer[] = {
-                0x40, 0x00, 0x00, 0x00, // fully blank header
-                0x11, // option with delta 1 length 1
+                0x40, 0x00, 0x00, 0x00, // 1-4: fully blank header
+                0x11, // 5: option with delta 1 length 1
                 //0x02, // delta single byte of data
-                0x03, // value single byte of data
-                0x12, // option with delta 1 length 2
-                0x04, // value byte of data #1
-                0x05 // value byte of data #2
+                0x03, // 6: value single byte of data
+                0x12, // 7: option with delta 1 length 2
+                0x04, // 8: value byte of data #1
+                0x05  // 9: value byte of data #2
         };
 
         parser_t parser;
@@ -172,7 +172,11 @@ TEST_CASE("CoAP low level tests", "[coap-lowlevel]")
                     REQUIRE(state == parser_t::Options);
                     // TODO: Fix clumsiness of state inspection here with "non processed" mode
                     // where process returns false
+#ifdef CLEANUP
+                    REQUIRE(sub_state == option_parser_t::OptionLengthDone);
+#else
                     REQUIRE(sub_state == option_parser_t::OptionDelta);
+#endif
                     REQUIRE(option_length == 1);
                     break;
 

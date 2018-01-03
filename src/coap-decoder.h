@@ -105,6 +105,7 @@ public:
         OptionLength, // processing length portion (after header, if applicable)
         OptionLengthDone, // done with length portion
         OptionDeltaAndLengthDone, // done with both length and size, happens only when no extended values are used
+        ValueStart,
         OptionValue, // processing value portion (this decoder merely skips value, outer processors handle it)
         OptionValueDone, // done with value portion.  Also indicates completion of option, even with zero-length value
         Payload // payload marker found
@@ -161,7 +162,7 @@ private:
     {
         // By the time we use option size, we've extracted it from buffer and no longer use buffer
         // we use this primarily as a countdown to skip past value
-        uint16_t option_size;
+        uint16_t value_length;
         // buffer needs only be:
         //  3 for option processing
         //  4 for header processing
