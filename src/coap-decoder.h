@@ -273,6 +273,10 @@ protected:
         //optionDecoder.reset();
     }
 
+    HeaderDecoder& header_decoder() { return headerDecoder; }
+    TokenDecoder& token_decoder() { return tokenDecoder; }
+    OptionDecoder& option_decoder() { return optionDecoder; }
+
     struct Context
     {
         // TODO: optimize by making this a value not a ref, and bump up "data" pointer

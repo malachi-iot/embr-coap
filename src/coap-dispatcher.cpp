@@ -151,6 +151,7 @@ size_t Dispatcher::dispatch_option(const pipeline::MemoryChunk& optionChunk)
     // requirement should go away (once we clean up needs_value_processed behavior)
     size_t processed_length = optionDecoder.process_iterate(optionChunk, &optionHolder);
     size_t value_pos = processed_length;
+    OptionDecoder& option_decoder = this->option_decoder();
 
     // FIX: Kludgey, can really be cleaned up and optimized
     // ensures that our linked list doesn't execute process_iterate multiple times to acquire
@@ -166,7 +167,7 @@ size_t Dispatcher::dispatch_option(const pipeline::MemoryChunk& optionChunk)
     {
         if(handler->is_interested())
         {
-            switch (optionDecoder.state())
+            switch (option_decoder.state())
             {
                 //case OptionDecoder::OptionLengthDone:
                 //case OptionDecoder::OptionDeltaAndLengthDone:
@@ -183,7 +184,7 @@ size_t Dispatcher::dispatch_option(const pipeline::MemoryChunk& optionChunk)
                     if(needs_value_processed)
                     {
                         // Getting here
-                        processed_length = optionDecoder.process_iterate(optionChunk.remainder(processed_length), &optionHolder);
+                        processed_length = option_decoder.process_iterate(optionChunk.remainder(processed_length), &optionHolder);
                         total_length += processed_length;
                         needs_value_processed = false;
                     }
@@ -214,7 +215,7 @@ size_t Dispatcher::dispatch_option(const pipeline::MemoryChunk& optionChunk)
                         // FIX: We are arriving here with values of FirstByte(Done?) and OptionValue
                         // suggesting strongly we aren't iterating completely or fast-forwarding past
                         // value when we need to
-                        bool full_option_value = optionDecoder.state() == OptionDecoder::OptionValueDone;
+                        bool full_option_value = option_decoder.state() == OptionDecoder::OptionValueDone;
                         handler->on_option(option_number, partialChunk, full_option_value);
                     }
                     break;

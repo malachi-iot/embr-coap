@@ -318,7 +318,7 @@ bool Decoder::process_iterate(Context& context)
         {
             while (pos < chunk.length && !process_done)
             {
-                process_done = headerDecoder.process_iterate(chunk[pos]);
+                process_done = header_decoder().process_iterate(chunk[pos]);
 
                 // FIX: This meaning I believe is reversed from non decoder process calls
                 // FIX: process_done does not designate whether bytes were consumed, for
@@ -332,7 +332,7 @@ bool Decoder::process_iterate(Context& context)
         }
 
         case HeaderDone:
-            if(headerDecoder.token_length() > 0)
+            if(header_decoder().token_length() > 0)
             {
                 state(Token);
                 // TODO: May want a TokenStart state
@@ -346,7 +346,7 @@ bool Decoder::process_iterate(Context& context)
             while(pos < chunk.length && !process_done)
             {
                 // TODO: Utilize a simpler counter and chunk out token
-                process_done = tokenDecoder.process_iterate(chunk[pos], headerDecoder.token_length());
+                process_done = token_decoder().process_iterate(chunk[pos], header_decoder().token_length());
 
                 // FIX: This meaning I believe is reversed from non decoder process calls
                 // FIX: process_done does not designate whether bytes were consumed, for
