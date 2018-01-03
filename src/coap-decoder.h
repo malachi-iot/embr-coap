@@ -245,34 +245,12 @@ public:
 };
 
 
-class DecoderBase
-{
-public:
-    // Copy/paste from old "ParserDeprecated" class
-    enum State
-    {
-        Uninitialized,
-        Header,
-        HeaderDone,
-        Token,
-        TokenDone,
-        OptionsStart,
-        Options,
-        OptionsDone, // all options are done being processed
-        Payload,
-        PayloadDone,
-        // Denotes completion of entire CoAP message
-        Done,
-    };
-
-    typedef State state_t;
-};
-
-
 class Decoder :
-    public DecoderBase,
-    public StateHelper<DecoderBase::State>
+    public experimental::Root,
+    public StateHelper<experimental::root_state_t>
 {
+    typedef experimental::_root_state_t _state_t;
+
 protected:
     // TODO: Union-ize this  Not doing so now because of C++03 trickiness
     HeaderDecoder headerDecoder;
@@ -322,7 +300,7 @@ protected:
     };
 
 public:
-    Decoder() : StateHelper(DecoderBase::Uninitialized) {}
+    Decoder() : StateHelper(_state_t::Uninitialized) {}
 
     // TODO: exposing this is not proper, get some accessor methods going
     OptionDecoder::OptionExperimental optionHolder;

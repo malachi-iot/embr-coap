@@ -26,7 +26,7 @@ struct ITokenInput
 
 struct IOptionInput
 {
-    typedef CoAP::OptionExperimentalDeprecated::Numbers number_t;
+    typedef experimental::option_number_t number_t;
 
     // gets called once per discovered option, followed optionally by the
     // on_option value portion taking a pipeline message

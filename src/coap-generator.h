@@ -38,13 +38,13 @@ class CoAPGenerator
 
 public:
     typedef experimental::layer2::OptionBase option_t;
-    typedef coap::CoAP::OptionExperimentalDeprecated::number_t option_number_t;
+    typedef experimental::option_number_t option_number_t;
 
 #ifdef __CPP11__
     typedef CoAP::ParserDeprecated::State state_t;
     typedef CoAP::ParserDeprecated::SubState substate_t;
 #else
-    typedef CoAP::ParserDeprecated state_t;
+    typedef experimental::_root_state_t state_t;
     typedef Option substate_t;
 #endif
 

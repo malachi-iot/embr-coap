@@ -139,11 +139,14 @@ public:
 
 namespace experimental {
 
+// FIX: Need a better name.  Root class of helpers for message-level
+// Encoder/Decoder operations
 class Root
 {
 public:
     enum State
     {
+        Uninitialized,
         Header,
         HeaderDone,
         Token,
@@ -151,7 +154,10 @@ public:
         OptionsStart,
         Options,
         OptionsDone, // all options are done being processed
-        Payload // Note that Payload is *NOT* handled by this class, since its length is defined by transport layer
+        Payload,
+        PayloadDone,
+        // Denotes completion of entire CoAP message
+        Done,
     };
 };
 
@@ -522,6 +528,7 @@ public:
 
     };
 
+#ifndef CLEANUP_COAP_CPP
     class ParserDeprecated;
 
     /// Represents higher level fully built out option for processing at an application level
@@ -611,6 +618,7 @@ public:
             return v;
         }
     };
+#endif
 };
 
 namespace experimental {

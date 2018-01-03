@@ -46,6 +46,7 @@ TEST_CASE("CoAP low level tests", "[coap-lowlevel]")
         };
 
         parser_t parser;
+        typedef experimental::_root_state_t _state_t;
 
         for (int i = 0; i < sizeof(buffer); i++)
         {
@@ -60,11 +61,11 @@ TEST_CASE("CoAP low level tests", "[coap-lowlevel]")
             switch (i + 1)
             {
                 case 4:
-                    REQUIRE(parser.state() == parser_t::HeaderDone);
+                    REQUIRE(parser.state() == _state_t::HeaderDone);
                     break;
 
                 case 5:
-                    REQUIRE(parser.state() == parser_t::Options);
+                    REQUIRE(parser.state() == _state_t::Options);
 #ifdef CLEANUP
                     REQUIRE(parser.option_state() == OptionDecoder::OptionDeltaAndLengthDone);
                     REQUIRE(parser.optionHolder.number_delta == 1);
@@ -79,7 +80,7 @@ TEST_CASE("CoAP low level tests", "[coap-lowlevel]")
                 case 6:
                     // Because it's only one byte, we don't get to see OptionValue since it's 1:1 with
                     // OptionLengthDone/OptionDeltaAndLengthDone
-                    REQUIRE(parser.state() == parser_t::Options);
+                    REQUIRE(parser.state() == _state_t::Options);
 #ifdef CLEANUP
                     REQUIRE(parser.option_state() == OptionDecoder::OptionValueDone);
 #else
@@ -88,7 +89,7 @@ TEST_CASE("CoAP low level tests", "[coap-lowlevel]")
                     break;
 
                 case 7:
-                    REQUIRE(parser.state() == parser_t::Options);
+                    REQUIRE(parser.state() == _state_t::Options);
 #ifdef CLEANUP
                     REQUIRE(parser.optionHolder.number_delta == 2); // Our delta trick auto adds, thus the divergence in test from below
                     REQUIRE(parser.optionHolder.length == 2);
@@ -100,7 +101,7 @@ TEST_CASE("CoAP low level tests", "[coap-lowlevel]")
                     break;
 
                 case 8:
-                    REQUIRE(parser.state() == parser_t::Options);
+                    REQUIRE(parser.state() == _state_t::Options);
 #ifdef CLEANUP
                     REQUIRE(parser.option_state() == OptionDecoder::OptionValue);
 #else
@@ -112,7 +113,7 @@ TEST_CASE("CoAP low level tests", "[coap-lowlevel]")
 #ifdef CLEANUP
                     // an important divergence from previous Parser, we arrive at OptionsDone earlier since
                     // it has more knowledge onhand than Parser did, and therefore can figure that state out
-                    REQUIRE(parser.state() == parser_t::OptionsDone);
+                    REQUIRE(parser.state() == _state_t::OptionsDone);
                     REQUIRE(parser.option_state() == OptionDecoder::OptionValueDone);
 #else
                     REQUIRE(parser.state() == parser_t::Options);
@@ -127,6 +128,8 @@ TEST_CASE("CoAP low level tests", "[coap-lowlevel]")
 #ifdef CLEANUP
         typedef Decoder parser_t;
         typedef OptionDecoder option_parser_t;
+        typedef experimental::_root_state_t _state_t;
+        typedef experimental::root_state_t state_t;
 #else
         typedef CoAP::ParserDeprecated parser_t;
         typedef CoAP::ParserDeprecated option_parser_t;
@@ -148,7 +151,7 @@ TEST_CASE("CoAP low level tests", "[coap-lowlevel]")
             parser.process(value);
 #endif
 
-            parser_t::State state = parser.state();
+            state_t state = parser.state();
 
 #ifdef CLEANUP
             OptionDecoder::State sub_state = parser.option_state();
@@ -165,11 +168,11 @@ TEST_CASE("CoAP low level tests", "[coap-lowlevel]")
             switch (i + 1)
             {
                 case 4:
-                    REQUIRE(state == parser_t::HeaderDone);
+                    REQUIRE(state == _state_t::HeaderDone);
                     break;
 
                 case 5:
-                    REQUIRE(state == parser_t::Options);
+                    REQUIRE(state == _state_t::Options);
                     // TODO: Fix clumsiness of state inspection here with "non processed" mode
                     // where process returns false
 #ifdef CLEANUP
@@ -181,12 +184,12 @@ TEST_CASE("CoAP low level tests", "[coap-lowlevel]")
                     break;
 
                 case 6:
-                    REQUIRE(state == parser_t::Options);
+                    REQUIRE(state == _state_t::Options);
                     REQUIRE(sub_state == option_parser_t::OptionDelta);
                     break;
 
                 case 7:
-                    REQUIRE(state == parser_t::Options);
+                    REQUIRE(state == _state_t::Options);
                     REQUIRE(sub_state == option_parser_t::OptionDeltaDone);
                     REQUIRE(option_delta == 270);
                     break;
@@ -196,12 +199,12 @@ TEST_CASE("CoAP low level tests", "[coap-lowlevel]")
                     // then we jump right to OptionValue
                     // Because it's only one byte, we don't get to see OptionValue since it's 1:1 with
                     // OptionLengthDone/OptionDeltaAndLengthDone
-                    REQUIRE(state == parser_t::Options);
+                    REQUIRE(state == _state_t::Options);
                     REQUIRE(sub_state == option_parser_t::OptionValueDone);
                     break;
 
                 case 9:
-                    REQUIRE(state == parser_t::Options);
+                    REQUIRE(state == _state_t::Options);
                     REQUIRE(sub_state == option_parser_t::OptionDeltaAndLengthDone);
 #ifdef CLEANUP
                     REQUIRE(option_delta == 271);
@@ -212,13 +215,13 @@ TEST_CASE("CoAP low level tests", "[coap-lowlevel]")
                     break;
 
                 case 10:
-                    REQUIRE(state == parser_t::Options);
+                    REQUIRE(state == _state_t::Options);
                     REQUIRE(sub_state == option_parser_t::OptionValue);
                     break;
 
                 case 11:
 #ifdef CLEANUP
-                    REQUIRE(state == parser_t::OptionsDone);
+                    REQUIRE(state == _state_t::OptionsDone);
 #else
                     REQUIRE(state == parser_t::Options);
 #endif
