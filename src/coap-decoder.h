@@ -266,41 +266,79 @@ public:
     size_t process_iterate(const pipeline::MemoryChunk& input, OptionExperimental* built_option);
 };
 
-// re-write and decomposition of IResponderDeprecated
-struct IHeaderInput
+
+template <class TState>
+class StateHelper
 {
-    virtual void on_header(CoAP::Header header) = 0;
+    TState _state;
+
+protected:
+    void state(TState _state) { this->_state = _state; }
+
+    StateHelper(TState _state) { state(_state); }
+
+public:
+    StateHelper() {}
+
+    TState state() const { return _state; }
 };
 
 
-struct ITokenInput
+class DecoderBase
 {
-    // get called repeatedly until all portion of token is provided
-    // Not called if header reports a token length of 0
-    virtual void on_token(const pipeline::MemoryChunk& token_part, bool last_chunk) = 0;
+public:
+    // Copy/paste from old "ParserDeprecated" class
+    enum State
+    {
+        Uninitialized,
+        Header,
+        HeaderDone,
+        Token,
+        TokenDone,
+        OptionsStart,
+        Options,
+        OptionsDone, // all options are done being processed
+        Payload,
+        PayloadDone,
+        // Denotes completion of entire CoAP message
+        Done,
+    };
+
+    typedef State state_t;
 };
 
-struct IOptionInput
+
+class Decoder :
+    public DecoderBase,
+    public StateHelper<DecoderBase::State>
 {
-    typedef CoAP::OptionExperimentalDeprecated::Numbers number_t;
-
-    // gets called once per discovered option, followed optionally by the
-    // on_option value portion taking a pipeline message
-    virtual void on_option(number_t number, uint16_t length) = 0;
-
-    // will get called repeatedly until option_value is completely provided
-    // Not called if option_header.length() == 0
-    virtual void on_option(number_t number, const pipeline::MemoryChunk& option_value_part, bool last_chunk) = 0;
-};
+protected:
+    // TODO: Union-ize this  Not doing so now because of C++03 trickiness
+    HeaderDecoder headerDecoder;
+    OptionDecoder optionDecoder;
+    OptionDecoder::OptionExperimental optionHolder;
+    TokenDecoder tokenDecoder;
 
 
-struct IPayloadInput
-{
-    // will get called repeatedly until payload is completely provided
-    // IMPORTANT: if no payload is present, then payload_part is nullptr
-    // this call ultimately marks the end of the coap message (unless I missed something
-    // for chunked/multipart coap messages... which I may have)
-    virtual void on_payload(const pipeline::MemoryChunk& payload_part, bool last_chunk) = 0;
+    inline void init_header_decoder() { new (&headerDecoder) HeaderDecoder; }
+
+    // NOTE: Initial reset redundant since class initializes with 0, though this
+    // may well change when we union-ize the decoders.  Likely though instead we'll
+    // use an in-place new
+    inline void init_token_decoder() { tokenDecoder.reset(); }
+
+    // NOTE: reset might be more useful if we plan on not auto-resetting
+    // option decoder from within its own state machine
+    inline void init_option_decoder()
+    {
+        new (&optionDecoder) OptionDecoder;
+        //optionDecoder.reset();
+    }
+
+public:
+    Decoder() : StateHelper(DecoderBase::Uninitialized) {}
+
+    bool process_iterate();
 };
 
 namespace experimental

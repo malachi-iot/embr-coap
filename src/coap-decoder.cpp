@@ -268,4 +268,10 @@ size_t OptionDecoder::process_iterate(const pipeline::MemoryChunk& chunk, Option
     return data - chunk._data();
 }
 
+
+bool Decoder::process_iterate()
+{
+    return false;
+}
+
 }}
