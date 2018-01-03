@@ -1,3 +1,14 @@
+// potentially http://pubs.opengroup.org/onlinepubs/7908799/xns/htonl.html are of interest here
+// also endianness macros here if you are in GNU:
+// https://gcc.gnu.org/onlinedocs/cpp/Common-Predefined-Macros.html
+
+// given a 16-bit value, swap bytes
+#define SWAP_16(value) (((value & 0xFF) << 8) | (value >> 8))
+// convert a 16-bit little endian number to big endian
+#define LE_TO_BE_16(value)
+
+
+
 #ifndef CLEANUP_COAP_CPP
 // TODO: Rename this to something more like "IncomingMessageHandler"
 // since "Response" carries particular meaning in CoAP request/response behavior
@@ -224,3 +235,201 @@ public:
     void process(uint8_t value);
 };
 #endif
+
+
+// See RFC 7252: https://tools.ietf.org/html/rfc7252
+class CoAP
+{
+public:
+    // Unfortunately, bitfields are not gaurunteed to be ordered in a particular order
+    // https://stackoverflow.com/questions/1490092/c-c-force-bit-field-order-and-alignment
+#ifdef BITFIELD_VERSION
+    // https://tools.ietf.org/html/rfc7252#section-3
+    class Header
+    {
+        //protected:
+    public:
+        // We do need an "uninitialized" version of this (for unions/read scenarios)
+        // But generally it's hidden
+        //Header() {}
+
+    public:
+        enum TypeEnum
+        {
+            Confirmable = 0,
+            NonConfirmable = 1,
+            Acknowledgement = 2,
+            Reset = 3
+        };
+
+        union
+        {
+            struct PACKED
+            {
+                uint32_t version : 2;
+                TypeEnum type : 2;
+                uint32_t token_length : 4;
+                uint32_t code : 8;
+                uint32_t message_id : 16;
+            } cooked;
+
+            uint32_t raw;
+        };
+
+        Header(TypeEnum type)
+            //type(type)
+        {
+            raw = 0;
+            cooked.version = 1;
+            //cooked.type = type;
+        }
+    };
+#else
+#endif
+
+
+#ifndef CLEANUP_COAP_CPP
+    class Option_OLD : Option
+    {
+        uint8_t option_size;
+        uint8_t bytes[];
+
+    public:
+        // DEPRECATED - use the one in OptionDecoder instead
+        static uint16_t get_value(uint8_t nonextended, const uint8_t* extended, uint8_t* index_bump)
+        {
+            if (nonextended < Extended8Bit)
+            {
+                // Just use literal value, not extended
+                return nonextended;
+            }
+            else if (nonextended == Extended8Bit)
+            {
+                //(*index_bump)++;
+                return 13 + *extended;
+                //return  *extended;
+            }
+            else if (nonextended == Extended16Bit)
+            {
+                // FIX: BEWARE of endian issue!!
+                //uint16_t _extended = *((uint16_t*)extended);
+                //uint16_t _extended = COAP_UINT16_FROM_NBYTES(extended[0], extended[1]);
+
+                // Always coming in from network byte order (big endian)
+                uint16_t _extended = extended[0];
+
+                _extended <<= 8;
+                _extended |= extended[1];
+
+                //(*index_bump)+=2;
+
+                //return 269 + _extended;
+                return 269 + _extended;
+            }
+            else // RESERVED
+            {
+                ASSERT_ERROR(Reserved, nonextended, "Code broken - incorrectly assess value as RESERVED");
+                ASSERT_ERROR(0, 15, "Invalid length/delta value");
+                // TODO: register as an error
+            }
+
+            return 0;
+        }
+
+    public:
+
+
+
+    };
+
+    class ParserDeprecated;
+
+    /// Represents higher level fully built out option for processing at an application level
+    class OptionExperimentalDeprecated
+    {
+    public:
+        typedef Option::Numbers Numbers;
+
+
+
+        // Option Number as defined by RFC7252
+        const uint16_t number;
+        const uint16_t length;
+
+        Numbers get_number() const { return (Numbers)number; }
+
+        typedef Numbers number_t;
+
+        union
+        {
+            const uint8_t *value;
+            // FIX: Looks like we can have uints from 0-32 bits
+            // https://tools.ietf.org/html/rfc7252#section-3.2
+            const uint16_t value_uint;
+        };
+
+        OptionExperimentalDeprecated(uint16_t number, uint16_t length, const uint8_t* value) :
+                number(number),
+                length(length),
+                value_uint(0)
+        {
+            this->value = value;
+        }
+
+        OptionExperimentalDeprecated(uint16_t number, uint16_t length, const uint16_t value_uint) :
+                number(number),
+                length(length),
+                value_uint(value_uint)
+        {}
+
+        // FIX: beware, we have a duplicate of these helpers in coap-blockwise::experimental
+        uint8_t get_uint8_t() const
+        {
+            ASSERT_ERROR(1, length, "Incorrect length");
+            return *value;
+        }
+
+        uint32_t get_uint16_t() const
+        {
+            ASSERT_ERROR(2, length, "Incorrect length");
+
+            uint32_t v = *value;
+
+            v <<= 8;
+            v |= value[1];
+
+            return v;
+        }
+
+        uint32_t get_uint24_t() const
+        {
+            ASSERT_ERROR(3, length, "Incorrect length");
+
+            uint32_t v = *value;
+
+            v <<= 8;
+            v |= value[1];
+            v <<= 8;
+            v |= value[2];
+
+            return v;
+        }
+
+        // Have yet to see a CoAP UINT option value larger than 32 bits
+        uint32_t get_uint() const
+        {
+            ASSERT_ERROR(true, length <= 4, "Option length too large");
+
+            uint32_t v = *value;
+
+            for(int i = 0; i < length; i++)
+            {
+                v <<= 8;
+                v |= value[i];
+            }
+
+            return v;
+        }
+    };
+#endif
+};
