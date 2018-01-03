@@ -12,6 +12,8 @@
 // interim: eventually provide our own memory pool version of map
 #include <map>
 
+// temporary cleanup flag only
+#define CLEANUP_TRANSMISSION_CPP
 
 namespace moducom {
 namespace coap {
@@ -77,12 +79,16 @@ public:
      */
     class StateMachine
     {
+        // TODO: Utilize StateHelper
+        typedef CoAP::ParserDeprecated::SubState state_t;
+        typedef CoAP::ParserDeprecated _state_t;
+
         uint16_t current_option_number;
         uint8_t pos;
         const OptionBase* option_base;
-        CoAP::ParserDeprecated::SubState _sub_state;
+        state_t _sub_state;
 
-        void state(CoAP::ParserDeprecated::SubState _sub_state)
+        void state(state_t _sub_state)
         {
             this->_sub_state = _sub_state;
         }
@@ -119,7 +125,7 @@ public:
             return result;
         }
 
-        CoAP::ParserDeprecated::SubState state() const { return _sub_state; }
+        state_t state() const { return _sub_state; }
 
         // do really do this might have to use my fancy FRAB in-place init
         // helper, but then we'd be losing "current_option_number" so
@@ -140,7 +146,7 @@ public:
         void next()
         {
             // specifically leaves option_number alone
-            _sub_state = CoAP::ParserDeprecated::OptionSize;
+            _sub_state = _state_t::OptionSize;
 
         }
 

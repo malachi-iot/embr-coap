@@ -32,7 +32,8 @@ class CoAPGenerator
         size_t pos;
     };
 
-    typedef experimental::layer2::OptionGenerator::StateMachine _option_state_t;
+    //typedef experimental::layer2::OptionGenerator::StateMachine _option_state_t;
+    typedef OptionEncoder _option_state_t;
 
 public:
     typedef experimental::layer2::OptionBase option_t;

@@ -15,7 +15,12 @@ namespace moducom { namespace coap {
 //typedef experimental::layer2::OptionGenerator::StateMachine OptionEncoder;
 class OptionEncoder : public experimental::layer2::OptionGenerator::StateMachine
 {
+    typedef experimental::layer2::OptionGenerator::StateMachine base_t;
 public:
+    OptionEncoder() : base_t() {}
+    OptionEncoder(const experimental::layer2::OptionBase& option_base) :
+        base_t(option_base) {}
+
     bool process_iterate(pipeline::IBufferedPipelineWriter& writer);
 };
 

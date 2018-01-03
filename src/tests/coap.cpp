@@ -3,6 +3,9 @@
 
 #include "../coap.h"
 #include "../coap_transmission.h"
+#include "../coap-encoder.h"
+
+#define CLEANUP
 
 using namespace moducom::coap;
 
@@ -116,7 +119,11 @@ TEST_CASE("CoAP tests", "[coap]")
         o.length = 1;
         o.value_string = "a";
 
+#ifdef CLEANUP
+        OptionEncoder sm(o);
+#else
         experimental::layer2::OptionGenerator::StateMachine sm(o);
+#endif
 
         while(sm.state() != CoAP::ParserDeprecated::OptionValueDone)
         {
@@ -137,7 +144,11 @@ TEST_CASE("CoAP tests", "[coap]")
         o.length = 1;
         o.value_string = "a";
 
+#ifdef CLEANUP
+        OptionEncoder sm(o);
+#else
         experimental::layer2::OptionGenerator::StateMachine sm(o);
+#endif
 
         while(sm.state() != CoAP::ParserDeprecated::OptionValueDone)
         {
