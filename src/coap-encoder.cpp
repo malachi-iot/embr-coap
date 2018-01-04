@@ -10,7 +10,7 @@ namespace moducom { namespace coap {
 
 void OptionEncoder::initialize()
 {
-    _sub_state = FirstByte;
+    state(FirstByte);
     current_option_number = 0;
     pos = 0;
 }

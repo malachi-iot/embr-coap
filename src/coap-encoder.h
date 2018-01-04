@@ -9,27 +9,25 @@
 #include "coap_transmission.h"
 #include "mc/pipeline-writer.h"
 #include "coap-token.h"
+#include "coap-decoder.h"
 
 namespace moducom { namespace coap {
 
-//typedef experimental::layer2::OptionGenerator::StateMachine OptionEncoder;
-class OptionEncoder : public Option
+class OptionEncoder : public Option,
+    public StateHelper<Option::State>
 {
     typedef experimental::layer2::OptionBase option_base_t;
 public:
-    // TODO: Utilize StateHelper
     typedef State state_t;
     typedef Option _state_t;
+
+    typedef int16_t output_t;
+
+    static CONSTEXPR output_t signal_continue = -1;
 
     uint16_t current_option_number;
     uint8_t pos;
     const option_base_t* option_base;
-    state_t _sub_state;
-
-    void state(state_t _sub_state)
-    {
-        this->_sub_state = _sub_state;
-    }
 
     void initialize();
 
@@ -41,10 +39,6 @@ public:
     {
         initialize();
     }
-
-    typedef int16_t output_t;
-
-    static CONSTEXPR output_t signal_continue = -1;
 
     const option_base_t& get_option_base() const
     {
@@ -62,8 +56,6 @@ public:
 
         return result;
     }
-
-    state_t state() const { return _sub_state; }
 
     // do really do this might have to use my fancy FRAB in-place init
     // helper, but then we'd be losing "current_option_number" so
@@ -84,7 +76,7 @@ public:
     void next()
     {
         // specifically leaves option_number alone
-        _sub_state = _state_t::FirstByte;
+        state(_state_t::FirstByte);
 
     }
 
