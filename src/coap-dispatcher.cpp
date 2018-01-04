@@ -196,7 +196,7 @@ size_t Dispatcher::dispatch_option(const pipeline::MemoryChunk& optionChunk)
                     if(option_length > 0)
                     {
                         // TODO: Need to demarkate boundary here too so that on_option knows where boundary starts
-                        pipeline::MemoryChunk partialChunk((uint8_t*)(optionChunk._data()) + value_pos, processed_length);
+                        pipeline::MemoryChunk partialChunk((uint8_t*)(optionChunk.data()) + value_pos, processed_length);
 
 #ifdef DEBUG2
                         std::clog << "Dispatching option: data = ";

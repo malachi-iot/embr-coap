@@ -48,10 +48,13 @@ protected:
     ReadOnlyMemoryChunk() {}
 
 public:
-    ReadOnlyMemoryChunk(uint8_t* data) : m_data(data) {}
+    ReadOnlyMemoryChunk(uint8_t* data, size_t length) :
+            m_data(data)
+    {
+        this->length = length;
+    }
 
-    // FIX: Temporary name until we refactor all usages away from raw field
-    const uint8_t* _data() const { return m_data; }
+    const uint8_t* data() const { return m_data; }
 };
 
 }
@@ -62,15 +65,19 @@ public:
 class MemoryChunk : public experimental::ReadOnlyMemoryChunk
 {
     typedef experimental::ReadOnlyMemoryChunk base_t;
+    typedef experimental::ReadOnlyMemoryChunk readonly_t;
+
 public:
 
     // FIX: Temporary name until we refactor all usages away from raw field
     uint8_t* __data() { return m_data; }
-    void __data(uint8_t* value) { m_data = value; }
 
-    MemoryChunk(uint8_t* data, size_t length) : base_t(data)
+    // FIX: Needed for some reason due to following data(uint8_t* value)
+    const uint8_t* data() const { return m_data; }
+    void data(uint8_t* value) { m_data = value; }
+
+    MemoryChunk(uint8_t* data, size_t length) : base_t(data, length)
     {
-        this->length = length;
     }
 
     MemoryChunk() {}
@@ -82,6 +89,11 @@ public:
     inline void memcpy(const uint8_t* copy_from, size_t length)
     {
         ::memcpy(m_data, copy_from, length);
+    }
+
+    inline void copy_from(const readonly_t& chunk)
+    {
+        ::memcpy(m_data, chunk.data(), chunk._length());
     }
 
     inline uint8_t& operator[](size_t index) const
@@ -129,7 +141,7 @@ public:
 
     inline void copy_from(const pipeline::MemoryChunk& chunk)
     {
-        ::memcpy(buffer, chunk._data(), chunk._length());
+        ::memcpy(buffer, chunk.data(), chunk._length());
     }
 
 

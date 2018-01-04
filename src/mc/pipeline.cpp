@@ -19,7 +19,7 @@ pipeline::MemoryChunk BufferProviderPipeline::advance(size_t size, PipelineMessa
 {
     pipeline::MemoryChunk chunk;
 
-    chunk.__data(NULLPTR);
+    chunk.data(NULLPTR);
 
     return chunk;
 }

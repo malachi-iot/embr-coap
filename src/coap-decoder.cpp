@@ -246,7 +246,7 @@ size_t OptionDecoder::process_iterate(const pipeline::MemoryChunk& chunk, Option
 {
     size_t length = chunk._length(); // represents remaining length to be processed
     size_t value_processed = 0;
-    const uint8_t* data = chunk._data();
+    const uint8_t* data = chunk.data();
 
     // NOTE: semi-copy paste of above iterate, for now
     // NOTE: Beef up state machine a lot, since we are putting a lot of faith into this semi-infinite-loop
@@ -277,11 +277,11 @@ size_t OptionDecoder::process_iterate(const pipeline::MemoryChunk& chunk, Option
                 built_option->length = option_length();
                 // we stop here, since caller will likely want to take prepatory action
                 // now that option number/delta and option length are available
-                return data - chunk._data();
+                return data - chunk.data();
 
                 // pause here so consumer has a chance to act on a completed delta/length gather
             case ValueStart:
-                return data - chunk._data();
+                return data - chunk.data();
 
                 // remember option value processing amounts to skipping past the number of option value
                 // bytes present
@@ -289,11 +289,11 @@ size_t OptionDecoder::process_iterate(const pipeline::MemoryChunk& chunk, Option
                 // for now, also indicates completion of entire option.  Splitting out a separate OptionDone
                 // state would be a little more cycling around, but better organized
             case OptionValueDone:
-                return data - chunk._data();
+                return data - chunk.data();
         }
     }
 
-    return data - chunk._data();
+    return data - chunk.data();
 }
 
 
