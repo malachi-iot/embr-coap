@@ -393,7 +393,7 @@ public:
 };
 
 /*
-inline bool decode_to_input_iterate(PipelineReaderDecoder<OptionDecoder>& decoder, pipeline::IBufferedPipelineReader& reader, IOptionInput& input)
+inline bool decode_to_input_iterate(PipelineReaderDecoder<OptionDecoder>& decoder, pipeline::IBufferedPipelineReader& reader, IOptionObserver& input)
 {
     decoder.process_iterate(reader);
 }

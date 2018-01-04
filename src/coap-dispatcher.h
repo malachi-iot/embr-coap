@@ -11,20 +11,20 @@
 namespace moducom { namespace coap {
 
 // re-write and decomposition of IResponderDeprecated
-struct IHeaderInput
+struct IHeaderObserver
 {
     virtual void on_header(Header header) = 0;
 };
 
 
-struct ITokenInput
+struct ITokenObserver
 {
     // get called repeatedly until all portion of token is provided
     // Not called if header reports a token length of 0
     virtual void on_token(const pipeline::MemoryChunk& token_part, bool last_chunk) = 0;
 };
 
-struct IOptionInput
+struct IOptionObserver
 {
     typedef experimental::option_number_t number_t;
 
@@ -38,7 +38,7 @@ struct IOptionInput
 };
 
 
-struct IPayloadInput
+struct IPayloadObserver
 {
     // will get called repeatedly until payload is completely provided
     // IMPORTANT: if no payload is present, then payload_part is nullptr
@@ -57,10 +57,10 @@ namespace experimental {
 
 class IDispatcherHandler :
     public moducom::experimental::forward_node<IDispatcherHandler>,
-    public IHeaderInput,
-    public ITokenInput,
-    public IOptionInput,
-    public IPayloadInput
+    public IHeaderObserver,
+    public ITokenObserver,
+    public IOptionObserver,
+    public IPayloadObserver
 {
 public:
     enum InterestedEnum

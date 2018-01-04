@@ -1,0 +1,8 @@
+//
+// Created by malachi on 1/3/18.
+//
+
+#ifndef MC_COAP_TEST_COAP_OBSERVABLE_H
+#define MC_COAP_TEST_COAP_OBSERVABLE_H
+
+#endif //MC_COAP_TEST_COAP_OBSERVABLE_H

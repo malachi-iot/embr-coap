@@ -173,7 +173,7 @@ size_t Dispatcher::dispatch_option(const pipeline::MemoryChunk& optionChunk)
                 //case OptionDecoder::OptionDeltaAndLengthDone:
                 case OptionDecoder::ValueStart:
                 {
-                    IOptionInput::number_t option_number = (IOptionInput::number_t) optionHolder.number_delta;
+                    IOptionObserver::number_t option_number = (IOptionObserver::number_t) optionHolder.number_delta;
                     uint16_t option_length = optionHolder.length;
 #ifdef DEBUG2
                     std::clog << "Dispatching option: " << option_number << " with length " << optionHolder.length;
@@ -232,7 +232,7 @@ size_t Dispatcher::dispatch_option(const pipeline::MemoryChunk& optionChunk)
                     //pipeline::MemoryChunk partialChunk(optionChunk.data, processed_length);
                     //bool full_option_value = optionDecoder.state() == OptionDecoder::OptionValueDone;
                     //handler->on_option(partialChunk, full_option_value);
-                    IOptionInput::number_t option_number = (IOptionInput::number_t) optionHolder.number_delta;
+                    IOptionObserver::number_t option_number = (IOptionObserver::number_t) optionHolder.number_delta;
                     handler->on_option(option_number, optionChunk, false);
                     break;
                 }
@@ -244,7 +244,7 @@ size_t Dispatcher::dispatch_option(const pipeline::MemoryChunk& optionChunk)
                     // the chunk we're passing through really is and of course
                     // at what boundary it starts
                     //processed_length = optionDecoder.process_iterate(optionChunk, NULLPTR);
-                    IOptionInput::number_t option_number = (IOptionInput::number_t) optionHolder.number_delta;
+                    IOptionObserver::number_t option_number = (IOptionObserver::number_t) optionHolder.number_delta;
                     handler->on_option(option_number, optionChunk, true);
                     break;
                 }
