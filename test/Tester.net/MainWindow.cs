@@ -3,6 +3,7 @@ using Gtk;
 
 using CoAPNet;
 using CoAPNet.Udp;
+using CoAPNet.Options;
 using System.Threading.Tasks;
 using System.Linq;
 using System.Text;
@@ -76,8 +77,12 @@ public partial class MainWindow : Gtk.Window
 
         var message = new CoapMessage();
 
+        // Just to experiment with being explicit
+        var option_cf = new ContentFormat(ContentFormatType.TextPlain);
+
         message.Code = CoapMessageCode.Get;
         message.Type = confirmable ? CoapMessageType.Confirmable : CoapMessageType.NonConfirmable;
+        message.Options.Add(option_cf);
 
         try
         {
