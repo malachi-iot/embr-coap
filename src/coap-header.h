@@ -128,11 +128,7 @@ public:
 
     uint8_t code() const
     {
-#ifdef BROKEN
-        return (uint8_t)mask<COAP_HEADER_CODE_POS, COAP_HEADER_CODE_MASK>();
-#else
         return bytes[1];
-#endif
     }
 
 
@@ -147,11 +143,7 @@ public:
 
     TypeEnum type() const
     {
-#ifdef BROKEN
-        return (TypeEnum) mask<COAP_HEADER_TYPE_POS, COAP_HEADER_TYPE_MASK>();
-#else
         return (TypeEnum) mask_fixed<COAP_HEADER_TYPE_POS, COAP_HEADER_TYPE_MASK>(1);
-#endif
     }
 
 protected:
@@ -165,13 +157,9 @@ public:
 
     void type(TypeEnum type)
     {
-#ifdef BROKEN
-        mask<COAP_HEADER_TYPE_POS, COAP_HEADER_TYPE_MASK>((uint16_t)type);
-#else
         bytes[0] &= ~COAP_HEADER_FIXED_TYPE_MASK;
         bytes[0] |= ((uint8_t)type) << COAP_HEADER_FIXED_TYPE_POS;
         mask_or<COAP_HEADER_FIXED_TYPE_POS>(0, type);
-#endif
     }
 
     Code& code_experimental() const
@@ -208,59 +196,37 @@ public:
 
     void code(uint8_t code)
     {
-#ifdef BROKEN
-        mask<COAP_HEADER_CODE_POS, COAP_HEADER_CODE_MASK>(code);
-#else
         bytes[1] = code;
-#endif
     }
 
 
     void message_id(uint16_t mid)
     {
-#ifdef BROKEN
-        mask<COAP_HEADER_MID_POS, COAP_HEADER_MID_MASK>(mid);
-#else
         // slightly clumsy but endianness should be OK
         bytes[2] = mid >> 8;
         bytes[3] = mid & 0xFF;
-#endif
     }
 
     uint16_t message_id() const
     {
-#ifdef BROKEN
-        uint16_t mid = mask<COAP_HEADER_MID_POS, COAP_HEADER_MID_MASK>();
-
-            return COAP_NTOHS(mid);
-#else
         uint16_t mid = bytes[2];
         mid <<= 8;
         mid |= bytes[3];
         return mid;
-#endif
     }
 
     void token_length(uint8_t tkl)
     {
         ASSERT(true, tkl <= 8);
 
-#ifdef BROKEN
-        mask<COAP_HEADER_TKL_POS, COAP_HEADER_TKL_MASK>(tkl);
-#else
         bytes[0] &= ~COAP_HEADER_FIXED_TKL_MASK;
         bytes[0] |= tkl;
-#endif
     }
 
 
     uint8_t token_length()
     {
-#ifdef BROKEN
-        return (uint8_t) mask<COAP_HEADER_TKL_POS, COAP_HEADER_TKL_MASK>();
-#else
         return bytes[0] & COAP_HEADER_FIXED_TKL_MASK;
-#endif
     }
 
     //private:
@@ -273,14 +239,8 @@ public:
     Header(TypeEnum type)
     {
         raw = 0;
-#ifdef BROKEN
-        // FIX: 100% endian malfunction, does not work
-            raw |= 1 << COAP_HEADER_VER_POS;
-            this->type(type);
-#else
         mask_or<COAP_HEADER_FIXED_VER_POS>(0, 1);
         mask_or<COAP_HEADER_FIXED_TYPE_POS>(0, type);
-#endif
     }
 };
 
