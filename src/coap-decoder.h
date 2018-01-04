@@ -294,7 +294,7 @@ protected:
         bool last_chunk;
 
         // Unused helper function
-        const uint8_t* data() const { return chunk.data + pos; }
+        const uint8_t* data() const { return chunk._data() + pos; }
 
     public:
         Context(const pipeline::MemoryChunk& chunk, bool last_chunk) :

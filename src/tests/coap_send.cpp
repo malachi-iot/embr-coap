@@ -102,16 +102,16 @@ TEST_CASE("CoAP message construction tests", "[coap-send]")
 
         i = 0;
 
-        REQUIRE(chunk.data[i] == expected_header_bytes[i]); i++;
-        REQUIRE(chunk.data[i] == expected_header_bytes[i]); i++;
-        REQUIRE(chunk.data[i] == expected_header_bytes[i]); i++;
-        REQUIRE(chunk.data[i] == expected_header_bytes[i]); i++;
+        REQUIRE(chunk[i] == expected_header_bytes[i]); i++;
+        REQUIRE(chunk[i] == expected_header_bytes[i]); i++;
+        REQUIRE(chunk[i] == expected_header_bytes[i]); i++;
+        REQUIRE(chunk[i] == expected_header_bytes[i]); i++;
 
-        REQUIRE(chunk.data[i++] == ((option_number << 4) | option_length));
-        REQUIRE(chunk.data[i++] == 'T');
-        REQUIRE(chunk.data[i++] == 'E');
-        REQUIRE(chunk.data[i++] == 'S');
-        REQUIRE(chunk.data[i++] == 'T');
+        REQUIRE(chunk[i++] == ((option_number << 4) | option_length));
+        REQUIRE(chunk[i++] == 'T');
+        REQUIRE(chunk[i++] == 'E');
+        REQUIRE(chunk[i++] == 'S');
+        REQUIRE(chunk[i++] == 'T');
     }
     SECTION("OptionEncoderHelper")
     {

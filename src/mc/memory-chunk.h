@@ -37,16 +37,32 @@ public:
     void _length(custom_size_t l) { length = l; }
 };
 
+
+namespace experimental {
+
+class ReadOnlyMemoryChunk : public MemoryChunkBase<>
+{
+public:
+};
+
+}
+
 // TODO: Split out naming for MemoryChunk and something like MemoryBuffer
 // MemoryBuffer always includes data* but may or may not be responsible for actual buffer itself
 // MemoryChunk always includes buffer too - and perhaps (havent decided yet) may not necessarily include data*
 class MemoryChunk : public MemoryChunkBase<>
 {
-public:
+protected:
     uint8_t* data;
+
+public:
 
     // FIX: Temporary name until we refactor all usages away from raw field
     const uint8_t* _data() const { return data; }
+
+    // FIX: Temporary name until we refactor all usages away from raw field
+    uint8_t* __data() { return data; }
+    void __data(uint8_t* value) { data = value; }
 
     MemoryChunk(uint8_t* data, size_t length) : data(data)
     {

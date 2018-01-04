@@ -52,7 +52,7 @@ TEST_CASE("Pipeline basic tests", "[pipeline]")
 
         if(p.get_buffer(&chunk))
         {
-            sprintf((char*)chunk->data, "Hello World");
+            sprintf((char*)chunk->__data(), "Hello World");
 
             PipelineMessage::CopiedStatus copied_status;
 

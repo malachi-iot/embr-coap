@@ -55,7 +55,7 @@ TEST_CASE("CoAP encoder tests", "[coap-encoder]")
 
         moducom::pipeline::MemoryChunk chunk2 = encoder.payload();
 
-        int l = sprintf((char*)chunk2.data, "Guess we'll do it directly %s", "won't we");
+        int l = sprintf((char*)chunk2.__data(), "Guess we'll do it directly %s", "won't we");
 
         // remove null terminator
         encoder.advance(l - 1);

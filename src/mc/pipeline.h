@@ -79,7 +79,7 @@ public:
     {
         PipelineMessage return_chunk = chunk;
         chunk.length = 0;
-        chunk.data = 0;
+        chunk.__data(0);
         return return_chunk;
     }
 
@@ -230,9 +230,9 @@ public:
         PipelineMessage msg;
 
         if(length_used == 0)
-            msg.data = NULLPTR;
+            msg.__data(NULLPTR);
         else
-            msg.data = buffer.data + length_read;
+            msg.__data(buffer.__data() + length_read);
 
         msg.length = length_used - length_read;
         msg.status = NULLPTR;
@@ -253,9 +253,9 @@ public:
         PipelineMessage msg;
 
         if(length_used == 0)
-            msg.data = NULLPTR;
+            msg.__data(NULLPTR);
         else
-            msg.data = buffer.data;
+            msg.__data(buffer.__data());
 
         msg.length = length_used;
         msg.status = NULLPTR;
@@ -275,7 +275,7 @@ public:
 
             copied_status.user = chunk.copied_status.user;
 
-            memcpy(buffer.data + length_used, chunk.data, chunk.length);
+            memcpy(buffer.__data() + length_used, chunk._data(), chunk.length);
 
             length_used += chunk.length;
 
@@ -331,9 +331,9 @@ public:
         PipelineMessage msg;
 
         if(length_used == 0)
-            msg.data = NULLPTR;
+            msg.__data(NULLPTR);
         else
-            msg.data = buffer.data;
+            msg.__data(buffer.__data());
 
         msg.length = length_used;
         msg.status = NULLPTR;
@@ -348,7 +348,7 @@ public:
     {
         // delta represents how far into internal buffer.data incoming chunk
         // represents
-        size_t delta = chunk.data - buffer.data;
+        size_t delta = chunk._data() - buffer._data();
 
         if(delta >= buffer.length)
         {
