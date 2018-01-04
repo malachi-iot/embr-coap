@@ -42,7 +42,16 @@ namespace experimental {
 
 class ReadOnlyMemoryChunk : public MemoryChunkBase<>
 {
+protected:
+    uint8_t* m_data;
+
+    ReadOnlyMemoryChunk() {}
+
 public:
+    ReadOnlyMemoryChunk(uint8_t* data) : m_data(data) {}
+
+    // FIX: Temporary name until we refactor all usages away from raw field
+    const uint8_t* _data() const { return m_data; }
 };
 
 }
@@ -50,56 +59,51 @@ public:
 // TODO: Split out naming for MemoryChunk and something like MemoryBuffer
 // MemoryBuffer always includes data* but may or may not be responsible for actual buffer itself
 // MemoryChunk always includes buffer too - and perhaps (havent decided yet) may not necessarily include data*
-class MemoryChunk : public MemoryChunkBase<>
+class MemoryChunk : public experimental::ReadOnlyMemoryChunk
 {
-protected:
-    uint8_t* data;
-
+    typedef experimental::ReadOnlyMemoryChunk base_t;
 public:
 
     // FIX: Temporary name until we refactor all usages away from raw field
-    const uint8_t* _data() const { return data; }
+    uint8_t* __data() { return m_data; }
+    void __data(uint8_t* value) { m_data = value; }
 
-    // FIX: Temporary name until we refactor all usages away from raw field
-    uint8_t* __data() { return data; }
-    void __data(uint8_t* value) { data = value; }
-
-    MemoryChunk(uint8_t* data, size_t length) : data(data)
+    MemoryChunk(uint8_t* data, size_t length) : base_t(data)
     {
         this->length = length;
     }
 
     MemoryChunk() {}
 
-    inline void set(uint8_t c, size_t length) { ::memset(data, c, length); }
+    inline void set(uint8_t c, size_t length) { ::memset(m_data, c, length); }
 
     inline void set(uint8_t c) { set(c, length); }
 
     inline void memcpy(const uint8_t* copy_from, size_t length)
     {
-        ::memcpy(data, copy_from, length);
+        ::memcpy(m_data, copy_from, length);
     }
 
     inline uint8_t& operator[](size_t index) const
     {
-        return data[index];
+        return m_data[index];
     }
 
     // generate a new MemoryChunk which is a subset of the current one
     // may be more trouble than it's worth calling this function
-    inline MemoryChunk carve_experimental(size_t pos, size_t len) const { return MemoryChunk(data + pos, len); }
+    inline MemoryChunk carve_experimental(size_t pos, size_t len) const { return MemoryChunk(m_data + pos, len); }
 
     // generate a new MemoryChunk with just the remainder of data starting
     // at pos
     inline MemoryChunk remainder(size_t pos) const
     {
-        return MemoryChunk(data + pos, length - pos);
+        return MemoryChunk(m_data + pos, length - pos);
     }
 
     // Would prefer memorychunk itself to be more constant, perhaps we can
     // have a "ProcessedMemoryChunk" which includes a pos in it... ? or maybe
     // instead a ConstMemoryChunk just for those occasions..
-    void advance_experimental(size_t pos) { data += pos; length -= pos; }
+    void advance_experimental(size_t pos) { m_data += pos; length -= pos; }
 };
 
 namespace layer1 {
