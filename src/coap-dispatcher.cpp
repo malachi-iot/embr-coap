@@ -56,7 +56,7 @@ std::ostream& operator <<(std::ostream& out, OptionDecoder::State state)
 
 bool Dispatcher::dispatch_iterate(Context& context)
 {
-    const pipeline::MemoryChunk& chunk = context.chunk;
+    const pipeline::MemoryChunk::readonly_t& chunk = context.chunk;
     size_t& pos = context.pos; // how far into chunk our locus of processing should be
 
     switch(state())
@@ -145,7 +145,7 @@ void Dispatcher::dispatch_header()
 
 // also handles pre-dispatch processing
 // 100% untested
-size_t Dispatcher::dispatch_option(const pipeline::MemoryChunk& optionChunk)
+size_t Dispatcher::dispatch_option(const pipeline::MemoryChunk::readonly_t& optionChunk)
 {
     // FIX: we generally expect to be at FirstByte state here, however in the future this
     // requirement should go away (once we clean up needs_value_processed behavior)
@@ -264,7 +264,7 @@ size_t Dispatcher::dispatch_option(const pipeline::MemoryChunk& optionChunk)
 }
 
 
-void Dispatcher::dispatch_payload(const pipeline::MemoryChunk& payloadChunk, bool last_chunk)
+void Dispatcher::dispatch_payload(const pipeline::MemoryChunk::readonly_t& payloadChunk, bool last_chunk)
 {
     //size_t processed_length = optionDecoder.process_iterate(payloadChunk, NULLPTR);
 

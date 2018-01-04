@@ -242,7 +242,7 @@ bool OptionDecoder::process_iterate(pipeline::IBufferedPipelineReader& reader, O
 }
 #endif
 
-size_t OptionDecoder::process_iterate(const pipeline::MemoryChunk& chunk, OptionExperimental* built_option)
+size_t OptionDecoder::process_iterate(const pipeline::MemoryChunk::readonly_t& chunk, OptionExperimental* built_option)
 {
     size_t length = chunk._length(); // represents remaining length to be processed
     size_t value_processed = 0;
@@ -304,7 +304,7 @@ bool Decoder::process_iterate(Context& context)
     size_t& pos = context.pos;
     bool process_done = false;
     bool last_chunk = context.last_chunk;
-    const pipeline::MemoryChunk& chunk = context.chunk;
+    const pipeline::MemoryChunk::readonly_t& chunk = context.chunk;
 
     switch (state())
     {

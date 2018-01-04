@@ -55,6 +55,19 @@ public:
     }
 
     const uint8_t* data() const { return m_data; }
+
+    inline uint8_t operator[](size_t index) const
+    {
+        return m_data[index];
+    }
+
+    // generate a new MemoryChunk with just the remainder of data starting
+    // at pos
+    inline ReadOnlyMemoryChunk remainder(size_t pos) const
+    {
+        return ReadOnlyMemoryChunk(m_data + pos, _length() - pos);
+    }
+
 };
 
 }
@@ -65,9 +78,10 @@ public:
 class MemoryChunk : public experimental::ReadOnlyMemoryChunk
 {
     typedef experimental::ReadOnlyMemoryChunk base_t;
-    typedef experimental::ReadOnlyMemoryChunk readonly_t;
 
 public:
+    // interim type
+    typedef experimental::ReadOnlyMemoryChunk readonly_t;
 
     // FIX: Temporary name until we refactor all usages away from raw field
     uint8_t* __data() { return m_data; }

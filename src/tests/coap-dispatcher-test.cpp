@@ -23,7 +23,7 @@ public:
         REQUIRE(header.is_request());
     }
 
-    virtual void on_token(const MemoryChunk& token_part, bool last_chunk) OVERRIDE
+    virtual void on_token(const MemoryChunk::readonly_t& token_part, bool last_chunk) OVERRIDE
     {
         FAIL("Should not reach here");
     }
@@ -44,7 +44,7 @@ public:
         }
     }
 
-    virtual void on_option(number_t number, const MemoryChunk& option_value_part, bool last_chunk) OVERRIDE
+    virtual void on_option(number_t number, const MemoryChunk::readonly_t& option_value_part, bool last_chunk) OVERRIDE
     {
         switch(option_test_number++)
         {
@@ -61,7 +61,7 @@ public:
         }
     }
 
-    virtual void on_payload(const MemoryChunk& payload_part, bool last_chunk) OVERRIDE
+    virtual void on_payload(const MemoryChunk::readonly_t& payload_part, bool last_chunk) OVERRIDE
     {
         REQUIRE(payload_part[0] == buffer_16bit_delta[12]);
         REQUIRE(payload_part[payload_part.length] == buffer_16bit_delta[12 + payload_part.length]);

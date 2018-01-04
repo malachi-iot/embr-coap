@@ -21,7 +21,7 @@ struct ITokenObserver
 {
     // get called repeatedly until all portion of token is provided
     // Not called if header reports a token length of 0
-    virtual void on_token(const pipeline::MemoryChunk& token_part, bool last_chunk) = 0;
+    virtual void on_token(const pipeline::MemoryChunk::readonly_t& token_part, bool last_chunk) = 0;
 };
 
 struct IOptionObserver
@@ -34,7 +34,7 @@ struct IOptionObserver
 
     // will get called repeatedly until option_value is completely provided
     // Not called if option_header.length() == 0
-    virtual void on_option(number_t number, const pipeline::MemoryChunk& option_value_part, bool last_chunk) = 0;
+    virtual void on_option(number_t number, const pipeline::MemoryChunk::readonly_t& option_value_part, bool last_chunk) = 0;
 };
 
 
@@ -44,7 +44,7 @@ struct IPayloadObserver
     // IMPORTANT: if no payload is present, then payload_part is nullptr
     // this call ultimately marks the end of the coap message (unless I missed something
     // for chunked/multipart coap messages... which I may have)
-    virtual void on_payload(const pipeline::MemoryChunk& payload_part, bool last_chunk) = 0;
+    virtual void on_payload(const pipeline::MemoryChunk::readonly_t& payload_part, bool last_chunk) = 0;
 };
 
 
@@ -101,8 +101,8 @@ class Dispatcher :
     void dispatch_token();
 
     // optionChunk is a subset/processed version of dispatch(chunk)
-    size_t dispatch_option(const pipeline::MemoryChunk& optionChunk);
-    void dispatch_payload(const pipeline::MemoryChunk& payloadChunk, bool last_chunk);
+    size_t dispatch_option(const pipeline::MemoryChunk::readonly_t& optionChunk);
+    void dispatch_payload(const pipeline::MemoryChunk::readonly_t& payloadChunk, bool last_chunk);
 
 public:
     typedef IDispatcherHandler handler_t;
@@ -114,7 +114,7 @@ private:
 
 public:
     // returns number of bytes processed from chunk
-    size_t dispatch(const pipeline::MemoryChunk& chunk, bool last_chunk = true)
+    size_t dispatch(const pipeline::MemoryChunk::readonly_t& chunk, bool last_chunk = true)
     {
         Context context(chunk, last_chunk);
 

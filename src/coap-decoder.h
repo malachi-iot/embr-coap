@@ -241,7 +241,7 @@ public:
     // OptionLengthDone, OptionDeltaAndLengthDone and OptionValueDone boundaries.  Eventually
     // we will also stop on OptionValue occasionally if option-value size is larger than the
     // input chunk
-    size_t process_iterate(const pipeline::MemoryChunk& input, OptionExperimental* built_option);
+    size_t process_iterate(const pipeline::MemoryChunk::readonly_t& input, OptionExperimental* built_option);
 };
 
 
@@ -283,7 +283,7 @@ protected:
         // (and down length) instead of bumping up pos.  A little more fiddly, but then
         // we less frequently have to create new temporary memorychunks on the stack
 
-        const pipeline::MemoryChunk& chunk;
+        const pipeline::experimental::ReadOnlyMemoryChunk& chunk;
 
         // current processing position.  Should be chunk.length once processing is done
         size_t pos;
@@ -297,7 +297,7 @@ protected:
         const uint8_t* data() const { return chunk.data() + pos; }
 
     public:
-        Context(const pipeline::MemoryChunk& chunk, bool last_chunk) :
+        Context(const pipeline::experimental::ReadOnlyMemoryChunk& chunk, bool last_chunk) :
                 chunk(chunk),
                 last_chunk(last_chunk),
                 pos(0) {}
@@ -313,7 +313,7 @@ public:
     // the last_chunk
     bool process_iterate(Context& context);
 
-    void process(const pipeline::MemoryChunk& chunk, bool last_chunk = true)
+    void process(const pipeline::experimental::ReadOnlyMemoryChunk& chunk, bool last_chunk = true)
     {
         Context context(chunk, last_chunk);
 
