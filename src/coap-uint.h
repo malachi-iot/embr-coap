@@ -61,7 +61,7 @@ public:
         }
 
         // NOTE: Not yet tested
-        for(int i = output_size; i-- > bytes_pad; i)
+        for(int i = output_size; i-- > bytes_pad;)
         {
             output[i] = input & 0xFF;
             input >>= 8;
@@ -87,7 +87,7 @@ public:
         else
             bytes_used = 4;
 
-        for(int i = bytes_used; i-- > 0; i)
+        for(int i = bytes_used; i-- > 0;)
         {
             output[i] = input & 0xFF;
             input >>= 8;
@@ -169,7 +169,7 @@ public:
     template <class TOutput>
     inline static void set_uint24_t(uint32_t input, TOutput& output)
     {
-        for(int i = 3; i-- > 0; i)
+        for(int i = 3; i-- > 0;)
         {
             output[i] = input & 0xFF;
             input >>= 8;
@@ -186,7 +186,7 @@ public:
 
 
     template <class TInput>
-    inline uint8_t set(TInput input)
+    inline void set(TInput input)
     {
         uint8_t* data = this->writable_data_experimental();
         uint8_t byte_length = moducom::coap::UInt::set(input, data);

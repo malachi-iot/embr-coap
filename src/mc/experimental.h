@@ -266,6 +266,8 @@ public:
 }
 
 
+void process_header(Header request, Header* response);
+
 }}}
 
 #endif //MC_COAP_TEST_EXPERIMENTAL_H
