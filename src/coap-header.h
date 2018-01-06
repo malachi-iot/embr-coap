@@ -200,6 +200,14 @@ public:
     }
 
 
+    // https://tools.ietf.org/html/rfc7252#section-3
+    /*
+     * 16-bit unsigned integer in network byte order.  Used to
+      detect message duplication and to match messages of type
+      Acknowledgement/Reset to messages of type Confirmable/Non-
+      confirmable.  The rules for generating a Message ID and matching
+      messages are defined in Section 4.
+     */
     void message_id(uint16_t mid)
     {
         // slightly clumsy but endianness should be OK
@@ -244,6 +252,6 @@ public:
     }
 };
 
-
 }}
+
 #endif //MC_COAP_TEST_COAP_HEADER_H
