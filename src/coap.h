@@ -123,8 +123,10 @@ public:
     // for IPipelineWriter, mainly
     typedef uint8_t boundary_t;
 
-    
+    // The end of header, token, options are marked with segment
+    // NOTE: Not fully functional yet
     static CONSTEXPR boundary_t boundary_segment = 3;
+    // the end of the entire message marked with this one
     static CONSTEXPR boundary_t boundary_message = 4;
 
     enum State

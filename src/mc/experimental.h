@@ -26,6 +26,7 @@ protected:
 
 // NOTE: very experimental.  Seems to burn up more memory and cycles than it saves
 // this attempts to buffer right within IBufferedPipelineWriter itself
+// TODO: Use StateHelper for this
 class BufferedEncoder
 {
     //typedef CoAP::OptionExperimentalDeprecated::Numbers number_t;
@@ -51,7 +52,7 @@ class BufferedEncoder
         if(state == _state_t::Header)
         {
             size_t pos = 4 + header()->token_length();
-            writer.advance_write(pos);
+            writer.advance_write(pos, Root::boundary_segment);
         }
 
         state = s;
@@ -84,6 +85,13 @@ public:
     layer1::Token* token()
     {
         return reinterpret_cast<layer1::Token*>(buffer.__data() + 4);
+    }
+
+
+    // 100% untested
+    void token(const pipeline::MemoryChunk::readonly_t& full_token)
+    {
+        token()->copy_from(full_token);
     }
 
     /*
@@ -142,7 +150,7 @@ public:
     // mark encoder as complete, which in turn will mark outgoing writer
     inline void complete()
     {
-        writer.advance_write(0, 3);
+        writer.advance_write(0, Root::boundary_message);
     }
 };
 
