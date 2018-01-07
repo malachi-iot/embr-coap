@@ -60,6 +60,8 @@ TEST_CASE("CoAP encoder tests", "[coap-encoder]")
         // remove null terminator
         encoder.advance(l - 1);
 
+        encoder.complete();
+
         const int option_pos = 5;
 
         REQUIRE(chunk[4] == 1);

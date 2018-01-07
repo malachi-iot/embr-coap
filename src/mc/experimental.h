@@ -138,6 +138,9 @@ public:
 
 
     inline void advance(size_t advance_amount) { writer.advance_write(advance_amount); }
+
+    // mark encoder as complete, which in turn will mark outgoing writer
+    inline void complete() {}
 };
 
 
