@@ -62,7 +62,7 @@ public:
     // acquire header for external processing
     Header* header()
     {
-        return reinterpret_cast<Header*>(buffer.__data());
+        return reinterpret_cast<Header*>(buffer.data());
     }
 
 
@@ -84,7 +84,7 @@ public:
     // acquire token position for external processing, if any
     layer1::Token* token()
     {
-        return reinterpret_cast<layer1::Token*>(buffer.__data() + 4);
+        return reinterpret_cast<layer1::Token*>(buffer.data() + 4);
     }
 
 

@@ -63,7 +63,7 @@ class SimpleBufferedPipelineWriter : public IBufferedPipelineWriter
     // How much memory of the specified buffer is actually available/written to
     size_t length_used;
 
-    uint8_t* data() { return buffer.__data() + length_used; }
+    uint8_t* data() { return buffer.data() + length_used; }
 
 public:
     // number accumulated bytes.  Not sold on this API surface

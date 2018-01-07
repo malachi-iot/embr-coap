@@ -81,13 +81,11 @@ public:
     // interim type
     typedef experimental::ReadOnlyMemoryChunk readonly_t;
 
-    // FIX: Temporary name until we refactor all usages away from raw field
-    uint8_t* __data() { return m_data; }
     void length(size_t l) { this->m_length = l; }
     size_t length() const { return base_t::length(); }
 
-    // FIX: Needed for some reason due to following data(uint8_t* value)
-    const uint8_t* data() const { return m_data; }
+    // remove const modifier since we're not read only here
+    uint8_t* data() const { return m_data; }
     void data(uint8_t* value) { m_data = value; }
 
     MemoryChunk(uint8_t* data, size_t length) : base_t(data, length)

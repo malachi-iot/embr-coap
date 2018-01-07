@@ -232,7 +232,7 @@ public:
         if(length_used == 0)
             msg.data(NULLPTR);
         else
-            msg.data(buffer.__data() + length_read);
+            msg.data(buffer.data() + length_read);
 
         msg.length(length_used - length_read);
         msg.status = NULLPTR;
@@ -255,7 +255,7 @@ public:
         if(length_used == 0)
             msg.data(NULLPTR);
         else
-            msg.data(buffer.__data());
+            msg.data(buffer.data());
 
         msg.length(length_used);
         msg.status = NULLPTR;
@@ -275,7 +275,7 @@ public:
 
             copied_status.user = chunk.copied_status.user;
 
-            memcpy(buffer.__data() + length_used, chunk.data(), chunk.length());
+            memcpy(buffer.data() + length_used, chunk.data(), chunk.length());
 
             length_used += chunk.length();
 
@@ -333,7 +333,7 @@ public:
         if(length_used == 0)
             msg.data(NULLPTR);
         else
-            msg.data(buffer.__data());
+            msg.data(buffer.data());
 
         msg.length(length_used);
         msg.status = NULLPTR;
