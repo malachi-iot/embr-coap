@@ -50,13 +50,13 @@ public:
         {
             case 0:
                 REQUIRE(option_value_part[0] == 3);
-                REQUIRE(option_value_part.length == 1);
+                REQUIRE(option_value_part._length() == 1);
                 break;
 
             case 1:
                 REQUIRE(option_value_part[0] == 4);
                 REQUIRE(option_value_part[1] == 5);
-                REQUIRE(option_value_part.length == 2);
+                REQUIRE(option_value_part._length() == 2);
                 break;
         }
     }
@@ -64,7 +64,7 @@ public:
     virtual void on_payload(const MemoryChunk::readonly_t& payload_part, bool last_chunk) OVERRIDE
     {
         REQUIRE(payload_part[0] == buffer_16bit_delta[12]);
-        REQUIRE(payload_part[payload_part.length] == buffer_16bit_delta[12 + payload_part.length]);
+        REQUIRE(payload_part[payload_part._length()] == buffer_16bit_delta[12 + payload_part._length()]);
     }
 
     virtual InterestedEnum interested() OVERRIDE

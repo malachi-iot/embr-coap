@@ -375,8 +375,9 @@ public:
         pipeline::PipelineMessage msg = reader.peek();
 
         size_t counter = 0;
+        size_t length = msg._length();
 
-        while(msg.length--)
+        while(length--)
         {
             if(decoder.process_iterate(msg[counter++]))
             {

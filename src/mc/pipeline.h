@@ -44,7 +44,7 @@ public:
         {
             message = underlying.read();
             // put a yield into here also
-        } while(message.length == 0);
+        } while(message._length() == 0);
 
         return message;
     }
@@ -73,12 +73,12 @@ class BasicPipeline : public IPipeline
     PipelineMessage chunk;
 
 public:
-    BasicPipeline() { chunk.length = 0; }
+    BasicPipeline() { chunk.length(0); }
 
     virtual PipelineMessage read() OVERRIDE
     {
         PipelineMessage return_chunk = chunk;
-        chunk.length = 0;
+        chunk.length(0);
         chunk.data(0);
         return return_chunk;
     }
@@ -86,7 +86,7 @@ public:
     virtual bool write(const PipelineMessage& chunk) OVERRIDE
     {
         // can't write to chunk because spot is filled
-        if(this->chunk.length) return false;
+        if(this->chunk._length()) return false;
 
         this->chunk = chunk;
 
@@ -234,7 +234,7 @@ public:
         else
             msg.data(buffer.__data() + length_read);
 
-        msg.length = length_used - length_read;
+        msg.length(length_used - length_read);
         msg.status = NULLPTR;
         msg.copied_status = copied_status;
 
@@ -257,7 +257,7 @@ public:
         else
             msg.data(buffer.__data());
 
-        msg.length = length_used;
+        msg._length(length_used);
         msg.status = NULLPTR;
         msg.copied_status = copied_status;
 
@@ -268,16 +268,16 @@ public:
 
     virtual bool write(const PipelineMessage& chunk) OVERRIDE
     {
-        if(chunk.length < (buffer.length - length_used))
+        if(chunk._length() < (buffer._length() - length_used))
         {
             if(chunk.copied_status.boundary > copied_status.boundary)
                 copied_status.boundary = chunk.copied_status.boundary;
 
             copied_status.user = chunk.copied_status.user;
 
-            memcpy(buffer.__data() + length_used, chunk.data(), chunk.length);
+            memcpy(buffer.__data() + length_used, chunk.data(), chunk._length());
 
-            length_used += chunk.length;
+            length_used += chunk._length();
 
             if(chunk.status)
                 chunk.status->copied(true);
@@ -335,7 +335,7 @@ public:
         else
             msg.data(buffer.__data());
 
-        msg.length = length_used;
+        msg.length(length_used);
         msg.status = NULLPTR;
         msg.copied_status = copied_status;
 
@@ -350,7 +350,7 @@ public:
         // represents
         size_t delta = chunk.data() - buffer.data();
 
-        if(delta >= buffer.length)
+        if(delta >= buffer._length())
         {
             // incoming chunk does NOT reside in our internally held buffer
         }
@@ -358,12 +358,12 @@ public:
         {
             // remaining size means how much internal buffer is available based on
             // position of incoming chunk
-            size_t remaining_length = buffer.length - delta;
+            size_t remaining_length = buffer._length() - delta;
 
             // if remaining length of internal buffer meets or exceeds size of
             // incoming chunk, then we are confident incoming chunk fully resides
             // within internal buffer
-            if(remaining_length >= chunk.length)
+            if(remaining_length >= chunk._length())
             {
                 // all good
             }

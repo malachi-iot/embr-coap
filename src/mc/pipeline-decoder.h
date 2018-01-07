@@ -30,7 +30,7 @@ bool PipelineDecoderAdapter<TDecoder>::process_iterate()
     // TODO: check input.available() once that exists for proper non blocking behavior
     PipelineMessage chunk = input.read();
 
-    if(chunk.length > 0)
+    if(chunk.m_length > 0)
     {
         // TODO: need to hold on to this PipelineMessage somewhere so that we can
         // properly iterate over it.  May also need to establish paradigm where
@@ -59,7 +59,7 @@ bool BufferedPipelineDecoderAdapter<TDecoder>::process_iterate()
     // TODO: check input.available() once that exists for proper non blocking behavior
     PipelineMessage chunk = input.peek();
 
-    if(chunk.length > 0)
+    if(chunk.m_length > 0)
     {
         // TODO: need to hold on to this PipelineMessage somewhere so that we can
         // properly iterate over it.  May also need to establish paradigm where

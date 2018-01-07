@@ -23,7 +23,7 @@ bool pipeline_output_helper(pipeline::experimental::IBufferProviderPipeline& out
 
     pipeline::PipelineMessage message = output.get_buffer(advanceable);
 
-    if(message.length > 0)
+    if(message._length() > 0)
     {
         // FIX: this expects advanceable to always exceed needs of pipeline_output_helper_fn
         // but that very well might not be true

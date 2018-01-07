@@ -26,15 +26,15 @@ template <typename custom_size_t = size_t, class TTraits = experimental::memory_
 class MemoryChunkBase
 {
 protected:
+    custom_size_t m_length;
+
 public:
     typedef TTraits traits_t;
 
-    custom_size_t length;
-
     // FIX: Temporary name until we refactor all usages away from raw field
-    custom_size_t _length() const { return length; }
+    custom_size_t _length() const { return m_length; }
 
-    void _length(custom_size_t l) { length = l; }
+    void _length(custom_size_t l) { m_length = l; }
 };
 
 
@@ -51,7 +51,7 @@ public:
     ReadOnlyMemoryChunk(uint8_t* data, size_t length) :
             m_data(data)
     {
-        this->length = length;
+        this->m_length = length;
     }
 
     const uint8_t* data() const { return m_data; }
@@ -85,6 +85,7 @@ public:
 
     // FIX: Temporary name until we refactor all usages away from raw field
     uint8_t* __data() { return m_data; }
+    void length(size_t l) { this->m_length = l; }
 
     // FIX: Needed for some reason due to following data(uint8_t* value)
     const uint8_t* data() const { return m_data; }
@@ -98,7 +99,7 @@ public:
 
     inline void set(uint8_t c, size_t length) { ::memset(m_data, c, length); }
 
-    inline void set(uint8_t c) { set(c, length); }
+    inline void set(uint8_t c) { set(c, m_length); }
 
     inline void memcpy(const uint8_t* copy_from, size_t length)
     {
@@ -123,13 +124,13 @@ public:
     // at pos
     inline MemoryChunk remainder(size_t pos) const
     {
-        return MemoryChunk(m_data + pos, length - pos);
+        return MemoryChunk(m_data + pos, m_length - pos);
     }
 
     // Would prefer memorychunk itself to be more constant, perhaps we can
     // have a "ProcessedMemoryChunk" which includes a pos in it... ? or maybe
     // instead a ConstMemoryChunk just for those occasions..
-    void advance_experimental(size_t pos) { m_data += pos; length -= pos; }
+    void advance_experimental(size_t pos) { m_data += pos; m_length -= pos; }
 };
 
 namespace layer1 {
@@ -184,7 +185,7 @@ class MemoryChunk :
     typedef layer1::MemoryChunk<buffer_length> base_t;
 
 public:
-    inline custom_size_t length() const { return MemoryChunkBase<custom_size_t>::length; }
+    inline custom_size_t length() const { return MemoryChunkBase<custom_size_t>::m_length; }
 
     inline int compare(const void* compare_against)
     {
