@@ -75,7 +75,7 @@ public:
 
         header()->raw = 0;
 
-        ASSERT_ERROR(true, buffer._length() >= minimum_length,
+        ASSERT_ERROR(true, buffer.length() >= minimum_length,
                      "Chunk does not meet minimum length requirements");
     }
 

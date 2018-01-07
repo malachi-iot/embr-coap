@@ -85,7 +85,7 @@ bool Dispatcher::dispatch_iterate(Context& context)
 #endif
 
             // handle option a.1), a.2) or b.1) described below
-            if ((pos == chunk._length() && context.last_chunk) || chunk[pos] == 0xFF)
+            if ((pos == chunk.length() && context.last_chunk) || chunk[pos] == 0xFF)
             {
                 ASSERT_ERROR(true,
                              (optionDecoder.state() == OptionDecoder::OptionValueDone) ||
@@ -127,9 +127,9 @@ bool Dispatcher::dispatch_iterate(Context& context)
     }
 
     // TODO: Do an assert to make sure pos never is >
-    ASSERT_ERROR(true, pos <= chunk._length(), "pos should never exceed chunk length");
+    ASSERT_ERROR(true, pos <= chunk.length(), "pos should never exceed chunk length");
 
-    return pos == chunk._length();
+    return pos == chunk.length();
 }
 
 void Dispatcher::dispatch_header()

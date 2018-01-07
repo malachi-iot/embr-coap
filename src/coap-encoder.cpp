@@ -150,7 +150,7 @@ bool OptionEncoder::process_iterate(pipeline::IBufferedPipelineWriter& writer)
 
     output_t value;
     size_t length = 0;
-    size_t _length = output._length();
+    size_t _length = output.length();
 
     while((value = generate_iterate() != signal_continue) && _length-- > 0)
     {
@@ -204,7 +204,7 @@ void ExperimentalPrototypeBlockingOptionEncoder1::option(pipeline::IPipelineWrit
 void
 ExperimentalPrototypeBlockingOptionEncoder1::option(pipeline::IPipelineWriter& writer, option_number_t number, const pipeline::MemoryChunk& value)
 {
-    option(writer, number, value._length());
+    option(writer, number, value.length());
     writer.write(value); // value portion
 }
 
@@ -216,7 +216,7 @@ bool ExperimentalPrototypeNonBlockingOptionEncoder1::option(pipeline::IBufferedP
     // pre-value chunk
     if (generator.state() == Option::FirstByte)
     {
-        _option(buffer, number, value._length());
+        _option(buffer, number, value.length());
     }
 
     // TODO: examine writable to acquire non-blocking count.  Not to be confused with the very similar buffered stuff

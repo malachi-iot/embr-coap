@@ -51,7 +51,7 @@ TEST_CASE("CoAP token tests", "[coap-token]")
 
         generator.generate(&token);
 
-        REQUIRE(token._length() == 2);
+        REQUIRE(token.length() == 2);
 
         generator.set(0x30201);
 
@@ -60,6 +60,6 @@ TEST_CASE("CoAP token tests", "[coap-token]")
         REQUIRE(token[0] == 3);
         REQUIRE(token[1] == 2);
         REQUIRE(token[2] == 1);
-        REQUIRE(token._length() == 3);
+        REQUIRE(token.length() == 3);
     }
 }

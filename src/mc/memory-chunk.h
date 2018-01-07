@@ -30,11 +30,6 @@ protected:
 
 public:
     typedef TTraits traits_t;
-
-    // FIX: Temporary name until we refactor all usages away from raw field
-    custom_size_t _length() const { return m_length; }
-
-    void _length(custom_size_t l) { m_length = l; }
 };
 
 
@@ -54,6 +49,9 @@ public:
         this->m_length = length;
     }
 
+    // FIX: Temporary name until we refactor all usages away from raw field
+    size_t length() const { return m_length; }
+
     const uint8_t* data() const { return m_data; }
 
     inline uint8_t operator[](size_t index) const
@@ -65,7 +63,7 @@ public:
     // at pos
     inline ReadOnlyMemoryChunk remainder(size_t pos) const
     {
-        return ReadOnlyMemoryChunk(m_data + pos, _length() - pos);
+        return ReadOnlyMemoryChunk(m_data + pos, length() - pos);
     }
 
 };
@@ -86,6 +84,7 @@ public:
     // FIX: Temporary name until we refactor all usages away from raw field
     uint8_t* __data() { return m_data; }
     void length(size_t l) { this->m_length = l; }
+    size_t length() const { return base_t::length(); }
 
     // FIX: Needed for some reason due to following data(uint8_t* value)
     const uint8_t* data() const { return m_data; }
@@ -108,7 +107,7 @@ public:
 
     inline void copy_from(const readonly_t& chunk)
     {
-        ::memcpy(m_data, chunk.data(), chunk._length());
+        ::memcpy(m_data, chunk.data(), chunk.length());
     }
 
     inline uint8_t& operator[](size_t index) const
@@ -156,7 +155,7 @@ public:
 
     inline void copy_from(const pipeline::MemoryChunk::readonly_t& chunk)
     {
-        ::memcpy(buffer, chunk.data(), chunk._length());
+        ::memcpy(buffer, chunk.data(), chunk.length());
     }
 
 
@@ -186,6 +185,7 @@ class MemoryChunk :
 
 public:
     inline custom_size_t length() const { return MemoryChunkBase<custom_size_t>::m_length; }
+    inline void length(custom_size_t l) { MemoryChunkBase<custom_size_t>::m_length = l; }
 
     inline int compare(const void* compare_against)
     {

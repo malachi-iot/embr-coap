@@ -244,7 +244,7 @@ bool OptionDecoder::process_iterate(pipeline::IBufferedPipelineReader& reader, O
 
 size_t OptionDecoder::process_iterate(const pipeline::MemoryChunk::readonly_t& chunk, OptionExperimental* built_option)
 {
-    size_t length = chunk._length(); // represents remaining length to be processed
+    size_t length = chunk.length(); // represents remaining length to be processed
     size_t value_processed = 0;
     const uint8_t* data = chunk.data();
 
@@ -316,7 +316,7 @@ bool Decoder::process_iterate(Context& context)
 
         case Header:
         {
-            while (pos < chunk._length() && !process_done)
+            while (pos < chunk.length() && !process_done)
             {
                 process_done = header_decoder().process_iterate(chunk[pos]);
 
@@ -343,7 +343,7 @@ bool Decoder::process_iterate(Context& context)
             break;
 
         case Token:
-            while(pos < chunk._length() && !process_done)
+            while(pos < chunk.length() && !process_done)
             {
                 // TODO: Utilize a simpler counter and chunk out token
                 process_done = token_decoder().process_iterate(chunk[pos], header_decoder().token_length());
@@ -374,7 +374,7 @@ bool Decoder::process_iterate(Context& context)
             pos += optionDecoder.process_iterate(chunk.remainder(pos), &optionHolder);
 
 // handle option a.1), a.2) or b.1) described below
-            if ((pos == chunk._length() && last_chunk) || chunk[pos] == 0xFF)
+            if ((pos == chunk.length() && last_chunk) || chunk[pos] == 0xFF)
             {
                 ASSERT_ERROR(true,
                              (optionDecoder.state() == OptionDecoder::OptionValueDone) ||
@@ -403,7 +403,7 @@ bool Decoder::process_iterate(Context& context)
             // b.1) end of datagram - entire chunk present
             // b.2) end of chunk - only partial chunk present
             // c) as-yet-to-be-determined streaming end of chunk marker
-            if (pos == chunk._length() && last_chunk)
+            if (pos == chunk.length() && last_chunk)
             {
                 // this is for condition b.1)
                 state(Done);
@@ -427,7 +427,7 @@ bool Decoder::process_iterate(Context& context)
         case Payload:
             // fast forward pos to end of chunk since chunk here on out chunk
             // only contains payload information
-            pos = chunk._length();
+            pos = chunk.length();
             if(last_chunk)  state(PayloadDone);
             break;
 
@@ -442,9 +442,9 @@ bool Decoder::process_iterate(Context& context)
     }
 
     // TODO: Do an assert to make sure pos never is >
-    ASSERT_ERROR(true, pos <= chunk._length(), "pos should never exceed chunk length");
+    ASSERT_ERROR(true, pos <= chunk.length(), "pos should never exceed chunk length");
 
-    return pos == chunk._length();
+    return pos == chunk.length();
 }
 
 }}

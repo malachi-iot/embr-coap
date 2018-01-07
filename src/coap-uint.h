@@ -141,7 +141,7 @@ class UInt : pipeline::layer2::MemoryChunk<buffer_size, uint8_t>
     typedef pipeline::layer2::MemoryChunk<buffer_size, uint8_t> base_t;
 
 public:
-    inline uint8_t length() const { return this->_length(); }
+    inline uint8_t length() const { return base_t::length(); }
     const uint8_t* data() const { return base_t::data(); }
 
     // copy-pastes from OptionExperimentalDeprecated
@@ -190,7 +190,7 @@ public:
     {
         uint8_t* data = this->writable_data_experimental();
         uint8_t byte_length = moducom::coap::UInt::set(input, data);
-        base_t::_length(byte_length);
+        base_t::length(byte_length);
     }
 
     template <typename TReturn>

@@ -88,22 +88,22 @@ public:
 
     virtual bool write(const PipelineMessage& chunk) OVERRIDE
     {
-        memcpy(data(), chunk.data(), chunk._length());
-        length_used += chunk._length();
+        memcpy(data(), chunk.data(), chunk.length());
+        length_used += chunk.length();
         return true;
     }
 
 
     virtual pipeline::MemoryChunk peek_write(size_t preferred_minimum_length = 0) OVERRIDE
     {
-        pipeline::MemoryChunk chunk(data(), buffer._length() - length_used);
+        pipeline::MemoryChunk chunk(data(), buffer.length() - length_used);
         return chunk;
     }
 
 
     virtual bool advance_write(size_t length) OVERRIDE
     {
-        if(length > length_used + buffer._length()) return false;
+        if(length > length_used + buffer.length()) return false;
 
         length_used += length;
         return true;
@@ -111,8 +111,8 @@ public:
 
     virtual bool write_experimental(const pipeline::MemoryChunk& chunk) OVERRIDE
     {
-        memcpy(data(), chunk.data(), chunk._length());
-        length_used += chunk._length();
+        memcpy(data(), chunk.data(), chunk.length());
+        length_used += chunk.length();
         return true;
     }
 };
