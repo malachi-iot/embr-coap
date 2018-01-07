@@ -31,7 +31,39 @@ namespace moducom { namespace coap {
 
 #define COAP_RESPONSE_CODE(_class, _detail) ((_class << 5) | _detail)
 
+namespace experimental {
 
+inline uint16_t hto_uint16()
+{
+    return 0;
+}
+
+
+inline void hton(uint16_t input, uint8_t* output)
+{
+    output[0] = input >> 8;
+    output[1] = input & 0xFF;
+}
+
+
+inline uint16_t nto_uint16(const uint8_t* input)
+{
+    uint16_t value = input[0];
+    value <<= 8;
+    value |= input[1];
+    return value;
+}
+
+template <typename T>
+inline T ntoh(const uint8_t* bytes);
+
+template <>
+inline uint16_t ntoh(const uint8_t* bytes)
+{
+    return nto_uint16(bytes);
+}
+
+}
 
 // https://tools.ietf.org/html/rfc7252#section-3
 class Header
@@ -210,17 +242,21 @@ public:
      */
     void message_id(uint16_t mid)
     {
+        experimental::hton(mid, bytes + 2);
+
         // slightly clumsy but endianness should be OK
-        bytes[2] = mid >> 8;
-        bytes[3] = mid & 0xFF;
+        //bytes[2] = mid >> 8;
+        //bytes[3] = mid & 0xFF;
     }
 
     uint16_t message_id() const
     {
-        uint16_t mid = bytes[2];
-        mid <<= 8;
-        mid |= bytes[3];
-        return mid;
+        //uint16_t mid = bytes[2];
+        //mid <<= 8;
+        //mid |= bytes[3];
+        //return mid;
+
+        return experimental::ntoh<uint16_t>(bytes + 2);
     }
 
     void token_length(uint8_t tkl)
