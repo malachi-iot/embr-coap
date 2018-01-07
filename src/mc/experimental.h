@@ -266,7 +266,7 @@ public:
 }
 
 
-void process_header_request(Header request, Header* response, bool piggyback);
+void process_header_request(Header request, Header* response);
 
 }}}
 

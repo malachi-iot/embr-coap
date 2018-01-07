@@ -232,6 +232,14 @@ public:
     }
 
 
+    // Used purely for doing a raw copy
+    inline void copy_message_id(const Header& from_header)
+    {
+        bytes[2] = from_header.bytes[2];
+        bytes[3] = from_header.bytes[3];
+    }
+
+
     // https://tools.ietf.org/html/rfc7252#section-3
     /*
      * 16-bit unsigned integer in network byte order.  Used to
