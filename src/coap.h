@@ -120,6 +120,13 @@ namespace experimental {
 class Root
 {
 public:
+    // for IPipelineWriter, mainly
+    typedef uint8_t boundary_t;
+
+    
+    static CONSTEXPR boundary_t boundary_segment = 3;
+    static CONSTEXPR boundary_t boundary_message = 4;
+
     enum State
     {
         Uninitialized,

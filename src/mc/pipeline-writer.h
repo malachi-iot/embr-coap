@@ -48,7 +48,8 @@ public:
 
     // Advance write buffer by length amount (expects that
     // peek_write buffer was utilized that much)
-    virtual bool advance_write(size_t length) = 0;
+    // boundary maps to PipelineMessage::CopiedStatus::boundary
+    virtual bool advance_write(size_t length, uint8_t boundary = 0) = 0;
 };
 
 
@@ -101,7 +102,7 @@ public:
     }
 
 
-    virtual bool advance_write(size_t length) OVERRIDE
+    virtual bool advance_write(size_t length, uint8_t boundary = 0) OVERRIDE
     {
         if(length > length_used + buffer.length()) return false;
 
