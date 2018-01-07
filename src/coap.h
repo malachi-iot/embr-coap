@@ -2,6 +2,10 @@
 // Created by malachi on 10/20/17.
 //
 
+// Enhanced std::clog diagnostics
+#define DEBUG2
+
+
 #include "platform.h"
 #include "mc/pipeline.h"
 #include <stdint.h>
@@ -114,6 +118,11 @@ public:
 };
 
 namespace experimental {
+
+const char* get_description(Option::State state);
+
+std::ostream& operator <<(std::ostream& out, Option::State state);
+
 
 // FIX: Need a better name.  Root class of helpers for message-level
 // Encoder/Decoder operations

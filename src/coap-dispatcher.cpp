@@ -1,5 +1,3 @@
-//#define DEBUG2
-
 //
 // Created by Malachi Burke on 12/26/17.
 //
@@ -10,50 +8,8 @@ namespace moducom { namespace coap {
 
 namespace experimental {
 
-const char* get_description(OptionDecoder::State state)
-{
-    switch(state)
-    {
-        case OptionDecoder::FirstByte:
-            return "Inspecting initial option data";
-
-        case OptionDecoder::OptionDeltaDone:
-            return "Delta (option number) found";
-
-        case OptionDecoder::Payload:
-            return "Payload marker found";
-
-        case OptionDecoder::OptionDelta:
-            return "Delta found";
-
-        case OptionDecoder::OptionValue:
-            return "Inspecting value data";
-
-        case OptionDecoder::OptionValueDone:
-            return "Value data complete";
-
-        case OptionDecoder::OptionDeltaAndLengthDone:
-            return "Delta and length simultaneously done";
-
-        default:
-            return NULLPTR;
-    }
-}
-
-#ifdef DEBUG2
-std::ostream& operator <<(std::ostream& out, OptionDecoder::State state)
-{
-    const char* description = get_description(state);
-
-    if(description != NULLPTR)
-        out << description;
-    else
-        out << (int)state;
-
-    return out;
-}
-#endif
-
+// TODO: Eventually clean up dispatch_option and then
+// just run process_iterate always at the bottom
 bool Dispatcher::dispatch_iterate(Context& context)
 {
     const pipeline::MemoryChunk::readonly_t& chunk = context.chunk;
@@ -68,12 +24,13 @@ bool Dispatcher::dispatch_iterate(Context& context)
 
         case TokenDone:
             dispatch_token();
-
-            state(OptionsStart);
+            process_iterate(context);
             break;
 
         case Options:
         {
+            // Repeating ourselves (and not calling) from decoder because of the special way in which
+            // dispatcher reads out options
 #ifdef DEBUG2
             std::clog << __func__ << ": 1 optionDecoder state = " << (optionDecoder.state()) << std::endl;
 #endif
@@ -144,7 +101,6 @@ void Dispatcher::dispatch_header()
 }
 
 // also handles pre-dispatch processing
-// 100% untested
 size_t Dispatcher::dispatch_option(const pipeline::MemoryChunk::readonly_t& optionChunk)
 {
     // FIX: we generally expect to be at FirstByte state here, however in the future this
