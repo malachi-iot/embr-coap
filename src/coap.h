@@ -3,7 +3,7 @@
 //
 
 // Enhanced std::clog diagnostics
-#define DEBUG2
+//#define DEBUG2
 
 
 #include "platform.h"
@@ -119,11 +119,6 @@ public:
 
 namespace experimental {
 
-const char* get_description(Option::State state);
-
-std::ostream& operator <<(std::ostream& out, Option::State state);
-
-
 // FIX: Need a better name.  Root class of helpers for message-level
 // Encoder/Decoder operations
 class Root
@@ -173,6 +168,15 @@ typedef Header::RequestMethodEnum header_request_code_t;
 
 typedef Option::ExtendedMode extended_mode_t;
 typedef Option _extended_mode_t;
+typedef Root::State root_state_t;
+
+const char* get_description(Option::State state);
+const char* get_description(root_state_t state);
+
+#ifdef DEBUG2
+std::ostream& operator <<(std::ostream& out, Option::State state);
+#endif
+
 
 }
 

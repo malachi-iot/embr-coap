@@ -290,6 +290,127 @@ public:
 
 void process_header_request(Header request, Header* response);
 
+
+// NOT USED just capturing idea that pipeline reader and pipeline writer might actually be 99% the same
+template <class TMessage, typename custom_size_t = size_t>
+class IPipeline2
+{
+    typedef uint8_t boundary_t;
+
+public:
+    virtual TMessage current() = 0;
+
+    virtual bool next() = 0;
+
+    virtual custom_size_t advance(custom_size_t length, boundary_t boundary) = 0;
+};
+
+
+namespace v2 {
+// NOTE:
+// Ultimately we will have 3 classes of data streaming/pipelining:
+// 1) classic stream-style copy-oriented, augmented by "boundary" capability
+// 2) normal, in which case pipeline "writer" will maintain buffer
+// 3) buffered, in which case pipeline itself maintains buffer
+//
+// right now code architecture is a mess and does not reflect or truly support this
+
+// named experimental::v2 because we have so many experimental things already , so this is current
+// newest one
+
+struct v2_traits
+{
+    typedef size_t custom_size_t;
+    typedef uint8_t boundary_t;
+};
+
+template <class TTraits = v2_traits>
+class IStreamReader
+{
+    typedef TTraits traits_t;
+    typedef typename traits_t::custom_size_t size_t;
+    typedef typename traits_t::boundary_t boundary_t;
+
+public:
+    // number of bytes available to read, up to boundary condition if specified
+    virtual size_t available(boundary_t boundary = 0) = 0;
+
+    // reads read_into.length(), available() or boundary-condition-met bytes, whichever arrives
+    // first.  return value reflects bytes read
+    // TODO: May also need a way to reflect if boundary is hit
+    virtual size_t read(const pipeline::MemoryChunk& read_into, boundary_t boundary = 0) = 0;
+};
+
+
+template <class TTraits = v2_traits>
+class IPipelineReader : public IPipeline2<pipeline::PipelineMessage, typename TTraits::custom_size_t>
+{
+public:
+
+};
+
+
+template <class TTraits = v2_traits>
+class IStreamWriter
+{
+    typedef TTraits traits_t;
+    typedef typename traits_t::custom_size_t size_t;
+    typedef typename traits_t::boundary_t boundary_t;
+
+public:
+    // how many non-blockable bytes we can write
+    virtual size_t writeable() = 0;
+
+    // writes write_from.length(), writeable() whichever comes first.  Demarkates
+    // the "end" of this write with boundary
+    virtual size_t write(const pipeline::MemoryChunk::readonly_t& write_from, boundary_t boundary = 0) = 0;
+};
+
+template <class TTraits = v2_traits>
+class IPipelineWriter
+{
+    typedef TTraits traits_t;
+    typedef typename traits_t::custom_size_t size_t;
+    typedef typename traits_t::boundary_t boundary_t;
+
+public:
+    // returns true if we can register any more messages
+    virtual bool writeable() = 0;
+
+    // registers a specified pipeline message.  For now, we still utilize
+    // PipelineMessage::CopiedStatus::boundary field, but starting to feel like
+    // that might be phased out ... ?  at least in this context
+    virtual bool write(const pipeline::PipelineMessage& register_message) = 0;
+};
+
+
+template <class TTraits = v2_traits>
+class IBufferedPipelineWriter
+{
+    typedef TTraits traits_t;
+    typedef typename traits_t::custom_size_t size_t;
+    typedef typename traits_t::boundary_t boundary_t;
+
+public:
+
+    // Acquire present managed buffer
+    virtual pipeline::PipelineMessage current() = 0;
+
+    // Move to next managed buffer
+    virtual bool next() = 0;
+
+    // mark the current message at the given position with a boundary
+    // NOTE: This clashes with current PipelineMessage::CopiedStatus::boundary approach
+    virtual bool boundary(size_t position, boundary_t boundary) = 0;
+};
+
+
+
+}
+
+
+
+
 }}}
 
 #endif //MC_COAP_TEST_EXPERIMENTAL_H
