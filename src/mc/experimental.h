@@ -144,6 +144,14 @@ public:
         return writer.peek_write(preferred_minimum_length);
     }
 
+    void payload(const pipeline::MemoryChunk& chunk)
+    {
+        if(state != _state_t::Payload)
+            payload_marker();
+
+        writer.write_experimental(chunk);
+    }
+
 
     inline void advance(size_t advance_amount) { writer.advance_write(advance_amount); }
 

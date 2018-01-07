@@ -49,6 +49,12 @@ public:
         this->m_length = length;
     }
 
+    ReadOnlyMemoryChunk(const char* str)
+    {
+        m_data = (uint8_t*)str;
+        m_length = strlen(str);
+    }
+
     // FIX: Temporary name until we refactor all usages away from raw field
     size_t length() const { return m_length; }
 

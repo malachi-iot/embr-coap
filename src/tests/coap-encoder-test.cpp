@@ -55,10 +55,11 @@ TEST_CASE("CoAP encoder tests", "[coap-encoder]")
 
         moducom::pipeline::MemoryChunk chunk2 = encoder.payload();
 
-        int l = sprintf((char*)chunk2.data(), "Guess we'll do it directly %s", "won't we");
+        int l = sprintf((char*)chunk2.data(), "Guess we'll do it directly %s.", "won't we");
 
         // remove null terminator
         encoder.advance(l - 1);
+        //encoder.payload("Now for something completely different");
 
         encoder.complete();
 
@@ -77,5 +78,13 @@ TEST_CASE("CoAP encoder tests", "[coap-encoder]")
         token[0] = '3';
 
         REQUIRE(token[0] == '3');
+    }
+    // TODO: Move this to more proper test file location
+    SECTION("Read Only Memory Buffer")
+    {
+        // TODO: Make a layer2::string merely to be a wrapper around const char*
+        MemoryChunk::readonly_t str("Test");
+
+        REQUIRE(str.length() == 4);
     }
 }
