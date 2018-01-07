@@ -153,7 +153,7 @@ public:
     }
 
 
-    inline void copy_from(const pipeline::MemoryChunk& chunk)
+    inline void copy_from(const pipeline::MemoryChunk::readonly_t& chunk)
     {
         ::memcpy(buffer, chunk.data(), chunk._length());
     }

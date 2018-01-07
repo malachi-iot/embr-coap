@@ -59,7 +59,7 @@ public:
     }
 
 
-    virtual void on_token(const moducom::pipeline::MemoryChunk& chunk, bool last_chunk)
+    virtual void on_token(const moducom::pipeline::MemoryChunk::readonly_t& chunk, bool last_chunk)
     {
         token.copy_from(chunk);
     }
@@ -89,13 +89,13 @@ public:
 
     // will get called repeatedly until option_value is completely provided
     // Not called if option_header.length() == 0
-    virtual void on_option(number_t number, const moducom::pipeline::MemoryChunk& option_value_part, bool last_chunk) OVERRIDE
+    virtual void on_option(number_t number, const moducom::pipeline::MemoryChunk::readonly_t& option_value_part, bool last_chunk) OVERRIDE
     {
     };
 
 
     // FIX: Not getting called, but we need some kind of "message done" signal -
-    virtual void on_payload(const moducom::pipeline::MemoryChunk& chunk, bool last_chunk) OVERRIDE
+    virtual void on_payload(const moducom::pipeline::MemoryChunk::readonly_t& chunk, bool last_chunk) OVERRIDE
     {
     }
 
@@ -161,7 +161,7 @@ int main()
 
         std::cout << "Responding with " << send_bytes << " bytes" << std::endl;
 
-        sendto(newsockfd, outbuf._data(), send_bytes, 0, (sockaddr*) &cli_addr, clilen);
+        sendto(newsockfd, outbuf.data(), send_bytes, 0, (sockaddr*) &cli_addr, clilen);
         //close(newsockfd);
     }
 
