@@ -29,6 +29,8 @@ protected:
     custom_size_t m_length;
 
 public:
+    size_t length() const { return m_length; }
+
     typedef TTraits traits_t;
 };
 
@@ -49,14 +51,12 @@ public:
         this->m_length = length;
     }
 
+    // EXPERIMENTAL - string version
     ReadOnlyMemoryChunk(const char* str)
     {
         m_data = (uint8_t*)str;
         m_length = strlen(str);
     }
-
-    // FIX: Temporary name until we refactor all usages away from raw field
-    size_t length() const { return m_length; }
 
     const uint8_t* data() const { return m_data; }
 
