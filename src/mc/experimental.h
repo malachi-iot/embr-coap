@@ -414,6 +414,14 @@ public:
 
     // for the current message acquire where the requested boundary ends, starting from 'position'
     virtual size_t get_boundary(boundary_t boundary, size_t position = 0) const = 0;
+
+    // only useful for read mode where previous write mode has already created boundaries (therefore read only)
+    inline const pipeline::MemoryChunk::readonly_t& to_boundary(boundary_t boundary, size_t start_from = 0)
+    {
+        size_t boundary_position = get_boundary(boundary, start_from);
+        const pipeline::MemoryChunk::readonly_t& c = current_ro();
+        return pipeline::MemoryChunk::readonly_t(c.data() + start_from, c.data() + boundary_position);
+    }
 };
 
 
