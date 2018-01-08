@@ -350,6 +350,7 @@ public:
 };
 
 
+
 template <class TTraits = v2_traits>
 class IStreamWriter
 {
@@ -384,8 +385,10 @@ public:
 };
 
 
+// TODO: Would be nice to have readonly version of this too, but not sure how practical that is
+// in C++ land
 template <class TTraits = v2_traits>
-class IBufferedPipelineWriter
+class IManagedBuffer
 {
     typedef TTraits traits_t;
     typedef typename traits_t::custom_size_t size_t;
@@ -394,14 +397,23 @@ class IBufferedPipelineWriter
 public:
 
     // Acquire present managed buffer
-    virtual pipeline::PipelineMessage current() = 0;
+    virtual const pipeline::MemoryChunk& current() const = 0;
+
+    const pipeline::MemoryChunk::readonly_t& current_ro() const { return current(); }
 
     // Move to next managed buffer
+    // NOTE: This may side-effect previous current() memory chunks into being invalid
+    // (pointers may get reallocated, etc)
     virtual bool next() = 0;
 
-    // mark the current message at the given position with a boundary
-    // NOTE: This clashes with current PipelineMessage::CopiedStatus::boundary approach
-    virtual bool boundary(size_t position, boundary_t boundary) = 0;
+    // resent current() to beginning
+    virtual bool reset(bool reset_boundaries = false) = 0;
+
+    // mark the current buffer at the given position with a boundary
+    virtual bool set_boundary(boundary_t boundary, size_t position) = 0;
+
+    // for the current message acquire where the requested boundary ends, starting from 'position'
+    virtual size_t get_boundary(boundary_t boundary, size_t position = 0) const = 0;
 };
 
 
