@@ -410,6 +410,7 @@ public:
     virtual bool reset(bool reset_boundaries = false) = 0;
 
     // mark the current buffer at the given position with a boundary
+    // NOTE: COnsider making this something that moves current() forward
     virtual bool set_boundary(boundary_t boundary, size_t position) = 0;
 
     // for the current message acquire where the requested boundary ends, starting from 'position'
@@ -429,7 +430,10 @@ public:
 }
 
 
-
+class Obstack : public dynamic::IMemory
+{
+public:
+};
 
 }}}
 

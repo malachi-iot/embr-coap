@@ -33,6 +33,12 @@ void process_header_request(Header input, Header* output)
     }
 }
 
+// input must be a CON message for this method
+bool process_reset(Header input, Header* output)
+{
+    output->copy_message_id(input);
+    output->type(Header::Reset);
+}
 
 bool process_header_response(Header input, Header* output)
 {

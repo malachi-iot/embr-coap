@@ -20,6 +20,27 @@
 namespace moducom {
 namespace coap {
 
+// all timeouts/delays/etc for these COAP_ constants are in seconds
+// https://tools.ietf.org/html/rfc7252#section-4.8
+#define COAP_ACK_TIMEOUT        2
+#define COAP_DEFAULT_LEUISURE   5
+
+#define COAP_ACK_RANDOM_FACTOR  1.5
+#define COAP_MAX_RETRANSMIT     4
+#define COAP_NSTART             1
+#define COAP_PROBING_RATE       1   // in bytes per second
+
+// https://tools.ietf.org/html/rfc7252#section-4.8.2
+#define COAP_MAX_TRANSMIT_SPAN  COAP_ACK_TIMEOUT * ((2 ** COAP_MAX_RETRANSMIT) - 1) * COAP_ACK_RANDOM_FACTOR
+#define COAP_MAX_TRANSMIT_WAIT  COAP_ACK_TIMEOUT * ((2 ** (COAP_MAX_RETRANSMIT + 1)) - 1) * COAP_ACK_RANDOM_FACTOR
+#define COAP_MAX_LATENCY        100
+#define COAP_PROCESSING_DELAY   COAP_ACK_TIMEOUT
+#define COAP_MAX_RTT            (2 * COAP_MAX_LATENCY) + COAP_PROCESSING_DELAY
+#define COAP_EXCHANGE_LIFETIME  COAP_MAX_TRANSMIT_SPAN + (2 * COAP_MAX_LATENCY) + COAP_PROCESSING_DELAY
+#define COAP_NON_LIFETIME       COAP_MAX_TRANSMIT_SPAN + COAP_MAX_LATENCY
+
+
+
 #define COAP_OPTION_DELTA_POS   4
 #define COAP_OPTION_DELTA_MASK  15
 #define COAP_OPTION_LENGTH_POS  0
