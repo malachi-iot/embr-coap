@@ -435,6 +435,7 @@ class Obstack : public dynamic::IMemory
 public:
 };
 
+
 }}}
 
 #endif //MC_COAP_TEST_EXPERIMENTAL_H

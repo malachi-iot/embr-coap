@@ -105,10 +105,16 @@ public:
             Forbidden =         COAP_RESPONSE_CODE(ClientError, 03),
             NotFound =          COAP_RESPONSE_CODE(ClientError, 04),
             MethodNotAllowed =  COAP_RESPONSE_CODE(ClientError, 05),
+            NotAcceptable =             COAP_RESPONSE_CODE(ClientError, 06),
+            PreConditionFailed =        COAP_RESPONSE_CODE(ClientError, 12),
+            RequestEntityTooLarge =     COAP_RESPONSE_CODE(ClientError, 13),
+            UnsupportedContentFormat =  COAP_RESPONSE_CODE(ClientError, 15),
             InternalServerError =   COAP_RESPONSE_CODE(ServerError, 00),
             NotImplemented =        COAP_RESPONSE_CODE(ServerError, 01),
             ServiceUnavailable =    COAP_RESPONSE_CODE(ServerError, 03),
+            GatewayTimeout =        COAP_RESPONSE_CODE(ServerError, 04),
             ProxyingNotSupported =  COAP_RESPONSE_CODE(ServerError, 05)
+
         };
 
 

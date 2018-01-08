@@ -203,6 +203,17 @@ private:
 public:
     OptionDecoder() : StateHelper(FirstByte) {}
 
+    /*
+    static uint16_t get_max_length(number_t number)
+    {
+        switch(number)
+        {
+            case IfMatch:   return 8;
+        }
+    }*/
+
+    // Do this instead with specialized template trait, then we can handle min, max and type
+
     static ValueFormats get_format(number_t number)
     {
         switch (number)
