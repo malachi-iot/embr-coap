@@ -94,12 +94,17 @@ public:
 
             header_sent = true;
         }
+
+        std::cout << "Got option #: " << number << std::endl;
     }
 
     // will get called repeatedly until option_value is completely provided
     // Not called if option_header.length() == 0
     virtual void on_option(number_t number, const moducom::pipeline::MemoryChunk::readonly_t& option_value_part, bool last_chunk) OVERRIDE
     {
+        std::string value((const char*) option_value_part.data(), option_value_part.length());
+
+        std::cout << "Got option value: " << value << std::endl;
     };
 
 
