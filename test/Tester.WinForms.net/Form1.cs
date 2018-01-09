@@ -33,8 +33,11 @@ namespace Tester.WinForms.net
 
         List<string> mruUris = new List<string>();
 
-        private void btnRequest_Click(object sender, EventArgs e)
+        private async void btnRequest_Click(object sender, EventArgs e)
         {
+            txtPayload.BackColor = SystemColors.Control;
+            txtPayload.Text = null;
+
             var endpoint = new CoapUdpEndPoint();
             var client = new CoapClient(endpoint);
 
@@ -64,7 +67,7 @@ namespace Tester.WinForms.net
             {
                 MessageBox.Show($"Error: {_e.Message}");
             }
-
+            /*
             var requestor = Task.Run(async () =>
             {
                 Console.WriteLine($"Issuing request: {uri}");
@@ -88,8 +91,39 @@ namespace Tester.WinForms.net
                 {
                     Console.WriteLine($"Error: {t.Exception.InnerException.Message}");
                 }
-            });
+            }); */
 
+            Console.WriteLine($"Issuing request: {uri}");
+
+            try
+            {
+                tssActivity.Text = "Sending message";
+
+                await client.SendAsync(message);
+
+                Console.WriteLine($"Phase 1");
+
+                tssActivity.Text = "Waiting for response";
+
+                var response = await client.ReceiveAsync();
+
+                Console.Write("got a response: ");
+
+                tssActivity.Text = "Got response";
+
+                var payload = Encoding.UTF8.GetString(response.Message.Payload);
+
+                Console.WriteLine(payload);
+                txtPayload.Text = payload;
+            }
+            catch(Exception _e)
+            {
+                var _message = $"Error: {_e.Message}";
+                Console.WriteLine(_message);
+                tssActivity.Text = "Error";
+                txtPayload.BackColor = Color.OrangeRed;
+                txtPayload.Text = _message;
+            }
         }
 
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)

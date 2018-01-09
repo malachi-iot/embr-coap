@@ -32,6 +32,11 @@
             this.cmbURI = new System.Windows.Forms.ComboBox();
             this.chkConfirmable = new System.Windows.Forms.CheckBox();
             this.chkSecured = new System.Windows.Forms.CheckBox();
+            this.txtPayload = new System.Windows.Forms.TextBox();
+            this.label1 = new System.Windows.Forms.Label();
+            this.statusStrip1 = new System.Windows.Forms.StatusStrip();
+            this.tssActivity = new System.Windows.Forms.ToolStripStatusLabel();
+            this.statusStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
             // btnRequest
@@ -74,11 +79,49 @@
             this.chkSecured.Text = "Secured";
             this.chkSecured.UseVisualStyleBackColor = true;
             // 
+            // txtPayload
+            // 
+            this.txtPayload.BackColor = System.Drawing.SystemColors.Control;
+            this.txtPayload.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.txtPayload.Location = new System.Drawing.Point(260, 157);
+            this.txtPayload.Multiline = true;
+            this.txtPayload.Name = "txtPayload";
+            this.txtPayload.Size = new System.Drawing.Size(269, 158);
+            this.txtPayload.TabIndex = 4;
+            // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.Location = new System.Drawing.Point(257, 141);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(58, 13);
+            this.label1.TabIndex = 5;
+            this.label1.Text = "Response:";
+            // 
+            // statusStrip1
+            // 
+            this.statusStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.tssActivity});
+            this.statusStrip1.Location = new System.Drawing.Point(0, 318);
+            this.statusStrip1.Name = "statusStrip1";
+            this.statusStrip1.Size = new System.Drawing.Size(541, 22);
+            this.statusStrip1.TabIndex = 6;
+            this.statusStrip1.Text = "statusStrip1";
+            // 
+            // tssActivity
+            // 
+            this.tssActivity.Name = "tssActivity";
+            this.tssActivity.Size = new System.Drawing.Size(39, 17);
+            this.tssActivity.Text = "Ready";
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(541, 340);
+            this.Controls.Add(this.statusStrip1);
+            this.Controls.Add(this.label1);
+            this.Controls.Add(this.txtPayload);
             this.Controls.Add(this.chkSecured);
             this.Controls.Add(this.chkConfirmable);
             this.Controls.Add(this.cmbURI);
@@ -86,6 +129,8 @@
             this.Name = "Form1";
             this.Text = "CoAP tester app";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Form1_FormClosing);
+            this.statusStrip1.ResumeLayout(false);
+            this.statusStrip1.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -97,6 +142,10 @@
         private System.Windows.Forms.ComboBox cmbURI;
         private System.Windows.Forms.CheckBox chkConfirmable;
         private System.Windows.Forms.CheckBox chkSecured;
+        private System.Windows.Forms.TextBox txtPayload;
+        private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.StatusStrip statusStrip1;
+        private System.Windows.Forms.ToolStripStatusLabel tssActivity;
     }
 }
 
