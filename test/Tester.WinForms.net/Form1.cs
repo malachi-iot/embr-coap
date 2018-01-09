@@ -29,6 +29,7 @@ namespace Tester.WinForms.net
             }
 
             cmbURI.DataSource = mruUris;
+            cmbPath.Text = "request_path";
         }
 
         List<string> mruUris = new List<string>();
@@ -45,7 +46,7 @@ namespace Tester.WinForms.net
             bool coaps = chkSecured.Checked;
 
             var uriHost = (coaps ? "coaps" : "coap") + "://" + cmbURI.Text;
-            var uriPath = "";
+            var uriPath = cmbPath.Text;
             string uriArgs = null;
 
             // TODO: This one is more organized for our needs
@@ -101,7 +102,7 @@ namespace Tester.WinForms.net
 
                 await client.SendAsync(message);
 
-                Console.WriteLine($"Phase 1");
+                Console.WriteLine($"Waiting for a response");
 
                 tssActivity.Text = "Waiting for response";
 

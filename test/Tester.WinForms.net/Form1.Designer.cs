@@ -36,7 +36,10 @@
             this.label1 = new System.Windows.Forms.Label();
             this.statusStrip1 = new System.Windows.Forms.StatusStrip();
             this.tssActivity = new System.Windows.Forms.ToolStripStatusLabel();
+            this.dataGridView1 = new System.Windows.Forms.DataGridView();
+            this.cmbPath = new System.Windows.Forms.ComboBox();
             this.statusStrip1.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).BeginInit();
             this.SuspendLayout();
             // 
             // btnRequest
@@ -62,7 +65,7 @@
             this.chkConfirmable.AutoSize = true;
             this.chkConfirmable.Checked = true;
             this.chkConfirmable.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.chkConfirmable.Location = new System.Drawing.Point(260, 73);
+            this.chkConfirmable.Location = new System.Drawing.Point(260, 93);
             this.chkConfirmable.Name = "chkConfirmable";
             this.chkConfirmable.Size = new System.Drawing.Size(81, 17);
             this.chkConfirmable.TabIndex = 2;
@@ -72,7 +75,7 @@
             // chkSecured
             // 
             this.chkSecured.AutoSize = true;
-            this.chkSecured.Location = new System.Drawing.Point(260, 96);
+            this.chkSecured.Location = new System.Drawing.Point(260, 116);
             this.chkSecured.Name = "chkSecured";
             this.chkSecured.Size = new System.Drawing.Size(66, 17);
             this.chkSecured.TabIndex = 3;
@@ -83,16 +86,16 @@
             // 
             this.txtPayload.BackColor = System.Drawing.SystemColors.Control;
             this.txtPayload.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            this.txtPayload.Location = new System.Drawing.Point(260, 157);
+            this.txtPayload.Location = new System.Drawing.Point(12, 157);
             this.txtPayload.Multiline = true;
             this.txtPayload.Name = "txtPayload";
-            this.txtPayload.Size = new System.Drawing.Size(269, 158);
+            this.txtPayload.Size = new System.Drawing.Size(228, 158);
             this.txtPayload.TabIndex = 4;
             // 
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(257, 141);
+            this.label1.Location = new System.Drawing.Point(12, 141);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(58, 13);
             this.label1.TabIndex = 5;
@@ -114,11 +117,29 @@
             this.tssActivity.Size = new System.Drawing.Size(39, 17);
             this.tssActivity.Text = "Ready";
             // 
+            // dataGridView1
+            // 
+            this.dataGridView1.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.dataGridView1.Location = new System.Drawing.Point(260, 141);
+            this.dataGridView1.Name = "dataGridView1";
+            this.dataGridView1.Size = new System.Drawing.Size(240, 150);
+            this.dataGridView1.TabIndex = 7;
+            // 
+            // cmbPath
+            // 
+            this.cmbPath.FormattingEnabled = true;
+            this.cmbPath.Location = new System.Drawing.Point(260, 64);
+            this.cmbPath.Name = "cmbPath";
+            this.cmbPath.Size = new System.Drawing.Size(211, 21);
+            this.cmbPath.TabIndex = 8;
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(541, 340);
+            this.Controls.Add(this.cmbPath);
+            this.Controls.Add(this.dataGridView1);
             this.Controls.Add(this.statusStrip1);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.txtPayload);
@@ -131,6 +152,7 @@
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Form1_FormClosing);
             this.statusStrip1.ResumeLayout(false);
             this.statusStrip1.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -146,6 +168,8 @@
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.StatusStrip statusStrip1;
         private System.Windows.Forms.ToolStripStatusLabel tssActivity;
+        private System.Windows.Forms.DataGridView dataGridView1;
+        private System.Windows.Forms.ComboBox cmbPath;
     }
 }
 
