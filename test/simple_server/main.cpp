@@ -1,6 +1,7 @@
 #include <iostream>
 
 #include "../../src/coap_transmission.h"
+#include "../../src/mc/experimental.h"
 
 #include <stdio.h>
 #include <unistd.h>
@@ -42,13 +43,18 @@ public:
     virtual void on_header(Header header) OVERRIDE
     {
         Header::TypeEnum type = header.type();
-        uint8_t token_length = header.token_length();
-        uint16_t mid = header.message_id();
+        //uint8_t token_length = header.token_length();
+        //uint16_t mid = header.message_id();
 
         ASSERT_ERROR(Header::Confirmable, type, "Expected confirmable");
 
-        // FIX: raw clearing/initializing something necessary that we aren't yet
+        // FIX: clumsy init/copy operation.  Needed for now because we don't
+        // initialize "version" bit as smoothly as we could, and also conveniently
+        // copies MID and token length for us
         outgoing_header.raw = header.raw;
+
+        // TODO: Eventually do something like this, but for now we are low-levelling it
+        //experimental::process_header_request(header, &outgoing_header);
 
         // assuming we were requested with confirmable
         outgoing_header.type(Header::Acknowledgement);
@@ -72,6 +78,9 @@ public:
     virtual void on_option(number_t number, uint16_t length) OVERRIDE
     {
         outgoing_header.response_code(Header::Code::Valid);
+        // as you can see we wait to send header and friends until we receive options
+        // as a simulation of real life where incoming options tend to determine how
+        // we respond
         if(!header_sent)
         {
             encoder.header(outgoing_header);

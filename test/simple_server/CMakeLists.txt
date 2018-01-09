@@ -10,7 +10,7 @@ set(LIB_PATH ../../src)
 # due to memory.h & string.h naming collisions
 #include_directories(${LIB_PATH})
 
-file(GLOB LIB_SRC "${LIB_PATH}/*.cpp")
+file(GLOB LIB_SRC "${LIB_PATH}/*.cpp" "${LIB_PATH}/mc/*.cpp")
 
 add_library(MY_LIB ${LIB_SRC})
 
