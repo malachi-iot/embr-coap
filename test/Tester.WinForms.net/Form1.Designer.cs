@@ -38,6 +38,7 @@
             this.tssActivity = new System.Windows.Forms.ToolStripStatusLabel();
             this.dataGridView1 = new System.Windows.Forms.DataGridView();
             this.cmbPath = new System.Windows.Forms.ComboBox();
+            this.btnDebug = new System.Windows.Forms.Button();
             this.statusStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).BeginInit();
             this.SuspendLayout();
@@ -133,11 +134,22 @@
             this.cmbPath.Size = new System.Drawing.Size(211, 21);
             this.cmbPath.TabIndex = 8;
             // 
+            // btnDebug
+            // 
+            this.btnDebug.Location = new System.Drawing.Point(105, 87);
+            this.btnDebug.Name = "btnDebug";
+            this.btnDebug.Size = new System.Drawing.Size(75, 23);
+            this.btnDebug.TabIndex = 9;
+            this.btnDebug.Text = "dbg";
+            this.btnDebug.UseVisualStyleBackColor = true;
+            this.btnDebug.Click += new System.EventHandler(this.btnDebug_Click);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(541, 340);
+            this.Controls.Add(this.btnDebug);
             this.Controls.Add(this.cmbPath);
             this.Controls.Add(this.dataGridView1);
             this.Controls.Add(this.statusStrip1);
@@ -170,6 +182,7 @@
         private System.Windows.Forms.ToolStripStatusLabel tssActivity;
         private System.Windows.Forms.DataGridView dataGridView1;
         private System.Windows.Forms.ComboBox cmbPath;
+        private System.Windows.Forms.Button btnDebug;
     }
 }
 

@@ -131,5 +131,24 @@ namespace Tester.WinForms.net
         {
             File.WriteAllLines(mruUriFile, mruUris);
         }
+
+        private async void btnDebug_Click(object sender, EventArgs e)
+        {
+            var endpoint = new CoapUdpEndPoint();
+            var client = new CoapClient(endpoint);
+
+            var message = new CoapMessage();
+
+            message.Code = CoapMessageCode.Get;
+            message.SetUri("coap://" + cmbURI.Text + "/" + cmbPath.Text);
+
+            tssActivity.Text = "Sending message";
+
+            await client.SendAsync(message);
+
+            tssActivity.Text = "Awaiting response";
+
+            var result = await client.ReceiveAsync();
+        }
     }
 }
