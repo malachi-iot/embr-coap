@@ -104,7 +104,7 @@ public:
     {
         std::string value((const char*) option_value_part.data(), option_value_part.length());
 
-        std::cout << "Got option value: " << value << std::endl;
+        std::cout << "Got option (" << number << ") value: " << value << std::endl;
     };
 
 
