@@ -387,22 +387,27 @@ public:
 
 // TODO: Would be nice to have readonly version of this too, but not sure how practical that is
 // in C++ land
+// Remember: Boundaries represent the *end* of a particular block.  See current_ro
 template <class TTraits = v2_traits>
 class IManagedBuffer
 {
+protected:
     typedef TTraits traits_t;
     typedef typename traits_t::custom_size_t size_t;
     typedef typename traits_t::boundary_t boundary_t;
+    typedef pipeline::MemoryChunk chunk_t;
+    typedef pipeline::MemoryChunk::readonly_t ro_chunk_t;
 
 public:
 
     // Acquire present managed buffer
-    virtual const pipeline::MemoryChunk& current() const = 0;
+    virtual const chunk_t current() const = 0;
 
-    const pipeline::MemoryChunk::readonly_t& current_ro() const { return current(); }
+    // Acquire portion of managed buffer, up until requested boundary (read mode)
+    virtual const ro_chunk_t current_ro(boundary_t boundary = 0) const = 0;
 
-    // Move to next managed buffer
-    // NOTE: This may side-effect previous current() memory chunks into being invalid
+    // Move to next managed buffer or to next current-buffer boundary
+    // NOTE: Expect this to side-effect previous current() memory chunks into being invalid
     // (pointers may get reallocated, etc)
     virtual bool next() = 0;
 
@@ -410,21 +415,41 @@ public:
     virtual bool reset(bool reset_boundaries = false) = 0;
 
     // mark the current buffer at the given position with a boundary
+    // the next() operation will result in the next current() operation either
+    // be on the next managed buffer, or the current one just past this boundary at position
     // NOTE: COnsider making this something that moves current() forward
-    virtual bool set_boundary(boundary_t boundary, size_t position) = 0;
-
-    // for the current message acquire where the requested boundary ends, starting from 'position'
-    virtual size_t get_boundary(boundary_t boundary, size_t position = 0) const = 0;
-
-    // only useful for read mode where previous write mode has already created boundaries (therefore read only)
-    inline const pipeline::MemoryChunk::readonly_t& to_boundary(boundary_t boundary, size_t start_from = 0)
-    {
-        size_t boundary_position = get_boundary(boundary, start_from);
-        const pipeline::MemoryChunk::readonly_t& c = current_ro();
-        return pipeline::MemoryChunk::readonly_t(c.data() + start_from, c.data() + boundary_position);
-    }
+    virtual bool boundary(boundary_t boundary, size_t position) = 0;
 };
 
+
+
+class ManagedBuffer : public IManagedBuffer<>
+{
+    struct BoundaryDescriptor
+    {
+        boundary_t boundary;
+        size_t pos;
+    };
+
+    pipeline::layer1::MemoryChunk<1024> chunk;
+    BoundaryDescriptor boundaries[10];
+    uint8_t boundary_count;
+    uint8_t current_boundary; // when doing a read, this is what boundary (in boundaries) we're up to
+    size_t current_pos; // shared between read and write at the moment
+
+public:
+    ManagedBuffer();
+
+    virtual const chunk_t current() const OVERRIDE;
+
+    virtual const ro_chunk_t current_ro(boundary_t boundary = 0) const OVERRIDE;
+
+    virtual bool next() OVERRIDE;
+
+    virtual bool reset(bool reset_boundaries = false) OVERRIDE;
+
+    virtual bool boundary(boundary_t boundary, size_t position) OVERRIDE;
+};
 
 
 }
