@@ -419,6 +419,22 @@ public:
     // be on the next managed buffer, or the current one just past this boundary at position
     // NOTE: COnsider making this something that moves current() forward
     virtual bool boundary(boundary_t boundary, size_t position) = 0;
+
+    // NOTE: This is an attempt at simplifying api... not so effective
+    // advance past last current_ro() and acquire next current_ro() up to
+    // boundary
+    ro_chunk_t read(boundary_t boundary)
+    {
+        next();
+        return current_ro(boundary);
+    }
+
+    // same idea as read() but for first chunk
+    ro_chunk_t start(boundary_t boundary)
+    {
+        reset();
+        return current_ro(boundary);
+    }
 };
 
 

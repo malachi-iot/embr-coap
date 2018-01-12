@@ -10,6 +10,8 @@ using namespace moducom::coap;
 
 TEST_CASE("experimental tests", "[experimental]")
 {
+    typedef moducom::pipeline::MemoryChunk chunk_t;
+    typedef chunk_t::readonly_t ro_chunk_t;
     SECTION("layer1")
     {
         experimental::layer1::ProcessedMemoryChunk<128> chunk;
@@ -76,5 +78,36 @@ TEST_CASE("experimental tests", "[experimental]")
         c_ro = buffer.current_ro(2);
 
         REQUIRE(c_ro.length() == 7);
+    }
+    SECTION("More ManagedBuffer")
+    {
+        experimental::v2::ManagedBuffer buffer;
+
+        chunk_t w = buffer.current();
+
+        w[0] = '1';
+        w[1] = '2';
+
+        buffer.boundary(2, 2);
+
+        w = buffer.current();
+
+        w[0] = 'a';
+        w[1] = 'b';
+        w[2] = 'c';
+
+        buffer.boundary(2, 3);
+
+        ro_chunk_t r = buffer.start(2);
+
+        REQUIRE(r[0] == '1');
+        REQUIRE(r[1] == '2');
+        REQUIRE(r.length() == 2);
+
+        r = buffer.read(2);
+
+        REQUIRE(r[0] == 'a');
+        REQUIRE(r.length() == 3);
+
     }
 }
