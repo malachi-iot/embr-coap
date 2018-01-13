@@ -32,8 +32,9 @@ struct v2_traits
 template <class TTraits = v2_traits>
 class IManagedBuffer
 {
-protected:
+public:
     typedef TTraits traits_t;
+protected:
     typedef typename traits_t::custom_size_t size_t;
     typedef typename traits_t::boundary_t boundary_t;
     typedef pipeline::MemoryChunk chunk_t;
@@ -76,6 +77,19 @@ public:
         reset();
         return current_ro(boundary);
     }
+};
+
+
+class ManagedBufferHelper
+{
+    typedef IManagedBuffer<> mb_t;
+
+    mb_t& mb;
+    mb_t::traits_t::custom_size_t pos;
+
+
+public:
+    ManagedBufferHelper(mb_t& mb) : mb(mb) {}
 };
 
 
