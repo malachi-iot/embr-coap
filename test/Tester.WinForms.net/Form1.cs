@@ -106,6 +106,7 @@ namespace Tester.WinForms.net
 
                 tssActivity.Text = "Waiting for response";
 
+                // NOTE: NON doesn't yet work here ( I think CoAPNet itself doesnt yet support it)
                 var response = await client.ReceiveAsync();
 
                 Console.Write("got a response: ");
@@ -148,6 +149,7 @@ namespace Tester.WinForms.net
 
             tssActivity.Text = "Awaiting response";
 
+            // NOTE: NON doesn't yet work here ( I think CoAPNet itself doesnt yet support it)
             var result = await client.ReceiveAsync();
         }
     }

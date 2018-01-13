@@ -181,7 +181,14 @@ public:
 
     TypeEnum type() const
     {
-        return (TypeEnum) mask_fixed<COAP_HEADER_TYPE_POS, COAP_HEADER_TYPE_MASK>(1);
+        uint8_t retVal = bytes[0];
+
+        retVal >>= COAP_HEADER_FIXED_TYPE_POS;
+        retVal &= 0b11;
+
+        return (TypeEnum) retVal;
+        // NOTE: Pretty sure this one is bugged
+        //return (TypeEnum) mask_fixed<COAP_HEADER_TYPE_POS, COAP_HEADER_TYPE_MASK>(1);
     }
 
 protected:

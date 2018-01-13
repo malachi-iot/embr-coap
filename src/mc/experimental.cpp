@@ -38,6 +38,7 @@ bool process_reset(Header input, Header* output)
 {
     output->copy_message_id(input);
     output->type(Header::Reset);
+    return true;
 }
 
 bool process_header_response(Header input, Header* output)
@@ -129,6 +130,8 @@ bool v2::ManagedBuffer::next()
     {
         BoundaryDescriptor& bd = boundaries[current_boundary];
     } */
+
+    return true;
 }
 
 

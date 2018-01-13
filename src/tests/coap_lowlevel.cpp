@@ -15,6 +15,7 @@ TEST_CASE("CoAP low level tests", "[coap-lowlevel]")
     {
         Header header(Header::Confirmable);
 
+        REQUIRE(header.type() == Header::Confirmable);
         REQUIRE(header.bytes[0] == 0x40);
         REQUIRE(header.bytes[1] == 0);
         REQUIRE(header.bytes[2] == 0);
@@ -22,6 +23,7 @@ TEST_CASE("CoAP low level tests", "[coap-lowlevel]")
 
         header.type(Header::NonConfirmable);
 
+        REQUIRE(header.type() == Header::NonConfirmable);
         REQUIRE(header.bytes[0] == 0x50);
         REQUIRE(header.bytes[1] == 0);
         REQUIRE(header.bytes[2] == 0);

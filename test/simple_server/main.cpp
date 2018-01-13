@@ -46,7 +46,7 @@ public:
         //uint8_t token_length = header.token_length();
         //uint16_t mid = header.message_id();
 
-        ASSERT_ERROR(Header::Confirmable, type, "Expected confirmable");
+        //ASSERT_ERROR(Header::Confirmable, type, "Expected confirmable");
 
         // FIX: clumsy init/copy operation.  Needed for now because we don't
         // initialize "version" bit as smoothly as we could, and also conveniently
@@ -56,8 +56,12 @@ public:
         // TODO: Eventually do something like this, but for now we are low-levelling it
         //experimental::process_header_request(header, &outgoing_header);
 
-        // assuming we were requested with confirmable
-        outgoing_header.type(Header::Acknowledgement);
+        std::cout << "Header type: " << type << std::endl;
+
+        if(type == Header::Confirmable)
+            outgoing_header.type(Header::Acknowledgement);
+        else if(type == Header::NonConfirmable)
+            outgoing_header.type(Header::NonConfirmable);
 
         // RAW copy covers this portion
         //outgoing_header.token_length(token_length);
