@@ -10,8 +10,77 @@
 #include "../coap-encoder.h"
 #include "pipeline-writer.h"
 
+// To activate ManagedBuffer for BufferedEncoder
+//#define USE_EXP_V2
 
 namespace moducom { namespace coap { namespace experimental {
+
+namespace v2 {
+
+// See the 2nd v2 namespace down below for more comments
+
+struct v2_traits
+{
+    typedef size_t custom_size_t;
+    typedef uint8_t boundary_t;
+};
+
+
+// TODO: Would be nice to have readonly version of this too, but not sure how practical that is
+// in C++ land
+// Remember: Boundaries represent the *end* of a particular block.  See current_ro
+template <class TTraits = v2_traits>
+class IManagedBuffer
+{
+protected:
+    typedef TTraits traits_t;
+    typedef typename traits_t::custom_size_t size_t;
+    typedef typename traits_t::boundary_t boundary_t;
+    typedef pipeline::MemoryChunk chunk_t;
+    typedef pipeline::MemoryChunk::readonly_t ro_chunk_t;
+
+public:
+
+    // Acquire present managed buffer
+    virtual const chunk_t current() const = 0;
+
+    // Acquire portion of managed buffer, up until requested boundary (read mode)
+    virtual const ro_chunk_t current_ro(boundary_t boundary = 0) const = 0;
+
+    // Move to next managed buffer or to next current-buffer boundary
+    // NOTE: Expect this to side-effect previous current() memory chunks into being invalid
+    // (pointers may get reallocated, etc)
+    virtual bool next() = 0;
+
+    // resent current() to beginning
+    virtual bool reset(bool reset_boundaries = false) = 0;
+
+    // mark the current buffer at the given position with a boundary
+    // the next() operation will result in the next current() operation either
+    // be on the next managed buffer, or the current one just past this boundary at position
+    // NOTE: COnsider making this something that moves current() forward
+    virtual bool boundary(boundary_t boundary, size_t position) = 0;
+
+    // NOTE: This is an attempt at simplifying api... not so effective
+    // advance past last current_ro() and acquire next current_ro() up to
+    // boundary
+    ro_chunk_t read(boundary_t boundary)
+    {
+        next();
+        return current_ro(boundary);
+    }
+
+    // same idea as read() but for first chunk
+    ro_chunk_t start(boundary_t boundary)
+    {
+        reset();
+        return current_ro(boundary);
+    }
+};
+
+
+}
+
 
 class BufferedEncoderBase
 {
@@ -27,7 +96,7 @@ protected:
 // NOTE: very experimental.  Seems to burn up more memory and cycles than it saves
 // this attempts to buffer right within IBufferedPipelineWriter itself
 // TODO: Use StateHelper for this
-class BufferedEncoder
+class BufferedEncoder : public StateHelper<experimental::root_state_t>
 {
     //typedef CoAP::OptionExperimentalDeprecated::Numbers number_t;
     //typedef CoAP::ParserDeprecated::State state_t;
@@ -35,27 +104,35 @@ class BufferedEncoder
     typedef experimental::option_number_t number_t;
     typedef experimental::root_state_t state_t;
     typedef experimental::_root_state_t _state_t;
+    typedef StateHelper<state_t> base_t;
 
 
+#ifdef USE_EXP_V2
+    v2::IManagedBuffer<>& mb;
+#else
     pipeline::IBufferedPipelineWriter& writer;
+#endif
 
     // TODO: We could union-ize buffer and optionEncoder, since buffer
     // primarily serves header and token
     pipeline::MemoryChunk buffer;
     ExperimentalPrototypeBlockingOptionEncoder1 optionEncoder;
 
-    state_t state;
-
     // ensure header and token are advanced past
     void flush_token(state_t s)
     {
-        if(state == _state_t::Header)
+        if(state() == _state_t::Header)
         {
             size_t pos = 4 + header()->token_length();
+#ifdef USE_EXP_V2
+            mb.boundary(Root::boundary_segment, pos);
+            mb.next();
+#else
             writer.advance_write(pos, Root::boundary_segment);
+#endif
         }
 
-        state = s;
+        state(s);
     }
 
 public:
@@ -66,13 +143,23 @@ public:
     }
 
 
+#ifdef USE_EXP_V2
+    BufferedEncoder(v2::IManagedBuffer<>& mb) :
+            base_t(_state_t::Header),
+            mb(mb)
+#else
     BufferedEncoder(pipeline::IBufferedPipelineWriter& writer) :
-            state(_state_t::Header),
+            base_t(_state_t::Header),
             writer(writer)
-    {
+#endif
+        {
         CONSTEXPR size_t minimum_length = (sizeof(Header) + sizeof(layer1::Token));
 
+#ifdef USE_EXP_V2
+        buffer = mb.current();
+#else
         buffer = writer.peek_write(minimum_length);
+#endif
 
         header()->raw = 0;
 
@@ -118,7 +205,11 @@ public:
         flush_token(_state_t::Options);
         optionEncoder.option(writer, number, length);
 
+#ifdef USE_EXP_V2
+        return mb.current();
+#else
         return writer.peek_write(length);
+#endif
     }
 
 
@@ -132,33 +223,58 @@ public:
     void payload_marker()
     {
         flush_token(_state_t::Payload);
+#ifdef USE_EXP_V2
+        // TODO: FIX: Need a kind of rolling/stringwriter POS behavior
+        // don't necessarily have to do it IN IManagedBuffer
+#error Not supported yet
+#else
         writer.write(0xFF);
+#endif
     }
 
 
     pipeline::MemoryChunk payload(size_t preferred_minimum_length = 0)
     {
-        if(state != _state_t::Payload)
+        if(state() != _state_t::Payload)
             payload_marker();
 
+#ifdef USE_EXP_V2
+#error Not supported yet
+#else
         return writer.peek_write(preferred_minimum_length);
+#endif
     }
 
     void payload(const pipeline::MemoryChunk& chunk)
     {
-        if(state != _state_t::Payload)
+        if(state() != _state_t::Payload)
             payload_marker();
 
+#ifdef USE_EXP_V2
+#error Not supported yet
+#else
         writer.write_experimental(chunk);
+#endif
     }
 
 
-    inline void advance(size_t advance_amount) { writer.advance_write(advance_amount); }
+    inline void advance(size_t advance_amount)
+    {
+#ifdef USE_EXP_V2
+#error Not supported yet
+#else
+        writer.advance_write(advance_amount);
+#endif
+    }
 
     // mark encoder as complete, which in turn will mark outgoing writer
     inline void complete()
     {
+#ifdef USE_EXP_V2
+#error Not supported yet
+#else
         writer.advance_write(0, Root::boundary_message);
+#endif
     }
 };
 
@@ -318,12 +434,6 @@ namespace v2 {
 // named experimental::v2 because we have so many experimental things already , so this is current
 // newest one
 
-struct v2_traits
-{
-    typedef size_t custom_size_t;
-    typedef uint8_t boundary_t;
-};
-
 template <class TTraits = v2_traits>
 class IStreamReader
 {
@@ -382,59 +492,6 @@ public:
     // PipelineMessage::CopiedStatus::boundary field, but starting to feel like
     // that might be phased out ... ?  at least in this context
     virtual bool write(const pipeline::PipelineMessage& register_message) = 0;
-};
-
-
-// TODO: Would be nice to have readonly version of this too, but not sure how practical that is
-// in C++ land
-// Remember: Boundaries represent the *end* of a particular block.  See current_ro
-template <class TTraits = v2_traits>
-class IManagedBuffer
-{
-protected:
-    typedef TTraits traits_t;
-    typedef typename traits_t::custom_size_t size_t;
-    typedef typename traits_t::boundary_t boundary_t;
-    typedef pipeline::MemoryChunk chunk_t;
-    typedef pipeline::MemoryChunk::readonly_t ro_chunk_t;
-
-public:
-
-    // Acquire present managed buffer
-    virtual const chunk_t current() const = 0;
-
-    // Acquire portion of managed buffer, up until requested boundary (read mode)
-    virtual const ro_chunk_t current_ro(boundary_t boundary = 0) const = 0;
-
-    // Move to next managed buffer or to next current-buffer boundary
-    // NOTE: Expect this to side-effect previous current() memory chunks into being invalid
-    // (pointers may get reallocated, etc)
-    virtual bool next() = 0;
-
-    // resent current() to beginning
-    virtual bool reset(bool reset_boundaries = false) = 0;
-
-    // mark the current buffer at the given position with a boundary
-    // the next() operation will result in the next current() operation either
-    // be on the next managed buffer, or the current one just past this boundary at position
-    // NOTE: COnsider making this something that moves current() forward
-    virtual bool boundary(boundary_t boundary, size_t position) = 0;
-
-    // NOTE: This is an attempt at simplifying api... not so effective
-    // advance past last current_ro() and acquire next current_ro() up to
-    // boundary
-    ro_chunk_t read(boundary_t boundary)
-    {
-        next();
-        return current_ro(boundary);
-    }
-
-    // same idea as read() but for first chunk
-    ro_chunk_t start(boundary_t boundary)
-    {
-        reset();
-        return current_ro(boundary);
-    }
 };
 
 
