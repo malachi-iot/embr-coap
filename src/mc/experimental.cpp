@@ -145,10 +145,13 @@ bool v2::ManagedBuffer::reset(bool reset_boundaries)
 
 bool v2::ManagedBuffer::boundary(boundary_t boundary, size_t position)
 {
-    BoundaryDescriptor& bd = boundaries[boundary_count++];
+    if(boundary != 0)
+    {
+        BoundaryDescriptor& bd = boundaries[boundary_count++];
 
-    bd.boundary = boundary;
-    bd.pos = current_pos + position;
+        bd.boundary = boundary;
+        bd.pos = current_pos + position;
+    }
 
     current_pos += position;
     return true;

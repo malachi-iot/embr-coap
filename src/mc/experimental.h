@@ -64,6 +64,9 @@ public:
     // making this auto-return the next current()
     virtual bool boundary(boundary_t boundary, size_t position) = 0;
 
+    // For advancing current() start pos through read or write operations
+    void advance(size_t position) { boundary(0, position); }
+
     // NOTE: This is an attempt at simplifying api... not so effective
     // advance past last current_ro() and acquire next current_ro() up to
     // boundary
@@ -79,6 +82,10 @@ public:
         // would actually to be to move between physical chunks, otherwise we'd auto advance intra-chunk
         // via clever use of boundary/current_ro calls
         next();
+
+        // Doesn't work yet because (I think)current_ro doesn't pay close enough attention to current_pos compared to
+        // current_boundary
+        //advance(chunk.length());
         return chunk;
     }
 };
