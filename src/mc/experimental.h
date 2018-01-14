@@ -59,7 +59,9 @@ public:
     // mark the current buffer at the given position with a boundary
     // the next() operation will result in the next current() operation either
     // be on the next managed buffer, or the current one just past this boundary at position
-    // NOTE: COnsider making this something that moves current() forward
+    // NOTE: Consider making this something that moves current() forward without needing a next() call
+    // NOTE: It seems I made boundary() already behave this way during writes.  Instead consider
+    // making this auto-return the next current()
     virtual bool boundary(boundary_t boundary, size_t position) = 0;
 
     // NOTE: This is an attempt at simplifying api... not so effective
@@ -217,7 +219,11 @@ public:
         ASSERT_ERROR(true, length > 0, "Length must be > 0");
 
         flush_token(_state_t::Options);
+#ifdef USE_EXP_V2
+#error No optionEncoder which takes a write-to chunk available yet
+#else
         optionEncoder.option(writer, number, length);
+#endif
 
 #ifdef USE_EXP_V2
         return mb.current();
@@ -253,7 +259,7 @@ public:
             payload_marker();
 
 #ifdef USE_EXP_V2
-#error Not supported yet
+        return buffer;
 #else
         return writer.peek_write(preferred_minimum_length);
 #endif
@@ -265,7 +271,11 @@ public:
             payload_marker();
 
 #ifdef USE_EXP_V2
-#error Not supported yet
+        buffer.copy_from(chunk);
+        // 0-boundary experimental, we need more of an "advance"
+        mb.boundary(0, chunk.length());
+        mb.next();
+        buffer = mb.current();
 #else
         writer.write_experimental(chunk);
 #endif
@@ -275,7 +285,7 @@ public:
     inline void advance(size_t advance_amount)
     {
 #ifdef USE_EXP_V2
-#error Not supported yet
+        mb.boundary(0, advance_amount);
 #else
         writer.advance_write(advance_amount);
 #endif
@@ -285,7 +295,7 @@ public:
     inline void complete()
     {
 #ifdef USE_EXP_V2
-#error Not supported yet
+        mb.boundary(Root::boundary_message, 0);
 #else
         writer.advance_write(0, Root::boundary_message);
 #endif
