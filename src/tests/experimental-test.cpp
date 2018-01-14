@@ -98,7 +98,9 @@ TEST_CASE("experimental tests", "[experimental]")
 
         buffer.boundary(2, 3);
 
-        ro_chunk_t r = buffer.start(2);
+        buffer.reset();
+
+        ro_chunk_t r = buffer.read(2);
 
         REQUIRE(r[0] == '1');
         REQUIRE(r[1] == '2');

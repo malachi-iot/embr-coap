@@ -69,15 +69,17 @@ public:
     // boundary
     ro_chunk_t read(boundary_t boundary)
     {
+        ro_chunk_t chunk =  current_ro(boundary);
+        // FIX: This is an abuse since next() is expected to possibly kill 'chunk' scope
+        // however I am thinking we can get rid of next in lieu of making current_ro actually
+        // do a next automatically (since it's already fast forwarding to the next boundary)
+        // however that might make things complicated if we want a next() operation to HOP
+        // between chunks.
+        // Thinking we might still keep next() but its only application
+        // would actually to be to move between physical chunks, otherwise we'd auto advance intra-chunk
+        // via clever use of boundary/current_ro calls
         next();
-        return current_ro(boundary);
-    }
-
-    // same idea as read() but for first chunk
-    ro_chunk_t start(boundary_t boundary)
-    {
-        reset();
-        return current_ro(boundary);
+        return chunk;
     }
 };
 
