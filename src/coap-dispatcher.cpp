@@ -260,6 +260,128 @@ void Dispatcher::dispatch_token()
     }
 }
 
+
+
+void FactoryDispatcherHandler::on_header(Header header)
+{
+    // NOTE: Very unlikely that we'd dispatch on header itself, but conceivable
+    for(int i = 0; i < handler_factory_count; i++)
+    {
+        IDispatcherHandler* handler = handler_factories[i](handler_memory);
+
+        handler->on_header(header);
+
+        if(handler->is_interested())
+        {
+            chosen = handler;
+            return; // obviously do NOT destruct the chosen handler
+        }
+
+        // placement new demands explicit destructor invocation
+        handler->~IDispatcherHandler();
+    }
+}
+
+
+
+void FactoryDispatcherHandler::on_token(const pipeline::MemoryChunk::readonly_t& token_part, bool last_chunk)
+{
+    if(chosen)
+    {
+        chosen->on_token(token_part, last_chunk);
+        return;
+    }
+
+    // NOTE: Somewhat unlikely that we'd dispatch on token itself, but conceivable
+    // may want to split this into a distinct kind of dispatcher, just because dispatching on
+    // token feels like an explicitly pre known circumstance i.e. session management feature
+    for(int i = 0; i < handler_factory_count; i++)
+    {
+        IDispatcherHandler* handler = handler_factories[i](handler_memory);
+
+        handler->on_token(token_part, last_chunk);
+
+        if(handler->is_interested())
+        {
+            chosen = handler;
+            return; // obviously do NOT destruct the chosen handler
+        }
+
+        // placement new demands explicit destructor invocation
+        handler->~IDispatcherHandler();
+    }
+}
+
+
+void FactoryDispatcherHandler::on_option(number_t number, uint16_t length)
+{
+    if(chosen != NULLPTR)
+    {
+        chosen->on_option(number, length);
+        return;
+    }
+}
+
+void FactoryDispatcherHandler::on_option(number_t number,
+                                      const pipeline::MemoryChunk::readonly_t& option_value_part,
+                                      bool last_chunk)
+{
+    if(chosen != NULLPTR)
+    {
+        chosen->on_option(number, option_value_part, last_chunk);
+        return;
+    }
+
+    for(int i = 0; i < handler_factory_count; i++)
+    {
+        IDispatcherHandler* handler = handler_factories[i](handler_memory);
+
+        // FIX: This only works for non-chunked processing
+        handler->on_option(number, option_value_part.length());
+        handler->on_option(number, option_value_part, true);
+
+        if(handler->is_interested())
+        {
+            chosen = handler;
+            return; // obviously do NOT destruct the chosen handler
+        }
+
+        // placement new demands explicit destructor invocation
+        handler->~IDispatcherHandler();
+    }
+}
+
+void FactoryDispatcherHandler::on_payload(const pipeline::MemoryChunk::readonly_t& payload_part,
+                                       bool last_chunk)
+{
+    if(chosen != NULLPTR)
+    {
+        chosen->on_payload(payload_part, last_chunk);
+        return;
+    }
+
+    // Extremely unlikely that we won't have a chosen handler by now
+    // (unlikely use case)
+    for(int i = 0; i < handler_factory_count; i++)
+    {
+        IDispatcherHandler* handler = handler_factories[i](handler_memory);
+
+        handler->on_payload(payload_part, last_chunk);
+
+        if(handler->is_interested())
+        {
+            // Further unlikely that we'll dispatch mid-chunk
+            // (unlikely that buffers would fall this way, in
+            // addition to extremely unlikely use case)
+            chosen = handler;
+            return; // obviously do NOT destruct the chosen handler, though by now it doesn't much matter
+        }
+
+        // placement new demands explicit destructor invocation
+        handler->~IDispatcherHandler();
+    }
+}
+
 }
 
 }}

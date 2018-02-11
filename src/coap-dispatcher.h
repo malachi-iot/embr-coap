@@ -57,6 +57,9 @@ struct IMessageObserver :     public IHeaderObserver,
 };
 
 
+// At this point, only experimental because I keep futzing with the names - don't like IDispatcherHandler
+// Perhaps IMessageHandler - finally - is the right term?  But IDispatcher + interested() call *do* go
+// together...
 namespace experimental {
 
 // Dispatcher/DispatcherHandler
@@ -76,6 +79,9 @@ public:
         NotRightNow,
         Never
     };
+
+    virtual ~IDispatcherHandler() {}
+
     // NOTE: Experimental
     // flags dispatcher to know that this particular handler wants to be the main handler
     // for remainder of CoAP processing
@@ -92,7 +98,9 @@ public:
 
 // Dispatches one CoAP message at a time based on externally provided input
 // TODO: Break this out into Decoder base class, right now dispatching and decoding
-// are just a little bit too fused together
+// are just a little bit too fused together, at least better than IMessageHandler and IMessageObserver
+// (IMessageObserver's interest should always be determined externally and IMessageHandler is just
+// to generic to say either way)
 class Dispatcher :
     public Decoder,
     public moducom::experimental::forward_list<IDispatcherHandler>
@@ -134,6 +142,73 @@ public:
         reset();
     }
 };
+
+// An in-place new is expected
+typedef IDispatcherHandler* (*dispatcher_handler_factory_fn)(pipeline::MemoryChunk);
+
+
+/*
+struct ShimDispatcherHandlerTraits
+{
+    static bool evaluate_header() { return true; }
+    static bool evaluate_token() { return true; }
+    static bool evaluate_payload() { return true; }
+}; */
+
+// Utilizes a list of IDispatcherHandler factories to create then
+// evaluate incoming messages for interest.  NOTE: Each created
+// IDispatcherHandler is immediately destructed if it does not
+// express interest, so until one is chosen, it is considered stateless
+// this also means that if any option (dispatch-on) data is chunked, it
+// will create an awkwardness so likely that needs to be cached up before
+// hand, if necessary
+//template <class TTraits = ShimDispatcherHandlerTraits>
+// Not doing TTraits just yet because that would demand a transition to an .hpp file,
+// which I am not against but more work than appropriate right now
+class FactoryDispatcherHandler : public IDispatcherHandler
+{
+    const dispatcher_handler_factory_fn* handler_factories;
+    const int handler_factory_count;
+
+    pipeline::MemoryChunk handler_memory;
+
+    IDispatcherHandler* chosen;
+
+public:
+    FactoryDispatcherHandler(
+            const pipeline::MemoryChunk& handler_memory,
+            dispatcher_handler_factory_fn* handler_factories,
+            int handler_factory_count)
+
+            :handler_memory(handler_memory),
+             handler_factories(handler_factories),
+             handler_factory_count(handler_factory_count),
+             chosen(NULLPTR)
+    {}
+
+
+    virtual void on_header(Header header) OVERRIDE;
+
+    // get called repeatedly until all portion of token is provided
+    // Not called if header reports a token length of 0
+    virtual void on_token(const pipeline::MemoryChunk::readonly_t& token_part,
+                          bool last_chunk) OVERRIDE;
+
+    // gets called once per discovered option, followed optionally by the
+    // on_option value portion taking a pipeline message
+    virtual void on_option(number_t number, uint16_t length) OVERRIDE;
+
+    // will get called repeatedly until option_value is completely provided
+    // Not called if option_header.length() == 0
+    virtual void on_option(number_t number,
+                           const pipeline::MemoryChunk::readonly_t& option_value_part,
+                           bool last_chunk) OVERRIDE;
+
+    virtual void on_payload(const pipeline::MemoryChunk::readonly_t& payload_part,
+                            bool last_chunk) OVERRIDE;
+};
+
+
 
 }
 
