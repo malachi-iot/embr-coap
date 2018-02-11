@@ -48,6 +48,15 @@ struct IPayloadObserver
 };
 
 
+struct IMessageObserver :     public IHeaderObserver,
+                              public ITokenObserver,
+                              public IOptionObserver,
+                              public IPayloadObserver
+{
+
+};
+
+
 namespace experimental {
 
 // Dispatcher/DispatcherHandler
@@ -57,10 +66,7 @@ namespace experimental {
 
 class IDispatcherHandler :
     public moducom::experimental::forward_node<IDispatcherHandler>,
-    public IHeaderObserver,
-    public ITokenObserver,
-    public IOptionObserver,
-    public IPayloadObserver
+    public IMessageObserver
 {
 public:
     enum InterestedEnum
