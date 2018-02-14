@@ -93,9 +93,9 @@ public:
     // NOTE: Experimental
     // flags dispatcher to know that this particular handler wants to be the main handler
     // for remainder of CoAP processing
-    virtual InterestedEnum interested() = 0;
+    virtual InterestedEnum interested() const = 0;
 
-    inline bool is_interested()
+    inline bool is_interested() const
     {
         InterestedEnum i = interested();
 
@@ -103,9 +103,55 @@ public:
     }
 
 
-    inline bool is_always_interested()
+    inline bool is_always_interested() const
     {
         return interested() == Always;
+    }
+};
+
+
+// Convenience class for building dispatcher handlers
+class DispatcherHandlerBase : public IDispatcherHandler
+{
+    InterestedEnum _interested;
+
+protected:
+    void interested(InterestedEnum _interested)
+    {
+        this->_interested = _interested;
+    }
+
+    DispatcherHandlerBase(InterestedEnum _interested = Currently) :
+            _interested(_interested) {}
+
+public:
+    virtual InterestedEnum interested() const OVERRIDE
+    {
+        return _interested;
+    };
+
+    void on_header(Header header) OVERRIDE { }
+
+    void on_token(const pipeline::MemoryChunk::readonly_t& token_part,
+                  bool last_chunk) OVERRIDE
+    {}
+
+    void on_option(number_t number, uint16_t length) OVERRIDE
+    {
+
+    }
+
+    void on_option(number_t number,
+                   const pipeline::MemoryChunk::readonly_t& option_value_part,
+                   bool last_chunk) OVERRIDE
+    {
+
+    }
+
+    void on_payload(const pipeline::MemoryChunk::readonly_t& payload_part,
+                    bool last_chunk) OVERRIDE
+    {
+
     }
 };
 
@@ -226,7 +272,7 @@ public:
     virtual void on_payload(const pipeline::MemoryChunk::readonly_t& payload_part,
                             bool last_chunk) OVERRIDE;
 
-    virtual InterestedEnum interested() OVERRIDE
+    virtual InterestedEnum interested() const OVERRIDE
     {
         return chosen == NULLPTR ? Currently : Always;
     }
