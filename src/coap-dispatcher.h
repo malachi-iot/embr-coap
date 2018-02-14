@@ -72,11 +72,19 @@ class IDispatcherHandler :
     public IMessageObserver
 {
 public:
+    // Enum representing interest level for one particular message
+    // interest level for multiple messages is undefined
     enum InterestedEnum
     {
+        // This dispatcher is always interested in receiving observer messages
         Always,
+        // This dispatcher is currently interested (aka curious/possibly) but
+        // may not be in the future
         Currently,
+        // This dispatcher is currently NOT interested, but may become interested
+        // in the future
         NotRightNow,
+        // This dispatcher never wants any more observations
         Never
     };
 
@@ -206,6 +214,11 @@ public:
 
     virtual void on_payload(const pipeline::MemoryChunk::readonly_t& payload_part,
                             bool last_chunk) OVERRIDE;
+
+    virtual InterestedEnum interested() OVERRIDE
+    {
+        return Currently;
+    }
 };
 
 

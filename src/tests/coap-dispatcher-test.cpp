@@ -75,18 +75,40 @@ public:
 public:
 };
 
+IDispatcherHandler* test_factory1(MemoryChunk chunk)
+{
+    return new (chunk.data()) TestDispatcherHandler;
+}
+
+dispatcher_handler_factory_fn test_factories[] =
+{
+    test_factory1
+};
+
 TEST_CASE("CoAP dispatcher tests", "[coap-dispatcher]")
 {
+    MemoryChunk chunk(buffer_16bit_delta, sizeof(buffer_16bit_delta));
+
     SECTION("Test 1")
     {
         TestDispatcherHandler dispatcherHandler;
         Dispatcher dispatcher;
         //layer3::MemoryChunk<128> chunk;
-        MemoryChunk chunk(buffer_16bit_delta, sizeof(buffer_16bit_delta));
 
         dispatcher.head(&dispatcherHandler);
         dispatcher.dispatch(chunk);
 
 
+    }
+    SECTION("Factory")
+    {
+        // in-place new holder
+        layer3::MemoryChunk<128> dispatcherBuffer;
+
+        FactoryDispatcherHandler fdh(dispatcherBuffer, test_factories, 1);
+        Dispatcher dispatcher;
+
+        dispatcher.head(&fdh);
+        dispatcher.dispatch(chunk);
     }
 }
