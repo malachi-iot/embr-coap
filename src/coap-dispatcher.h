@@ -101,6 +101,12 @@ public:
 
         return i == Always || i == Currently;
     }
+
+
+    inline bool is_always_interested()
+    {
+        return interested() == Always;
+    }
 };
 
 

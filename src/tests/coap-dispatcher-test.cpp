@@ -11,6 +11,43 @@ using namespace moducom::coap;
 using namespace moducom::coap::experimental;
 using namespace moducom::pipeline;
 
+
+class UriPathDispatcherHandler : public IDispatcherHandler
+{
+    InterestedEnum _interested;
+
+
+public:
+    UriPathDispatcherHandler() : _interested(Currently) {}
+
+    InterestedEnum interested () OVERRIDE { return _interested; }
+
+    void on_header(Header header) OVERRIDE
+    {
+        if(!header.is_request()) _interested = Never;
+    }
+
+    void on_token(const MemoryChunk::readonly_t& token_part, bool last_chunk) OVERRIDE
+    {}
+
+    void on_option(number_t number, uint16_t length) OVERRIDE
+    {
+
+    }
+
+    void on_option(number_t number,
+                           const MemoryChunk::readonly_t& option_value_part,
+                           bool last_chunk) OVERRIDE
+    {
+
+    }
+
+    void on_payload(const MemoryChunk::readonly_t& payload_part, bool last_chunk) OVERRIDE
+    {
+
+    }
+};
+
 class TestDispatcherHandler : public IDispatcherHandler
 {
     int option_test_number;
@@ -80,9 +117,16 @@ IDispatcherHandler* test_factory1(MemoryChunk chunk)
     return new (chunk.data()) TestDispatcherHandler;
 }
 
+
+IDispatcherHandler* test_factory2(MemoryChunk chunk)
+{
+    return new (chunk.data()) UriPathDispatcherHandler;
+}
+
 dispatcher_handler_factory_fn test_factories[] =
 {
-    test_factory1
+    test_factory1,
+    test_factory2
 };
 
 TEST_CASE("CoAP dispatcher tests", "[coap-dispatcher]")
@@ -105,9 +149,12 @@ TEST_CASE("CoAP dispatcher tests", "[coap-dispatcher]")
         // in-place new holder
         layer3::MemoryChunk<128> dispatcherBuffer;
 
-        FactoryDispatcherHandler fdh(dispatcherBuffer, test_factories, 1);
+        FactoryDispatcherHandler fdh(dispatcherBuffer, test_factories, 2);
         Dispatcher dispatcher;
 
+        // doesn't fully test new UriPath handler because TestDispatcherHandler
+        // is not stateless (and shouldn't be expected to be) but because of that
+        // setting it to "Currently" makes it unable to test its own options properly
         dispatcher.head(&fdh);
         dispatcher.dispatch(chunk);
     }
