@@ -48,10 +48,16 @@ struct IPayloadObserver
 };
 
 
-struct IMessageObserver :     public IHeaderObserver,
-                              public ITokenObserver,
-                              public IOptionObserver,
-                              public IPayloadObserver
+
+struct IOptionAndPayloadObserver :
+        public IOptionObserver,
+        public IPayloadObserver
+{};
+
+
+struct IMessageObserver :   public IHeaderObserver,
+                            public ITokenObserver,
+                            public IOptionAndPayloadObserver
 {
 
 };

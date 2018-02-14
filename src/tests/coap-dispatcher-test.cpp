@@ -30,24 +30,35 @@ bool starts_with(MemoryChunk::readonly_t chunk, const char* prefix)
     return starts_with(chunk.data(), chunk.length(), prefix);
 }
 
-class UriPathDispatcherHandler : public DispatcherHandlerBase
+
+class UriPathDispatcherHandlerBaseBase : public DispatcherHandlerBase
 {
+protected:
     const char* prefix;
-    IMessageObserver& observer;
 
-public:
-    UriPathDispatcherHandler(const char* prefix, IMessageObserver& observer)
-            : prefix(prefix),
-              observer(observer)
-    {
-
-    }
+    UriPathDispatcherHandlerBaseBase(const char* prefix) : prefix(prefix)
+    {}
 
     void on_header(Header header) OVERRIDE
     {
         if(!header.is_request()) interested(Never);
     }
+};
 
+template <class TObserver>
+class UriPathDispatcherHandlerBase : public UriPathDispatcherHandlerBaseBase
+{
+protected:
+    typedef UriPathDispatcherHandlerBaseBase base_t;
+    TObserver& observer;
+
+public:
+    UriPathDispatcherHandlerBase(const char* prefix, TObserver& observer)
+            : base_t(prefix),
+              observer(observer)
+    {
+
+    }
 
     void on_option(number_t number, uint16_t length) OVERRIDE
     {
@@ -59,8 +70,8 @@ public:
     }
 
     void on_option(number_t number,
-                           const MemoryChunk::readonly_t& option_value_part,
-                           bool last_chunk) OVERRIDE
+                   const MemoryChunk::readonly_t& option_value_part,
+                   bool last_chunk) OVERRIDE
     {
         // If we're always interested, then we've gone into pass thru mode
         if(is_always_interested())
@@ -94,6 +105,18 @@ public:
         ASSERT_WARN(true, is_always_interested(), "Should only arrive here if interested");
 
         observer.on_payload(payload_part, last_chunk);
+    }
+};
+
+class UriPathDispatcherHandler :
+        public UriPathDispatcherHandlerBase<IOptionAndPayloadObserver>
+{
+    typedef UriPathDispatcherHandlerBase<IOptionAndPayloadObserver> base_t;
+public:
+    UriPathDispatcherHandler(const char* prefix, IOptionAndPayloadObserver& observer)
+            : base_t(prefix, observer)
+    {
+
     }
 };
 
