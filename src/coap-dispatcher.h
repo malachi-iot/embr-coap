@@ -116,24 +116,53 @@ public:
 };
 
 
-// Convenience class for building dispatcher handlers
-class DispatcherHandlerBase : public IDispatcherHandler
+class IsInterestedBase
 {
-    InterestedEnum _interested;
+    typedef IDispatcherHandler::InterestedEnum interested_t;
+
+    interested_t _interested;
 
 protected:
-    void interested(InterestedEnum _interested)
+    void interested(interested_t _interested)
     {
         this->_interested = _interested;
     }
 
-    DispatcherHandlerBase(InterestedEnum _interested = Currently) :
-            _interested(_interested) {}
+
+public:
+    inline interested_t interested() const
+    {
+        return _interested;
+    }
+
+    bool is_interested() const
+    {
+        return _interested == IDispatcherHandler::Always ||
+               _interested == IDispatcherHandler::Currently;
+    }
+};
+
+
+// Convenience class for building dispatcher handlers
+class DispatcherHandlerBase :
+        public IDispatcherHandler,
+        public IsInterestedBase
+{
+protected:
+    void interested(InterestedEnum _interested)
+    {
+        IsInterestedBase::interested(_interested);
+    }
+
+    DispatcherHandlerBase(InterestedEnum _interested = Currently)
+    {
+        interested(_interested);
+    }
 
 public:
     virtual InterestedEnum interested() const OVERRIDE
     {
-        return _interested;
+        return IsInterestedBase::interested();
     };
 
     void on_header(Header header) OVERRIDE { }
@@ -241,11 +270,19 @@ class FactoryDispatcherHandler : public IDispatcherHandler
     const dispatcher_handler_factory_fn* handler_factories;
     const int handler_factory_count;
 
-    struct State
+    class State : public IsInterestedBase
     {
-        InterestedEnum interested;
         // FIX: optimize this out
         bool state_initialized;
+
+    public:
+        bool initialized() const { return state_initialized; }
+
+        bool interested(InterestedEnum value)
+        {
+            state_initialized = true;
+            IsInterestedBase::interested(value);
+        }
 
         State() : state_initialized(false) {}
     };

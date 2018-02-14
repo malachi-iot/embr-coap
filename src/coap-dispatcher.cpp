@@ -270,12 +270,11 @@ void FactoryDispatcherHandler::on_header(Header header)
         IDispatcherHandler* handler = handler_factories[i](handler_memory);
         State& state = handler_states[i];
 
-        if(state.interested == Never && state.state_initialized) continue;
+        if(!state.is_interested() && state.initialized()) continue;
 
         handler->on_header(header);
 
-        state.interested = handler->interested();
-        state.state_initialized = true;
+        state.interested(handler->interested());
 
         if(handler->is_always_interested())
         {
@@ -306,12 +305,11 @@ void FactoryDispatcherHandler::on_token(const pipeline::MemoryChunk::readonly_t&
         IDispatcherHandler* handler = handler_factories[i](handler_memory);
         State& state = handler_states[i];
 
-        if(state.interested == Never && state.state_initialized) continue;
+        if(!state.is_interested() && state.initialized()) continue;
 
         handler->on_token(token_part, last_chunk);
 
-        state.interested = handler->interested();
-        state.state_initialized = true;
+        state.interested(handler->interested());
 
         if(handler->is_always_interested())
         {
@@ -349,14 +347,13 @@ void FactoryDispatcherHandler::on_option(number_t number,
         IDispatcherHandler* handler = handler_factories[i](handler_memory);
         State& state = handler_states[i];
 
-        if(state.interested == Never && state.state_initialized) continue;
+        if(!state.is_interested() && state.initialized()) continue;
 
         // FIX: This only works for non-chunked processing
         handler->on_option(number, option_value_part.length());
         handler->on_option(number, option_value_part, true);
 
-        state.interested = handler->interested();
-        state.state_initialized = true;
+        state.interested(handler->interested());
 
         if(handler->is_always_interested())
         {
@@ -391,12 +388,11 @@ void FactoryDispatcherHandler::on_payload(const pipeline::MemoryChunk::readonly_
         IDispatcherHandler* handler = handler_factories[i](handler_memory);
         State& state = handler_states[i];
 
-        if(state.interested == Never && state.state_initialized) continue;
+        if(!state.is_interested() && state.initialized()) continue;
 
         handler->on_payload(payload_part, last_chunk);
 
-        state.interested = handler->interested();
-        state.state_initialized = true;
+        state.interested(handler->interested());
 
         if(handler->is_always_interested())
         {
