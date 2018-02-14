@@ -235,6 +235,19 @@ class FactoryDispatcherHandler : public IDispatcherHandler
     const dispatcher_handler_factory_fn* handler_factories;
     const int handler_factory_count;
 
+    struct State
+    {
+        InterestedEnum interested;
+        // FIX: optimize this out
+        bool state_initialized;
+
+        State() : state_initialized(false) {}
+    };
+
+
+    // FIX: Once again another memory allocation consideration
+    State handler_states[10];
+
     pipeline::MemoryChunk handler_memory;
 
     IDispatcherHandler* chosen;
@@ -249,7 +262,9 @@ public:
              handler_factories(handler_factories),
              handler_factory_count(handler_factory_count),
              chosen(NULLPTR)
-    {}
+    {
+
+    }
 
 
     virtual void on_header(Header header) OVERRIDE;

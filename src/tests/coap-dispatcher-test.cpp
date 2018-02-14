@@ -18,10 +18,10 @@ bool starts_with(const TChar* s, int slen, const char* prefix)
 {
     while(*prefix && slen--)
     {
-        if(*prefix++ != *s++) return true;
+        if(*prefix++ != *s++) return false;
     }
 
-    return false;
+    return true;
 }
 
 
@@ -37,7 +37,8 @@ class UriPathDispatcherHandler : public DispatcherHandlerBase
 
 public:
     UriPathDispatcherHandler(const char* prefix, IMessageObserver& observer)
-            : prefix(prefix), observer(observer)
+            : prefix(prefix),
+              observer(observer)
     {
 
     }
@@ -96,12 +97,14 @@ public:
     }
 };
 
-class TestDispatcherHandler : public IDispatcherHandler
+class TestDispatcherHandler : public DispatcherHandlerBase
 {
     int option_test_number;
 
 public:
-    TestDispatcherHandler() : option_test_number(0) {}
+    TestDispatcherHandler(InterestedEnum i = Always) :
+            DispatcherHandlerBase(i),
+            option_test_number(0) {}
 
     virtual void on_header(Header header) OVERRIDE
     {
@@ -151,29 +154,30 @@ public:
         REQUIRE(payload_part[0] == buffer_16bit_delta[12]);
         REQUIRE(payload_part[payload_part.length()] == buffer_16bit_delta[12 + payload_part.length()]);
     }
-
-    InterestedEnum interested() const OVERRIDE
-    {
-        return Always;
-    }
-
-public:
 };
+
+extern dispatcher_handler_factory_fn test_sub_factories[];
 
 IDispatcherHandler* test_factory1(MemoryChunk chunk)
 {
-    return new (chunk.data()) TestDispatcherHandler;
+    return new (chunk.data()) TestDispatcherHandler(IDispatcherHandler::Never);
 }
 
 
 IDispatcherHandler* test_factory2(MemoryChunk chunk)
 {
-    // TODO: still need to crack the nut on memory management, this test
-    // case isn't representative of how we really might handle memory in
-    // this scenario
-    static TestDispatcherHandler handler;
+    MemoryChunk& uri_handler_chunk = chunk;
+    MemoryChunk v1_handler_chunk = chunk.remainder(sizeof(UriPathDispatcherHandler));
+    MemoryChunk v1_handler_inner_chunk = v1_handler_chunk.remainder(sizeof(FactoryDispatcherHandler));
 
-    return new (chunk.data()) UriPathDispatcherHandler("v1", handler);
+    FactoryDispatcherHandler* fdh = new (v1_handler_chunk.data()) FactoryDispatcherHandler(
+            v1_handler_inner_chunk,
+            test_sub_factories, 1);
+
+    // TODO: will need some way to invoke fdh destructor
+    //return new (uri_handler_chunk.data()) UriPathDispatcherHandler("v1", *fdh);
+    // TEST instead of v1 to work with our existing test data
+    return new (uri_handler_chunk.data()) UriPathDispatcherHandler("TEST", *fdh);
 }
 
 dispatcher_handler_factory_fn test_factories[] =
@@ -182,12 +186,41 @@ dispatcher_handler_factory_fn test_factories[] =
     test_factory2
 };
 
+
+class TestDispatcherHandler2 : public DispatcherHandlerBase
+{
+public:
+    void on_payload(const MemoryChunk::readonly_t& payload_part,
+                    bool last_chunk) OVERRIDE
+    {
+        REQUIRE(payload_part[0] == 0x10);
+        REQUIRE(payload_part[1] == 0x11);
+        REQUIRE(payload_part[2] == 0x12);
+        REQUIRE(payload_part.length() == 7);
+    }
+};
+
+IDispatcherHandler* test_sub_factory1(MemoryChunk chunk)
+{
+    static TestDispatcherHandler2 handler;
+
+    // To be v1/path1
+    //return new (chunk.data()) UriPathDispatcherHandler("path1", handler);
+    // TEST/POS to work with our existing test data
+    return new (chunk.data()) UriPathDispatcherHandler("POS", handler);
+}
+
+dispatcher_handler_factory_fn test_sub_factories[] =
+{
+    test_sub_factory1
+};
+
 TEST_CASE("CoAP dispatcher tests", "[coap-dispatcher]")
 {
-    MemoryChunk chunk(buffer_16bit_delta, sizeof(buffer_16bit_delta));
-
     SECTION("Test 1")
     {
+        MemoryChunk chunk(buffer_16bit_delta, sizeof(buffer_16bit_delta));
+
         TestDispatcherHandler dispatcherHandler;
         Dispatcher dispatcher;
         //layer3::MemoryChunk<128> chunk;
@@ -199,6 +232,8 @@ TEST_CASE("CoAP dispatcher tests", "[coap-dispatcher]")
     }
     SECTION("Factory")
     {
+        MemoryChunk chunk(buffer_plausible, sizeof(buffer_plausible));
+
         // in-place new holder
         layer3::MemoryChunk<128> dispatcherBuffer;
 
