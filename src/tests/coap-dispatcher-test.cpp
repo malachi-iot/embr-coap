@@ -164,6 +164,20 @@ IDispatcherHandler* test_factory1(MemoryChunk chunk)
 }
 
 
+template <dispatcher_handler_factory_fn* factories, int count, const char* uri_path>
+IDispatcherHandler* uri_helper(MemoryChunk chunk)
+{
+    MemoryChunk& uri_handler_chunk = chunk;
+    MemoryChunk sub_handler_chunk = chunk.remainder(sizeof(UriPathDispatcherHandler));
+    MemoryChunk sub_handler_inner_chunk = sub_handler_chunk.remainder(sizeof(FactoryDispatcherHandler));
+
+    FactoryDispatcherHandler* fdh = new (sub_handler_chunk.data()) FactoryDispatcherHandler(
+            sub_handler_inner_chunk,
+            factories, count);
+
+    return new (uri_handler_chunk.data()) UriPathDispatcherHandler(uri_path, *fdh);
+}
+
 IDispatcherHandler* test_factory2(MemoryChunk chunk)
 {
     MemoryChunk& uri_handler_chunk = chunk;
@@ -177,13 +191,16 @@ IDispatcherHandler* test_factory2(MemoryChunk chunk)
     // TODO: will need some way to invoke fdh destructor
     //return new (uri_handler_chunk.data()) UriPathDispatcherHandler("v1", *fdh);
     // TEST instead of v1 to work with our existing test data
-    return new (uri_handler_chunk.data()) UriPathDispatcherHandler("TEST", *fdh);
+    return new (uri_handler_chunk.data()) UriPathDispatcherHandler("OLD_TEST", *fdh);
 }
+
+extern CONSTEXPR char TEST_FACTORY4_NAME[] = "TEST";
 
 dispatcher_handler_factory_fn test_factories[] =
 {
     test_factory1,
-    test_factory2
+    test_factory2,
+    uri_helper<test_sub_factories, 1, TEST_FACTORY4_NAME>
 };
 
 
@@ -237,7 +254,7 @@ TEST_CASE("CoAP dispatcher tests", "[coap-dispatcher]")
         // in-place new holder
         layer3::MemoryChunk<128> dispatcherBuffer;
 
-        FactoryDispatcherHandler fdh(dispatcherBuffer, test_factories, 2);
+        FactoryDispatcherHandler fdh(dispatcherBuffer, test_factories, 3);
         Dispatcher dispatcher;
 
         // doesn't fully test new UriPath handler because TestDispatcherHandler
