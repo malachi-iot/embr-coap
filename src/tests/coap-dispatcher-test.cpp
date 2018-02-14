@@ -164,10 +164,12 @@ IDispatcherHandler* test_factory1(MemoryChunk chunk)
 }
 
 
+// TODO: Fix this name
 template <dispatcher_handler_factory_fn* factories, int count, const char* uri_path>
 IDispatcherHandler* uri_helper(MemoryChunk chunk)
 {
     MemoryChunk& uri_handler_chunk = chunk;
+    // semi-objstack behavior
     MemoryChunk sub_handler_chunk = chunk.remainder(sizeof(UriPathDispatcherHandler));
     MemoryChunk sub_handler_inner_chunk = sub_handler_chunk.remainder(sizeof(FactoryDispatcherHandler));
 
@@ -177,6 +179,63 @@ IDispatcherHandler* uri_helper(MemoryChunk chunk)
 
     return new (uri_handler_chunk.data()) UriPathDispatcherHandler(uri_path, *fdh);
 }
+
+
+// Does not work because compiler struggles to cast back down to IMessageObserver
+// for some reason
+template <const char* uri_path, IMessageObserver* observer>
+IDispatcherHandler* uri_helper3(MemoryChunk chunk)
+{
+    return new (chunk.data()) UriPathDispatcherHandler(uri_path, *observer);
+}
+
+
+// Creates a unique static TMessageObserver associated with this uri_path
+template <const char* uri_path, class TMessageObserver>
+IDispatcherHandler* uri_helper4(MemoryChunk chunk)
+{
+    static TMessageObserver observer;
+
+    return new (chunk.data()) UriPathDispatcherHandler(uri_path, observer);
+}
+
+
+template <typename T>
+struct array_helper
+{
+    static CONSTEXPR int count() { return 0; }
+};
+
+template <typename T, ptrdiff_t N>
+struct array_helper<T[N]>
+{
+    typedef T element_t;
+    static CONSTEXPR ptrdiff_t count() { return N; }
+};
+
+
+/*
+template <class TArray>
+int _array_helper_count(TArray array)
+{
+    array_helper<TArray, > array_descriptor;
+
+    return array_helper<TArray>::count();
+} */
+
+template <typename T, int size>
+CONSTEXPR int _array_helper_count(T (&) [size]) { return size; }
+
+template <typename T, int size>
+CONSTEXPR T* _array_helper_contents(T (&t) [size]) { return t; }
+
+
+/*
+template <dispatcher_handler_factory_fn factories[N], int N>
+IDispatcherHandler* uri_helper(MemoryChunk chunk)
+{
+
+} */
 
 IDispatcherHandler* test_factory2(MemoryChunk chunk)
 {
@@ -196,11 +255,45 @@ IDispatcherHandler* test_factory2(MemoryChunk chunk)
 
 extern CONSTEXPR char TEST_FACTORY4_NAME[] = "TEST";
 
+
+template <typename T, int size>
+CONSTEXPR dispatcher_handler_factory_fn uri_helper_helper(T a [size], const char* name)
+{
+    return &uri_helper<a, size, TEST_FACTORY4_NAME>;
+};
+
+
+template <class TArray>
+dispatcher_handler_factory_fn uri_helper2(CONSTEXPR TArray& array)
+{
+    typedef array_helper<TArray> array_helper_t;
+
+    CONSTEXPR int count = _array_helper_count(array);
+    const void* contents = _array_helper_contents(array);
+
+    // really needs real constexpr from C++11 to work
+    //return &uri_helper<array, count, name>;
+
+    /*
+    MemoryChunk& uri_handler_chunk = chunk;
+    MemoryChunk sub_handler_chunk = chunk.remainder(sizeof(UriPathDispatcherHandler));
+    MemoryChunk sub_handler_inner_chunk = sub_handler_chunk.remainder(sizeof(FactoryDispatcherHandler));
+
+    FactoryDispatcherHandler* fdh = new (sub_handler_chunk.data()) FactoryDispatcherHandler(
+            sub_handler_inner_chunk,
+            array, count);
+
+    return new (uri_handler_chunk.data()) UriPathDispatcherHandler(uri_path, *fdh); */
+};
+
+
 dispatcher_handler_factory_fn test_factories[] =
 {
     test_factory1,
     test_factory2,
-    uri_helper<test_sub_factories, 1, TEST_FACTORY4_NAME>
+    uri_helper<test_sub_factories, 1, TEST_FACTORY4_NAME>,
+    //uri_helper_helper(test_sub_factories, "test")
+    //uri_helper_helper2<TEST_FACTORY4_NAME>(test_sub_factories)
 };
 
 
@@ -217,19 +310,26 @@ public:
     }
 };
 
-IDispatcherHandler* test_sub_factory1(MemoryChunk chunk)
-{
-    static TestDispatcherHandler2 handler;
 
-    // To be v1/path1
-    //return new (chunk.data()) UriPathDispatcherHandler("path1", handler);
-    // TEST/POS to work with our existing test data
-    return new (chunk.data()) UriPathDispatcherHandler("POS", handler);
+extern CONSTEXPR char POS_HANDLER_URI[] = "POS";
+
+extern TestDispatcherHandler2 pos_handler;
+TestDispatcherHandler2 pos_handler;
+
+
+IDispatcherHandler* helper1(MemoryChunk chunk)
+{
+    // compiler struggles to cast pos_handler to IMessageObserver ...
+    // for some reason
+    //return uri_helper3<POS_HANDLER_URI, &pos_handler>(chunk);
 }
 
 dispatcher_handler_factory_fn test_sub_factories[] =
 {
-    test_sub_factory1
+        uri_helper4<POS_HANDLER_URI, TestDispatcherHandler2>
+        //helper1
+//    uri_helper3<POS_HANDLER_URI, _pos_handler>
+        //uri_helper3<POS_HANDLER_URI, _pos_handler>
 };
 
 TEST_CASE("CoAP dispatcher tests", "[coap-dispatcher]")
@@ -263,4 +363,12 @@ TEST_CASE("CoAP dispatcher tests", "[coap-dispatcher]")
         dispatcher.head(&fdh);
         dispatcher.dispatch(chunk);
     }
+    SECTION("Array experimentation")
+    {
+        int array[] = { 1, 2, 3 };
+
+        int count = _array_helper_count(array);
+
+        REQUIRE(count == 3);
+   }
 }
