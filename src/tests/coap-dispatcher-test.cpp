@@ -45,7 +45,7 @@ protected:
     }
 };
 
-template <class TObserver>
+template <class TObserver, bool destruct_observer = false>
 class UriPathDispatcherHandlerBase : public UriPathDispatcherHandlerBaseBase
 {
 protected:
@@ -106,14 +106,22 @@ public:
 
         observer.on_payload(payload_part, last_chunk);
     }
+
+    /*
+    ~UriPathDispatcherHandlerBase()
+    {
+        if(destruct_observer)
+            observer.~IDispatcherHandler();
+    } */
 };
 
+
 class UriPathDispatcherHandler :
-        public UriPathDispatcherHandlerBase<IOptionAndPayloadObserver>
+        public UriPathDispatcherHandlerBase<IDispatcherHandler>
 {
-    typedef UriPathDispatcherHandlerBase<IOptionAndPayloadObserver> base_t;
+    typedef UriPathDispatcherHandlerBase<IDispatcherHandler> base_t;
 public:
-    UriPathDispatcherHandler(const char* prefix, IOptionAndPayloadObserver& observer)
+    UriPathDispatcherHandler(const char* prefix, IDispatcherHandler& observer)
             : base_t(prefix, observer)
     {
 
@@ -187,9 +195,8 @@ IDispatcherHandler* test_factory1(MemoryChunk chunk)
 }
 
 
-// TODO: Fix this name
-template <dispatcher_handler_factory_fn* factories, int count, const char* uri_path>
-IDispatcherHandler* uri_helper(MemoryChunk chunk)
+template <const char* uri_path, dispatcher_handler_factory_fn* factories, int count>
+IDispatcherHandler* uri_plus_factory_dispatcher(MemoryChunk chunk)
 {
     MemoryChunk& uri_handler_chunk = chunk;
     // semi-objstack behavior
@@ -204,6 +211,7 @@ IDispatcherHandler* uri_helper(MemoryChunk chunk)
 }
 
 
+/*
 // Does not work because compiler struggles to cast back down to IMessageObserver
 // for some reason
 template <const char* uri_path, IMessageObserver* observer>
@@ -211,11 +219,11 @@ IDispatcherHandler* uri_helper3(MemoryChunk chunk)
 {
     return new (chunk.data()) UriPathDispatcherHandler(uri_path, *observer);
 }
-
+*/
 
 // Creates a unique static TMessageObserver associated with this uri_path
 template <const char* uri_path, class TMessageObserver>
-IDispatcherHandler* uri_helper4(MemoryChunk chunk)
+IDispatcherHandler* uri_plus_observer_dispatcher(MemoryChunk chunk)
 {
     static TMessageObserver observer;
 
@@ -255,7 +263,7 @@ CONSTEXPR T* _array_helper_contents(T (&t) [size]) { return t; }
 
 /*
 template <dispatcher_handler_factory_fn factories[N], int N>
-IDispatcherHandler* uri_helper(MemoryChunk chunk)
+IDispatcherHandler* uri_plus_factory_dispatcher(MemoryChunk chunk)
 {
 
 } */
@@ -271,19 +279,18 @@ IDispatcherHandler* test_factory2(MemoryChunk chunk)
             test_sub_factories, 1);
 
     // TODO: will need some way to invoke fdh destructor
-    //return new (uri_handler_chunk.data()) UriPathDispatcherHandler("v1", *fdh);
-    // TEST instead of v1 to work with our existing test data
-    return new (uri_handler_chunk.data()) UriPathDispatcherHandler("OLD_TEST", *fdh);
+    return new (uri_handler_chunk.data()) UriPathDispatcherHandler("v1", *fdh);
 }
 
-extern CONSTEXPR char TEST_FACTORY4_NAME[] = "TEST";
+extern CONSTEXPR char STR_TEST[] = "TEST";
 
 
+/*
 template <typename T, int size>
 CONSTEXPR dispatcher_handler_factory_fn uri_helper_helper(T a [size], const char* name)
 {
-    return &uri_helper<a, size, TEST_FACTORY4_NAME>;
-};
+    return &uri_plus_factory_dispatcher<TEST_FACTORY4_NAME, a, size>;
+}; */
 
 
 template <class TArray>
@@ -295,7 +302,7 @@ dispatcher_handler_factory_fn uri_helper2(CONSTEXPR TArray& array)
     const void* contents = _array_helper_contents(array);
 
     // really needs real constexpr from C++11 to work
-    //return &uri_helper<array, count, name>;
+    //return &uri_plus_factory_dispatcher<array, count, name>;
 
     /*
     MemoryChunk& uri_handler_chunk = chunk;
@@ -314,7 +321,7 @@ dispatcher_handler_factory_fn test_factories[] =
 {
     test_factory1,
     test_factory2,
-    uri_helper<test_sub_factories, 1, TEST_FACTORY4_NAME>,
+    uri_plus_factory_dispatcher<STR_TEST, test_sub_factories, 1>,
     //uri_helper_helper(test_sub_factories, "test")
     //uri_helper_helper2<TEST_FACTORY4_NAME>(test_sub_factories)
 };
@@ -349,7 +356,7 @@ IDispatcherHandler* helper1(MemoryChunk chunk)
 
 dispatcher_handler_factory_fn test_sub_factories[] =
 {
-        uri_helper4<POS_HANDLER_URI, TestDispatcherHandler2>
+        uri_plus_observer_dispatcher<POS_HANDLER_URI, TestDispatcherHandler2>
         //helper1
 //    uri_helper3<POS_HANDLER_URI, _pos_handler>
         //uri_helper3<POS_HANDLER_URI, _pos_handler>
