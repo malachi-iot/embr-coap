@@ -173,6 +173,11 @@ struct ShimDispatcherHandlerTraits
 //template <class TTraits = ShimDispatcherHandlerTraits>
 // Not doing TTraits just yet because that would demand a transition to an .hpp file,
 // which I am not against but more work than appropriate right now
+//
+// Presently this class also elects the first IDispatcherHandler which expresses
+// an "Always" interested as the one and only one to further process the message
+// clearly this isn't a system-wide desirable behavior, so be warned.  We do this
+// because the memory management scheme only supports one truly active IDispatcherHandler
 class FactoryDispatcherHandler : public IDispatcherHandler
 {
     const dispatcher_handler_factory_fn* handler_factories;
@@ -217,7 +222,7 @@ public:
 
     virtual InterestedEnum interested() OVERRIDE
     {
-        return Currently;
+        return chosen == NULLPTR ? Currently : Always;
     }
 };
 
