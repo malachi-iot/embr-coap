@@ -264,8 +264,10 @@ TEST_CASE("CoAP dispatcher tests", "[coap-dispatcher]")
     SECTION("Size ofs")
     {
         int size1 = sizeof(IMessageObserver);
+#ifdef FEATURE_DISCRETE_OBSERVERS
         int size2 = sizeof(IOptionAndPayloadObserver);
         int size3 = sizeof(IOptionObserver);
+#endif
         int size4 = sizeof(IDispatcherHandler);
         int size5 = sizeof(IIsInterested);
         int size6 = sizeof(DispatcherHandlerBase);

@@ -80,9 +80,6 @@ struct IMessageObserver
     virtual void on_option(number_t number, const pipeline::MemoryChunk::readonly_t& option_value_part, bool last_chunk) = 0;
     virtual void on_payload(const pipeline::MemoryChunk::readonly_t& payload_part, bool last_chunk) = 0;
 };
-
-typedef IMessageObserver IOptionObserver;
-typedef IMessageObserver IOptionAndPayloadObserver;
 #endif
 
 // At this point, only experimental because I keep futzing with the names - don't like IDispatcherHandler

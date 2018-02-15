@@ -116,6 +116,11 @@ size_t Dispatcher::dispatch_option(const pipeline::MemoryChunk::readonly_t& opti
     // value is never processed
     bool needs_value_processed = true;
     size_t total_length = processed_length;
+#ifdef FEATURE_DISCRETE_OBSERVERS
+    typedef IOptionObserver::number_t option_number_t;
+#else
+    typedef IMessageObserver::number_t option_number_t;
+#endif
 
     handler_t* handler = head();
 
@@ -129,7 +134,7 @@ size_t Dispatcher::dispatch_option(const pipeline::MemoryChunk::readonly_t& opti
                 //case OptionDecoder::OptionDeltaAndLengthDone:
                 case OptionDecoder::ValueStart:
                 {
-                    IOptionObserver::number_t option_number = (IOptionObserver::number_t) optionHolder.number_delta;
+                    option_number_t option_number = (option_number_t) optionHolder.number_delta;
                     uint16_t option_length = optionHolder.length;
 #ifdef DEBUG2
                     std::clog << "Dispatching option: " << option_number << " with length " << optionHolder.length;
@@ -188,7 +193,7 @@ size_t Dispatcher::dispatch_option(const pipeline::MemoryChunk::readonly_t& opti
                     //pipeline::MemoryChunk partialChunk(optionChunk.data, processed_length);
                     //bool full_option_value = optionDecoder.state() == OptionDecoder::OptionValueDone;
                     //handler->on_option(partialChunk, full_option_value);
-                    IOptionObserver::number_t option_number = (IOptionObserver::number_t) optionHolder.number_delta;
+                    option_number_t option_number = (option_number_t) optionHolder.number_delta;
                     handler->on_option(option_number, optionChunk, false);
                     break;
                 }
@@ -200,7 +205,7 @@ size_t Dispatcher::dispatch_option(const pipeline::MemoryChunk::readonly_t& opti
                     // the chunk we're passing through really is and of course
                     // at what boundary it starts
                     //processed_length = optionDecoder.process_iterate(optionChunk, NULLPTR);
-                    IOptionObserver::number_t option_number = (IOptionObserver::number_t) optionHolder.number_delta;
+                    option_number_t option_number = (option_number_t) optionHolder.number_delta;
                     handler->on_option(option_number, optionChunk, true);
                     break;
                 }
