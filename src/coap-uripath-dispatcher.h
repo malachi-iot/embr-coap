@@ -27,6 +27,7 @@ inline bool starts_with(pipeline::MemoryChunk::readonly_t chunk, const char* pre
 }
 
 
+template <bool allow_response = false>
 class UriPathDispatcherHandlerBaseBase : public experimental::DispatcherHandlerBase
 {
 protected:
@@ -37,21 +38,24 @@ protected:
 
     void on_header(Header header) OVERRIDE
     {
-        if(!header.is_request()) interested(Never);
+        if(!allow_response)
+            if(!header.is_request()) interested(Never);
     }
 };
 
 template <class TObserver, bool destruct_observer = false>
-class UriPathDispatcherHandlerBase : public UriPathDispatcherHandlerBaseBase
+class UriPathDispatcherHandlerBase : public UriPathDispatcherHandlerBaseBase<>
 {
 protected:
     typedef UriPathDispatcherHandlerBaseBase base_t;
-    TObserver& observer;
+    TObserver& _observer;
+
+    TObserver& observer() const { return _observer; }
 
 public:
     UriPathDispatcherHandlerBase(const char* prefix, TObserver& observer)
             : base_t(prefix),
-              observer(observer)
+              _observer(observer)
     {
 
     }
@@ -60,7 +64,7 @@ public:
     {
         if(is_always_interested())
         {
-            observer.on_option(number, length);
+            observer().on_option(number, length);
             return;
         }
     }
@@ -72,7 +76,7 @@ public:
         // If we're always interested, then we've gone into pass thru mode
         if(is_always_interested())
         {
-            observer.on_option(number, option_value_part, last_chunk);
+            observer().on_option(number, option_value_part, last_chunk);
             return;
         }
 
@@ -100,7 +104,7 @@ public:
     {
         ASSERT_WARN(true, is_always_interested(), "Should only arrive here if interested");
 
-        observer.on_payload(payload_part, last_chunk);
+        observer().on_payload(payload_part, last_chunk);
     }
 
     /*
