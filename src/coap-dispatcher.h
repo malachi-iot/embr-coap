@@ -8,8 +8,16 @@
 #include "coap-decoder.h"
 #include "mc/linkedlist.h"
 
+// This adds 8 bytes to IDispatcherHandler class when enabled
+//#define FEATURE_IISINTERESTED
+
+// This adds quite a few bytes for an IMessageObserver since each IObserver variant has its own
+// vtable pointer
+//#define FEATURE_DISCRETE_OBSERVERS
+
 namespace moducom { namespace coap {
 
+#ifdef FEATURE_DISCRETE_OBSERVERS
 // re-write and decomposition of IResponderDeprecated
 struct IHeaderObserver
 {
@@ -61,7 +69,21 @@ struct IMessageObserver :   public IHeaderObserver,
 {
 
 };
+#else
+struct IMessageObserver
+{
+    typedef experimental::option_number_t number_t;
 
+    virtual void on_header(Header header) = 0;
+    virtual void on_token(const pipeline::MemoryChunk::readonly_t& token_part, bool last_chunk) = 0;
+    virtual void on_option(number_t number, uint16_t length) = 0;
+    virtual void on_option(number_t number, const pipeline::MemoryChunk::readonly_t& option_value_part, bool last_chunk) = 0;
+    virtual void on_payload(const pipeline::MemoryChunk::readonly_t& payload_part, bool last_chunk) = 0;
+};
+
+typedef IMessageObserver IOptionObserver;
+typedef IMessageObserver IOptionAndPayloadObserver;
+#endif
 
 // At this point, only experimental because I keep futzing with the names - don't like IDispatcherHandler
 // Perhaps IMessageHandler - finally - is the right term?  But IDispatcher + interested() call *do* go
@@ -113,7 +135,6 @@ public:
     bool is_interested() const { return is_interested(_interested); }
 };
 
-
 struct IIsInterested
 {
     typedef IsInterestedBase::InterestedEnum interested_t;
@@ -142,11 +163,32 @@ struct IIsInterested
 
 class IDispatcherHandler :
     public moducom::experimental::forward_node<IDispatcherHandler>,
-    public IMessageObserver,
+    public IMessageObserver
+#ifdef FEATURE_IISINTERESTED
+        ,
     public IIsInterested
+#endif
 {
 public:
     virtual ~IDispatcherHandler() {}
+
+#ifndef FEATURE_IISINTERESTED
+    typedef IsInterestedBase::InterestedEnum interested_t;
+
+    // NOTE: Experimental
+    // flags dispatcher to know that this particular handler wants to be the main handler
+    // for remainder of CoAP processing
+    virtual interested_t interested() const = 0;
+
+    inline bool is_interested() const
+    { return IsInterestedBase::is_interested(interested()); }
+
+
+    inline bool is_always_interested() const
+    {
+        return interested() == IsInterestedBase::Always;
+    }
+#endif
 };
 
 

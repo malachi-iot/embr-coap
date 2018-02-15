@@ -260,5 +260,16 @@ TEST_CASE("CoAP dispatcher tests", "[coap-dispatcher]")
         int count = _array_helper_count(array);
 
         REQUIRE(count == 3);
-   }
+    }
+    SECTION("Size ofs")
+    {
+        int size1 = sizeof(IMessageObserver);
+        int size2 = sizeof(IOptionAndPayloadObserver);
+        int size3 = sizeof(IOptionObserver);
+        int size4 = sizeof(IDispatcherHandler);
+        int size5 = sizeof(IIsInterested);
+        int size6 = sizeof(DispatcherHandlerBase);
+        int size7 = sizeof(UriPathDispatcherHandler);
+        int size8 = sizeof(FactoryDispatcherHandler);
+    }
 }

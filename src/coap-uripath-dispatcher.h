@@ -27,6 +27,8 @@ inline bool starts_with(pipeline::MemoryChunk::readonly_t chunk, const char* pre
 }
 
 
+// though in theory this adds another chain to the vtable list, I guess it being
+// so templatized it doesn't actually register as such
 template <bool allow_response = false>
 class UriPathDispatcherHandlerBaseBase : public experimental::DispatcherHandlerBase
 {
