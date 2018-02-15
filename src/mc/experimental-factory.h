@@ -17,12 +17,42 @@ struct FnFactoryKeyTraits
     static bool equals(TKey left, TKey right) { return left == right; }
 };
 
+// FIX: shamelessly copy/pasted out of coap-uripath-dispatcher
+// consolidated the starts_with code
+
+// Specialized prefix checker which does not expect s to be
+// null terminated, but does expect prefix to be null terminated
+template <typename TChar>
+inline bool starts_with(const TChar* s, int slen, const char* prefix)
+{
+    while(*prefix && slen--)
+    {
+        if(*prefix++ != *s++) return false;
+    }
+
+    return true;
+}
+
+
+inline bool starts_with(pipeline::MemoryChunk::readonly_t chunk, const char* prefix)
+{
+    return starts_with(chunk.data(), chunk.length(), prefix);
+}
+
+
 
 template <>
 struct FnFactoryKeyTraits<const char*>
 {
     static bool equals(const char* left, const char* right)
     { return strcmp(left, right) == 0; }
+
+    static bool equals(pipeline::MemoryChunk::readonly_t& chunk, const char* right)
+    {
+        // TODO: This specialization lets us compare any key type with great detail
+        // we don't have to rely on just an automatic operator conversion
+        return starts_with(chunk, right);
+    }
 };
 
 
@@ -121,13 +151,14 @@ public:
     FnFactory(const item_t* items, int count)
             :items(items), count(count) {}
 
-    static TValue create(const item_t* items, int count, TKey key, context_ref_t context)
+    template <class _TKey>
+    static TValue create(const item_t* items, int count, _TKey key, context_ref_t context)
     {
         for(int i = 0; i < count; i++)
         {
             const item_t& item = items[i];
 
-            if(key_traits_t::equals(item.key, key))
+            if(key_traits_t::equals(key, item.key))
             {
                 return item.factory_fn(context);
             }
@@ -136,7 +167,8 @@ public:
         return value_traits_t::not_found_value();
     }
 
-    inline TValue create(TKey key, context_t context)
+    template <class _TKey>
+    inline TValue create(_TKey key, context_t context)
     {
         return create(items, count, key, context);
     }
@@ -172,8 +204,8 @@ struct FnFactoryHelper
 
     static context_t context() { context_t c; return c; }
 
-    template <typename T, size_t N>
-    static value_t create(T (&items) [N], key_t key, context_ref_t context)
+    template <typename T, size_t N, class TKey>
+    inline static value_t create(T (&items) [N], TKey key, context_ref_t context)
     {
         return factory_t::create(items, N, key, context);
     }

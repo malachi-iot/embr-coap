@@ -14,6 +14,11 @@ int test(experimental::FnFactoryContext context)
     return 7;
 }
 
+int test_wilma(experimental::FnFactoryContext context)
+{
+    return 77;
+}
+
 
 TEST_CASE("experimental tests", "[experimental]")
 {
@@ -126,7 +131,7 @@ TEST_CASE("experimental tests", "[experimental]")
 
         fn_t::item_t items[] =
         {
-            fn_t::item("wilma", test),
+            fn_t::item("wilma", test_wilma),
             experimental::factory_item_helper("fred", test)
         };
 
@@ -143,6 +148,12 @@ TEST_CASE("experimental tests", "[experimental]")
         REQUIRE(result == 7);
 
         result = fn_t::create(items, "wilma", context);
+
+        REQUIRE(result == 77);
+
+        moducom::pipeline::MemoryChunk::readonly_t chunk((uint8_t*)"fred", 4);
+
+        result = factory.create(chunk, context);
 
         REQUIRE(result == 7);
     }
