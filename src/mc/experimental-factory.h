@@ -29,21 +29,23 @@ struct FnFactoryKeyTraits<const char*>
 template <class TValue>
 struct FnFactoryValueTraits
 {
-    static TValue null_value() { return NULLPTR; }
+    static TValue not_found_value() { return NULLPTR; }
 };
 
 template <>
 struct FnFactoryValueTraits<int>
 {
-    static int null_value() { return -1; }
+    static int not_found_value() { return -1; }
 };
 
 
-template <class TKey, class TValue>
+template <class TKey, class TValue, class TContext = FnFactoryContext>
 struct FnFactoryTraits
 {
-    typedef FnFactoryContext context_t;
-    typedef FnFactoryContext context_ref_t;
+    typedef TKey key_t;
+    typedef TValue value_t;
+    typedef TContext context_t;
+    typedef TContext context_ref_t;
 
     typedef TValue (*factory_fn_t)(context_t context);
 
@@ -128,7 +130,7 @@ public:
             }
         }
 
-        return value_traits_t::null_value();
+        return value_traits_t::not_found_value();
     }
 };
 
@@ -140,5 +142,27 @@ FnFactory<typename TItem::key_t, typename TItem::value_t> factory_helper(TItem (
 
     return factory;
 }
+
+
+template <class TTraits>
+struct FnFactoryHelper
+{
+    typedef typename TTraits::key_t key_t;
+    typedef typename TTraits::key_traits_t key_traits_t;
+    typedef typename TTraits::value_t value_t;
+    typedef typename TTraits::value_traits_t value_traits_t;
+    typedef typename TTraits::factory_fn_t factory_fn_t;
+    typedef typename TTraits::context_t context_t;
+    typedef FnFactoryItem<key_t, value_t, TTraits> item_t;
+
+    static item_t item(key_t key, factory_fn_t factory_fn)
+    {
+        return factory_item_helper(key, factory_fn);
+    };
+
+    static context_t context() { context_t c; return c; }
+};
+
+
 
 }}}

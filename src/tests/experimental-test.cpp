@@ -11,7 +11,7 @@ using namespace moducom::coap;
 
 int test(experimental::FnFactoryContext context)
 {
-
+    return 7;
 }
 
 
@@ -121,7 +121,9 @@ TEST_CASE("experimental tests", "[experimental]")
     }
     SECTION("FnFactory")
     {
-        experimental::FnFactoryItem<const char*, int> items[] =
+        typedef experimental::FnFactoryHelper<experimental::FnFactoryTraits<const char*, int> > fn_t;
+
+        fn_t::item_t items[] =
         {
             experimental::factory_item_helper("fred", test)
         };
@@ -134,5 +136,9 @@ TEST_CASE("experimental tests", "[experimental]")
         int result = factory.create("test", context);
 
         REQUIRE(result == -1);
+
+        result = factory.create("fred", context);
+
+        REQUIRE(result == 7);
     }
 }
