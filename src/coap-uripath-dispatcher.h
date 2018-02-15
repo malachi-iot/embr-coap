@@ -134,9 +134,12 @@ experimental::IDispatcherHandler* uri_plus_factory_dispatcher(pipeline::MemoryCh
 {
     pipeline::MemoryChunk& uri_handler_chunk = chunk;
     // semi-objstack behavior
-    pipeline::MemoryChunk sub_handler_chunk = chunk.remainder(sizeof(UriPathDispatcherHandler));
+    CONSTEXPR size_t sizeUriPathDispatcher = sizeof(UriPathDispatcherHandler);
+    CONSTEXPR size_t sizeFactoryDispatcher = sizeof(experimental::FactoryDispatcherHandler);
+
+    pipeline::MemoryChunk sub_handler_chunk = chunk.remainder(sizeUriPathDispatcher);
     pipeline::MemoryChunk sub_handler_inner_chunk =
-            sub_handler_chunk.remainder(sizeof(experimental::FactoryDispatcherHandler));
+            sub_handler_chunk.remainder(sizeFactoryDispatcher);
 
     experimental::FactoryDispatcherHandler* fdh =
             new (sub_handler_chunk.data()) experimental::FactoryDispatcherHandler(

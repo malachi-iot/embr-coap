@@ -240,7 +240,9 @@ TEST_CASE("CoAP dispatcher tests", "[coap-dispatcher]")
         MemoryChunk chunk(buffer_plausible, sizeof(buffer_plausible));
 
         // in-place new holder
-        layer3::MemoryChunk<128> dispatcherBuffer;
+        // FIX: OK all those virtual function tables seem to be bloating
+        // our handlers way, way up...
+        layer3::MemoryChunk<512> dispatcherBuffer;
 
         FactoryDispatcherHandler fdh(dispatcherBuffer, test_factories, 3);
         Dispatcher dispatcher;
