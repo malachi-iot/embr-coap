@@ -68,16 +68,8 @@ struct IMessageObserver :   public IHeaderObserver,
 // together...
 namespace experimental {
 
-// Dispatcher/DispatcherHandler
-// forms a linked list of handlers who inspect incoming messages and based on a flag set
-// one particular dispatcher handler will become the main handler for the remainder of the
-// incoming CoAP message
-
-class IDispatcherHandler :
-    public moducom::experimental::forward_node<IDispatcherHandler>,
-    public IMessageObserver
+struct IsInterestedBase
 {
-public:
     // Enum representing interest level for one particular message
     // interest level for multiple messages is undefined
     enum InterestedEnum
@@ -94,31 +86,8 @@ public:
         Never
     };
 
-    virtual ~IDispatcherHandler() {}
-
-    // NOTE: Experimental
-    // flags dispatcher to know that this particular handler wants to be the main handler
-    // for remainder of CoAP processing
-    virtual InterestedEnum interested() const = 0;
-
-    inline bool is_interested() const
-    {
-        InterestedEnum i = interested();
-
-        return i == Always || i == Currently;
-    }
-
-
-    inline bool is_always_interested() const
-    {
-        return interested() == Always;
-    }
-};
-
-
-class IsInterestedBase
-{
-    typedef IDispatcherHandler::InterestedEnum interested_t;
+private:
+    typedef InterestedEnum interested_t;
 
     interested_t _interested;
 
@@ -135,11 +104,49 @@ public:
         return _interested;
     }
 
-    bool is_interested() const
+    inline static bool is_interested(interested_t value)
     {
-        return _interested == IDispatcherHandler::Always ||
-               _interested == IDispatcherHandler::Currently;
+        return value == Always ||
+               value == Currently;
     }
+
+    bool is_interested() const { return is_interested(_interested); }
+};
+
+
+struct IIsInterested
+{
+    typedef IsInterestedBase::InterestedEnum interested_t;
+
+    // NOTE: Experimental
+    // flags dispatcher to know that this particular handler wants to be the main handler
+    // for remainder of CoAP processing
+    virtual interested_t interested() const = 0;
+
+    inline bool is_interested() const
+    { return IsInterestedBase::is_interested(interested()); }
+
+
+    inline bool is_always_interested() const
+    {
+        return interested() == IsInterestedBase::Always;
+    }
+};
+
+
+
+// Dispatcher/DispatcherHandler
+// forms a linked list of handlers who inspect incoming messages and based on a flag set
+// one particular dispatcher handler will become the main handler for the remainder of the
+// incoming CoAP message
+
+class IDispatcherHandler :
+    public moducom::experimental::forward_node<IDispatcherHandler>,
+    public IMessageObserver,
+    public IIsInterested
+{
+public:
+    virtual ~IDispatcherHandler() {}
 };
 
 
@@ -330,9 +337,10 @@ public:
     virtual void on_payload(const pipeline::MemoryChunk::readonly_t& payload_part,
                             bool last_chunk) OVERRIDE;
 
-    virtual InterestedEnum interested() const OVERRIDE
+    virtual interested_t interested() const OVERRIDE
     {
-        return chosen == NULLPTR ? Currently : Always;
+        return chosen == NULLPTR ?
+               IsInterestedBase::Currently : IsInterestedBase::Always;
     }
 };
 

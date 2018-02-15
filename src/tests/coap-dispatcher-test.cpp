@@ -75,7 +75,7 @@ extern dispatcher_handler_factory_fn test_sub_factories[];
 
 IDispatcherHandler* test_factory1(MemoryChunk chunk)
 {
-    return new (chunk.data()) TestDispatcherHandler(IDispatcherHandler::Never);
+    return new (chunk.data()) TestDispatcherHandler(IsInterestedBase::Never);
 }
 
 
