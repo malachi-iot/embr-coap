@@ -4,9 +4,16 @@
 #include "test-data.h"
 #include "../mc/experimental.h"
 //#include "../mc/pipeline.h"
+#include "../mc/experimental-factory.h"
 
 using namespace moducom::coap;
 //using namespace moducom::pipeline;
+
+int test(experimental::FnFactoryContext context)
+{
+
+}
+
 
 TEST_CASE("experimental tests", "[experimental]")
 {
@@ -111,5 +118,21 @@ TEST_CASE("experimental tests", "[experimental]")
         REQUIRE(r[0] == 'a');
         REQUIRE(r.length() == 3);
 
+    }
+    SECTION("FnFactory")
+    {
+        experimental::FnFactoryItem<const char*, int> items[] =
+        {
+            experimental::factory_item_helper("fred", test)
+        };
+        //experimental::factory_helper(items);
+
+        experimental::FnFactory<const char*, int> factory(items);
+
+        experimental::FnFactoryContext context;
+
+        int result = factory.create("test", context);
+
+        REQUIRE(result == -1);
     }
 }
