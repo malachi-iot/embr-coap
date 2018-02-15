@@ -54,14 +54,13 @@ struct FnFactoryTraits
 };
 
 
-template <class TKey, class TValue, class TTraits = FnFactoryTraits<TKey, TValue> >
+template <class TKey, class TValue, class TContext = typename FnFactoryTraits<TKey, TValue>::context_t>
 struct FnFactoryItem
 {
     typedef TKey key_t;
     typedef TValue value_t;
-    typedef TTraits traits_t;
-    typedef typename traits_t::context_t context_t;
-    typedef TValue (*factory_fn_t)(context_t context);
+    typedef TContext context_t;
+    typedef value_t (*factory_fn_t)(context_t context);
 
     key_t key;
     factory_fn_t factory_fn;
@@ -81,6 +80,7 @@ inline FnFactoryItem<TKey, TValue> factory_item_helper(TKey key,
     return item;
 }
 
+
 template <class TKey, class TValue>
 inline FnFactoryItem<const char*, TValue> factory_item_helper(TKey key,
        TValue (*factory_fn)(typename FnFactoryTraits<TKey, TValue>::context_t))
@@ -94,15 +94,18 @@ inline FnFactoryItem<const char*, TValue> factory_item_helper(TKey key,
 }
 
 
+// TODO: merge FnFactory and FnFactoryHelper - one can use it either static or instantiated that way
 template <class TKey, class TValue, class TTraits = FnFactoryTraits<TKey, TValue> >
 class FnFactory
 {
     typedef TKey key_t;
+    typedef TValue value_t;
     typedef TTraits traits_t;
     typedef typename traits_t::key_traits_t key_traits_t;
     typedef typename traits_t::value_traits_t value_traits_t;
     typedef typename traits_t::context_t context_t;
-    typedef FnFactoryItem<TKey, TValue, traits_t> item_t;
+    typedef typename traits_t::context_ref_t context_ref_t;
+    typedef FnFactoryItem<key_t, value_t, context_t> item_t;
 
     const item_t* items;
     const int count;
@@ -118,7 +121,7 @@ public:
     FnFactory(const item_t* items, int count)
             :items(items), count(count) {}
 
-    TValue create(TKey key, context_t context)
+    static TValue create(const item_t* items, int count, TKey key, context_ref_t context)
     {
         for(int i = 0; i < count; i++)
         {
@@ -131,6 +134,11 @@ public:
         }
 
         return value_traits_t::not_found_value();
+    }
+
+    inline TValue create(TKey key, context_t context)
+    {
+        return create(items, count, key, context);
     }
 };
 
@@ -153,7 +161,9 @@ struct FnFactoryHelper
     typedef typename TTraits::value_traits_t value_traits_t;
     typedef typename TTraits::factory_fn_t factory_fn_t;
     typedef typename TTraits::context_t context_t;
-    typedef FnFactoryItem<key_t, value_t, TTraits> item_t;
+    typedef typename TTraits::context_ref_t context_ref_t;
+    typedef FnFactoryItem<key_t, value_t, context_t> item_t;
+    typedef FnFactory<key_t, value_t, TTraits> factory_t;
 
     static item_t item(key_t key, factory_fn_t factory_fn)
     {
@@ -161,6 +171,12 @@ struct FnFactoryHelper
     };
 
     static context_t context() { context_t c; return c; }
+
+    template <typename T, size_t N>
+    static value_t create(T (&items) [N], key_t key, context_ref_t context)
+    {
+        return factory_t::create(items, N, key, context);
+    }
 };
 
 

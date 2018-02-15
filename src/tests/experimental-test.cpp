@@ -121,23 +121,28 @@ TEST_CASE("experimental tests", "[experimental]")
     }
     SECTION("FnFactory")
     {
-        typedef experimental::FnFactoryHelper<experimental::FnFactoryTraits<const char*, int> > fn_t;
+        typedef experimental::FnFactoryTraits<const char*, int> traits_t;
+        typedef experimental::FnFactoryHelper<traits_t> fn_t;
 
         fn_t::item_t items[] =
         {
+            fn_t::item("wilma", test),
             experimental::factory_item_helper("fred", test)
         };
-        //experimental::factory_helper(items);
 
-        experimental::FnFactory<const char*, int> factory(items);
+        fn_t::factory_t factory(items);
 
-        experimental::FnFactoryContext context;
+        fn_t::context_t context;
 
         int result = factory.create("test", context);
 
         REQUIRE(result == -1);
 
         result = factory.create("fred", context);
+
+        REQUIRE(result == 7);
+
+        result = fn_t::create(items, "wilma", context);
 
         REQUIRE(result == 7);
     }
