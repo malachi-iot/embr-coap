@@ -1,0 +1,9 @@
+#define DEMO_WIFI_SSID      "test"
+#define DEMO_WIFI_PASSWORD  "espressif"
+#define MSGBUFSIZE          1024
+
+#define HELLO_PORT 1887                //multicast port
+#define HELLO_GROUP "239.0.18.87"      //multicast ip
+
+#define SEND_MODE      1              //1: enable send task.0:disable send task
+#define RECV_MODE      1              //1: enable recv task,0:disable recv task
