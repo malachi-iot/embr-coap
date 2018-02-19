@@ -324,7 +324,7 @@ class FactoryDispatcherHandler : public IDispatcherHandler
     public:
         bool initialized() const { return state_initialized; }
 
-        bool interested(InterestedEnum value)
+        void interested(InterestedEnum value)
         {
             state_initialized = true;
             IsInterestedBase::interested(value);

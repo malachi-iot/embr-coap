@@ -210,6 +210,7 @@ IDispatcherHandler* helper1(MemoryChunk chunk)
     // compiler struggles to cast pos_handler to IMessageObserver ...
     // for some reason
     //return uri_helper3<POS_HANDLER_URI, &pos_handler>(chunk);
+	return nullptr;
 }
 
 dispatcher_handler_factory_fn test_sub_factories[] =

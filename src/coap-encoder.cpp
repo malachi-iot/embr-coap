@@ -227,6 +227,7 @@ bool ExperimentalPrototypeNonBlockingOptionEncoder1::option(pipeline::IBufferedP
     // from that due to all the pieces floating around here.  Maybe we need it fully broken out:
     // Reader, BufferedReader, PipelineReader, BufferedPipelineReader
     //writer.writable();
+	return true;
 }
 
 void ExperimentalPrototypeBlockingPayloadEncoder1::payload(pipeline::IPipelineWriter& writer, const pipeline::MemoryChunk& chunk)
