@@ -179,9 +179,7 @@ dispatcher_handler_factory_fn test_factories[] =
 {
     test_factory1,
     test_factory2,
-    uri_plus_factory_dispatcher<STR_TEST, test_sub_factories, 1>,
-    //uri_helper_helper(test_sub_factories, "test")
-    //uri_helper_helper2<TEST_FACTORY4_NAME>(test_sub_factories)
+    uri_plus_factory_dispatcher<STR_TEST, test_sub_factories, 1>
 };
 
 
@@ -205,20 +203,9 @@ extern TestDispatcherHandler2 pos_handler;
 TestDispatcherHandler2 pos_handler;
 
 
-IDispatcherHandler* helper1(MemoryChunk chunk)
-{
-    // compiler struggles to cast pos_handler to IMessageObserver ...
-    // for some reason
-    //return uri_helper3<POS_HANDLER_URI, &pos_handler>(chunk);
-	return nullptr;
-}
-
 dispatcher_handler_factory_fn test_sub_factories[] =
 {
-        uri_plus_observer_dispatcher<POS_HANDLER_URI, TestDispatcherHandler2>
-        //helper1
-//    uri_helper3<POS_HANDLER_URI, _pos_handler>
-        //uri_helper3<POS_HANDLER_URI, _pos_handler>
+    uri_plus_observer_dispatcher<POS_HANDLER_URI, TestDispatcherHandler2>
 };
 
 TEST_CASE("CoAP dispatcher tests", "[coap-dispatcher]")
