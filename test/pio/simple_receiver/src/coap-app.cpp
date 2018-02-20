@@ -8,6 +8,9 @@ using namespace moducom;
 using namespace moducom::coap;
 using namespace moducom::coap::experimental;
 
+// in-place new holder
+static pipeline::layer3::MemoryChunk<256> dispatcherBuffer;
+
 extern "C" void coap_daemon(void *pvParameters)
 {
     lwip::Netconn conn(NETCONN_UDP);
@@ -27,9 +30,6 @@ extern "C" void coap_daemon(void *pvParameters)
         buf.data(&data, &len);
 
         pipeline::MemoryChunk((uint8_t*)data, len);
-
-        // in-place new holder
-        static layer3::MemoryChunk<256> dispatcherBuffer;
 
         //FactoryDispatcherHandler fdh(dispatcherBuffer, test_factories, 3);
 
