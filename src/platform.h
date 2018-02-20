@@ -1,6 +1,12 @@
 #pragma once
 
 //#define DEBUG
+// TODO: Identify a better way to identify presence of C++ iostreams
+#if __ADSPBLACKFIN__ || defined(__unix__) || defined(_MSC_VER)
+// NOTE: Have not tested whether blackfin is properly included here (should be)
+#define FEATURE_MCCOAP_IOSTREAM_NATIVE
+#define FEATURE_MCCOAP_ASSERT_ENABLE
+#endif
 
 // TODO: find "most" standardized version of this
 #ifdef __CPP11__
@@ -42,7 +48,7 @@ typedef double float64_t;
 #endif
 
 // TODO: Make this generate log warnings or something
-#if defined(_MSC_VER) || defined(__GNUC__)
+#ifdef FEATURE_MCCOAP_ASSERT_ENABLE
 #include <iostream>
 #define ASSERT(expected, actual) if((expected) != (actual)) \
 { ::std::cerr << "ASSERT: (" << __func__ << ") " << ::std::endl; }
