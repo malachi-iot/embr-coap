@@ -2,7 +2,7 @@
 
 //#define DEBUG
 // TODO: Identify a better way to identify presence of C++ iostreams
-#if __ADSPBLACKFIN__ || defined(__unix__) || defined(_MSC_VER)
+#if __ADSPBLACKFIN__ || defined(__unix__) || defined(_MSC_VER) || (defined (__APPLE__) && defined (__MACH__))
 // NOTE: Have not tested whether blackfin is properly included here (should be)
 #define FEATURE_MCCOAP_IOSTREAM_NATIVE
 #define FEATURE_MCCOAP_ASSERT_ENABLE
