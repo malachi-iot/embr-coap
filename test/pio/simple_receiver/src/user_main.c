@@ -212,6 +212,9 @@ uint32 user_rf_cal_sector_set(void)
     return rf_cal_sec;
 }
 
+
+extern void coap_daemon(void *);
+
 /******************************************************************************
  * FunctionName : user_init
  * Description  : entry of user application, init user function here
@@ -224,4 +227,5 @@ void user_init(void)
 
     wifi_set_event_handler_cb(wifi_event_handler_cb);
     xTaskCreate(wifi_config, "wfcf", 512, NULL, 4, NULL);
+    xTaskCreate(coap_daemon, "coap", 1024, NULL, 4, NULL);
 }

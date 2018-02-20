@@ -1,3 +1,6 @@
 [submodule "ext/Catch"]
 	path = ext/Catch
 	url = https://github.com/philsquared/Catch.git
+[submodule "ext/lwipcpp"]
+	path = ext/lwipcpp
+	url = git@github.com:malachi-iot/lwipcpp.git
