@@ -217,7 +217,9 @@ protected:
 
 public:
     BlockingEncoder(pipeline::IPipelineWriter& writer) :
+#ifdef DEBUG
             consistency(_state_t::Header),
+#endif
             writer(writer) {}
 
     void header(const Header& header)

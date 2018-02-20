@@ -42,9 +42,10 @@ public:
 
     void generate(coap::layer2::Token* token);
 
-#ifdef DEBUG
+    // FIX: Temporarily making setter always available until architecture settles down
+//#ifdef DEBUG
     void set(uint32_t current) { this->current = current; }
-#endif
+//#endif
 };
 
 
