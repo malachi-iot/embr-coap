@@ -97,6 +97,7 @@ struct FnFactoryItem
 };
 
 
+/*
 template <class TKey, class TValue>
 inline FnFactoryItem<TKey, TValue> factory_item_helper(TKey key,
         //, typename TTraits::factory_fn_t factory_fn)
@@ -109,10 +110,10 @@ inline FnFactoryItem<TKey, TValue> factory_item_helper(TKey key,
 
     return item;
 }
-
+*/
 
 template <class TKey, class TValue>
-inline FnFactoryItem<const char*, TValue> factory_item_helper(TKey key,
+inline FnFactoryItem<TKey, TValue> factory_item_helper(TKey key,
        TValue (*factory_fn)(typename FnFactoryTraits<TKey, TValue>::context_t))
 {
     FnFactoryItem<TKey, TValue> item;
