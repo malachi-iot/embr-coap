@@ -72,6 +72,28 @@ public:
         return ReadOnlyMemoryChunk(m_data + pos, length() - pos);
     }
 
+    // copies out of this chunk to array
+    inline void copy_to(void* _copy_to) const
+    {
+        ::memcpy(_copy_to, m_data, length());
+    }
+
+    // copies up to copy_to_length (or length(), if smaller) to
+    // _copy_to
+    inline size_t copy_to(void* _copy_to, size_t copy_to_length) const
+    {
+        if(length() > copy_to_length)
+        {
+            ::memcpy(_copy_to, m_data, copy_to_length);
+            return copy_to_length;
+        }
+        else
+        {
+            copy_to(_copy_to);
+            return length();
+        }
+    }
+
 };
 
 }
@@ -113,6 +135,7 @@ public:
     {
         ::memcpy(m_data, chunk.data(), chunk.length());
     }
+
 
     inline uint8_t& operator[](size_t index) const
     {

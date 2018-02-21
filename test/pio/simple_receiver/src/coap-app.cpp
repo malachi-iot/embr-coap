@@ -21,7 +21,12 @@ public:
     void on_payload(const pipeline::MemoryChunk::readonly_t& payload_part,
                     bool last_chunk) override
     {
-        printf("Got payload: %d", payload_part.length());
+        char buffer[128]; // because putchar doesn't want to play nice
+
+        int length = payload_part.copy_to(buffer, 127);
+        buffer[length] = 0;
+
+        printf("\r\nGot payload: %s", buffer);
     }
 };
 
@@ -32,6 +37,7 @@ dispatcher_handler_factory_fn root_factories[] =
     uri_plus_factory_dispatcher<STR_URI_V1, v1_factories, 1>
 };
 
+// FIX: Kinda-sorta works, TestDispatcherHandler is *always* run if /v1 appears
 dispatcher_handler_factory_fn v1_factories[] = 
 {
     uri_plus_observer_dispatcher<STR_URI_TEST, TestDispatcherHandler>
