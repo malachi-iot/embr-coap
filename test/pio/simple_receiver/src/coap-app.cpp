@@ -1,5 +1,6 @@
 #include <coap.h>
 #include <coap-uripath-dispatcher.h>
+#include <coap-encoder.h>
 
 #include "lwip/api.hpp"
 
@@ -11,13 +12,20 @@ using namespace moducom::coap::experimental;
 
 // in-place new holder
 static pipeline::layer3::MemoryChunk<256> dispatcherBuffer;
+static pipeline::layer3::MemoryChunk<256> outbuf;
 
 constexpr char STR_URI_V1[] = "v1";
 constexpr char STR_URI_TEST[] = "test";
 
 class TestDispatcherHandler : public DispatcherHandlerBase
 {
+    //experimental::BlockingEncoder& encoder;
+    Header outgoing_header;
+
 public:
+    //TestDispatcherHandler(experimental::BlockingEncoder& encoder)
+    //    encoder(encoder) {}
+
     void on_payload(const pipeline::MemoryChunk::readonly_t& payload_part,
                     bool last_chunk) override
     {
@@ -68,6 +76,8 @@ extern "C" void coap_daemon(void *pvParameters)
 
         FactoryDispatcherHandler fdh(dispatcherBuffer, root_factories, 1);
         Dispatcher dispatcher;
+        pipeline::layer3::SimpleBufferedPipelineWriter writer(outbuf);
+        moducom::coap::experimental::BlockingEncoder encoder(writer);
 
         printf("\r\nGot COAP data: %d", len);
 
