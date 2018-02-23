@@ -296,6 +296,7 @@ struct ShimDispatcherHandlerTraits
     static bool evaluate_payload() { return true; }
 }; */
 
+
 // Utilizes a list of IDispatcherHandler factories to create then
 // evaluate incoming messages for interest.  NOTE: Each created
 // IDispatcherHandler is immediately destructed if it does not
@@ -333,17 +334,43 @@ class FactoryDispatcherHandler : public IDispatcherHandler
         State() : state_initialized(false) {}
     };
 
-
-    // FIX: Once again another memory allocation consideration
-    State handler_states[10];
-
     pipeline::MemoryChunk _handler_memory;
 
-    pipeline::MemoryChunk handler_memory() const { return _handler_memory; }
 
+    // Doesn't work yet, 5 unit tests end up not running for some reason
+//#define FEATURE_FDH_FANCYMEM
+
+#ifdef FEATURE_FDH_FANCYMEM
+    // where candidate handlers get their semi-objstack from
+    pipeline::MemoryChunk handler_memory() const
+    {
+        // skip past what we use for handler states
+        return _handler_memory.remainder(handler_states_size());
+    }
+
+    State* handler_states() const
+    {
+        return reinterpret_cast<State*>(_handler_memory.data());
+    }
+#else
+    const pipeline::MemoryChunk& handler_memory() const
+    {
+        return _handler_memory;
+    }
+
+    State _handler_states[10];
+
+    State* handler_states() { return _handler_states; }
+
+#endif
     IDispatcherHandler* chosen;
 
-    State& handler_state(int index) { return handler_states[index]; }
+    size_t handler_states_size() const
+    {
+        return handler_factory_count * sizeof(State);
+    }
+
+    State& handler_state(int index) { return handler_states()[index]; }
 
 public:
     FactoryDispatcherHandler(
