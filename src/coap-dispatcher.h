@@ -297,6 +297,47 @@ struct ShimDispatcherHandlerTraits
 }; */
 
 
+// Apparently placement-new-array is problematic in that it has a platform
+// specific addition of count to the buffer - but no way to ascertain how
+// many bytes that count actually uses.  So, use this helper instead
+//
+// Also does double duty and carries count around in its instance mode
+// since so often we need to know that also
+template <class T, typename TSize = size_t>
+class ArrayHelper
+{
+    T* items;
+    const TSize _count;
+
+public:
+    ArrayHelper(T* items, TSize count)
+            : items(items), _count(count) {}
+
+    TSize count() const {return _count;}
+
+    static void construct(T* items, TSize count)
+    {
+        while(count--)
+        {
+            new (items++) T();
+        }
+    }
+
+    static void destruct(T* items, TSize count)
+    {
+        while(count--)
+        {
+            // NOTE: I thought one had to call the destructor
+            // explicitly , I thought there was no placement
+            // delete but here it is...
+            delete (items++);
+        }
+    }
+
+    void construct() { construct(items, _count);}
+    void destruct() { destruct(items, _count); }
+};
+
 // Utilizes a list of IDispatcherHandler factories to create then
 // evaluate incoming messages for interest.  NOTE: Each created
 // IDispatcherHandler is immediately destructed if it does not
@@ -355,11 +396,7 @@ class FactoryDispatcherHandler : public IDispatcherHandler
 
     void init_states()
     {
-        // TODO: Clean and optimize
-        for(int i = 0; i < handler_factory_count; i++)
-        {
-            new (&handler_states()[i]) State();
-        }
+        ArrayHelper<State>::construct(handler_states(), handler_factory_count);
     }
 #else
     const pipeline::MemoryChunk& handler_memory() const
