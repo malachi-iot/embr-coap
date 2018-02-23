@@ -150,6 +150,15 @@ public:
     // at pos
     inline MemoryChunk remainder(size_t pos) const
     {
+#ifdef DEBUG
+        if(pos >= m_length)
+        {
+            // TODO:
+            // alert programmer that the resulting memory chunk is invalid
+            // pos == m_length results in 0-length memory chunk, technically
+            // valid but useless.  pos > m_length results in buffer overflow
+        }
+#endif
         return MemoryChunk(m_data + pos, m_length - pos);
     }
 
