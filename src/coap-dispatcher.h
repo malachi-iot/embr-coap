@@ -337,9 +337,13 @@ class FactoryDispatcherHandler : public IDispatcherHandler
     // FIX: Once again another memory allocation consideration
     State handler_states[10];
 
-    pipeline::MemoryChunk handler_memory;
+    pipeline::MemoryChunk _handler_memory;
+
+    pipeline::MemoryChunk handler_memory() const { return _handler_memory; }
 
     IDispatcherHandler* chosen;
+
+    State& handler_state(int index) { return handler_states[index]; }
 
 public:
     FactoryDispatcherHandler(
@@ -347,7 +351,7 @@ public:
             dispatcher_handler_factory_fn* handler_factories,
             int handler_factory_count)
 
-            :handler_memory(handler_memory),
+            :_handler_memory(handler_memory),
              handler_factories(handler_factories),
              handler_factory_count(handler_factory_count),
              chosen(NULLPTR)

@@ -272,8 +272,8 @@ void FactoryDispatcherHandler::on_header(Header header)
     // NOTE: Very unlikely that we'd dispatch on header itself, but conceivable
     for(int i = 0; i < handler_factory_count; i++)
     {
-        IDispatcherHandler* handler = handler_factories[i](handler_memory);
-        State& state = handler_states[i];
+        IDispatcherHandler* handler = handler_factories[i](handler_memory());
+        State& state = handler_state(i);
 
         if(!state.is_interested() && state.initialized()) continue;
 
@@ -307,8 +307,8 @@ void FactoryDispatcherHandler::on_token(const pipeline::MemoryChunk::readonly_t&
     // token feels like an explicitly pre known circumstance i.e. session management feature
     for(int i = 0; i < handler_factory_count; i++)
     {
-        IDispatcherHandler* handler = handler_factories[i](handler_memory);
-        State& state = handler_states[i];
+        IDispatcherHandler* handler = handler_factories[i](handler_memory());
+        State& state = handler_state(i);
 
         if(!state.is_interested() && state.initialized()) continue;
 
@@ -349,8 +349,8 @@ void FactoryDispatcherHandler::on_option(number_t number,
 
     for(int i = 0; i < handler_factory_count; i++)
     {
-        IDispatcherHandler* handler = handler_factories[i](handler_memory);
-        State& state = handler_states[i];
+        IDispatcherHandler* handler = handler_factories[i](handler_memory());
+        State& state = handler_state(i);
 
         if(!state.is_interested() && state.initialized()) continue;
 
@@ -390,8 +390,8 @@ void FactoryDispatcherHandler::on_payload(const pipeline::MemoryChunk::readonly_
     // (unlikely use case)
     for(int i = 0; i < handler_factory_count; i++)
     {
-        IDispatcherHandler* handler = handler_factories[i](handler_memory);
-        State& state = handler_states[i];
+        IDispatcherHandler* handler = handler_factories[i](handler_memory());
+        State& state = handler_state(i);
 
         if(!state.is_interested() && state.initialized()) continue;
 
