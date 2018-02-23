@@ -297,25 +297,17 @@ struct ShimDispatcherHandlerTraits
 }; */
 
 
-// Apparently placement-new-array is problematic in that it has a platform
-// specific addition of count to the buffer - but no way to ascertain how
-// many bytes that count actually uses.  So, use this helper instead
-//
-// Also does double duty and carries count around in its instance mode
-// since so often we need to know that also
-template <class T, typename TSize = size_t>
-class ArrayHelper
+// Splitting this out since we don't always need count embedded in
+// it
+template <class T>
+class ArrayHelperBase
 {
     T* items;
-    const TSize _count;
 
 public:
-    ArrayHelper(T* items, TSize count)
-            : items(items), _count(count) {}
+    ArrayHelperBase(T* items) : items(items) {}
 
-    TSize count() const {return _count;}
-
-    static void construct(T* items, TSize count)
+    inline static void construct(T* items, size_t count)
     {
         while(count--)
         {
@@ -323,7 +315,7 @@ public:
         }
     }
 
-    static void destruct(T* items, TSize count)
+    inline static void destruct(T* items, size_t count)
     {
         while(count--)
         {
@@ -334,8 +326,32 @@ public:
         }
     }
 
-    void construct() { construct(items, _count);}
-    void destruct() { destruct(items, _count); }
+    inline void construct(size_t count) { construct(items, count);}
+    inline void destruct(size_t count) { destruct(items, count); }
+
+    operator T* () const { return items; }
+};
+
+// Apparently placement-new-array is problematic in that it has a platform
+// specific addition of count to the buffer - but no way to ascertain how
+// many bytes that count actually uses.  So, use this helper instead
+//
+// Also does double duty and carries count around in its instance mode
+// since so often we need to know that also
+template <class T, typename TSize = size_t>
+class ArrayHelper : public ArrayHelperBase<T>
+{
+    const TSize _count;
+    typedef ArrayHelperBase<T> base_t;
+
+public:
+    ArrayHelper(T* items, TSize count)
+            : base_t(items), _count(count) {}
+
+    TSize count() const {return _count;}
+
+    void construct() { base_t::construct(_count);}
+    void destruct() { base_t::destruct(_count); }
 };
 
 // Utilizes a list of IDispatcherHandler factories to create then
@@ -396,7 +412,7 @@ class FactoryDispatcherHandler : public IDispatcherHandler
 
     void init_states()
     {
-        ArrayHelper<State>::construct(handler_states(), handler_factory_count);
+        ArrayHelperBase<State>::construct(handler_states(), handler_factory_count);
     }
 #else
     const pipeline::MemoryChunk& handler_memory() const
