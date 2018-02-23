@@ -338,7 +338,7 @@ class FactoryDispatcherHandler : public IDispatcherHandler
 
 
     // Doesn't work yet, 5 unit tests end up not running for some reason
-//#define FEATURE_FDH_FANCYMEM
+#define FEATURE_FDH_FANCYMEM
 
 #ifdef FEATURE_FDH_FANCYMEM
     // where candidate handlers get their semi-objstack from
@@ -351,6 +351,15 @@ class FactoryDispatcherHandler : public IDispatcherHandler
     State* handler_states() const
     {
         return reinterpret_cast<State*>(_handler_memory.data());
+    }
+
+    void init_states()
+    {
+        // TODO: Clean and optimize
+        for(int i = 0; i < handler_factory_count; i++)
+        {
+            new (&handler_states()[i]) State();
+        }
     }
 #else
     const pipeline::MemoryChunk& handler_memory() const
@@ -383,6 +392,9 @@ public:
              handler_factory_count(handler_factory_count),
              chosen(NULLPTR)
     {
+#ifdef FEATURE_FDH_FANCYMEM
+        init_states();
+#endif
 
     }
 
