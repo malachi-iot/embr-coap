@@ -121,6 +121,7 @@ TEST_CASE("CoAP message construction tests", "[coap-send]")
         TestOptionEncoderHelper oeh;
 
         oeh.initialize(encoder);
+        // FIX: VC++ sticks in an infinite loop here
         while(!oeh.process_iterate(encoder))
         {
 
