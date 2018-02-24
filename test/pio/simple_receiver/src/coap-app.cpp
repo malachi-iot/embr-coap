@@ -17,6 +17,9 @@ static pipeline::layer3::MemoryChunk<256> outbuf;
 constexpr char STR_URI_V1[] = "v1";
 constexpr char STR_URI_TEST[] = "test";
 
+// FIX: We'd much prefer to pass this via a context
+moducom::coap::experimental::BlockingEncoder* global_encoder;
+
 class TestDispatcherHandler : public DispatcherHandlerBase
 {
     //experimental::BlockingEncoder& encoder;
@@ -25,6 +28,18 @@ class TestDispatcherHandler : public DispatcherHandlerBase
 public:
     //TestDispatcherHandler(experimental::BlockingEncoder& encoder)
     //    encoder(encoder) {}
+    virtual void on_header(Header header) OVERRIDE
+    {
+        // FIX: This is very preliminary code.  What we really should do
+        // is properly initialize a new header, and then explicitly copy MID
+        outgoing_header.raw = header.raw;
+
+        // FIX: This assumes a CON request
+        outgoing_header.type(Header::Acknowledgement);
+
+        // FIX: Assumes a GET operation
+    }
+    
 
     void on_payload(const pipeline::MemoryChunk::readonly_t& payload_part,
                     bool last_chunk) override
@@ -35,6 +50,14 @@ public:
         buffer[length] = 0;
 
         printf("\r\nGot payload: %s", buffer);
+
+        outgoing_header.response_code(Header::Code::Valid);
+
+        global_encoder->header(outgoing_header);
+
+        // just echo back the incoming payload, for now
+        // API not ready yet
+        //global_encoder->payload(payload_part);
     }
 };
 
@@ -79,6 +102,7 @@ extern "C" void coap_daemon(void *pvParameters)
         pipeline::layer3::SimpleBufferedPipelineWriter writer(outbuf);
         moducom::coap::experimental::BlockingEncoder encoder(writer);
 
+        global_encoder = &encoder;
         printf("\r\nGot COAP data: %d", len);
 
         dispatcher.head(&fdh);
