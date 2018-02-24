@@ -16,8 +16,12 @@ static pipeline::layer3::MemoryChunk<256> outbuf;
 
 constexpr char STR_URI_V1[] = "v1";
 constexpr char STR_URI_TEST[] = "test";
+constexpr char STR_URI_TEST2[] = "test2";
 
 // FIX: We'd much prefer to pass this via a context
+// TODO: Make a new kind of encoder, the normal-simple-case
+// one which just dumps to an existing buffer without all the
+// fancy IPipline/IWriter involvement
 moducom::coap::experimental::BlockingEncoder* global_encoder;
 
 class TestDispatcherHandler : public DispatcherHandlerBase
@@ -57,7 +61,9 @@ public:
 
         // just echo back the incoming payload, for now
         // API not ready yet
-        //global_encoder->payload(payload_part);
+        // TODO: Don't like the char* version, so expect that
+        // to go away
+        global_encoder->payload(buffer);
     }
 };
 
