@@ -4,6 +4,11 @@
 
 #include "coap-dispatcher.h"
 
+#ifdef ESP_DEBUG
+#include <stdio.h>
+#endif
+
+
 namespace moducom { namespace coap {
 
 namespace experimental {
@@ -269,6 +274,10 @@ void Dispatcher::dispatch_token()
 
 void FactoryDispatcherHandler::on_header(Header header)
 {
+#ifdef ESP_DEBUG
+    printf("\r\nFactoryDispatcherHandler::on_header");
+#endif
+
     // NOTE: Very unlikely that we'd dispatch on header itself, but conceivable
     for(int i = 0; i < handler_factory_count; i++)
     {
@@ -296,6 +305,11 @@ void FactoryDispatcherHandler::on_header(Header header)
 
 void FactoryDispatcherHandler::on_token(const pipeline::MemoryChunk::readonly_t& token_part, bool last_chunk)
 {
+#ifdef ESP_DEBUG
+    printf("\r\nFactoryDispatcherHandler::on_token");
+#endif
+
+
     if(chosen)
     {
         chosen->on_token(token_part, last_chunk);

@@ -93,7 +93,13 @@ dispatcher_handler_factory_fn v1_factories[] =
 };
 
 
-
+void dump(uint8_t* bytes, int count)
+{
+    for(int i = 0; i < count; i++)
+    {
+        printf("%02X ", bytes[i]);
+    }
+}
 
 extern "C" void coap_daemon(void *pvParameters)
 {
@@ -129,6 +135,10 @@ extern "C" void coap_daemon(void *pvParameters)
 
         done = false;
 
+        printf("\r\nRAW: ");
+
+        dump((uint8_t*)data, len);
+
         dispatcher.head(&fdh);
         dispatcher.dispatch(chunk);
 
@@ -139,7 +149,7 @@ extern "C" void coap_daemon(void *pvParameters)
 
             // doing this because netbuf.ref seems to be bugged
             // for esp8266
-            buf_out.alloc(outbuf.length());
+            buf_out.alloc(writer.length_experimental());
             buf_out.data(&data, &len);
             memcpy(data, outbuf.data(), len);
 
@@ -151,6 +161,10 @@ extern "C" void coap_daemon(void *pvParameters)
                 ip4_addr3_16(from_ip),
                 ip4_addr4_16(from_ip),
                 from_port);
+
+            printf("\r\nRETURN RAW: ");
+
+            dump((uint8_t*)data, len);
 
             conn.sendTo(buf_out, from_ip, from_port);
 
