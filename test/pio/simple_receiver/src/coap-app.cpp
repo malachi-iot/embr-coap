@@ -77,7 +77,8 @@ dispatcher_handler_factory_fn root_factories[] =
 // FIX: Kinda-sorta works, TestDispatcherHandler is *always* run if /v1 appears
 dispatcher_handler_factory_fn v1_factories[] = 
 {
-    uri_plus_observer_dispatcher<STR_URI_TEST, TestDispatcherHandler>
+    uri_plus_observer_dispatcher<STR_URI_TEST, TestDispatcherHandler>,
+    uri_plus_observer_dispatcher<STR_URI_TEST2, TestDispatcherHandler>
 };
 
 
