@@ -36,11 +36,16 @@ class TestDispatcherHandler : public DispatcherHandlerBase
 public:
     //TestDispatcherHandler(experimental::BlockingEncoder& encoder)
     //    encoder(encoder) {}
-    virtual void on_header(Header header) OVERRIDE
+    virtual void on_header(Header header) override
     {
         // FIX: This is very preliminary code.  What we really should do
         // is properly initialize a new header, and then explicitly copy MID
         outgoing_header.raw = header.raw;
+
+        // FIX: on_header never getting called, smells like a problem
+        // with the is_interested code
+        printf("\r\nGot header: token len=%d", header.token_length());
+        printf("\r\nGot header: mid=%x", header.message_id());
 
         // FIX: This assumes a CON request
         outgoing_header.type(Header::Acknowledgement);
@@ -49,7 +54,7 @@ public:
     }
     
 
-    void on_payload(const pipeline::MemoryChunk::readonly_t& payload_part,
+    virtual void on_payload(const pipeline::MemoryChunk::readonly_t& payload_part,
                     bool last_chunk) override
     {
         char buffer[128]; // because putchar doesn't want to play nice
@@ -77,7 +82,7 @@ extern dispatcher_handler_factory_fn v1_factories[];
 
 dispatcher_handler_factory_fn root_factories[] =
 {
-    uri_plus_factory_dispatcher<STR_URI_V1, v1_factories, 1>
+    uri_plus_factory_dispatcher<STR_URI_V1, v1_factories, 2>
 };
 
 // FIX: Kinda-sorta works, TestDispatcherHandler is *always* run if /v1 appears
@@ -137,8 +142,15 @@ extern "C" void coap_daemon(void *pvParameters)
             buf_out.alloc(outbuf.length());
             buf_out.data(&data, &len);
             memcpy(data, outbuf.data(), len);
+
+            //from_port = COAP_UDP_PORT;
             
-            printf("\r\nResponding: %d to %d.%d.%d.%d:%d", len);
+            printf("\r\nResponding: %d to %d.%d.%d.%d:%d", len,
+                ip4_addr1_16(from_ip),
+                ip4_addr2_16(from_ip),
+                ip4_addr3_16(from_ip),
+                ip4_addr4_16(from_ip),
+                from_port);
 
             conn.sendTo(buf_out, from_ip, from_port);
 
