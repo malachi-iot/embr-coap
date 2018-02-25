@@ -275,7 +275,8 @@ void Dispatcher::dispatch_token()
 void FactoryDispatcherHandler::on_header(Header header)
 {
 #ifdef ESP_DEBUG
-    printf("\r\nFactoryDispatcherHandler::on_header");
+    printf("\r\nFactoryDispatcherHandler::on_header type=%d, mid=%X",
+        header.type(), header.message_id());
 #endif
 
     // NOTE: Very unlikely that we'd dispatch on header itself, but conceivable
@@ -306,7 +307,7 @@ void FactoryDispatcherHandler::on_header(Header header)
 void FactoryDispatcherHandler::on_token(const pipeline::MemoryChunk::readonly_t& token_part, bool last_chunk)
 {
 #ifdef ESP_DEBUG
-    printf("\r\nFactoryDispatcherHandler::on_token");
+    printf("\r\nFactoryDispatcherHandler::on_token: len=%d", token_part.length());
 #endif
 
 
