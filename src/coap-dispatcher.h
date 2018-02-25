@@ -107,8 +107,9 @@ struct IsInterestedBase
         Never
     };
 
-private:
     typedef InterestedEnum interested_t;
+
+private:
 
     interested_t _interested;
 
@@ -441,6 +442,38 @@ public:
     }
 };
 
+
+
+// Looks for header and saves it in IncomingContext
+// Looks for a token and if it finds one, registers it with a token pool and saves it in IncomingContext
+class ContextDispatcherHandler : public DispatcherHandlerBase
+{
+    typedef IsInterestedBase::InterestedEnum interested_t;
+
+    IncomingContext& context;
+
+    // state 0 = uninitialized
+    // state 1 = saw header
+    // state 2 = saw and registered token, or saw no token is coming
+    uint8_t state;
+
+public:
+    ContextDispatcherHandler(IncomingContext& context) :
+            context(context), state(0)
+    {
+
+    }
+
+    virtual void on_header(Header header) OVERRIDE;
+
+    virtual void on_token(const pipeline::MemoryChunk::readonly_t& token_part,
+                          bool last_chunk) OVERRIDE;
+
+    virtual interested_t interested() const OVERRIDE
+    {
+        return Never;
+    }
+};
 
 
 }

@@ -429,6 +429,27 @@ void FactoryDispatcherHandler::on_payload(const pipeline::MemoryChunk::readonly_
     }
 }
 
+
+void ContextDispatcherHandler::on_header(Header header)
+{
+    context.header(header);
+    state = header.token_length() == 0 ? 2 : 1;
+}
+
+void ContextDispatcherHandler::on_token(const pipeline::MemoryChunk::readonly_t& token_part, bool last_chunk)
+{
+    // FIX: access already-allocated token manager (aka token pool) and allocate a new
+    // token or link to already-allocated token.
+    // For now we use very unreliable static to hold this particular incoming token
+    static layer2::Token token;
+
+    // NOTE: this won't yet work with chunked
+    token.set(token_part.data(), token_part.length());
+    context.token(&token);
+    state = 2;
+}
+
+
 }
 
 }}

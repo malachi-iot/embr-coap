@@ -47,6 +47,8 @@ public:
     // if incoming message has had its header decoded, then this is valid
     Header& header() { return _header; }
 
+    void header(Header& header) { _header.raw = header.raw; }
+
     bool have_header() const { return _header.version() > 0; }
 };
 
