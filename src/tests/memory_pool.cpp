@@ -2,8 +2,30 @@
 #include <catch.hpp>
 
 #include "../MemoryPool.h"
+#include "../mc/memory-pool.h"
+#include "../coap-token.h"
 
 using namespace moducom::dynamic;
+
+// Using TestToken because I am not convinced I want to embed "is_allocated" into layer2::Token
+// somewhat harmless, but confusing out of context (what does is_allocated *mean* if token is
+// never used with the pool code)
+class TestToken : public moducom::coap::layer2::Token
+{
+public:
+    TestToken() {}
+
+    TestToken(const moducom::pipeline::MemoryChunk::readonly_t& chunk)
+    {
+
+        ASSERT_ERROR(true, chunk.length() <= 8, "chunk.length <= 8");
+        copy_from(chunk);
+    }
+
+    ~TestToken() { length(0); }
+
+    bool is_active() const { return length() > 0; }
+};
 
 TEST_CASE("Low-level memory pool tests", "[mempool-low]")
 {
@@ -60,5 +82,22 @@ TEST_CASE("Low-level memory pool tests", "[mempool-low]")
 
             REQUIRE(pool.get_allocated_handle_count() == 0);
         }
+    }
+    SECTION("Traditional memory pool")
+    {
+        PoolBase<TestToken, 8> pool;
+        TestToken hardcoded;
+
+        hardcoded.set("1234", 4);
+
+        REQUIRE(pool.count() == 0);
+
+        TestToken& allocated = pool.allocate(hardcoded);
+
+        REQUIRE(pool.count() == 1);
+
+        pool.free(allocated);
+
+        REQUIRE(pool.count() == 0);
     }
 }

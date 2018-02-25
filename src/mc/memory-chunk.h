@@ -178,12 +178,20 @@ public:
     size_t length() const { return buffer_length; }
     const uint8_t* data(size_t offset = 0) const { return buffer + offset; }
 
+    // copies in length bytes from specified incoming buffer
+    // does NOT update this->length(), both syntactically and
+    // also because layer1 doesn't track that anyway
     inline void memcpy(const uint8_t* copy_from, size_t length)
     {
+        ASSERT_ERROR(true, length <= buffer_length, "length <= buffer_length");
+
         ::memcpy(buffer, copy_from, length);
     }
 
 
+    // copies in chunk from incoming buffer
+    // does NOT update this->length(), both syntactically and
+    // also because layer1 doesn't track that anyway
     inline void copy_from(const pipeline::MemoryChunk::readonly_t& chunk)
     {
         ::memcpy(buffer, chunk.data(), chunk.length());
@@ -217,6 +225,16 @@ class MemoryChunk :
 public:
     inline custom_size_t length() const { return MemoryChunkBase<custom_size_t>::m_length; }
     inline void length(custom_size_t l) { MemoryChunkBase<custom_size_t>::m_length = l; }
+
+    inline void set(uint8_t ch) { base_t::set(ch); }
+
+    // like memcpy but also sets this->length()
+    template <typename T>
+    inline void set(const T* copy_from, custom_size_t length)
+    {
+        this->memcpy(reinterpret_cast<const uint8_t*>(copy_from), length);
+        this->length(length);
+    }
 
     inline int compare(const void* compare_against)
     {
