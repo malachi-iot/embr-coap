@@ -3,6 +3,7 @@
 //
 
 #include "coap-dispatcher.h"
+#include "coap/context.h"
 
 #ifdef ESP_DEBUG
 #include <stdio.h>

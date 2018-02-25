@@ -289,9 +289,17 @@ public:
     }
 
 
-    uint8_t token_length()
+    uint8_t token_length() const
     {
-        return bytes[0] & COAP_HEADER_FIXED_TKL_MASK;
+        uint8_t tkl = bytes[0] & COAP_HEADER_FIXED_TKL_MASK;
+
+        ASSERT_WARN(true, tkl < 9, "Token length must be < 9");
+    }
+
+    // Should always be 1
+    uint8_t version() const
+    {
+        uint8_t v = bytes[0] >> 6;
     }
 
     //private:
