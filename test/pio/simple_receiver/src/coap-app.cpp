@@ -24,6 +24,10 @@ constexpr char STR_URI_TEST2[] = "test2";
 // fancy IPipline/IWriter involvement
 moducom::coap::experimental::BlockingEncoder* global_encoder;
 
+// FIX: This should be embedded either in encoder or elsewhere
+// signals that we have a response to send
+bool done;
+
 class TestDispatcherHandler : public DispatcherHandlerBase
 {
     //experimental::BlockingEncoder& encoder;
@@ -64,6 +68,8 @@ public:
         // TODO: Don't like the char* version, so expect that
         // to go away
         global_encoder->payload(buffer);
+
+        done = true;
     }
 };
 
@@ -99,9 +105,13 @@ extern "C" void coap_daemon(void *pvParameters)
 
         void* data;
         uint16_t len;
+        ip_addr_t* from_ip = buf.fromAddr();
+        uint16_t from_port = buf.fromPort();
 
+        // acquire pointers that buf uses
         buf.data(&data, &len);
 
+        // track them also in memory chunk
         pipeline::MemoryChunk chunk((uint8_t*)data, len);
 
         FactoryDispatcherHandler fdh(dispatcherBuffer, root_factories, 1);
@@ -112,9 +122,31 @@ extern "C" void coap_daemon(void *pvParameters)
         global_encoder = &encoder;
         printf("\r\nGot COAP data: %d", len);
 
+        done = false;
+
         dispatcher.head(&fdh);
         dispatcher.dispatch(chunk);
 
+        if(done)
+        {
+            //lwip::Netbuf buf_out(outbuf.data(), outbuf.length());
+            lwip::Netbuf buf_out;
+
+            // doing this because netbuf.ref seems to be bugged
+            // for esp8266
+            buf_out.alloc(outbuf.length());
+            buf_out.data(&data, &len);
+            memcpy(data, outbuf.data(), len);
+            
+            printf("\r\nResponding: %d to %d.%d.%d.%d:%d", len);
+
+            conn.sendTo(buf_out, from_ip, from_port);
+
+            buf_out.free();
+        }
+
+        // this frees only the meta part of buf.  May want a template flag
+        // to signal auto free behavior
         buf.free();
     }
 }
