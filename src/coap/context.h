@@ -13,18 +13,18 @@ namespace moducom { namespace coap {
 class ContextBase
 {
     typedef layer2::Token token_t;
-    token_t* _token;
+    const token_t* _token;
 
 public:
     ContextBase() : _token(NULLPTR) {}
 
     // if a) incoming message has a token and b) we've decoded the token and have it
     // available, then this will be non-null
-    token_t* token() const { return _token; }
+    const token_t* token() const { return _token; }
 
     // Since tokens arrive piecemeal and oftentimes not at all, we have a non-constructor
     // based setter
-    void token(token_t* token) { _token = token; }
+    void token(const token_t* token) { _token = token; }
 };
 
 // New-generation request context, replacement for premature coap_transmission one
@@ -32,7 +32,7 @@ public:
 // foundational base class
 // Called Incoming context because remember some incoming messages are RESPONSES, even
 // when we are the server (ACKs, etc)
-class IncomingContext : ContextBase
+class IncomingContext : public ContextBase
 {
     Header _header;
 

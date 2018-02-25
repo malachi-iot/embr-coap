@@ -8,6 +8,7 @@
 #include "coap-decoder.h"
 #include "mc/linkedlist.h"
 #include "mc/array-helper.h"
+#include "coap/context.h"
 
 // This adds 8 bytes to IDispatcherHandler class when enabled
 //#define FEATURE_IISINTERESTED
@@ -285,6 +286,20 @@ public:
     }
 };
 
+
+struct DispatcherHandlerFactoryContext
+{
+    IncomingContext& incoming_context;
+
+    // this one may change through the stack walk
+    pipeline::MemoryChunk handler_memory;
+
+    DispatcherHandlerFactoryContext(IncomingContext& ic, const pipeline::MemoryChunk& hm)
+            : incoming_context(ic), handler_memory(hm) {}
+};
+
+
+
 // An in-place new is expected
 typedef IDispatcherHandler* (*dispatcher_handler_factory_fn)(pipeline::MemoryChunk);
 
@@ -318,6 +333,8 @@ class FactoryDispatcherHandler : public IDispatcherHandler
 {
     const dispatcher_handler_factory_fn* handler_factories;
     const int handler_factory_count;
+
+    typedef DispatcherHandlerFactoryContext context_t;
 
     class State : public IsInterestedBase
     {
