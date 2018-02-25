@@ -82,6 +82,24 @@ struct ExplicitPoolItemTrait
     }
 };
 
+
+template <class T, class TTraits>
+inline size_t count_allocated(const T* items, size_t max_count)
+{
+    size_t c = 0;
+
+    for(int i = 0; i < max_count; i++)
+    {
+        const T& item = items[i];
+
+        if(TTraits::is_allocated(item))
+            c++;
+    }
+
+    return c;
+}
+
+
 template <class T, size_t max_count, class TTraits = DefaultPoolItemTrait<T > >
 class PoolBase
 {
@@ -179,17 +197,7 @@ public:
     // returns number of allocated items
     size_t count() const
     {
-        int c = 0;
-
-        for(int i = 0; i < max_count; i++)
-        {
-            const T& item = items[i];
-
-            if(traits_t::is_allocated(item))
-                c++;
-        }
-
-        return c;
+        return count_allocated<T, traits_t>(items, max_count);
     }
 
     // returns number of free slots
@@ -199,5 +207,29 @@ public:
     }
 };
 
+// To replace non fixed-array pools, but still are traditional pools
+// i.e. at RUNTIME are fixed count and in a fixed position, once
+// the class is initialized
+// TODO: Combine with FnFactory also
+template <class T, class TTraits = DefaultPoolItemTrait<T > >
+class OutOfBandPool
+{
+    typedef TTraits traits_t;
+    const T* items;
+    const int max_count;
+
+public:
+    // returns number of allocated items
+    size_t count() const
+    {
+        return count_allocated<T, traits_t>(items, max_count);
+    }
+
+    // returns number of free slots
+    size_t free() const
+    {
+        return max_count - count();
+    }
+};
 
 }}
