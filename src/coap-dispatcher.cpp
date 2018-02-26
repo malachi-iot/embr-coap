@@ -272,28 +272,28 @@ void Dispatcher::dispatch_token()
 }
 
 
-void FactoryDispatcherHandler::observer_helper_begin(int i, State *state, IDispatcherHandler **handler)
+inline IDispatcherHandler* FactoryDispatcherHandler::observer_helper_begin(context_t& context, int i)
 {
-    State& _state = handler_state(i);
-    *state = _state;
+    State& state = handler_state(i);
+    context.state = &state;
 
     // unless we are *never* interested, have a crack at observing
-    if(state->is_never_interested() && state->initialized())
-    {
-        *handler = nullptr;
-        return;
-    }
+    if(state.is_never_interested() && state.initialized()) return NULLPTR;
 
-    IDispatcherHandler* _handler = handler_factories[i](handler_memory());
-    *handler = _handler;
+    IDispatcherHandler* handler = handler_factories[i](handler_memory());
+    return handler;
 }
 
 
-void FactoryDispatcherHandler::observer_helper_end(State& state, IDispatcherHandler* handler)
+inline void FactoryDispatcherHandler::observer_helper_end(context_t& context, IDispatcherHandler* handler)
 {
+    State& state = *context.state;
+
     // we query interested after processing, because we must always process
     // *something* to know whether we wish to continue processing it
     state.interested(handler->interested());
+
+    this->context.reserve_bytes += context.reserve_bytes;
 
     if(state.is_always_interested())
     {
@@ -316,28 +316,15 @@ void FactoryDispatcherHandler::on_header(Header header)
     // NOTE: Very unlikely that we'd dispatch on header itself, but conceivable
     for(int i = 0; i < handler_factory_count; i++)
     {
-        State& state = handler_state(i);
-        // unless we are *never* interested, have a crack at observing
-        if(state.is_never_interested() && state.initialized()) continue;
+        context_t ctx(context, handler_memory());
 
-        context_t ctx(context.incoming_context, handler_memory());
+        IDispatcherHandler* handler = observer_helper_begin(ctx, i);
 
-        IDispatcherHandler* handler = handler_factories[i](handler_memory());
+        if(handler == NULLPTR) continue;
 
         handler->on_header(header);
 
-        // we query interested after processing, because we must always process
-        // *something* to know whether we wish to continue processing it
-        state.interested(handler->interested());
-
-        if(state.is_always_interested())
-        {
-            chosen = handler;
-            return; // obviously do NOT destruct the chosen handler
-        }
-
-        // placement new demands explicit destructor invocation
-        handler->~IDispatcherHandler();
+        observer_helper_end(ctx, handler);
     }
 }
 
@@ -367,7 +354,7 @@ void FactoryDispatcherHandler::on_token(const pipeline::MemoryChunk::readonly_t&
 
         // NOTE: Keeping this here in anticipation of handler_memory() floating
         // if we do the "Always"/objstack keep feature
-        context_t ctx(context.incoming_context, handler_memory());
+        context_t ctx(context, handler_memory());
 
         IDispatcherHandler* handler = handler_factories[i](handler_memory());
 
@@ -412,7 +399,7 @@ void FactoryDispatcherHandler::on_option(number_t number,
         // unless we are *never* interested, have a crack at observing
         if(state.is_never_interested() && state.initialized()) continue;
 
-        context_t ctx(context.incoming_context, handler_memory());
+        context_t ctx(context, handler_memory());
 
         IDispatcherHandler* handler = handler_factories[i](handler_memory());
 
@@ -456,7 +443,7 @@ void FactoryDispatcherHandler::on_payload(const pipeline::MemoryChunk::readonly_
 
         if(state.is_never_interested() && state.initialized()) continue;
 
-        context_t ctx(context.incoming_context, handler_memory());
+        context_t ctx(context, handler_memory());
 
         IDispatcherHandler* handler = handler_factories[i](handler_memory());
 

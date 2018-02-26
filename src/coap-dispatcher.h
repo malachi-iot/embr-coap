@@ -362,12 +362,9 @@ class FactoryDispatcherHandler : public IDispatcherHandler
     const dispatcher_handler_factory_fn* handler_factories;
     const int handler_factory_count;
 
-    typedef DispatcherHandlerFactoryContext context_t;
-
     // TODO: Make context & incoming_context something that is passed in
     // even to FactoryDispatcherHandler
     IncomingContext incoming_context;
-    context_t context;
 
     class State : public IsInterestedBase
     {
@@ -386,6 +383,20 @@ class FactoryDispatcherHandler : public IDispatcherHandler
         State() : state_initialized(false) {}
     };
 
+    // Context local to FactoryDispatcherHandler, carries around
+    // local state for convenience
+    struct Context : public DispatcherHandlerFactoryContext
+    {
+        State* state;
+
+        Context(DispatcherHandlerFactoryContext& ctx, const pipeline::MemoryChunk& chunk)
+            : DispatcherHandlerFactoryContext(ctx.incoming_context, chunk) {}
+    };
+
+    typedef Context context_t;
+
+    DispatcherHandlerFactoryContext context;
+
     pipeline::MemoryChunk _handler_memory;
 
 
@@ -396,7 +407,7 @@ class FactoryDispatcherHandler : public IDispatcherHandler
     pipeline::MemoryChunk handler_memory() const
     {
         // skip past what we use for handler states
-        return _handler_memory.remainder(handler_states_size());
+        return _handler_memory.remainder(handler_states_size() + context.reserve_bytes);
     }
 
     State* handler_states() const
@@ -428,9 +439,9 @@ class FactoryDispatcherHandler : public IDispatcherHandler
 
     State& handler_state(int index) { return handler_states()[index]; }
 
-    void observer_helper_begin(int i, State* state, IDispatcherHandler** handler);
+    IDispatcherHandler* observer_helper_begin(context_t& context, int i);
 
-    void observer_helper_end(State& state, IDispatcherHandler* handler);
+    void observer_helper_end(context_t& context, IDispatcherHandler* handler);
 
 public:
     FactoryDispatcherHandler(
