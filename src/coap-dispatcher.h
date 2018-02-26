@@ -18,6 +18,8 @@
 // vtable pointer
 //#define FEATURE_DISCRETE_OBSERVERS
 
+//#define FEATURE_MCCOAP_RESERVED_DISPATCHER
+
 namespace moducom { namespace coap {
 
 #ifdef FEATURE_DISCRETE_OBSERVERS
@@ -317,13 +319,23 @@ struct DispatcherHandlerFactoryContext
     // this one may change through the stack walk
     pipeline::MemoryChunk handler_memory;
 
+#ifdef FEATURE_MCCOAP_RESERVED_DISPATCHER
     // EXPERIMENTAL:  Number of bytes from handler_memory we wish to permenantly
     // retain.  This facilitates more objstack-style behavior, without specifically
-    // resorting to "chosen" pointer.  Not yet active
+    // resorting to "chosen" pointer.  Semi-active
+    // When non-zero, reserve flag shall be set and construction/destruction will
+    // cease, as if it was "chosen"
     size_t reserve_bytes;
+#endif
 
     DispatcherHandlerFactoryContext(IncomingContext& ic, const pipeline::MemoryChunk& hm)
-            : incoming_context(ic), handler_memory(hm), reserve_bytes(0) {}
+            :
+#ifdef FEATURE_MCCOAP_RESERVED_DISPATCHER
+              reserve_bytes(0),
+#endif
+              incoming_context(ic),
+              handler_memory(hm)
+    {}
 };
 
 
@@ -372,6 +384,13 @@ class FactoryDispatcherHandler : public IDispatcherHandler
         bool state_initialized;
 
     public:
+        // FIX: optimize this somehow too
+        // utilize this for reserved_bytes objstack-allocated
+        // (or perhaps other allocation method) permanent item
+#ifdef FEATURE_MCCOAP_RESERVED_DISPATCHER
+        IDispatcherHandler* reserved;
+#endif
+
         bool initialized() const { return state_initialized; }
 
         void interested(InterestedEnum value)
@@ -380,7 +399,12 @@ class FactoryDispatcherHandler : public IDispatcherHandler
             IsInterestedBase::interested(value);
         }
 
-        State() : state_initialized(false) {}
+        State() :
+#ifdef FEATURE_MCCOAP_RESERVED_DISPATCHER
+            reserved(NULLPTR),
+#endif
+            state_initialized(false)
+        {}
     };
 
     // Context local to FactoryDispatcherHandler, carries around
@@ -407,7 +431,11 @@ class FactoryDispatcherHandler : public IDispatcherHandler
     pipeline::MemoryChunk handler_memory() const
     {
         // skip past what we use for handler states
-        return _handler_memory.remainder(handler_states_size() + context.reserve_bytes);
+        return _handler_memory.remainder(handler_states_size()
+#ifdef FEATURE_MCCOAP_RESERVED_DISPATCHER
+                                         + context.reserve_bytes
+#endif
+                                         );
     }
 
     State* handler_states() const
@@ -442,6 +470,8 @@ class FactoryDispatcherHandler : public IDispatcherHandler
     IDispatcherHandler* observer_helper_begin(context_t& context, int i);
 
     void observer_helper_end(context_t& context, IDispatcherHandler* handler);
+
+    void free_reserved();
 
 public:
     FactoryDispatcherHandler(

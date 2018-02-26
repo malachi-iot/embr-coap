@@ -280,6 +280,10 @@ inline IDispatcherHandler* FactoryDispatcherHandler::observer_helper_begin(conte
     // unless we are *never* interested, have a crack at observing
     if(state.is_never_interested() && state.initialized()) return NULLPTR;
 
+#ifdef FEATURE_MCCOAP_RESERVED_DISPATCHER
+    if(state.reserved) return state.reserved;
+#endif
+
     IDispatcherHandler* handler = handler_factories[i](handler_memory());
     return handler;
 }
@@ -293,16 +297,34 @@ inline void FactoryDispatcherHandler::observer_helper_end(context_t& context, ID
     // *something* to know whether we wish to continue processing it
     state.interested(handler->interested());
 
-    this->context.reserve_bytes += context.reserve_bytes;
-
-    if(state.is_always_interested())
+    // reserved handlers don't process any additional reserved bytes,
+    // nor are they further candidates for chosen, and finally
+    // their constructors don't execute here
+#ifdef FEATURE_MCCOAP_RESERVED_DISPATCHER
+    if(!state.reserved)
+#endif
     {
-        chosen = handler;
-        return; // obviously do NOT destruct the chosen handler
-    }
+#ifdef FEATURE_MCCOAP_RESERVED_DISPATCHER
+        if(context.reserve_bytes)
+        {
+            // be very mindful of reserved handlers.  They consume objstack
+            // space and if they go into 'never' interested mode, it's just
+            // a waste - attempt rearchitecture for those conditions
+            state.reserved = handler;
+        }
 
-    // placement new demands explicit destructor invocation
-    handler->~IDispatcherHandler();
+        this->context.reserve_bytes += context.reserve_bytes;
+#endif
+
+        if(state.is_always_interested())
+        {
+            chosen = handler;
+            return; // obviously do NOT destruct the chosen handler
+        }
+
+        // placement new demands explicit destructor invocation
+        handler->~IDispatcherHandler();
+    }
 }
 
 
@@ -465,6 +487,23 @@ void FactoryDispatcherHandler::on_payload(const pipeline::MemoryChunk::readonly_
     }
 }
 
+
+#ifdef FEATURE_MCCOAP_RESERVED_DISPATCHER
+void FactoryDispatcherHandler::free_reserved()
+{
+    // Extremely unlikely that we won't have a chosen handler by now
+    // (unlikely use case)
+    for(int i = 0; i < handler_factory_count; i++)
+    {
+        State& state = handler_state(i);
+
+        if(state.reserved)
+        {
+            state.reserved->~IDispatcherHandler();
+        }
+    }
+}
+#endif
 
 void ContextDispatcherHandler::on_header(Header header)
 {
