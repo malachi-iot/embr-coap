@@ -272,6 +272,39 @@ void Dispatcher::dispatch_token()
 }
 
 
+void FactoryDispatcherHandler::observer_helper_begin(int i, State *state, IDispatcherHandler **handler)
+{
+    State& _state = handler_state(i);
+    *state = _state;
+
+    // unless we are *never* interested, have a crack at observing
+    if(state->is_never_interested() && state->initialized())
+    {
+        *handler = nullptr;
+        return;
+    }
+
+    IDispatcherHandler* _handler = handler_factories[i](handler_memory());
+    *handler = _handler;
+}
+
+
+void FactoryDispatcherHandler::observer_helper_end(State& state, IDispatcherHandler* handler)
+{
+    // we query interested after processing, because we must always process
+    // *something* to know whether we wish to continue processing it
+    state.interested(handler->interested());
+
+    if(state.is_always_interested())
+    {
+        chosen = handler;
+        return; // obviously do NOT destruct the chosen handler
+    }
+
+    // placement new demands explicit destructor invocation
+    handler->~IDispatcherHandler();
+}
+
 
 void FactoryDispatcherHandler::on_header(Header header)
 {
@@ -283,15 +316,18 @@ void FactoryDispatcherHandler::on_header(Header header)
     // NOTE: Very unlikely that we'd dispatch on header itself, but conceivable
     for(int i = 0; i < handler_factory_count; i++)
     {
+        State& state = handler_state(i);
+        // unless we are *never* interested, have a crack at observing
+        if(state.is_never_interested() && state.initialized()) continue;
+
         context_t ctx(context.incoming_context, handler_memory());
 
         IDispatcherHandler* handler = handler_factories[i](handler_memory());
-        State& state = handler_state(i);
-
-        if(!state.is_interested() && state.initialized()) continue;
 
         handler->on_header(header);
 
+        // we query interested after processing, because we must always process
+        // *something* to know whether we wish to continue processing it
         state.interested(handler->interested());
 
         if(state.is_always_interested())
@@ -325,14 +361,15 @@ void FactoryDispatcherHandler::on_token(const pipeline::MemoryChunk::readonly_t&
     // token feels like an explicitly pre known circumstance i.e. session management feature
     for(int i = 0; i < handler_factory_count; i++)
     {
+        State& state = handler_state(i);
+        // unless we are *never* interested, have a crack at observing
+        if(state.is_never_interested() && state.initialized()) continue;
+
         // NOTE: Keeping this here in anticipation of handler_memory() floating
         // if we do the "Always"/objstack keep feature
         context_t ctx(context.incoming_context, handler_memory());
 
         IDispatcherHandler* handler = handler_factories[i](handler_memory());
-        State& state = handler_state(i);
-
-        if(!state.is_interested() && state.initialized()) continue;
 
         handler->on_token(token_part, last_chunk);
 
@@ -371,12 +408,13 @@ void FactoryDispatcherHandler::on_option(number_t number,
 
     for(int i = 0; i < handler_factory_count; i++)
     {
+        State& state = handler_state(i);
+        // unless we are *never* interested, have a crack at observing
+        if(state.is_never_interested() && state.initialized()) continue;
+
         context_t ctx(context.incoming_context, handler_memory());
 
         IDispatcherHandler* handler = handler_factories[i](handler_memory());
-        State& state = handler_state(i);
-
-        if(!state.is_interested() && state.initialized()) continue;
 
         // FIX: This only works for non-chunked processing
         handler->on_option(number, option_value_part.length());
@@ -414,12 +452,13 @@ void FactoryDispatcherHandler::on_payload(const pipeline::MemoryChunk::readonly_
     // (unlikely use case)
     for(int i = 0; i < handler_factory_count; i++)
     {
+        State& state = handler_state(i);
+
+        if(state.is_never_interested() && state.initialized()) continue;
+
         context_t ctx(context.incoming_context, handler_memory());
 
         IDispatcherHandler* handler = handler_factories[i](handler_memory());
-        State& state = handler_state(i);
-
-        if(!state.is_interested() && state.initialized()) continue;
 
         handler->on_payload(payload_part, last_chunk);
 

@@ -134,6 +134,12 @@ public:
     }
 
 
+    inline bool is_never_interested() const
+    {
+        return _interested == Never;
+    }
+
+
     inline static bool is_interested(interested_t value)
     {
         return value == Always ||
@@ -311,8 +317,13 @@ struct DispatcherHandlerFactoryContext
     // this one may change through the stack walk
     pipeline::MemoryChunk handler_memory;
 
+    // EXPERIMENTAL:  Number of bytes from handler_memory we wish to permenantly
+    // retain.  This facilitates more objstack-style behavior, without specifically
+    // resorting to "chosen" pointer.  Not yet active
+    size_t reserve_bytes;
+
     DispatcherHandlerFactoryContext(IncomingContext& ic, const pipeline::MemoryChunk& hm)
-            : incoming_context(ic), handler_memory(hm) {}
+            : incoming_context(ic), handler_memory(hm), reserve_bytes(0) {}
 };
 
 
@@ -378,7 +389,6 @@ class FactoryDispatcherHandler : public IDispatcherHandler
     pipeline::MemoryChunk _handler_memory;
 
 
-    // Doesn't work yet, 5 unit tests end up not running for some reason
 #define FEATURE_FDH_FANCYMEM
 
 #ifdef FEATURE_FDH_FANCYMEM
@@ -417,6 +427,10 @@ class FactoryDispatcherHandler : public IDispatcherHandler
     }
 
     State& handler_state(int index) { return handler_states()[index]; }
+
+    void observer_helper_begin(int i, State* state, IDispatcherHandler** handler);
+
+    void observer_helper_end(State& state, IDispatcherHandler* handler);
 
 public:
     FactoryDispatcherHandler(
