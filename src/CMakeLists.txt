@@ -7,7 +7,8 @@ set(CMAKE_CXX_STANDARD 98)
 include_directories(../ext/Catch/include)
 include_directories(../ext/moducom-memory/src)
 
-add_subdirectory(../ext/moducom-memory/src ../bin)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "../../bin")
+add_subdirectory(../ext/moducom-memory/src ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
 
 # using technique from https://coderwall.com/p/y3zzbq/use-cmake-enabled-libraries-in-your-cmake-project
 #include(ExternalProject)
@@ -35,4 +36,4 @@ set(SOURCE_FILES
         coap/context.h)
 add_executable(mc-coap-test ${SOURCE_FILES})
 
-target_link_libraries(mc-coap-test moducom_memory)
+target_link_libraries(mc-coap-test moducom_memory_lib)
