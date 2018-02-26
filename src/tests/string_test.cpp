@@ -1,8 +1,8 @@
 
 #include <catch.hpp>
 
-#include "../MemoryPool.h"
-#include "../mc/string.h"
+#include "MemoryPool.h"
+#include "mc/string.h"
 
 using namespace moducom::dynamic;
 

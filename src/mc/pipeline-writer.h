@@ -5,7 +5,7 @@
 #ifndef MC_COAP_TEST_PIPELINE_WRITER_H
 #define MC_COAP_TEST_PIPELINE_WRITER_H
 
-#include "memory-chunk.h"
+#include "mc/memory-chunk.h"
 
 namespace moducom { namespace pipeline {
 

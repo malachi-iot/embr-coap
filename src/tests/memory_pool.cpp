@@ -1,8 +1,8 @@
 
 #include <catch.hpp>
 
-#include "../MemoryPool.h"
-#include "../mc/memory-pool.h"
+#include "MemoryPool.h"
+#include "mc/memory-pool.h"
 #include "../coap-token.h"
 
 using namespace moducom::dynamic;

@@ -6,10 +6,10 @@
 #define MC_COAP_TEST_PIPELINE_H
 
 //#include "../coap_transmission.h"
-#include "../platform.h"
+#include <platform.h>
 #include <stdint.h>
 #include <string.h>
-#include "memory-chunk.h"
+#include <mc/memory-chunk.h>
 #include "pipeline-reader.h"
 #include "pipeline-writer.h"
 

@@ -9,8 +9,8 @@
 #endif
 
 #include <iostream>
-#include "../mc/string.h"
-#include "../MemoryPool.h"
+#include "mc/string.h"
+#include "MemoryPool.h"
 
 // https://github.com/philsquared/Catch/issues/531
 std::ostream& operator<<(std::ostream& os, moducom::std::string& value)

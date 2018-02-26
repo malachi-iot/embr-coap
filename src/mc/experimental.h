@@ -6,7 +6,7 @@
 #ifndef MC_COAP_TEST_EXPERIMENTAL_H
 #define MC_COAP_TEST_EXPERIMENTAL_H
 
-#include "../platform.h"
+#include <platform.h>
 #include "../coap-encoder.h"
 #include "pipeline-writer.h"
 

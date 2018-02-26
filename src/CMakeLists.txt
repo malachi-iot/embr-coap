@@ -35,4 +35,4 @@ set(SOURCE_FILES
         coap/context.h)
 add_executable(mc-coap-test ${SOURCE_FILES})
 
-target_link_libraries(mc-coap-test moducom_memory_lib)
+target_link_libraries(mc-coap-test moducom_memory)
