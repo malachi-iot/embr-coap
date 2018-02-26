@@ -65,10 +65,12 @@ TEST_CASE("CoAP encoder tests", "[coap-encoder]")
 
         const int option_pos = 5;
 
+//#if !defined (__APPLE__)
         // FIX: on MBP QTcreator this fails
         REQUIRE(chunk[4] == 1);
         REQUIRE(chunk[5] == 2);
         REQUIRE(chunk[option_pos + 6] == 0xFF);
+//#endif
     }
     SECTION("Token test")
     {

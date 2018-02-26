@@ -466,11 +466,12 @@ class ContextDispatcherHandler : public DispatcherHandlerBase
     // to provide timestamp and pool-handling alloc/dealloc (though
     // the latter *COULD* be provided with a specialized trait, and
     // perhaps should be)
-    //token_pool_t tokenPool;
+    token_pool_t token_pool;
 
 public:
-    ContextDispatcherHandler(IncomingContext& context) :
-            context(context)
+    ContextDispatcherHandler(IncomingContext& context, const token_pool_t& token_pool) :
+            context(context),
+            token_pool(token_pool)
     {
 
     }

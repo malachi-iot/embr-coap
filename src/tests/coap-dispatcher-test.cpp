@@ -77,8 +77,9 @@ IDispatcherHandler* context_handler_factory(MemoryChunk chunk)
 {
     // FIX: this context needs to flow down through the whole factory chain
     static IncomingContext context;
+    static moducom::dynamic::PoolBase<moducom::coap::layer2::Token, 8> token_pool;
 
-    return new (chunk.data()) ContextDispatcherHandler(context);
+    return new (chunk.data()) ContextDispatcherHandler(context, token_pool);
 }
 
 

@@ -119,7 +119,59 @@ protected:
 
         return c;
     }
+
+    inline static void free(T* items, size_t max_count, T& item)
+    {
+        for(int i = 0; i < max_count; i++)
+        {
+            T& candidate = items[i];
+
+            if(&item == &candidate)
+            {
+                traits_t::free(candidate);
+                return;
+            }
+        }
+    }
+
 };
+
+
+// To replace non fixed-array pools, but still are traditional pools
+// i.e. at RUNTIME are fixed count and in a fixed position, once
+// the class is initialized
+// TODO: Combine with FnFactory also
+template <class T, class TTraits = DefaultPoolItemTrait<T > >
+class OutOfBandPool
+{
+    typedef TTraits traits_t;
+    const T* items;
+    const int max_count;
+    typedef PoolBaseBase<T, TTraits> base_t;
+
+public:
+    OutOfBandPool(const T* items, int max_count) :
+        items(items), max_count(max_count) {}
+
+    template <class TArg1>
+    T& allocate(TArg1 arg1)
+    {
+        return base_t::allocate(arg1, items, max_count);
+    }
+
+    // returns number of allocated items
+    size_t count() const
+    {
+        return base_t::count(items, max_count);
+    }
+
+    // returns number of free slots
+    size_t free() const
+    {
+        return max_count - count();
+    }
+};
+
 
 template <class T, size_t max_count, class TTraits = DefaultPoolItemTrait<T > >
 class PoolBase : PoolBaseBase<T, TTraits>
@@ -188,17 +240,6 @@ public:
     T& allocate(TArg1 arg1)
     {
         return base_t::allocate(arg1, items, max_count);
-        /*
-        for(int i = 0; i < max_count; i++)
-        {
-            T& candidate = items[i];
-
-            if(traits_t::is_free(candidate))
-            {
-                new (&candidate) T(arg1);
-                return candidate;
-            }
-        } */
     }
 
     T& allocate()
@@ -219,16 +260,7 @@ public:
 
     void free(T& item)
     {
-        for(int i = 0; i < max_count; i++)
-        {
-            T& candidate = items[i];
-
-            if(&item == &candidate)
-            {
-                traits_t::free(candidate);
-                return;
-            }
-        }
+        base_t::free(items, max_count, item);
     }
 
     // returns number of allocated items
@@ -243,44 +275,18 @@ public:
         return max_count - count();
     }
 
-    // TODO: Make a function to_out_of_band_pool (but with better name) which
-    // more or less wraps this pool with that one so that consumers don't have
-    // to compile-time commit to this exact size of pool
+    typedef OutOfBandPool<T, traits_t> oobp_t;
+
+    // TODO: Improve naming
+    oobp_t out_of_band() const
+    {
+        oobp_t oobp(items, max_count);
+        return oobp;
+    }
+
+    operator oobp_t() const { return out_of_band(); }
 };
 
-// To replace non fixed-array pools, but still are traditional pools
-// i.e. at RUNTIME are fixed count and in a fixed position, once
-// the class is initialized
-// TODO: Combine with FnFactory also
-template <class T, class TTraits = DefaultPoolItemTrait<T > >
-class OutOfBandPool
-{
-    typedef TTraits traits_t;
-    const T* items;
-    const int max_count;
-    typedef PoolBaseBase<T, TTraits> base_t;
 
-public:
-    OutOfBandPool(const T* items, int max_count) :
-        items(items), max_count(max_count) {}
-
-    template <class TArg1>
-    T& allocate(TArg1 arg1)
-    {
-        return base_t::allocate(arg1, items, max_count);
-    }
-
-    // returns number of allocated items
-    size_t count() const
-    {
-        return base_t::count(items, max_count);
-    }
-
-    // returns number of free slots
-    size_t free() const
-    {
-        return max_count - count();
-    }
-};
 
 }}
