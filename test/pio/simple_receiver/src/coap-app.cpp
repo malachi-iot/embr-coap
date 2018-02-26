@@ -68,6 +68,12 @@ public:
 
         global_encoder->header(outgoing_header);
 
+        // TODO: doublecheck to see if we magically update outgoing header TKL
+        // I think we do, though even if we don't the previous .raw = .raw
+        // SHOULD copy it, assuming our on_header starts getting called again
+        if(context->token())
+            global_encoder->token(*context->token());
+
         // just echo back the incoming payload, for now
         // API not ready yet
         // TODO: Don't like the char* version, so expect that

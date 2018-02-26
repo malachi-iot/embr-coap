@@ -214,6 +214,10 @@ class DispatcherHandlerBase :
         public IsInterestedBase
 {
 protected:
+    // NOTE: Semi-kludgey, would prefer this always come in via constructor
+    // but we need to lock down memory management before that's viable
+    IncomingContext* context;
+
 #ifndef FEATURE_IISINTERESTED
     inline bool is_always_interested() const
     {
@@ -233,6 +237,11 @@ protected:
     }
 
 public:
+    void set_context(IncomingContext& context)
+    {
+        this->context = &context;
+    }
+
     virtual InterestedEnum interested() const OVERRIDE
     {
         return IsInterestedBase::interested();

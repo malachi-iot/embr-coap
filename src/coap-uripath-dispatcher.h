@@ -159,6 +159,11 @@ experimental::IDispatcherHandler* uri_plus_observer_dispatcher(experimental::Fac
 {
     static TMessageObserver observer;
 
+    // FIX: kludgey, and though SFINAE would be helpful, would probably
+    // not alleviate the kludginess enough.  reserved-dispatcher likely
+    // a better solution so that we can push context thru via constructor
+    observer.set_context(ctx.incoming_context);
+
     return new (ctx.handler_memory.data()) UriPathDispatcherHandler(uri_path, observer);
 }
 
