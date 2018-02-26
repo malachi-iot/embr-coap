@@ -9,6 +9,7 @@
 #include "mc/linkedlist.h"
 #include "mc/array-helper.h"
 #include "coap/context.h"
+#include "mc/memory-pool.h"
 
 // This adds 8 bytes to IDispatcherHandler class when enabled
 //#define FEATURE_IISINTERESTED
@@ -455,17 +456,21 @@ public:
 class ContextDispatcherHandler : public DispatcherHandlerBase
 {
     typedef IsInterestedBase::InterestedEnum interested_t;
+    // NOTE: We aren't using a ref or ptr here as token_pool_t
+    // is a relatively inexpensive object, all const, AND
+    // could be a wrapper around a regular fixed-array pool
+    typedef dynamic::OutOfBandPool<layer2::Token> token_pool_t;
 
     IncomingContext& context;
-
-    // state 0 = uninitialized
-    // state 1 = saw header
-    // state 2 = saw and registered token, or saw no token is coming
-    uint8_t state;
+    // TODO: Need a special "PoolToken" to wrap around layer2::Token
+    // to provide timestamp and pool-handling alloc/dealloc (though
+    // the latter *COULD* be provided with a specialized trait, and
+    // perhaps should be)
+    //token_pool_t tokenPool;
 
 public:
     ContextDispatcherHandler(IncomingContext& context) :
-            context(context), state(0)
+            context(context)
     {
 
     }
@@ -477,7 +482,20 @@ public:
 
     virtual interested_t interested() const OVERRIDE
     {
-        return state == 2 ? Never : Currently;
+        // If we haven't received a header yet, we're still interested
+        if(!context.have_header()) return Currently;
+
+        // If we have a header, are we looking for a token?
+        if(context.header().token_length() > 0)
+        {
+            // If we are looking for but dont' have a token,
+            // we are still interested.  Otherwise, done
+            return context.token() ? Never : Currently;
+        }
+
+        // we have a header and aren't looking for a token,
+        // so we are never interested anymore
+        return Never;
     }
 };
 

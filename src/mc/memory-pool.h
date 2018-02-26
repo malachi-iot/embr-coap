@@ -83,43 +83,78 @@ struct ExplicitPoolItemTrait
 };
 
 
-template <class T, class TTraits>
-inline size_t count_allocated(const T* items, size_t max_count)
+// FIX: Name obviously needs repair
+template <class T, class TTraits = DefaultPoolItemTrait<T > >
+class PoolBaseBase
 {
-    size_t c = 0;
+    typedef TTraits traits_t;
 
-    for(int i = 0; i < max_count; i++)
+protected:
+    template <class TArg1>
+    inline static T& allocate(TArg1 arg1, T* items, size_t max_count)
     {
-        const T& item = items[i];
+        for(int i = 0; i < max_count; i++)
+        {
+            T& candidate = items[i];
 
-        if(TTraits::is_allocated(item))
-            c++;
+            if(traits_t::is_free(candidate))
+            {
+                new (&candidate) T(arg1);
+                return candidate;
+            }
+        }
     }
 
-    return c;
-}
+    inline static size_t count(const T* items, size_t max_count)
+    {
+        size_t c = 0;
 
+        for(int i = 0; i < max_count; i++)
+        {
+            const T& item = items[i];
+
+            if(TTraits::is_allocated(item))
+                c++;
+        }
+
+        return c;
+    }
+};
 
 template <class T, size_t max_count, class TTraits = DefaultPoolItemTrait<T > >
-class PoolBase
+class PoolBase : PoolBaseBase<T, TTraits>
 {
     typedef TTraits traits_t;
     typedef experimental::ArrayHelperBase<T> array_helper_t;
+    typedef PoolBaseBase<T, TTraits> base_t;
 
     // pool items themselves
     T items[max_count];
 
 public:
-    // TODO: complete once I determine how useful this is in a pre-C++11 environment
-    size_t begin()
+    struct Iter
     {
-        return 0;
+        T& value;
+
+        Iter(T& v) : value(v) {}
+
+        operator T&() const { return value; }
+    };
+
+    // TODO: complete once I determine how useful this is in a pre-C++11 environment
+    Iter begin()
+    {
+        Iter i(items[0]);
+
+        return i;
     }
 
 
-    size_t end() const
+    Iter end() const
     {
-        return max_count;
+        Iter i(items[max_count - 1]);
+
+        return i;
     }
 
     PoolBase()
@@ -152,6 +187,8 @@ public:
     template <class TArg1>
     T& allocate(TArg1 arg1)
     {
+        return base_t::allocate(arg1, items, max_count);
+        /*
         for(int i = 0; i < max_count; i++)
         {
             T& candidate = items[i];
@@ -161,7 +198,7 @@ public:
                 new (&candidate) T(arg1);
                 return candidate;
             }
-        }
+        } */
     }
 
     T& allocate()
@@ -197,7 +234,7 @@ public:
     // returns number of allocated items
     size_t count() const
     {
-        return count_allocated<T, traits_t>(items, max_count);
+        return base_t::count(items, max_count);
     }
 
     // returns number of free slots
@@ -205,6 +242,10 @@ public:
     {
         return max_count - count();
     }
+
+    // TODO: Make a function to_out_of_band_pool (but with better name) which
+    // more or less wraps this pool with that one so that consumers don't have
+    // to compile-time commit to this exact size of pool
 };
 
 // To replace non fixed-array pools, but still are traditional pools
@@ -217,12 +258,22 @@ class OutOfBandPool
     typedef TTraits traits_t;
     const T* items;
     const int max_count;
+    typedef PoolBaseBase<T, TTraits> base_t;
 
 public:
+    OutOfBandPool(const T* items, int max_count) :
+        items(items), max_count(max_count) {}
+
+    template <class TArg1>
+    T& allocate(TArg1 arg1)
+    {
+        return base_t::allocate(arg1, items, max_count);
+    }
+
     // returns number of allocated items
     size_t count() const
     {
-        return count_allocated<T, traits_t>(items, max_count);
+        return base_t::count(items, max_count);
     }
 
     // returns number of free slots

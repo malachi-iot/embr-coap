@@ -443,7 +443,6 @@ void FactoryDispatcherHandler::on_payload(const pipeline::MemoryChunk::readonly_
 void ContextDispatcherHandler::on_header(Header header)
 {
     context.header(header);
-    state = header.token_length() == 0 ? 2 : 1;
 }
 
 void ContextDispatcherHandler::on_token(const pipeline::MemoryChunk::readonly_t& token_part, bool last_chunk)
@@ -456,7 +455,6 @@ void ContextDispatcherHandler::on_token(const pipeline::MemoryChunk::readonly_t&
     // NOTE: this won't yet work with chunked
     token.set(token_part.data(), token_part.length());
     context.token(&token);
-    state = 2;
 }
 
 
