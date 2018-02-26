@@ -90,6 +90,7 @@ struct IMessageObserver
 // together...
 namespace experimental {
 
+// FIX: Name not quite right, this is the explicitly NON virtual/polymorphic flavor
 struct IsInterestedBase
 {
     // Enum representing interest level for one particular message
@@ -126,6 +127,12 @@ public:
     {
         return _interested;
     }
+
+    inline bool is_always_interested() const
+    {
+        return _interested == Always;
+    }
+
 
     inline static bool is_interested(interested_t value)
     {
@@ -199,6 +206,14 @@ class DispatcherHandlerBase :
         public IsInterestedBase
 {
 protected:
+#ifndef FEATURE_IISINTERESTED
+    inline bool is_always_interested() const
+    {
+        // ensure we pick up the one that utilizes virtual interested()
+        return IDispatcherHandler::is_always_interested();
+    }
+#endif
+
     void interested(InterestedEnum _interested)
     {
         IsInterestedBase::interested(_interested);

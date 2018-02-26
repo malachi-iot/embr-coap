@@ -294,7 +294,7 @@ void FactoryDispatcherHandler::on_header(Header header)
 
         state.interested(handler->interested());
 
-        if(handler->is_always_interested())
+        if(state.is_always_interested())
         {
             chosen = handler;
             return; // obviously do NOT destruct the chosen handler
@@ -338,7 +338,7 @@ void FactoryDispatcherHandler::on_token(const pipeline::MemoryChunk::readonly_t&
 
         state.interested(handler->interested());
 
-        if(handler->is_always_interested())
+        if(state.is_always_interested())
         {
             chosen = handler;
             return; // obviously do NOT destruct the chosen handler
@@ -384,7 +384,7 @@ void FactoryDispatcherHandler::on_option(number_t number,
 
         state.interested(handler->interested());
 
-        if(handler->is_always_interested())
+        if(state.is_always_interested())
         {
             chosen = handler;
             return; // obviously do NOT destruct the chosen handler
@@ -425,7 +425,7 @@ void FactoryDispatcherHandler::on_payload(const pipeline::MemoryChunk::readonly_
 
         state.interested(handler->interested());
 
-        if(handler->is_always_interested())
+        if(state.is_always_interested())
         {
             // Further unlikely that we'll dispatch mid-chunk
             // (unlikely that buffers would fall this way, in
