@@ -73,19 +73,19 @@ public:
 
 extern dispatcher_handler_factory_fn test_sub_factories[];
 
-IDispatcherHandler* context_handler_factory(MemoryChunk chunk)
+IDispatcherHandler* context_handler_factory(FactoryDispatcherHandlerContext& ctx)
 {
     // FIX: this context needs to flow down through the whole factory chain
     static IncomingContext context;
     static moducom::dynamic::PoolBase<moducom::coap::layer2::Token, 8> token_pool;
 
-    return new (chunk.data()) ContextDispatcherHandler(context, token_pool);
+    return new (ctx.handler_memory.data()) ContextDispatcherHandler(context, token_pool);
 }
 
 
-IDispatcherHandler* test_factory1(MemoryChunk chunk)
+IDispatcherHandler* test_factory1(FactoryDispatcherHandlerContext& ctx)
 {
-    return new (chunk.data()) TestDispatcherHandler(IsInterestedBase::Never);
+    return new (ctx.handler_memory.data()) TestDispatcherHandler(IsInterestedBase::Never);
 }
 
 
@@ -136,10 +136,10 @@ IDispatcherHandler* uri_plus_factory_dispatcher(MemoryChunk chunk)
 
 } */
 
-IDispatcherHandler* test_factory2(MemoryChunk chunk)
+IDispatcherHandler* test_factory2(FactoryDispatcherHandlerContext& ctx)
 {
-    MemoryChunk& uri_handler_chunk = chunk;
-    MemoryChunk v1_handler_chunk = chunk.remainder(sizeof(UriPathDispatcherHandler));
+    MemoryChunk& uri_handler_chunk = ctx.handler_memory;
+    MemoryChunk v1_handler_chunk = ctx.handler_memory.remainder(sizeof(UriPathDispatcherHandler));
     MemoryChunk v1_handler_inner_chunk = v1_handler_chunk.remainder(sizeof(FactoryDispatcherHandler));
 
     FactoryDispatcherHandler* fdh = new (v1_handler_chunk.data()) FactoryDispatcherHandler(

@@ -312,7 +312,7 @@ public:
 };
 
 
-struct DispatcherHandlerFactoryContext
+struct FactoryDispatcherHandlerContext
 {
     IncomingContext& incoming_context;
 
@@ -328,7 +328,7 @@ struct DispatcherHandlerFactoryContext
     size_t reserve_bytes;
 #endif
 
-    DispatcherHandlerFactoryContext(IncomingContext& ic, const pipeline::MemoryChunk& hm)
+    FactoryDispatcherHandlerContext(IncomingContext& ic, const pipeline::MemoryChunk& hm)
             :
 #ifdef FEATURE_MCCOAP_RESERVED_DISPATCHER
               reserve_bytes(0),
@@ -341,7 +341,7 @@ struct DispatcherHandlerFactoryContext
 
 
 // An in-place new is expected
-typedef IDispatcherHandler* (*dispatcher_handler_factory_fn)(pipeline::MemoryChunk);
+typedef IDispatcherHandler* (*dispatcher_handler_factory_fn)(FactoryDispatcherHandlerContext&);
 
 
 /*
@@ -409,17 +409,17 @@ class FactoryDispatcherHandler : public IDispatcherHandler
 
     // Context local to FactoryDispatcherHandler, carries around
     // local state for convenience
-    struct Context : public DispatcherHandlerFactoryContext
+    struct Context : public FactoryDispatcherHandlerContext
     {
         State* state;
 
-        Context(DispatcherHandlerFactoryContext& ctx, const pipeline::MemoryChunk& chunk)
-            : DispatcherHandlerFactoryContext(ctx.incoming_context, chunk) {}
+        Context(FactoryDispatcherHandlerContext& ctx, const pipeline::MemoryChunk& chunk)
+            : FactoryDispatcherHandlerContext(ctx.incoming_context, chunk) {}
     };
 
     typedef Context context_t;
 
-    DispatcherHandlerFactoryContext context;
+    FactoryDispatcherHandlerContext context;
 
     pipeline::MemoryChunk _handler_memory;
 

@@ -284,7 +284,7 @@ inline IDispatcherHandler* FactoryDispatcherHandler::observer_helper_begin(conte
     if(state.reserved) return state.reserved;
 #endif
 
-    IDispatcherHandler* handler = handler_factories[i](handler_memory());
+    IDispatcherHandler* handler = handler_factories[i](context);
     return handler;
 }
 

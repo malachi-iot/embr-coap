@@ -132,8 +132,9 @@ public:
 
 
 template <const char* uri_path, experimental::dispatcher_handler_factory_fn* factories, int count>
-experimental::IDispatcherHandler* uri_plus_factory_dispatcher(pipeline::MemoryChunk chunk)
+experimental::IDispatcherHandler* uri_plus_factory_dispatcher(experimental::FactoryDispatcherHandlerContext& ctx)
 {
+    pipeline::MemoryChunk& chunk = ctx.handler_memory;
     pipeline::MemoryChunk& uri_handler_chunk = chunk;
     // semi-objstack behavior
     CONSTEXPR size_t sizeUriPathDispatcher = sizeof(UriPathDispatcherHandler);
@@ -154,11 +155,11 @@ experimental::IDispatcherHandler* uri_plus_factory_dispatcher(pipeline::MemoryCh
 
 // Creates a unique static TMessageObserver associated with this uri_path
 template <const char* uri_path, class TMessageObserver>
-experimental::IDispatcherHandler* uri_plus_observer_dispatcher(pipeline::MemoryChunk chunk)
+experimental::IDispatcherHandler* uri_plus_observer_dispatcher(experimental::FactoryDispatcherHandlerContext& ctx)
 {
     static TMessageObserver observer;
 
-    return new (chunk.data()) UriPathDispatcherHandler(uri_path, observer);
+    return new (ctx.handler_memory.data()) UriPathDispatcherHandler(uri_path, observer);
 }
 
 
