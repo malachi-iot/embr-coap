@@ -73,6 +73,15 @@ public:
 
 extern dispatcher_handler_factory_fn test_sub_factories[];
 
+IDispatcherHandler* context_handler_factory(MemoryChunk chunk)
+{
+    // FIX: this context needs to flow down through the whole factory chain
+    static IncomingContext context;
+
+    return new (chunk.data()) ContextDispatcherHandler(context);
+}
+
+
 IDispatcherHandler* test_factory1(MemoryChunk chunk)
 {
     return new (chunk.data()) TestDispatcherHandler(IsInterestedBase::Never);
@@ -177,6 +186,7 @@ dispatcher_handler_factory_fn uri_helper2(CONSTEXPR TArray& array)
 
 dispatcher_handler_factory_fn test_factories[] =
 {
+    context_handler_factory,
     test_factory1,
     test_factory2,
     uri_plus_factory_dispatcher<STR_TEST, test_sub_factories, 1>
@@ -232,7 +242,7 @@ TEST_CASE("CoAP dispatcher tests", "[coap-dispatcher]")
         // our handlers way, way up...
         layer3::MemoryChunk<512> dispatcherBuffer;
 
-        FactoryDispatcherHandler fdh(dispatcherBuffer, test_factories, 3);
+        FactoryDispatcherHandler fdh(dispatcherBuffer, test_factories, 4);
         Dispatcher dispatcher;
 
         // doesn't fully test new UriPath handler because TestDispatcherHandler

@@ -471,7 +471,7 @@ public:
 
     virtual interested_t interested() const OVERRIDE
     {
-        return Never;
+        return state == 2 ? Never : Currently;
     }
 };
 
