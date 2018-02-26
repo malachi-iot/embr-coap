@@ -370,28 +370,15 @@ void FactoryDispatcherHandler::on_token(const pipeline::MemoryChunk::readonly_t&
     // token feels like an explicitly pre known circumstance i.e. session management feature
     for(int i = 0; i < handler_factory_count; i++)
     {
-        State& state = handler_state(i);
-        // unless we are *never* interested, have a crack at observing
-        if(state.is_never_interested() && state.initialized()) continue;
-
-        // NOTE: Keeping this here in anticipation of handler_memory() floating
-        // if we do the "Always"/objstack keep feature
         context_t ctx(context, handler_memory());
 
-        IDispatcherHandler* handler = handler_factories[i](handler_memory());
+        IDispatcherHandler* handler = observer_helper_begin(ctx, i);
+
+        if(handler == NULLPTR) continue;
 
         handler->on_token(token_part, last_chunk);
 
-        state.interested(handler->interested());
-
-        if(state.is_always_interested())
-        {
-            chosen = handler;
-            return; // obviously do NOT destruct the chosen handler
-        }
-
-        // placement new demands explicit destructor invocation
-        handler->~IDispatcherHandler();
+        observer_helper_end(ctx, handler);
     }
 }
 
@@ -417,28 +404,17 @@ void FactoryDispatcherHandler::on_option(number_t number,
 
     for(int i = 0; i < handler_factory_count; i++)
     {
-        State& state = handler_state(i);
-        // unless we are *never* interested, have a crack at observing
-        if(state.is_never_interested() && state.initialized()) continue;
-
         context_t ctx(context, handler_memory());
 
-        IDispatcherHandler* handler = handler_factories[i](handler_memory());
+        IDispatcherHandler* handler = observer_helper_begin(ctx, i);
+
+        if(handler == NULLPTR) continue;
 
         // FIX: This only works for non-chunked processing
         handler->on_option(number, option_value_part.length());
         handler->on_option(number, option_value_part, true);
 
-        state.interested(handler->interested());
-
-        if(state.is_always_interested())
-        {
-            chosen = handler;
-            return; // obviously do NOT destruct the chosen handler
-        }
-
-        // placement new demands explicit destructor invocation
-        handler->~IDispatcherHandler();
+        observer_helper_end(ctx, handler);
     }
 }
 
@@ -461,29 +437,15 @@ void FactoryDispatcherHandler::on_payload(const pipeline::MemoryChunk::readonly_
     // (unlikely use case)
     for(int i = 0; i < handler_factory_count; i++)
     {
-        State& state = handler_state(i);
-
-        if(state.is_never_interested() && state.initialized()) continue;
-
         context_t ctx(context, handler_memory());
 
-        IDispatcherHandler* handler = handler_factories[i](handler_memory());
+        IDispatcherHandler* handler = observer_helper_begin(ctx, i);
+
+        if(handler == NULLPTR) continue;
 
         handler->on_payload(payload_part, last_chunk);
 
-        state.interested(handler->interested());
-
-        if(state.is_always_interested())
-        {
-            // Further unlikely that we'll dispatch mid-chunk
-            // (unlikely that buffers would fall this way, in
-            // addition to extremely unlikely use case)
-            chosen = handler;
-            return; // obviously do NOT destruct the chosen handler, though by now it doesn't much matter
-        }
-
-        // placement new demands explicit destructor invocation
-        handler->~IDispatcherHandler();
+        observer_helper_end(ctx, handler);
     }
 }
 
