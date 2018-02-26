@@ -337,6 +337,11 @@ class FactoryDispatcherHandler : public IDispatcherHandler
 
     typedef DispatcherHandlerFactoryContext context_t;
 
+    // TODO: Make context & incoming_context something that is passed in
+    // even to FactoryDispatcherHandler
+    IncomingContext incoming_context;
+    context_t context;
+
     class State : public IsInterestedBase
     {
         // FIX: optimize this out
@@ -406,6 +411,7 @@ public:
             :_handler_memory(handler_memory),
              handler_factories(handler_factories),
              handler_factory_count(handler_factory_count),
+             context(incoming_context, handler_memory),
              chosen(NULLPTR)
     {
 #ifdef FEATURE_FDH_FANCYMEM
