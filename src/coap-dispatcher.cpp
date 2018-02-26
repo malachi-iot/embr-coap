@@ -455,6 +455,10 @@ void ContextDispatcherHandler::on_token(const pipeline::MemoryChunk::readonly_t&
     // NOTE: this won't yet work with chunked
     token.set(token_part.data(), token_part.length());
     context.token(&token);
+
+    // NOTE: Perhaps we don't want to use token pool at this time, and instead keep a full
+    // token reference within TokenContext instead.  We can still pool it later in more of
+    // a session-token pool area
 }
 
 

@@ -10,13 +10,13 @@
 namespace moducom { namespace coap {
 
 
-class ContextBase
+class TokenContext
 {
     typedef layer2::Token token_t;
     const token_t* _token;
 
 public:
-    ContextBase() : _token(NULLPTR) {}
+    TokenContext() : _token(NULLPTR) {}
 
     // if a) incoming message has a token and b) we've decoded the token and have it
     // available, then this will be non-null
@@ -32,7 +32,7 @@ public:
 // foundational base class
 // Called Incoming context because remember some incoming messages are RESPONSES, even
 // when we are the server (ACKs, etc)
-class IncomingContext : public ContextBase
+class IncomingContext : public TokenContext
 {
     Header _header;
 
