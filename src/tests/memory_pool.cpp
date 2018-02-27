@@ -4,6 +4,7 @@
 #include "MemoryPool.h"
 #include "mc/memory-pool.h"
 #include "../coap-token.h"
+#include "mc/objstack.h"
 
 using namespace moducom::dynamic;
 
@@ -92,12 +93,22 @@ TEST_CASE("Low-level memory pool tests", "[mempool-low]")
 
         REQUIRE(pool.count() == 0);
 
-        TestToken& allocated = pool.allocate(hardcoded);
+        TestToken* allocated = pool.allocate(hardcoded);
 
         REQUIRE(pool.count() == 1);
 
         pool.free(allocated);
 
         REQUIRE(pool.count() == 0);
+    }
+    SECTION("Object Stack")
+    {
+        moducom::pipeline::layer2::MemoryChunk<512> chunk;
+        moducom::pipeline::MemoryChunk test(chunk);
+        ObjStack os(chunk);
+
+        os.alloc(10);
+
+        os.free(10);
     }
 }
