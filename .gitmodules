@@ -7,3 +7,4 @@
 [submodule "ext/moducom-memory"]
 	path = ext/moducom-memory
 	url = git@github.com:moducom/memory.git
+	branch = dev
