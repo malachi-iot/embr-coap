@@ -294,6 +294,8 @@ public:
         uint8_t tkl = bytes[0] & COAP_HEADER_FIXED_TKL_MASK;
 
         ASSERT_WARN(true, tkl < 9, "Token length must be < 9");
+
+        return tkl;
     }
 
     // Should always be 1

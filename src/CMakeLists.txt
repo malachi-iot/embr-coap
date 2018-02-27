@@ -4,11 +4,15 @@ project(mc-coap-test)
 #set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD 98)
 
-include_directories(../ext/Catch/include)
-include_directories(../ext/moducom-memory/src)
+set(MC_MEM_DIR ../ext/moducom-memory/src)
 
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "../../bin")
-add_subdirectory(../ext/moducom-memory/src ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
+include_directories(../ext/Catch/include)
+include_directories(${MC_MEM_DIR})
+
+# set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "../../../bin")
+# add_subdirectory(. CMAKE_RUNTIME_OUTPUT_DIRECTORY)
+# add_subdirectory(${MC_MEM_DIR} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
+add_subdirectory(${MC_MEM_DIR} CMAKE_RUNTIME_OUTPUT_DIRECTORY)
 
 # using technique from https://coderwall.com/p/y3zzbq/use-cmake-enabled-libraries-in-your-cmake-project
 #include(ExternalProject)
