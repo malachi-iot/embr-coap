@@ -302,6 +302,7 @@ public:
     uint8_t version() const
     {
         uint8_t v = bytes[0] >> 6;
+        return v;
     }
 
     //private:
