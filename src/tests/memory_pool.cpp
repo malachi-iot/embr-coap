@@ -104,11 +104,18 @@ TEST_CASE("Low-level memory pool tests", "[mempool-low]")
     SECTION("Object Stack")
     {
         moducom::pipeline::layer2::MemoryChunk<512> chunk;
-        moducom::pipeline::MemoryChunk test(chunk);
         ObjStack os(chunk);
+
+        int* val = new (os) int;
 
         os.alloc(10);
 
+        REQUIRE(os.length() == 512 - sizeof(int) - 10 - sizeof(ObjStack::Descriptor) * 2);
+
         os.free(10);
+
+        os.del(val);
+
+        REQUIRE(os.length() == 512);
     }
 }
