@@ -48,9 +48,14 @@ std::ostream& operator <<(std::ostream& out, Header::TypeEnum type)
     out << to_string(type);
 }
 
+// for setfill, setw
+#include <iomanip>
 
 std::ostream& operator <<(std::ostream& out, Header& header)
 {
+    // Not used, yet
+    std::ios::fmtflags f(out.flags());
+
     out << "tkl=" << (int)header.token_length();
     out << ", mid=" << std::hex << header.message_id();
     out << ", type=" << header.type();
@@ -59,7 +64,12 @@ std::ostream& operator <<(std::ostream& out, Header& header)
 
     out << std::dec;
 
-    out << ", code=" << code.get_class() << "." << code.code();
+    out << ", code=" << code.get_class() << ".";
+    // it appears setw only lasts as long as the next outgoing integer
+    out << std::setfill('0') << std::setw(2) << (int)code.detail();
+
+    // this appears to crash things
+    //out.flags(f);
 }
 
 class TestDispatcherHandler : public moducom::coap::experimental::IDispatcherHandler
