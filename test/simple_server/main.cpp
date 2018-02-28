@@ -31,6 +31,23 @@ using namespace moducom::coap;
 #include "../../src/mc/pipeline-decoder.h"
 #include <mc/memory-chunk.h>
 
+
+const char* to_string(Header::TypeEnum type)
+{
+    switch(type)
+    {
+        case Header::Confirmable:       return "Confirmable";
+        case Header::NonConfirmable:    return "NonConfirmable";
+        case Header::Acknowledgement:   return "Acknowledgement";
+        case Header::Reset:             return "Reset";
+    }
+}
+
+std::ostream& operator <<(std::ostream& out, Header::TypeEnum type)
+{
+    out << to_string(type);
+}
+
 class TestDispatcherHandler : public moducom::coap::experimental::IDispatcherHandler
 {
     experimental::BlockingEncoder& encoder;
@@ -79,6 +96,10 @@ public:
                 outgoing_header.type(Header::Acknowledgement);
             else if(type == Header::NonConfirmable)
                 outgoing_header.type(Header::NonConfirmable);
+
+            std::cout << "Sending header: tkl=" << (int)outgoing_header.token_length();
+            std::cout << ", mid=" << std::hex << outgoing_header.message_id() << std::dec;
+            std::cout << ", type=" << outgoing_header.type() << std::endl;
 
             encoder.header(outgoing_header);
 
