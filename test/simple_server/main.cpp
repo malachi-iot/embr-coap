@@ -48,6 +48,20 @@ std::ostream& operator <<(std::ostream& out, Header::TypeEnum type)
     out << to_string(type);
 }
 
+
+std::ostream& operator <<(std::ostream& out, Header& header)
+{
+    out << "tkl=" << (int)header.token_length();
+    out << ", mid=" << std::hex << header.message_id();
+    out << ", type=" << header.type();
+
+    const Header::Code& code = header.code_experimental();
+
+    out << std::dec;
+
+    out << ", code=" << code.get_class() << "." << code.code();
+}
+
 class TestDispatcherHandler : public moducom::coap::experimental::IDispatcherHandler
 {
     experimental::BlockingEncoder& encoder;
@@ -87,9 +101,7 @@ public:
 
             outgoing_header.response_code(Header::Code::Valid);
 
-            std::cout << "Sending header: tkl=" << (int)outgoing_header.token_length();
-            std::cout << ", mid=" << std::hex << outgoing_header.message_id() << std::dec;
-            std::cout << ", type=" << outgoing_header.type() << std::endl;
+            std::cout << "Sending header: " << outgoing_header << std::endl;
 
             encoder.header(outgoing_header);
 

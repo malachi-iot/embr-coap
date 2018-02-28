@@ -123,7 +123,7 @@ public:
         // bottommost 5 bits
         uint8_t detail() const { return _code & 0x1F; }
 
-        Codes code() { return (Codes) _code; }
+        Codes code() const { return (Codes) _code; }
     };
 
     // RFC 7252 Section 12.1.1
