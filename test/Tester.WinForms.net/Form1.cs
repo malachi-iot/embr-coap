@@ -111,7 +111,7 @@ namespace Tester.WinForms.net
 
                 Console.Write("got a response: ");
 
-                tssActivity.Text = "Got response";
+                tssActivity.Text = $"Got response: code=" + response.Message.Code;
 
                 var payload = Encoding.UTF8.GetString(response.Message.Payload);
 
