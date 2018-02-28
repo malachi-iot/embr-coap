@@ -34,44 +34,22 @@ using namespace moducom::coap;
 class TestDispatcherHandler : public moducom::coap::experimental::IDispatcherHandler
 {
     experimental::BlockingEncoder& encoder;
-    Header outgoing_header;
     layer2::Token token;
+    IncomingContext context;
 
 public:
     TestDispatcherHandler(experimental::BlockingEncoder& encoder) : encoder(encoder) {}
 
     virtual void on_header(Header header) OVERRIDE
     {
-        Header::TypeEnum type = header.type();
-        //uint8_t token_length = header.token_length();
-        //uint16_t mid = header.message_id();
-
-        //ASSERT_ERROR(Header::Confirmable, type, "Expected confirmable");
-
-        // FIX: clumsy init/copy operation.  Needed for now because we don't
-        // initialize "version" bit as smoothly as we could, and also conveniently
-        // copies MID and token length for us
-        outgoing_header.raw = header.raw;
-
-        // TODO: Eventually do something like this, but for now we are low-levelling it
-        //experimental::process_header_request(header, &outgoing_header);
-
-        std::cout << "Header type: " << type << std::endl;
-
-        if(type == Header::Confirmable)
-            outgoing_header.type(Header::Acknowledgement);
-        else if(type == Header::NonConfirmable)
-            outgoing_header.type(Header::NonConfirmable);
-
-        // RAW copy covers this portion
-        //outgoing_header.token_length(token_length);
-        //outgoing_header.message_id(mid);
+        context.header(header);
     }
 
 
     virtual void on_token(const moducom::pipeline::MemoryChunk::readonly_t& chunk, bool last_chunk)
     {
         token.copy_from(chunk);
+        context.token(&token);
     }
 
     // FIX: just crappy test code, don't do this in real life
@@ -81,17 +59,33 @@ public:
     // on_option value portion taking a pipeline message
     virtual void on_option(number_t number, uint16_t length) OVERRIDE
     {
-        outgoing_header.response_code(Header::Code::Valid);
         // as you can see we wait to send header and friends until we receive options
         // as a simulation of real life where incoming options tend to determine how
         // we respond
         if(!header_sent)
         {
+            Header outgoing_header;
+
+            Header::TypeEnum type = context.header().type();
+
+            // FIX: clumsy init/copy operation.  Needed for now because we don't
+            // initialize "version" bit as smoothly as we could, and also conveniently
+            // copies MID and token length for us
+            outgoing_header.raw = context.header().raw;
+
+            outgoing_header.response_code(Header::Code::Valid);
+
+            if(type == Header::Confirmable)
+                outgoing_header.type(Header::Acknowledgement);
+            else if(type == Header::NonConfirmable)
+                outgoing_header.type(Header::NonConfirmable);
+
             encoder.header(outgoing_header);
-            if (outgoing_header.token_length() > 0)
+
+            if (context.token() != nullptr)
             {
                 // FIX: Broken, _length vs (not yet made) length-used
-                encoder.token(token);
+                encoder.token(*context.token());
             }
 
             encoder.payload("Response payload");
