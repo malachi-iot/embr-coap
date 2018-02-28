@@ -5,7 +5,7 @@
 #ifndef MC_COAP_TEST_PIPELINE_DECODER_H
 #define MC_COAP_TEST_PIPELINE_DECODER_H
 
-#include "memory-chunk.h"
+#include "mc/memory-chunk.h"
 #include "pipeline-reader.h"
 
 namespace moducom { namespace pipeline { namespace experimental {

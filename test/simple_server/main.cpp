@@ -29,7 +29,7 @@ using namespace moducom::coap;
 #include "../../src/coap-token.h"
 #include "../../src/mc/pipeline-reader.h"
 #include "../../src/mc/pipeline-decoder.h"
-#include "../../src/mc/memory-chunk.h"
+#include <mc/memory-chunk.h>
 
 class TestDispatcherHandler : public moducom::coap::experimental::IDispatcherHandler
 {

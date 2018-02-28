@@ -535,10 +535,12 @@ public:
 class ContextDispatcherHandler : public DispatcherHandlerBase
 {
     typedef IsInterestedBase::InterestedEnum interested_t;
+    typedef moducom::coap::layer2::Token token_t;
+
     // NOTE: We aren't using a ref or ptr here as token_pool_t
     // is a relatively inexpensive object, all const, AND
     // could be a wrapper around a regular fixed-array pool
-    typedef dynamic::OutOfBandPool<layer2::Token> token_pool_t;
+    typedef dynamic::OutOfBandPool<token_t> token_pool_t;
 
     IncomingContext& context;
     // TODO: Need a special "PoolToken" to wrap around layer2::Token
