@@ -117,7 +117,8 @@ public:
     {
     }
 
-    virtual InterestedEnum interested() OVERRIDE { return Always; }
+    virtual interested_t interested() const OVERRIDE
+    { return interested_t::Always; }
 };
 
 

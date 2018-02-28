@@ -93,6 +93,7 @@ struct IMessageObserver
 namespace experimental {
 
 // FIX: Name not quite right, this is the explicitly NON virtual/polymorphic flavor
+// *AND* contains convenience backing field for interested()
 struct IsInterestedBase
 {
     // Enum representing interest level for one particular message
