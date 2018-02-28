@@ -83,19 +83,9 @@ public:
         {
             Header outgoing_header;
 
-            Header::TypeEnum type = context.header().type();
-
-            // FIX: clumsy init/copy operation.  Needed for now because we don't
-            // initialize "version" bit as smoothly as we could, and also conveniently
-            // copies MID and token length for us
-            outgoing_header.raw = context.header().raw;
+            process_request(context.header(), &outgoing_header);
 
             outgoing_header.response_code(Header::Code::Valid);
-
-            if(type == Header::Confirmable)
-                outgoing_header.type(Header::Acknowledgement);
-            else if(type == Header::NonConfirmable)
-                outgoing_header.type(Header::NonConfirmable);
 
             std::cout << "Sending header: tkl=" << (int)outgoing_header.token_length();
             std::cout << ", mid=" << std::hex << outgoing_header.message_id() << std::dec;
