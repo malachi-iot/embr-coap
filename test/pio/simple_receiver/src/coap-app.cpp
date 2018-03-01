@@ -30,27 +30,13 @@ bool done;
 
 class TestDispatcherHandler : public DispatcherHandlerBase
 {
-    //experimental::BlockingEncoder& encoder;
-    Header outgoing_header;
-
 public:
-    //TestDispatcherHandler(experimental::BlockingEncoder& encoder)
-    //    encoder(encoder) {}
     virtual void on_header(Header header) override
     {
-        // FIX: This is very preliminary code.  What we really should do
-        // is properly initialize a new header, and then explicitly copy MID
-        outgoing_header.raw = header.raw;
-
         // FIX: on_header never getting called, smells like a problem
         // with the is_interested code
         printf("\r\nGot header: token len=%d", header.token_length());
         printf("\r\nGot header: mid=%x", header.message_id());
-
-        // FIX: This assumes a CON request
-        outgoing_header.type(Header::Acknowledgement);
-
-        // FIX: Assumes a GET operation
     }
     
 
@@ -63,6 +49,10 @@ public:
         buffer[length] = 0;
 
         printf("\r\nGot payload: %s", buffer);
+
+        Header outgoing_header;
+
+        process_request(context->header(), &outgoing_header);
 
         outgoing_header.response_code(Header::Code::Valid);
 
