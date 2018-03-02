@@ -262,8 +262,15 @@ void CBOR::DecodeToObserver::decode(const uint8_t *cbor, size_t len)
                         case type_t::Float:
                             observer->OnType(decoder);
                             break;
+
+                        // since some compilers don't like unattended cases
+                        // AND this code isn't done yet (I think)
+                        default: break;
                     }
                     break;
+
+                // Since some compilers don't like unattended cases
+                default: break;
             }
         }
     }

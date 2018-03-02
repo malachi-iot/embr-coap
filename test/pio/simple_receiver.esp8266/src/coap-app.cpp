@@ -157,12 +157,14 @@ extern "C" void coap_daemon(void *pvParameters)
 
             //from_port = COAP_UDP_PORT;
             
+#ifndef ESP32
             printf("\r\nResponding: %d to %d.%d.%d.%d:%d", len,
                 ip4_addr1_16(from_ip),
                 ip4_addr2_16(from_ip),
                 ip4_addr3_16(from_ip),
                 ip4_addr4_16(from_ip),
                 from_port);
+#endif
 
             printf("\r\nRETURN RAW: ");
 

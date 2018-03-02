@@ -381,6 +381,8 @@ struct ShimDispatcherHandlerTraits
 // because the memory management scheme only supports one truly active IDispatcherHandler
 class FactoryDispatcherHandler : public IDispatcherHandler
 {
+    pipeline::MemoryChunk _handler_memory;
+
     const dispatcher_handler_factory_fn* handler_factories;
     const int handler_factory_count;
 
@@ -430,8 +432,6 @@ class FactoryDispatcherHandler : public IDispatcherHandler
     typedef Context context_t;
 
     FactoryDispatcherHandlerContext context;
-
-    pipeline::MemoryChunk _handler_memory;
 
 
 #define FEATURE_FDH_FANCYMEM

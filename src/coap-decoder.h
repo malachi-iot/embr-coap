@@ -310,8 +310,9 @@ protected:
     public:
         Context(const pipeline::experimental::ReadOnlyMemoryChunk& chunk, bool last_chunk) :
                 chunk(chunk),
-                last_chunk(last_chunk),
-                pos(0) {}
+                pos(0),
+                last_chunk(last_chunk)
+                {}
     };
 
 public:

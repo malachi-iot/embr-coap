@@ -193,6 +193,10 @@ bool OptionDecoder::process_iterate(uint8_t value)
             // although we don't calculate incoming value we do eat it and count it and technically
             // count it as processed, so return a true
             return true;
+
+        // Because some compilers don't like lingering cases
+        case Payload:
+            break;
     }
 
     return true;
@@ -290,6 +294,9 @@ size_t OptionDecoder::process_iterate(const pipeline::MemoryChunk::readonly_t& c
                 // state would be a little more cycling around, but better organized
             case OptionValueDone:
                 return data - chunk.data();
+
+            // Since some compilers hate any unattended cases
+            default: break;
         }
     }
 

@@ -138,6 +138,11 @@ OptionEncoder::output_t OptionEncoder::generate_iterate()
             // is loaded in, it's reasonable for state machine to iterate forever
             // on OptionValueDone state
             return this->signal_continue;
+
+        // because some compilers hate unattended cases
+        // Note we should never reach here, lingering cases are
+        // ValueStart and Payload
+        default: break;
     }
 
     ASSERT_ERROR(false, false, "Should not get here");
