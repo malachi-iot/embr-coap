@@ -122,10 +122,10 @@ public:
         {
             switch(additional_integer_information())
             {
-                bits_8:
-                bits_16:
-                bits_32:
-                bits_64:
+                case bits_8:
+                case bits_16:
+                case bits_32:
+                case bits_64:
                     return true;
 
                 default:
