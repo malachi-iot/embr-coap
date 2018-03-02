@@ -99,6 +99,10 @@ public:
                 // TODO: We'll want to not only indicate interest but also
                 // have a subordinate dispatcher to act on further observations
                 break;
+
+            // I'd leave this out, but a lot of compilers don't like ignoring
+            // case statements
+            default: break;
         }
     }
 

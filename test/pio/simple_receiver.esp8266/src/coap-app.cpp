@@ -1,4 +1,10 @@
+#ifndef ESP32
+// ESP32 has its own libcoap, so don't try to do this in that case
+// (our other includes should bring it in properly)
 #include <coap.h>
+#else
+#endif
+
 #include <coap-uripath-dispatcher.h>
 #include <coap-encoder.h>
 
