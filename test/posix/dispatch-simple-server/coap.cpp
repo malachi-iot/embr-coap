@@ -1,5 +1,6 @@
 #include "coap-dispatcher.h"
 #include <coap-uripath-dispatcher.h>
+#include <coap-encoder.h>
 
 #define COAP_UDP_PORT 5683
 
@@ -34,11 +35,11 @@ dispatcher_handler_factory_fn root_factories[] =
 // TODO: Make a new kind of encoder, the normal-simple-case
 // one which just dumps to an existing buffer without all the
 // fancy IPipline/IWriter involvement
-moducom::coap::experimental::BlockingEncoder* global_encoder;
+BlockingEncoder* global_encoder;
 
 // FIX: This should be embedded either in encoder or elsewhere
 // signals that we have a response to send
-bool done;
+bool done_encoding;
 
 class TestDispatcherHandler : public DispatcherHandlerBase
 {
@@ -82,7 +83,7 @@ public:
         // to go away
         global_encoder->payload(buffer);
 
-        done = true;
+        done_encoding = true;
     }
 };
 
