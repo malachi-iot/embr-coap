@@ -82,8 +82,20 @@ public:
 
 extern dispatcher_handler_factory_fn v1_factories[];
 
+moducom::coap::experimental::IDispatcherHandler* context_dispatcher(
+    moducom::coap::experimental::FactoryDispatcherHandlerContext& ctx)
+{
+    typedef moducom::dynamic::OutOfBandPool<moducom::coap::layer2::Token> token_pool_t;
+
+    static moducom::coap::layer2::Token _dummy[4];
+    static token_pool_t dummy(_dummy, 4);
+
+    return new (ctx.handler_memory.data()) ContextDispatcherHandler(ctx.incoming_context, dummy);
+}
+
 dispatcher_handler_factory_fn root_factories[] =
 {
+    context_dispatcher,
     uri_plus_factory_dispatcher<STR_URI_V1, v1_factories, 2>
 };
 
@@ -127,7 +139,7 @@ extern "C" void coap_daemon(void *pvParameters)
         // track them also in memory chunk
         pipeline::MemoryChunk chunk((uint8_t*)data, len);
 
-        FactoryDispatcherHandler fdh(dispatcherBuffer, root_factories, 1);
+        FactoryDispatcherHandler fdh(dispatcherBuffer, root_factories, 2);
         Dispatcher dispatcher;
         pipeline::layer3::SimpleBufferedPipelineWriter writer(outbuf);
         moducom::coap::experimental::BlockingEncoder encoder(writer);
