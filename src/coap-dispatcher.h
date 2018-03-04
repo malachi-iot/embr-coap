@@ -555,7 +555,8 @@ public:
             context(context),
             token_pool(token_pool)
     {
-
+        // FIX: architecture cleanup, only keep one of these context ptrs
+        set_context(context);
     }
 
     virtual void on_header(Header header) OVERRIDE;

@@ -27,6 +27,8 @@ IDispatcherHandler* context_dispatcher(FactoryDispatcherHandlerContext& ctx)
 dispatcher_handler_factory_fn root_factories[] =
 {
     context_dispatcher,
+    // FIX: Right, because FactoryDispatcherHandler don't pass contexts, we start with a new
+    // one when we get here - which is not entirely accurate
     uri_plus_factory_dispatcher<STR_URI_V1, v1_factories, 1>
 };
 
