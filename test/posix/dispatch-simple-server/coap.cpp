@@ -90,3 +90,25 @@ public:
 dispatcher_handler_factory_fn v1_factories[] =
 {
 };
+
+
+size_t service_coap_in(pipeline::MemoryChunk& in, pipeline::MemoryChunk& outbuf)
+{
+    moducom::pipeline::layer3::SimpleBufferedPipelineWriter writer(outbuf);
+    moducom::coap::experimental::Dispatcher dispatcher;
+    moducom::coap::experimental::BlockingEncoder encoder(writer);
+
+    TestDispatcherHandler handler;
+
+    // FIX: fix this gruesomeness
+    global_encoder = &encoder;
+
+    dispatcher.head(&handler);
+    dispatcher.dispatch(in, true);
+
+    // send(...) is for connection oriented
+    //send(newsockfd, outbuf._data(), outbuf._length(), 0);
+
+    size_t send_bytes = writer.length_experimental();
+    return send_bytes;
+}
