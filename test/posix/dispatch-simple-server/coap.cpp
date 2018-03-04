@@ -27,7 +27,7 @@ IDispatcherHandler* context_dispatcher(FactoryDispatcherHandlerContext& ctx)
 dispatcher_handler_factory_fn root_factories[] =
 {
     context_dispatcher,
-    uri_plus_factory_dispatcher<STR_URI_V1, v1_factories, 2>
+    uri_plus_factory_dispatcher<STR_URI_V1, v1_factories, 1>
 };
 
 
@@ -89,7 +89,12 @@ public:
 
 dispatcher_handler_factory_fn v1_factories[] =
 {
+    uri_plus_observer_dispatcher<STR_URI_TEST, TestDispatcherHandler>
 };
+
+
+// in-place new holder
+static pipeline::layer3::MemoryChunk<256> dispatcherBuffer;
 
 
 size_t service_coap_in(pipeline::MemoryChunk& in, pipeline::MemoryChunk& outbuf)
@@ -98,7 +103,8 @@ size_t service_coap_in(pipeline::MemoryChunk& in, pipeline::MemoryChunk& outbuf)
     moducom::coap::experimental::Dispatcher dispatcher;
     moducom::coap::experimental::BlockingEncoder encoder(writer);
 
-    TestDispatcherHandler handler;
+    FactoryDispatcherHandler handler(dispatcherBuffer, root_factories, 2);
+    //TestDispatcherHandler handler;
 
     // FIX: fix this gruesomeness
     global_encoder = &encoder;
