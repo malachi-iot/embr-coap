@@ -102,6 +102,10 @@ static pipeline::layer3::MemoryChunk<256> dispatcherBuffer;
 size_t service_coap_in(pipeline::MemoryChunk& in, pipeline::MemoryChunk& outbuf)
 {
     moducom::pipeline::layer3::SimpleBufferedPipelineWriter writer(outbuf);
+    // NOTE: Consider renaming dispatcher to something more like DecodeAndObserve, though
+    // form is wrong.  Proper form would be more like DecoderThenObserver or DecodeAndObserver
+    // but those sound bad.  Perhaps MessageObservable?  DecodeMessageObservable? yuck.
+    // ObservableMessage?  Nope... all bad, every one.
     moducom::coap::experimental::Dispatcher dispatcher;
     moducom::coap::experimental::BlockingEncoder encoder(writer);
     IncomingContext incoming_context;
