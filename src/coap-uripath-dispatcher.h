@@ -151,6 +151,7 @@ experimental::IDispatcherHandler* uri_plus_factory_dispatcher(experimental::Fact
     experimental::FactoryDispatcherHandler* fdh =
             new (sub_handler_chunk.data()) experimental::FactoryDispatcherHandler(
             sub_handler_inner_chunk,
+            ctx.incoming_context,
             factories, count);
 
     return new (uri_handler_chunk.data()) UriPathDispatcherHandler(uri_path, *fdh);

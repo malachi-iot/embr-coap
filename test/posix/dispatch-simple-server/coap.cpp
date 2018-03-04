@@ -104,8 +104,9 @@ size_t service_coap_in(pipeline::MemoryChunk& in, pipeline::MemoryChunk& outbuf)
     moducom::pipeline::layer3::SimpleBufferedPipelineWriter writer(outbuf);
     moducom::coap::experimental::Dispatcher dispatcher;
     moducom::coap::experimental::BlockingEncoder encoder(writer);
+    IncomingContext incoming_context;
 
-    FactoryDispatcherHandler handler(dispatcherBuffer, root_factories, 2);
+    FactoryDispatcherHandler handler(dispatcherBuffer, incoming_context, root_factories, 2);
     //TestDispatcherHandler handler;
 
     // FIX: fix this gruesomeness

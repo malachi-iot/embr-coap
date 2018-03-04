@@ -3,6 +3,7 @@
 #include <unistd.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include <string.h>
 #include "platform.h"
 #include "mc/memory-chunk.h"
 

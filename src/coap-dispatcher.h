@@ -388,7 +388,7 @@ class FactoryDispatcherHandler : public IDispatcherHandler
 
     // TODO: Make context & incoming_context something that is passed in
     // even to FactoryDispatcherHandler
-    IncomingContext incoming_context;
+    IncomingContext& incoming_context;
 
     class State : public IsInterestedBase
     {
@@ -486,12 +486,14 @@ class FactoryDispatcherHandler : public IDispatcherHandler
 public:
     FactoryDispatcherHandler(
             const pipeline::MemoryChunk& handler_memory,
+            IncomingContext& incoming_context,
             dispatcher_handler_factory_fn* handler_factories,
             int handler_factory_count)
 
             :_handler_memory(handler_memory),
              handler_factories(handler_factories),
              handler_factory_count(handler_factory_count),
+             incoming_context(incoming_context),
              context(incoming_context, handler_memory),
              chosen(NULLPTR)
     {
