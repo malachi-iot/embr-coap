@@ -504,6 +504,25 @@ public:
     }
 
 
+    template<size_t n>
+    FactoryDispatcherHandler(const pipeline::MemoryChunk& handler_memory,
+                             IncomingContext& incoming_context,
+                             dispatcher_handler_factory_fn (&handler_factories)[n]
+    )
+            :_handler_memory(handler_memory),
+             handler_factories(handler_factories),
+             handler_factory_count(n),
+             incoming_context(incoming_context),
+             context(incoming_context, handler_memory),
+             chosen(NULLPTR)
+
+    {
+#ifdef FEATURE_FDH_FANCYMEM
+        init_states();
+#endif
+    }
+
+
     virtual void on_header(Header header) OVERRIDE;
 
     // get called repeatedly until all portion of token is provided

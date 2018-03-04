@@ -19,7 +19,7 @@ file(GLOB LIB_SRC "${LIB_PATH}/*.cpp" "${LIB_PATH}/mc/*.cpp")
 
 add_library(MY_LIB ${LIB_SRC} ${MEM_LIB_SRC})
 
-set(SOURCE_FILES main.cpp coap.cpp)
+set(SOURCE_FILES main.cpp coap.cpp experimental.h)
 
 add_executable(dispatch_simple_server ${SOURCE_FILES})
 

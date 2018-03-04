@@ -13,6 +13,8 @@ size_t service_coap_in(moducom::pipeline::MemoryChunk& in,
                      moducom::pipeline::MemoryChunk& out);
 
 
+#define COAP_UDP_PORT 5683
+
 void error(const char *msg)
 {
     perror(msg);
@@ -32,7 +34,7 @@ int main()
 
     serv_addr.sin_addr.s_addr = INADDR_ANY;
     serv_addr.sin_family = AF_INET;
-    serv_addr.sin_port = htons(5683);
+    serv_addr.sin_port = htons(COAP_UDP_PORT);
 
     if (bind(sockfd, (sockaddr *) &serv_addr,
              sizeof(serv_addr)) < 0)

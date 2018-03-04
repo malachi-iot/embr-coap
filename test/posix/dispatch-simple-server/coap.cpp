@@ -1,8 +1,7 @@
 #include "coap-dispatcher.h"
 #include <coap-uripath-dispatcher.h>
 #include <coap-encoder.h>
-
-#define COAP_UDP_PORT 5683
+#include "experimental.h"
 
 using namespace moducom;
 using namespace moducom::coap;
@@ -31,6 +30,7 @@ dispatcher_handler_factory_fn root_factories[] =
     // one when we get here - which is not entirely accurate
     uri_plus_factory_dispatcher<STR_URI_V1, v1_factories, 1>
 };
+
 
 
 // FIX: We'd much prefer to pass this via a context
@@ -106,7 +106,7 @@ size_t service_coap_in(pipeline::MemoryChunk& in, pipeline::MemoryChunk& outbuf)
     moducom::coap::experimental::BlockingEncoder encoder(writer);
     IncomingContext incoming_context;
 
-    FactoryDispatcherHandler handler(dispatcherBuffer, incoming_context, root_factories, 2);
+    FactoryDispatcherHandler handler(dispatcherBuffer, incoming_context, root_factories);
     //TestDispatcherHandler handler;
 
     // FIX: fix this gruesomeness
@@ -115,9 +115,10 @@ size_t service_coap_in(pipeline::MemoryChunk& in, pipeline::MemoryChunk& outbuf)
     dispatcher.head(&handler);
     dispatcher.dispatch(in, true);
 
-    // send(...) is for connection oriented
-    //send(newsockfd, outbuf._data(), outbuf._length(), 0);
-
     size_t send_bytes = writer.length_experimental();
+
+    // Does nothing at the moment
+    root_helper2<STR_URI_V1, v1_factories, 1>(dispatcherBuffer, in, outbuf);
+
     return send_bytes;
 }
