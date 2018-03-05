@@ -17,3 +17,8 @@
 // If defined, use std::clog and std::cerr for outputs, otherwise
 // use printf
 #define FEATURE_MCCOAP_CLOG
+
+// If defined, IncomingContext itself is manager of message token
+// memory
+// NOTE: mysteriously doesn't work - on_token doesn't even get called
+//#define FEATURE_MCCOAP_INLINE_TOKEN
