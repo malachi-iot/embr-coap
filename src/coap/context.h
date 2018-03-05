@@ -8,6 +8,10 @@
 #include "../coap-header.h"
 #include "../coap-features.h"
 
+// TODO:
+// a) assembly contexts thru composition or multiple inheritance
+// b) add decoder state accessor/decoder* to context itself for convenient query as to
+//    present state of decode
 namespace moducom { namespace coap {
 
 
