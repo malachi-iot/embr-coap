@@ -114,7 +114,7 @@ public:
         // Separately, considering instead using a decoder::state() pointer which would take
         // an extra byte but could provide a lot of utility - such as more accurate assertion
         // of a valid header
-        return _token.to_chunk(tkl);
+        return _token.subset(tkl);
     }
 
     void token(const pipeline::MemoryChunk::readonly_t* t)
