@@ -21,4 +21,4 @@
 // If defined, IncomingContext itself is manager of message token
 // memory.  It also disables token pool within ContextDispatcherHandler
 // NOTE: Has a number of problems, not ready yet
-//#define FEATURE_MCCOAP_INLINE_TOKEN
+#define FEATURE_MCCOAP_INLINE_TOKEN

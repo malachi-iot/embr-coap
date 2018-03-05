@@ -52,11 +52,12 @@ void handle_response(BlockingEncoder* encoder, IncomingContext* context,
 
     encoder->header(outgoing_header);
 
-    // TODO: doublecheck to see if we magically update outgoing header TKL
-    // I think we do, though even if we don't the previous .raw = .raw
-    // SHOULD copy it, assuming our on_header starts getting called again
-    if(context->token())
+    if(context->token_present())
+#ifdef FEATURE_MCCOAP_INLINE_TOKEN
+        encoder->token(context->token());
+#else
         encoder->token(*context->token());
+#endif
 }
 
 class TestDispatcherHandler : public DispatcherHandlerBase

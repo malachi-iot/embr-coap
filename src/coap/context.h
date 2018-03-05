@@ -22,6 +22,9 @@ protected:
     typedef layer1::Token token_t;
 
     token_t _token;
+
+    // TODO: kludgey and inefficient - improve this
+    bool _token_present;
 #else
     typedef layer2::Token token_t;
 
@@ -31,21 +34,22 @@ protected:
 public:
     TokenContext()
 #ifdef FEATURE_MCCOAP_INLINE_TOKEN
-    {
-    }
+        : _token_present(false)
 #else
         : _token(NULLPTR)
-    {}
 #endif
+    {}
 
 #ifdef FEATURE_MCCOAP_INLINE_TOKEN
-protected:
 public:
     void token(const pipeline::MemoryChunk::readonly_t* t)
     {
+        _token_present = true;
         _token.copy_from(*t);
     }
 #else
+    inline bool token_present() const { return _token; }
+
     // if a) incoming message has a token and b) we've decoded the token and have it
     // available, then this will be non-null
     const token_t* token() const { return _token; }
@@ -96,23 +100,21 @@ public:
             return NULLPTR;
     }
 
+    inline bool token_present() const { return _token_present; }
 
-    inline const pipeline::MemoryChunk::readonly_t* token() const
+    inline const pipeline::MemoryChunk::readonly_t token() const
     {
         size_t tkl = _header.token_length();
 
-        if(tkl > 0)
-        {
-            // FIX: fix casting here
-            pipeline::MemoryChunk::readonly_t ro((uint8_t*)_token.data(), tkl);
-
-            // FIX: dangerous cast here
-            return &ro;
-        }
-        else
-        {
-            return NULLPTR;
-        }
+        // Have to create an inline chunk since our native token has no length
+        // and a pointer would clearly violate stack rules
+        // Considering strongly using an inline layer2::Token but that would be a shame
+        // since we'd be tracking token length in two places - but at this point, no
+        // less efficient than _token_present flag
+        // Separately, considering instead using a decoder::state() pointer which would take
+        // an extra byte but could provide a lot of utility - such as more accurate assertion
+        // of a valid header
+        return _token.to_chunk(tkl);
     }
 
     void token(const pipeline::MemoryChunk::readonly_t* t)
@@ -120,12 +122,13 @@ public:
         TokenContext::token(t);
     }
 
+    /*
     void token(const layer2::Token* t)
     {
         // FIX: make ReadOnlyMemoryChunk first class citizens across namespaces
         pipeline::MemoryChunk::readonly_t temp((uint8_t*)t->data(), t->length());
         TokenContext::token(&temp);
-    }
+    } */
 
 #endif
 };

@@ -603,10 +603,13 @@ public:
             // FIX: Not compatible with FEATURE_MCCOAP_INLINE_TOKEN
             // since when that feature is enabled, context.token()
             // is ALWAYS not null when tkl > 0
-
+#ifdef FEATURE_MCCOAP_INLINE_TOKEN
+            return context.token_present() ? Never : Currently;
+#else
             // If we are looking for but dont' have a token,
             // we are still interested.  Otherwise, done
             return context.token() ? Never : Currently;
+#endif
         }
 
         // we have a header and aren't looking for a token,

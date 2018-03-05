@@ -18,6 +18,11 @@ namespace layer1 {
 // semi-duplicate of one in coap_transmission
 class Token : public moducom::pipeline::layer1::MemoryChunk<8>
 {
+public:
+    pipeline::MemoryChunk::readonly_t to_chunk(size_t tkl) const
+    {
+        return pipeline::MemoryChunk::readonly_t((uint8_t*)data(), tkl);
+    }
 };
 
 }
