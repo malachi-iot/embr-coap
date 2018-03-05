@@ -78,28 +78,15 @@ public:
     }
 
     // if incoming message has had its header decoded, then this is valid
-    Header& header() { return _header; }
+    const Header& header() const { return _header; }
 
-    void header(Header& header) { _header.raw = header.raw; }
+    void header(const Header& header) { _header.raw = header.raw; }
 
     bool have_header() const { return _header.version() > 0; }
 
 #ifdef FEATURE_MCCOAP_INLINE_TOKEN
-    // FIX: All broken because currently our native token layer1/layer2 stuff:
-    // a) layer1 has no sensible length (typical for layer 1)
-    // b) layer2 has inline buffer (not sensible for callers of this accessor)
-    inline const layer2::Token* broken_token() const
-    {
-        if(_header.token_length() > 0)
-        {
-            layer2::Token t;
-            //((uint8_t*)_token.data(), _header.token_length());
-            return &t;
-        }
-        else
-            return NULLPTR;
-    }
-
+    // TODO: Reconcile naming, either call this have_token() or rename
+    // have_header to header_present()
     inline bool token_present() const { return _token_present; }
 
     inline const pipeline::MemoryChunk::readonly_t token() const
@@ -121,15 +108,6 @@ public:
     {
         TokenContext::token(t);
     }
-
-    /*
-    void token(const layer2::Token* t)
-    {
-        // FIX: make ReadOnlyMemoryChunk first class citizens across namespaces
-        pipeline::MemoryChunk::readonly_t temp((uint8_t*)t->data(), t->length());
-        TokenContext::token(&temp);
-    } */
-
 #endif
 };
 
