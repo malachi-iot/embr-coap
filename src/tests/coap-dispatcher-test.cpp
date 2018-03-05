@@ -144,6 +144,7 @@ IDispatcherHandler* test_factory2(FactoryDispatcherHandlerContext& ctx)
 
     FactoryDispatcherHandler* fdh = new (v1_handler_chunk.data()) FactoryDispatcherHandler(
             v1_handler_inner_chunk,
+            ctx.incoming_context,
             test_sub_factories, 1);
 
     // TODO: will need some way to invoke fdh destructor
@@ -242,8 +243,9 @@ TEST_CASE("CoAP dispatcher tests", "[coap-dispatcher]")
         // FIX: OK all those virtual function tables seem to be bloating
         // our handlers way, way up...
         layer3::MemoryChunk<512> dispatcherBuffer;
+        IncomingContext context;
 
-        FactoryDispatcherHandler fdh(dispatcherBuffer, test_factories, 4);
+        FactoryDispatcherHandler fdh(dispatcherBuffer, context, test_factories);
         Dispatcher dispatcher;
 
         // doesn't fully test new UriPath handler because TestDispatcherHandler
