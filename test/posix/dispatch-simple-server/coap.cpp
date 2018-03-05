@@ -13,25 +13,36 @@ constexpr char STR_URI_TEST2[] = "test2";
 
 extern dispatcher_handler_factory_fn v1_factories[];
 
+// FIX: experimental naming
+void issue_response(BlockingEncoder* encoder, IncomingContext* context,
+                    Header::Code::Codes code = Header::Code::Valid)
+{
+    Header outgoing_header = create_response(context->header(), code);
+
+    encoder->header(outgoing_header);
+
+    if(context->token_present())
+#ifdef FEATURE_MCCOAP_INLINE_TOKEN
+        encoder->token(context->token());
+#else
+    encoder->token(*context->token());
+#endif
+}
+
+
 IDispatcherHandler* context_dispatcher(FactoryDispatcherHandlerContext& ctx)
 {
+#ifdef FEATURE_MCCOAP_INLINE_TOKEN
+    return new (ctx.handler_memory.data()) ContextDispatcherHandler(ctx.incoming_context);
+#else
     typedef moducom::dynamic::OutOfBandPool<moducom::coap::layer2::Token> token_pool_t;
 
     static moducom::coap::layer2::Token _dummy[4];
     static token_pool_t dummy(_dummy, 4);
 
     return new (ctx.handler_memory.data()) ContextDispatcherHandler(ctx.incoming_context, dummy);
+#endif
 }
-
-dispatcher_handler_factory_fn root_factories[] =
-{
-    context_dispatcher,
-    // FIX: Right, because FactoryDispatcherHandler don't pass contexts, we start with a new
-    // one when we get here - which is not entirely accurate
-    uri_plus_factory_dispatcher<STR_URI_V1, v1_factories, 1>
-};
-
-
 
 // FIX: We'd much prefer to pass this via a context
 // TODO: Make a new kind of encoder, the normal-simple-case
@@ -44,21 +55,45 @@ BlockingEncoder* global_encoder;
 bool done_encoding;
 
 
-// FIX: experimental naming
-void handle_response(BlockingEncoder* encoder, IncomingContext* context,
-                     Header::Code::Codes code = Header::Code::Valid)
+// FIX: Doesn't work yet, just a placeholder for when it does
+class FallThroughHandler : public DispatcherHandlerBase
 {
-    Header outgoing_header = create_response(context->header(), code);
+public:
+    FallThroughHandler(IncomingContext& context)
+    {
+        set_context(context);
+    }
 
-    encoder->header(outgoing_header);
-
-    if(context->token_present())
-#ifdef FEATURE_MCCOAP_INLINE_TOKEN
-        encoder->token(context->token());
-#else
-        encoder->token(*context->token());
+    // FIX: Though the signatures are there, the Dispatch/Decoder does not invoke it
+    // yet, therefore this feature is still dormant
+#ifdef FEATURE_MCCOAP_COMPLETE_OBSERVER
+    virtual void on_complete() OVERRIDE
+    {
+        // FIX: Need a better way to ascertain that request was not serviced,
+        // but for now this will do
+        if(done_encoding)
+        {
+            issue_response(global_encoder, context, Header::Code::NotFound);
+        }
+    }
 #endif
+};
+
+IDispatcherHandler* fallthrough_404(FactoryDispatcherHandlerContext& ctx)
+{
+    return new (ctx.handler_memory.data()) FallThroughHandler(ctx.incoming_context);
 }
+
+
+dispatcher_handler_factory_fn root_factories[] =
+{
+    context_dispatcher,
+    uri_plus_factory_dispatcher<STR_URI_V1, v1_factories, 1>,
+    // FIX: Enabling this causes a crash in the on_option area
+    //fallthrough_404
+};
+
+
 
 class TestDispatcherHandler : public DispatcherHandlerBase
 {
@@ -76,7 +111,7 @@ public:
         // NOTE: It seems quite likely context will soon hold encoder in some form
         // Seeing as encoders themselves are still in flux (they need to be locked down first)
         // we aren't committing context to any encoders/encoder architecture just yet
-        handle_response(global_encoder, context, Header::Code::Valid);
+        issue_response(global_encoder, context, Header::Code::Valid);
 
         // just echo back the incoming payload, for now
         // API not ready yet
@@ -119,6 +154,14 @@ size_t service_coap_in(pipeline::MemoryChunk& in, pipeline::MemoryChunk& outbuf)
     dispatcher.dispatch(in, true);
 
     size_t send_bytes = writer.length_experimental();
+
+    if(send_bytes == 0)
+    {
+        // FIX: Need a better way to ascertain that we're handling a bad/unhandled response
+        // but for now this will do
+        issue_response(&encoder, &incoming_context, Header::Code::NotFound);
+        send_bytes = writer.length_experimental();
+    }
 
     // Does nothing at the moment
     root_helper2<STR_URI_V1, v1_factories, 1>(dispatcherBuffer, in, outbuf);

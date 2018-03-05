@@ -22,3 +22,7 @@
 // memory.  It also disables token pool within ContextDispatcherHandler
 // NOTE: Has a number of problems, not ready yet
 #define FEATURE_MCCOAP_INLINE_TOKEN
+
+// If defined, IMessageObserver has an on_complete message too
+// Experimental right now, but likely will be a committed feature
+#define FEATURE_MCCOAP_COMPLETE_OBSERVER

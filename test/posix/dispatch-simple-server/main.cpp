@@ -66,11 +66,20 @@ int main()
         moducom::pipeline::layer3::MemoryChunk<256> outbuf;
         size_t send_bytes = service_coap_in(inbuf, outbuf);
 
-        std::cout << "Responding with " << send_bytes << " bytes" << std::endl;
+        if(send_bytes == 0)
+        {
+            std::cout << "No response created" << std::endl;
+        }
+        else
+        {
+            std::cout << "Responding with " << send_bytes << " bytes" << std::endl;
 
-        sendto(newsockfd, outbuf.data(), send_bytes, 0, (sockaddr*) &cli_addr, clilen);
-        //close(newsockfd);
+            sendto(newsockfd, outbuf.data(), send_bytes, 0, (sockaddr*) &cli_addr, clilen);
+        }
     }
+
+    // TODO: We never reach here right now, but might someday
+    close(sockfd);
 
     return 0;
 }

@@ -84,6 +84,9 @@ struct IMessageObserver
     virtual void on_option(number_t number, uint16_t length) = 0;
     virtual void on_option(number_t number, const pipeline::MemoryChunk::readonly_t& option_value_part, bool last_chunk) = 0;
     virtual void on_payload(const pipeline::MemoryChunk::readonly_t& payload_part, bool last_chunk) = 0;
+#ifdef FEATURE_MCCOAP_COMPLETE_OBSERVER
+    virtual void on_complete() = 0;
+#endif
 };
 #endif
 
@@ -238,6 +241,8 @@ protected:
     }
 
 public:
+    // FIX: Kludgey way of skipping some steps.  Strongly consider
+    // dumping this if we can
     void set_context(IncomingContext& context)
     {
         this->context = &context;
@@ -271,6 +276,10 @@ public:
     {
 
     }
+
+#ifdef FEATURE_MCCOAP_COMPLETE_OBSERVER
+    virtual void on_complete() OVERRIDE {}
+#endif
 };
 
 
@@ -543,6 +552,10 @@ public:
     virtual void on_payload(const pipeline::MemoryChunk::readonly_t& payload_part,
                             bool last_chunk) OVERRIDE;
 
+#ifdef FEATURE_MCCOAP_COMPLETE_OBSERVER
+    virtual void on_complete() OVERRIDE;
+#endif
+
     virtual interested_t interested() const OVERRIDE
     {
         return chosen == NULLPTR ?
@@ -575,12 +588,13 @@ class ContextDispatcherHandler : public DispatcherHandlerBase
 #endif
 
 public:
+#ifdef FEATURE_MCCOAP_INLINE_TOKEN
+    ContextDispatcherHandler(IncomingContext& context) : context(context)
+#else
     ContextDispatcherHandler(IncomingContext& context,
-                             const token_pool_t& token_pool) :
-            context(context)
-#ifndef FEATURE_MCCOAP_INLINE_TOKEN
-          ,
-            token_pool(token_pool)
+                             const token_pool_t& token_pool
+    ) : context(context),
+        token_pool(token_pool)
 #endif
     {
         // FIX: architecture cleanup, only keep one of these context ptrs

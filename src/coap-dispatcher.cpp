@@ -449,6 +449,28 @@ void FactoryDispatcherHandler::on_payload(const pipeline::MemoryChunk::readonly_
     }
 }
 
+#ifdef FEATURE_MCCOAP_COMPLETE_OBSERVER
+void FactoryDispatcherHandler::on_complete()
+{
+    // For now, everyone receives an on_complete whether they are
+    // interested or not
+    // Extremely unlikely that we won't have a chosen handler by now
+    // (unlikely use case)
+    for(int i = 0; i < handler_factory_count; i++)
+    {
+        context_t ctx(context, handler_memory());
+
+        IDispatcherHandler* handler = observer_helper_begin(ctx, i);
+
+        if(handler == NULLPTR) continue;
+
+        handler->on_complete();
+
+        observer_helper_end(ctx, handler);
+    }
+}
+#endif
+
 
 #ifdef FEATURE_MCCOAP_RESERVED_DISPATCHER
 void FactoryDispatcherHandler::free_reserved()
