@@ -19,6 +19,6 @@
 #define FEATURE_MCCOAP_CLOG
 
 // If defined, IncomingContext itself is manager of message token
-// memory
-// NOTE: mysteriously doesn't work - on_token doesn't even get called
+// memory.  It also disables token pool within ContextDispatcherHandler
+// NOTE: Has a number of problems, not ready yet
 //#define FEATURE_MCCOAP_INLINE_TOKEN

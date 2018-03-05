@@ -17,7 +17,6 @@ class TokenContext
 protected:
     typedef layer1::Token token_t;
 
-private:
     token_t _token;
 #else
     typedef layer2::Token token_t;
@@ -37,11 +36,6 @@ public:
 
 #ifdef FEATURE_MCCOAP_INLINE_TOKEN
 protected:
-    const token_t* token() const
-    {
-        return &_token;
-    }
-
 public:
     void token(const pipeline::MemoryChunk::readonly_t* t)
     {
@@ -83,12 +77,38 @@ public:
     bool have_header() const { return _header.version() > 0; }
 
 #ifdef FEATURE_MCCOAP_INLINE_TOKEN
-    const token_t* token() const
+    // FIX: All broken because currently our native token layer1/layer2 stuff:
+    // a) layer1 has no sensible length (typical for layer 1)
+    // b) layer2 has inline buffer (not sensible for callers of this accessor)
+    inline const layer2::Token* broken_token() const
     {
         if(_header.token_length() > 0)
-            return TokenContext::token();
+        {
+            layer2::Token t;
+            //((uint8_t*)_token.data(), _header.token_length());
+            return &t;
+        }
         else
             return NULLPTR;
+    }
+
+
+    inline const pipeline::MemoryChunk::readonly_t* token() const
+    {
+        size_t tkl = _header.token_length();
+
+        if(tkl > 0)
+        {
+            // FIX: fix casting here
+            pipeline::MemoryChunk::readonly_t ro((uint8_t*)_token.data(), tkl);
+
+            // FIX: dangerous cast here
+            return &ro;
+        }
+        else
+        {
+            return NULLPTR;
+        }
     }
 
     void token(const pipeline::MemoryChunk::readonly_t* t)

@@ -565,16 +565,23 @@ class ContextDispatcherHandler : public DispatcherHandlerBase
     typedef dynamic::OutOfBandPool<token_t> token_pool_t;
 
     IncomingContext& context;
+
+#ifndef FEATURE_MCCOAP_INLINE_TOKEN
     // TODO: Need a special "PoolToken" to wrap around layer2::Token
     // to provide timestamp and pool-handling alloc/dealloc (though
     // the latter *COULD* be provided with a specialized trait, and
     // perhaps should be)
     token_pool_t token_pool;
+#endif
 
 public:
-    ContextDispatcherHandler(IncomingContext& context, const token_pool_t& token_pool) :
-            context(context),
+    ContextDispatcherHandler(IncomingContext& context,
+                             const token_pool_t& token_pool) :
+            context(context)
+#ifndef FEATURE_MCCOAP_INLINE_TOKEN
+          ,
             token_pool(token_pool)
+#endif
     {
         // FIX: architecture cleanup, only keep one of these context ptrs
         set_context(context);
@@ -593,6 +600,10 @@ public:
         // If we have a header, are we looking for a token?
         if(context.header().token_length() > 0)
         {
+            // FIX: Not compatible with FEATURE_MCCOAP_INLINE_TOKEN
+            // since when that feature is enabled, context.token()
+            // is ALWAYS not null when tkl > 0
+
             // If we are looking for but dont' have a token,
             // we are still interested.  Otherwise, done
             return context.token() ? Never : Currently;

@@ -53,6 +53,8 @@ int main()
 
         bzero(buffer, 1024);
 
+        std::cout << "Waiting for packet" << std::endl;
+
         //size_t n = read(newsockfd, buffer, 1024);
         ssize_t n = recvfrom(newsockfd, buffer, sizeof(buffer), 0, (sockaddr*) &cli_addr, &clilen);
 

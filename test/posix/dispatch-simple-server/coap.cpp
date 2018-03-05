@@ -70,7 +70,7 @@ public:
         int length = payload_part.copy_to(buffer, 127);
         buffer[length] = 0;
 
-        printf("\r\nGot payload: %s", buffer);
+        printf("\r\nGot payload: %s\r\n", buffer);
 
         // NOTE: It seems quite likely context will soon hold encoder in some form
         // Seeing as encoders themselves are still in flux (they need to be locked down first)

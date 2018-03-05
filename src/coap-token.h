@@ -28,6 +28,15 @@ namespace layer2 {
 // semi-duplicate of one in coap_transmission
 class Token : public moducom::pipeline::layer2::MemoryChunk<8, uint8_t>
 {
+    typedef moducom::pipeline::layer2::MemoryChunk<8, uint8_t> base_t;
+
+public:
+    Token() {}
+
+    Token(const layer1::Token& t, size_t tkl)
+    {
+        memcpy(t.data(), tkl);
+    }
 };
 
 
