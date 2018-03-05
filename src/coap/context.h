@@ -9,8 +9,7 @@
 #include "../coap-features.h"
 
 // TODO:
-// a) assembly contexts thru composition or multiple inheritance
-// b) add decoder state accessor/decoder* to context itself for convenient query as to
+// a) add decoder state accessor/decoder* to context itself for convenient query as to
 //    present state of decode
 namespace moducom { namespace coap {
 
@@ -47,6 +46,10 @@ public:
         _token_present = true;
         _token.copy_from(*t);
     }
+
+    // TODO: Reconcile naming, either call this have_token() or rename
+    // have_header to header_present()
+    inline bool token_present() const { return _token_present; }
 #else
     inline bool token_present() const { return _token; }
 
@@ -60,17 +63,13 @@ public:
 #endif
 };
 
-// New-generation request context, replacement for premature coap_transmission one
-// Incoming request handlers/dispatchers may extend this context, but this is a good
-// foundational base class
-// Called Incoming context because remember some incoming messages are RESPONSES, even
-// when we are the server (ACKs, etc)
-class IncomingContext : public TokenContext
+
+class HeaderContext
 {
     Header _header;
 
 public:
-    IncomingContext()
+    HeaderContext()
     {
         // always zero out, signifying UNINITIALIZED so that querying
         // parties don't mistakenly think we have a header
@@ -83,15 +82,42 @@ public:
     void header(const Header& header) { _header.raw = header.raw; }
 
     bool have_header() const { return _header.version() > 0; }
+};
 
+
+
+// NOTE: Just an interesting idea at this time
+class DecoderContext
+{
+};
+
+
+// NOTE: Really would like this (avoid the whole global_encoder nastiness) but
+// unclear right now how to incorporate this across different styles of encoder.
+// So it remains fully experimental and unused at this time
+template <class TEncoder>
+class EncoderContext
+{
+    TEncoder* _encoder;
+
+public:
+    TEncoder* encoder() const { return _encoder; }
+};
+
+// New-generation request context, replacement for premature coap_transmission one
+// Incoming request handlers/dispatchers may extend this context, but this is a good
+// foundational base class
+// Called Incoming context because remember some incoming messages are RESPONSES, even
+// when we are the server (ACKs, etc)
+class IncomingContext :
+        public TokenContext,
+        public HeaderContext
+{
+public:
 #ifdef FEATURE_MCCOAP_INLINE_TOKEN
-    // TODO: Reconcile naming, either call this have_token() or rename
-    // have_header to header_present()
-    inline bool token_present() const { return _token_present; }
-
     inline const pipeline::MemoryChunk::readonly_t token() const
     {
-        size_t tkl = _header.token_length();
+        size_t tkl = header().token_length();
 
         // Have to create an inline chunk since our native token has no length
         // and a pointer would clearly violate stack rules
