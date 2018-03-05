@@ -362,6 +362,19 @@ inline void process_request(Header input, Header* output)
 }
 
 
+// TODO: Clean this up a bit + document
+inline Header create_response(Header incoming, Header::Code::Codes code)
+{
+    Header output;
+
+    process_request(incoming, &output);
+
+    output.response_code(code);
+
+    return output;
+}
+
+
 inline bool process_response(Header input, Header* output)
 {
     switch(input.type())

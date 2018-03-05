@@ -43,18 +43,25 @@ BlockingEncoder* global_encoder;
 // signals that we have a response to send
 bool done_encoding;
 
+
+// FIX: experimental naming
+void handle_response(BlockingEncoder* encoder, IncomingContext* context,
+                     Header::Code::Codes code = Header::Code::Valid)
+{
+    Header outgoing_header = create_response(context->header(), code);
+
+    encoder->header(outgoing_header);
+
+    // TODO: doublecheck to see if we magically update outgoing header TKL
+    // I think we do, though even if we don't the previous .raw = .raw
+    // SHOULD copy it, assuming our on_header starts getting called again
+    if(context->token())
+        encoder->token(*context->token());
+}
+
 class TestDispatcherHandler : public DispatcherHandlerBase
 {
 public:
-    virtual void on_header(Header header) override
-    {
-        // FIX: on_header never getting called, smells like a problem
-        // with the is_interested code
-        printf("\r\nGot header: token len=%d", header.token_length());
-        printf("\r\nGot header: mid=%x", header.message_id());
-    }
-
-
     virtual void on_payload(const pipeline::MemoryChunk::readonly_t& payload_part,
                             bool last_chunk) override
     {
@@ -65,19 +72,10 @@ public:
 
         printf("\r\nGot payload: %s", buffer);
 
-        Header outgoing_header;
-
-        process_request(context->header(), &outgoing_header);
-
-        outgoing_header.response_code(Header::Code::Valid);
-
-        global_encoder->header(outgoing_header);
-
-        // TODO: doublecheck to see if we magically update outgoing header TKL
-        // I think we do, though even if we don't the previous .raw = .raw
-        // SHOULD copy it, assuming our on_header starts getting called again
-        if(context->token())
-            global_encoder->token(*context->token());
+        // NOTE: It seems quite likely context will soon hold encoder in some form
+        // Seeing as encoders themselves are still in flux (they need to be locked down first)
+        // we aren't committing context to any encoders/encoder architecture just yet
+        handle_response(global_encoder, context, Header::Code::Valid);
 
         // just echo back the incoming payload, for now
         // API not ready yet
