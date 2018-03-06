@@ -288,6 +288,9 @@ public:
 // are just a little bit too fused together, at least better than IMessageHandler and IMessageObserver
 // (IMessageObserver's interest should always be determined externally and IMessageHandler is just
 // to generic to say either way)
+// TODO: Consider renaming to DecoderSubject, DecodeSubject, MessageDecoderSubject or similar ala
+// Observer-Observable design patterns https://en.wikipedia.org/wiki/Observer_pattern.  Do more R&D
+// for exact good naming practices in this regard
 class Dispatcher :
     public Decoder,
     public moducom::experimental::forward_list<IDispatcherHandler>
