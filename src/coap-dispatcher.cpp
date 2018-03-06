@@ -4,6 +4,7 @@
 
 #include "coap-dispatcher.h"
 #include "coap/context.h"
+#include "coap/decoder-subject.hpp"
 
 #ifdef ESP_DEBUG
 #include <stdio.h>

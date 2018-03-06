@@ -75,11 +75,14 @@ extern dispatcher_handler_factory_fn test_sub_factories[];
 
 IDispatcherHandler* context_handler_factory(FactoryDispatcherHandlerContext& ctx)
 {
-    // FIX: this context needs to flow down through the whole factory chain
-    static IncomingContext context;
-    static moducom::dynamic::PoolBase<moducom::coap::layer2::Token, 8> token_pool;
+    IncomingContext& context = ctx.incoming_context;
 
+#ifdef FEATURE_MCCOAP_INLINE_TOKEN
+    return new (ctx.handler_memory.data()) ContextDispatcherHandler(context);
+#else
+    static moducom::dynamic::PoolBase<moducom::coap::layer2::Token, 8> token_pool;
     return new (ctx.handler_memory.data()) ContextDispatcherHandler(context, token_pool);
+#endif
 }
 
 

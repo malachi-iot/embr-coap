@@ -37,7 +37,7 @@ set(SOURCE_FILES
         coap-uint.h mc/experimental.h tests/experimental-test.cpp coap-header.h coap-observable.h
         mc/experimental.cpp coap-uripath-dispatcher.cpp coap-uripath-dispatcher.h
         mc/experimental-factory.h coap-features.h
-        coap/context.h)
+        coap/context.h coap/decoder-subject.hpp)
 add_executable(mc-coap-test ${SOURCE_FILES})
 
 target_link_libraries(mc-coap-test moducom_memory_lib)
