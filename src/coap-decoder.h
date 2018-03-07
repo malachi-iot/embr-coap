@@ -63,6 +63,7 @@ class RawDecoder : public CounterDecoder<TCounter>
 public:
     typedef CounterDecoder<TCounter> base_t;
 
+    // TODO: make this a const
     uint8_t* data() { return buffer; }
 
     // returns true when all bytes finally accounted for
@@ -284,10 +285,14 @@ protected:
         //optionDecoder.reset();
     }
 
+public:
     HeaderDecoder& header_decoder() { return headerDecoder; }
     TokenDecoder& token_decoder() { return tokenDecoder; }
     OptionDecoder& option_decoder() { return optionDecoder; }
 
+    // making context public (hopefully temporarily) since we use Decoder in a
+    // composable (has a) vs hierarchical (is-a) way
+public:
     struct Context
     {
         // TODO: optimize by making this a value not a ref, and bump up "data" pointer
@@ -314,6 +319,13 @@ protected:
                 last_chunk(last_chunk)
                 {}
     };
+
+    // FIX: Repair this, nobody should be peering in and changing state
+    // made the name extra ugly just to draw attention to it
+    void state_for_decoder_subject(experimental::root_state_t s)
+    {
+        state(s);
+    }
 
 public:
     Decoder() : StateHelper(_state_t::Uninitialized) {}
