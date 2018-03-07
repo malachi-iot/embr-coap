@@ -690,9 +690,8 @@ class DecoderSubjectBase
     void dispatch_payload(const pipeline::MemoryChunk::readonly_t& payloadChunk, bool last_chunk);
 
 public:
-    typedef TMessageObserver handler_t;
+    DecoderSubjectBase(IncomingContext& context) : observer(context) {}
 
-public:
     // returns number of bytes processed from chunk
     size_t dispatch(const pipeline::MemoryChunk::readonly_t& chunk, bool last_chunk = true)
     {

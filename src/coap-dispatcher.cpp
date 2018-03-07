@@ -253,7 +253,7 @@ void Dispatcher::dispatch_payload(const pipeline::MemoryChunk::readonly_t& paylo
 void Dispatcher::dispatch_token()
 {
     handler_t* handler = head();
-    pipeline::MemoryChunk chunk(tokenDecoder.data(), headerDecoder.token_length());
+    pipeline::MemoryChunk::readonly_t chunk(tokenDecoder.data(), headerDecoder.token_length());
 
     while(handler != NULLPTR)
     {

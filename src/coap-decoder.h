@@ -64,7 +64,7 @@ public:
     typedef CounterDecoder<TCounter> base_t;
 
     // TODO: make this a const
-    uint8_t* data() { return buffer; }
+    const uint8_t* data() const { return buffer; }
 
     // returns true when all bytes finally accounted for
     inline bool process_iterate(uint8_t value, TCounter max_size)
