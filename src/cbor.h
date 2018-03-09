@@ -4,9 +4,7 @@
 #include <stdint.h>
 
 #include "platform.h"
-
-//#define CBOR_FEATURE_32_BIT
-//#define CBOR_FEATURE_64_BIT
+#include "cbor/features.h"
 
 #ifdef CBOR_FEATURE_64_BIT
 #ifndef CBOR_FEATURE_32_BIT
@@ -14,11 +12,16 @@
 #endif
 #endif
 
-#define CBOR_FEATURE_FLOAT
 
 namespace moducom {
 
 // https://tools.ietf.org/html/rfc7049
+//
+//  0
+//  0 1 2 3 4 5 6 7
+// +---------------+
+// |typ| addn'l int|
+// +---------------+
 class CBOR
 {
 public:
@@ -47,7 +50,11 @@ public:
         union
         {
             // TODO: consider taking first byte out so that count union goes more smoothly
+#ifdef CBOR_FEATURE_64_BIT
             uint8_t buffer[9];
+#else
+            uint8_t buffer[5];
+#endif
 
             // TODO: make this into a 64 bit counter
             uint16_t count;

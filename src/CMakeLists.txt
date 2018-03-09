@@ -24,7 +24,9 @@ add_subdirectory(${MC_MEM_DIR} CMAKE_RUNTIME_OUTPUT_DIRECTORY)
 set(SOURCE_FILES
         main.cpp coap.cpp coap.h tests/main_test.cpp tests/coap.cpp
         coap_transmission.cpp coap_transmission.h tests/coap_lowlevel.cpp coap_subscription.cpp
-        coap_subscription.h cbor.cpp tests/coap_send.cpp
+        coap_subscription.h
+        cbor.cpp cbor/features.h
+        tests/coap_send.cpp
         coap_daemon.h
         tests/coap_daemon.cpp mc/pipeline.h tests/pipeline_test.cpp
         mc/pipeline.cpp coap-generator.h coap-generator.cpp coap-encoder.cpp
