@@ -5,6 +5,8 @@
 
 #include "platform.h"
 #include "cbor/features.h"
+// TODO: Change naming and decouple UInt helpers from coap
+#include "coap-uint.h"
 
 #ifdef CBOR_FEATURE_64_BIT
 #ifndef CBOR_FEATURE_32_BIT
@@ -89,6 +91,7 @@ public:
 
     private:
 
+        // Used during non-simple-data processing
         enum AdditionalIntegerInformation
         {
             // all self contained
@@ -145,12 +148,15 @@ public:
         uint8_t get_value_8() const { return buffer[1]; }
         uint16_t get_value_16() const
         {
+            return coap::UInt::get<uint16_t>(&buffer[1], 2);
+
+            /*
             uint16_t value = buffer[1];
 
             value <<= 8;
             value |= buffer[2];
 
-            return value;
+            return value; */
         }
 
         bool process_iterate_nested(uint8_t value, bool* encountered_break);
