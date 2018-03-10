@@ -7,6 +7,8 @@
 #include "cbor/features.h"
 // TODO: Change naming and decouple UInt helpers from coap
 #include "coap-uint.h"
+// TODO: Liberate state helper from coap-decoder so that we aren't dependent on it
+#include "coap-decoder.h"
 
 #ifdef CBOR_FEATURE_64_BIT
 #ifndef CBOR_FEATURE_32_BIT
@@ -84,6 +86,7 @@ public:
     public:
         enum State
         {
+            Uninitialized,
             MajorType,
             MajorTypeDone,
             AdditionalInteger,
@@ -100,6 +103,8 @@ public:
             Done,
             Pop // if we are nested, pop one level (only used for FEATURE_MCCBOR_NESTED)
         };
+
+        typedef State state_t;
 
     private:
 
@@ -171,6 +176,14 @@ public:
             return value; */
         }
 
+    public:
+        // FIX: Should work, but a bit dangerous
+        template <typename T>
+        T value() const
+        {
+            return coap::UInt::get<T>(&buffer[1]);
+        }
+
         bool process_iterate_nested(uint8_t value, bool* encountered_break);
 
         // rfc7409 section 2.3
@@ -185,8 +198,9 @@ public:
         bool is_simple_type_bool() const
         {
             uint8_t simple_value = get_simple_value();
+            Types t = type();
 
-            return type() == SimpleData && (simple_value == 20 || simple_value == 21);
+            return t == SimpleData && (simple_value == 20 || simple_value == 21);
         }
 
 
@@ -208,9 +222,11 @@ public:
 
 
     public:
-        Decoder()
+        Decoder() :
+            _state(Uninitialized)
 #ifdef FEATURE_MCCBOR_NESTED
-            : _nested(NULLPTR)
+          ,
+            _nested(NULLPTR)
 #endif
         {}
 

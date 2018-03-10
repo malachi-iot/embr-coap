@@ -53,6 +53,7 @@ bool CBOR::Decoder::process_iterate(uint8_t value)
 {
     switch(state())
     {
+        case Uninitialized:
         case MajorType:
         {
             buffer[0] = value;
@@ -60,16 +61,22 @@ bool CBOR::Decoder::process_iterate(uint8_t value)
 
             state(MajorTypeDone);
 
-            return true;
+            // *might* have additional integer, but not
+            // sure yet so stop here so that we can at
+            // least inspect type() if we want
+            return false;
         }
 
         case MajorTypeDone:
             if(has_additional_integer_information())
                 state(AdditionalInteger);
+                // this is all the processing we're gonna
+                // do for this byte, since more are coming
             else
+                // Still one last step of processing, to
+                // formally move to "done" for this chunk
                 state(Done);
-
-            return false;
+            return true;
 
         case AdditionalInteger:
         {
@@ -86,29 +93,41 @@ bool CBOR::Decoder::process_iterate(uint8_t value)
                 return false;
             } */
 
+            bool done = false;
+
             switch(additional_integer_information())
             {
                 case bits_8:
-                    if(pos == 2)
-                        state(AdditionalIntegerDone);
+                    done = pos == 2;
                     break;
 
                 case bits_16:
-                    if(pos == 3)
-                        state(AdditionalIntegerDone);
+                    done = pos == 3;
                     break;
 
                 case bits_32:
-                    if(pos == 5)
-                        state(AdditionalIntegerDone);
+                    done = pos == 5;
                     break;
 
                 case bits_64:
-                    if(pos == 9)
-                        state(AdditionalIntegerDone);
+#ifdef CBOR_FEATURE_64_BIT
+                    done = pos == 9;
+#else
+                    ASSERT_ERROR(true, false, "64 bit int not supported");
+#endif
                     break;
             }
-            return true;
+            // Byte is fully processed if we're still consuming it
+            // If we're done consuming byte, then we have one
+            // extra step which is to report that we're actually
+            // done with it
+            if(done)
+            {
+                state(AdditionalIntegerDone);
+                return false;
+            }
+            else
+                return true;
         }
 
         case AdditionalIntegerDone:
@@ -153,7 +172,8 @@ bool CBOR::Decoder::process_iterate(uint8_t value)
 #else
             // let caller 100% manage taxonomy
             state(Done);
-            return false;
+            // done = DONE!
+            return true;
 #endif
         }
 
