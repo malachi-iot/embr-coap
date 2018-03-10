@@ -106,8 +106,6 @@ public:
 
         typedef State state_t;
 
-    private:
-
         // Used during non-simple-data processing
         enum AdditionalIntegerInformation
         {
@@ -122,6 +120,8 @@ public:
             Reserved2 = 30,
             Indefinite = 31
         };
+
+    private:
 
         State _state;
 
@@ -177,6 +177,14 @@ public:
         }
 
     public:
+        bool is_8bit() const { return additional_integer_information() == bits_8; }
+        bool is_16bit() const { return additional_integer_information() == bits_16; }
+        bool is_32bit() const { return additional_integer_information() == bits_32; }
+        bool is_64bit() const { return additional_integer_information() == bits_64; }
+
+        template <typename T>
+        bool is_bitness() const { return false; }
+
         // FIX: Should work, but a bit dangerous
         template <typename T>
         T value() const
@@ -289,6 +297,15 @@ public:
         void decode(const uint8_t* cbor, size_t len);
     };
 };
+
+template <>
+inline bool CBOR::Decoder::is_bitness<uint8_t>() const { return is_8bit(); }
+
+template <>
+inline bool CBOR::Decoder::is_bitness<uint16_t>() const { return is_16bit(); }
+
+template <>
+inline bool CBOR::Decoder::is_bitness<uint32_t>() const { return is_32bit(); }
 
 }
 
