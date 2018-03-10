@@ -267,6 +267,17 @@ bool CBOR::Decoder::process_iterate(uint8_t value)
 }
 
 
+void CBOR::Encoder::encode(uint8_t value)
+{
+    switch(state())
+    {
+        case Decoder::Uninitialized:
+            break;
+
+        default: break;
+    }
+}
+
 void CBOR::DecodeToObserver::decode(const uint8_t *cbor, size_t len)
 {
 #ifdef __CPP11__

@@ -283,9 +283,26 @@ public:
     };
 
 
-    class Encoder
+    class Encoder : coap::StateHelper<Decoder::State>
     {
+        typedef coap::StateHelper<Decoder::State> base_t;
 
+    public:
+        Encoder() : base_t(Decoder::Uninitialized) {}
+
+        static uint8_t create_major_type(Types type, uint8_t additional)
+        {
+            return (type << 5) | additional;
+        }
+
+        // FIX: Oops, pretty sure this *ISN'T* how we want to do this...
+        void encode(uint8_t value);
+
+        void encode_uint16(uint16_t value)
+        {
+            // Right, we have to work out pipeline/stream/memory buffer (or whatever that cool
+            // name I thought of was...) NETBUF!! yes
+        }
     };
 
 
