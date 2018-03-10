@@ -263,6 +263,40 @@ public:
 #endif
     };
 
+
+    // Experimental, mainly for flattening into in-memory hierarchy
+    // of CBOR.  Also expected that incoming CBOR will have to be a full flat
+    // memory model (ala netbuf or possibly pipeline, but not stream probably)
+    class DOM
+    {
+    public:
+        typedef char* string_t;
+
+        class Node {};
+
+        Node& body();
+
+        Node& getElementById(const string_t id);
+    };
+
+
+    // Experimental
+    // data_t will be
+    // a) a fixed-length array of some variety
+    // b) some kind of integer representation (likely similar to the fluid-bitness approach of Decoder)
+    // c) an indicator of map, but mainly only the length (or indicator of indefinite) contents will follow later
+    //    in subsequent on_element calls
+    class IDecoderObserverNew
+    {
+    public:
+        typedef char* string_t;
+        typedef void* data_t;
+
+        virtual void on_element(const string_t key, Types type, data_t data) = 0;
+
+        virtual void on_completed() = 0;
+    };
+
     class IDecoderObserver
     {
     public:
