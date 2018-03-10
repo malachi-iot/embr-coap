@@ -17,7 +17,7 @@ class UInt
 public:
     // fully untested
     template <typename TReturn>
-    static TReturn get(const uint8_t* value, const size_t len)
+    static TReturn get(const uint8_t* value, const size_t len = sizeof(TReturn))
     {
         TReturn v = *value;
 

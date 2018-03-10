@@ -24,6 +24,7 @@ void CBOR::Decoder::assign_additional_integer_information()
     }
 }
 
+#ifdef FEATURE_MCCBOR_NESTED
 bool CBOR::Decoder::process_iterate_nested(uint8_t value, bool* encountered_break)
 {
     // nested decoder lasts the duration of the array/map which uses it
@@ -46,7 +47,7 @@ bool CBOR::Decoder::process_iterate_nested(uint8_t value, bool* encountered_brea
 
     return processed;
 }
-
+#endif
 
 bool CBOR::Decoder::process_iterate(uint8_t value)
 {
@@ -112,6 +113,7 @@ bool CBOR::Decoder::process_iterate(uint8_t value)
 
         case AdditionalIntegerDone:
         {
+#ifdef FEATURE_MCCBOR_NESTED
             switch(type())
             {
                 case ByteArray:
@@ -148,8 +150,14 @@ bool CBOR::Decoder::process_iterate(uint8_t value)
                     break;
             }
             return false;
+#else
+            // let caller 100% manage taxonomy
+            state(Done);
+            return false;
+#endif
         }
 
+#ifdef FEATURE_MCCBOR_NESTED
         case ByteArrayState:
         {
             if(is_indefinite())
@@ -228,6 +236,7 @@ bool CBOR::Decoder::process_iterate(uint8_t value)
             return false;
         }
 
+#endif
         case Done:
             state(MajorType);
             return false;

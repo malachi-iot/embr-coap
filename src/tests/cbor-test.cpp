@@ -10,6 +10,6 @@ TEST_CASE("CBOR decoder tests", "[cbor-decoder]")
     {
         CBOR::Decoder decoder;
 
-        //decoder.process(0b11100001);
+        decoder.process(0b11100001);
     }
 }

@@ -24,6 +24,12 @@ namespace moducom {
 // +---------------+
 // |typ| addn'l int|
 // +---------------+
+//
+// FEATURE_MCCBOR_NESTED not an available feature, and without it, CBOR decoder mainly just reports
+// decoding of Major Value and Additional Integer Data.  Low-level interaction with CBOR still required,
+// namely manual skipping of either additional-value indicated lengths, indeterminate lengths, or map
+// which does not reveal direct byte counts
+// Notion is a smarter decoder/parser will wrap around/extend it to manage hierarchical positioning
 class CBOR
 {
 public:
@@ -64,6 +70,8 @@ public:
 
         uint8_t pos;
 
+#ifdef FEATURE_MCCBOR_NESTED
+
         Decoder* _nested;
 
         void alloc_nested() {}
@@ -71,6 +79,7 @@ public:
         Decoder* lock_nested() { return _nested; }
         void free_nested() {}
         void unlock_nested() {}
+#endif
 
     public:
         enum State
@@ -79,14 +88,17 @@ public:
             MajorTypeDone,
             AdditionalInteger,
             AdditionalIntegerDone,
+#ifdef FEATURE_MCCBOR_NESTED
             ByteArrayState,
             ByteArrayDone,
             ItemArrayState,
             ItemArrayDone,
             MapState,
             MapDone,
+#endif
+            // Indicates a particular MajorType AND AdditionalInteger (if any) are done
             Done,
-            Pop // if we are nested, pop one level
+            Pop // if we are nested, pop one level (only used for FEATURE_MCCBOR_NESTED)
         };
 
     private:
@@ -148,7 +160,7 @@ public:
         uint8_t get_value_8() const { return buffer[1]; }
         uint16_t get_value_16() const
         {
-            return coap::UInt::get<uint16_t>(&buffer[1], 2);
+            return coap::UInt::get<uint16_t>(&buffer[1]);
 
             /*
             uint16_t value = buffer[1];
@@ -196,7 +208,11 @@ public:
 
 
     public:
-        Decoder() : _nested(NULLPTR) {}
+        Decoder()
+#ifdef FEATURE_MCCBOR_NESTED
+            : _nested(NULLPTR)
+#endif
+        {}
 
         Types type() const
         {
