@@ -130,6 +130,17 @@ public:
             return buffer[0] & 0x1F;
         }
 
+        uint8_t additional_integer_information_wordsize() const
+        {
+            switch(additional_integer_information())
+            {
+                case bits_8: return 1;
+                case bits_16: return 2;
+                case bits_32: return 4;
+                case bits_64: return 8;
+            }
+        }
+
         bool is_indefinite() const
         {
             return additional_integer_information() == Indefinite;
@@ -189,7 +200,13 @@ public:
         template <typename T>
         T value() const
         {
-            return coap::UInt::get<T>(&buffer[1]);
+            if(get_simple_value() <= 24) return get_simple_value();
+
+            CONSTEXPR uint8_t incoming_wordsize = additional_integer_information_wordsize();
+
+            ASSERT_ERROR(true, sizeof(T) >= incoming_wordsize, "presented word size not large enough");
+
+            return coap::UInt::get<T>(&buffer[1], incoming_wordsize);
         }
 
         bool process_iterate_nested(uint8_t value, bool* encountered_break);
@@ -278,7 +295,7 @@ public:
         };
 
 
-        uint16_t get_map_experimental(const uint8_t** value, size_t maxlen, ParseResult* result = NULLPTR)
+        size_t get_map_experimental(const uint8_t** value, size_t maxlen, ParseResult* result = NULLPTR)
         {
             *value = process(*value);
 
@@ -288,7 +305,7 @@ public:
                 return 0;
             }
 
-            return get_simple_value();
+            return this->value<size_t>();
         }
 
         // TODO: Probably move this out to non-inline
@@ -305,7 +322,7 @@ public:
             }
 
             // FIX: Need to weed this out of bits_none, bits_8, etc.
-            uint8_t len = get_simple_value();
+            size_t len = this->value<size_t>();
 
             if(len > maxlen)
             {
