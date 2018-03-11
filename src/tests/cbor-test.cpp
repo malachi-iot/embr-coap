@@ -18,6 +18,14 @@ static uint8_t cbor_cred[] =
 0x73, 0x65, 0x63, 0x72, 0x65, 0x74        // "secret"
 };
 
+static uint8_t cbor_int[] =
+        {
+                0xA1,             // map(1)
+        0x63,          // text(3)
+        0x76, 0x61, 0x6C,   // "val"
+        0x3A, 0x07, 0x5B, 0xCD, 0x14 // negative(123456788)
+        };
+
 
 static const uint8_t* assert(CBOR::Decoder& decoder, const uint8_t* v, std::string expected)
 {
@@ -56,6 +64,13 @@ struct DecoderHelper
         __glibcxx_assert(result == CBOR::Decoder::OK);
         std::string s((const char*)chunk.data(), chunk.length());
         return s;
+    }
+
+    int integer()
+    {
+        int ret_val = decoder.get_int_experimental(&value, 999, &result);
+        __glibcxx_assert(result == CBOR::Decoder::OK);
+        return  ret_val;
     }
 
     int map()
@@ -141,5 +156,14 @@ TEST_CASE("CBOR decoder tests", "[cbor-decoder]")
         REQUIRE(dh.string() == "ssid_name");
         REQUIRE(dh.string() == "pass");
         REQUIRE(dh.string() == "secret");
+    }
+    SECTION("int decoder")
+    {
+        CBOR::Decoder decoder;
+        DecoderHelper dh(decoder, cbor_int);
+
+        REQUIRE(dh.map() == 1);
+        REQUIRE(dh.string() == "val");
+        REQUIRE(dh.integer() == -123456789);
     }
 }

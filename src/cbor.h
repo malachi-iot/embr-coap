@@ -308,6 +308,30 @@ public:
         };
 
 
+        // Fully untested
+        int get_int_experimental(const uint8_t** value, size_t maxlen, ParseResult* result = NULLPTR)
+        {
+            *value = process(*value);
+
+            switch(type())
+            {
+                case UnsignedInteger:
+                    if(result != NULLPTR) *result = OK;
+                    return this->value<int>();
+
+                case NegativeInteger:
+                    if(result != NULLPTR) *result = OK;
+                    // NOTE: Keep an eye on this, I just hacked this -1 value in here based on cbor.me playground
+                    // doublecheck against CBOR spec
+                    return -1 - this->value<int>();
+
+                default:
+                    if(result != NULLPTR) *result = InvalidType;
+                    return 0;
+            }
+        }
+
+
         size_t get_map_experimental(const uint8_t** value, size_t maxlen, ParseResult* result = NULLPTR)
         {
             *value = process(*value);
