@@ -3,6 +3,8 @@
 
 namespace moducom {
 
+// NOTE: It's possible we can phase this out since now Decoder is more tightly scoped,
+// and merely yank integer out directly from buffer
 void CBOR::Decoder::assign_additional_integer_information()
 {
     switch(additional_integer_information())

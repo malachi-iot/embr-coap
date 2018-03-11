@@ -66,8 +66,13 @@ public:
             uint8_t buffer[5];
 #endif
 
-            // TODO: make this into a 64 bit counter
+#ifdef CBOR_FEATURE_64_BIT
+            uint64_t count;
+#elif defined(CBOR_FEATURE_32_BIT)
+            uint32_t count;
+#else
             uint16_t count;
+#endif
         };
 
         uint8_t pos;
@@ -187,6 +192,18 @@ public:
             return value; */
         }
 
+        // retrieve value only from additional value spot, use for more performant
+        // scenarios.  Otherwise, call regular value()
+        template <typename T>
+        T value_additional() const
+        {
+            CONSTEXPR uint8_t incoming_wordsize = additional_integer_information_wordsize();
+
+            ASSERT_ERROR(true, sizeof(T) >= incoming_wordsize, "presented word size not large enough");
+
+            return coap::UInt::get<T>(&buffer[1], incoming_wordsize);
+        }
+
     public:
         bool is_8bit() const { return additional_integer_information() == bits_8; }
         bool is_16bit() const { return additional_integer_information() == bits_16; }
@@ -202,11 +219,7 @@ public:
         {
             if(get_simple_value() <= 24) return get_simple_value();
 
-            CONSTEXPR uint8_t incoming_wordsize = additional_integer_information_wordsize();
-
-            ASSERT_ERROR(true, sizeof(T) >= incoming_wordsize, "presented word size not large enough");
-
-            return coap::UInt::get<T>(&buffer[1], incoming_wordsize);
+            return value_additional<T>();
         }
 
         bool process_iterate_nested(uint8_t value, bool* encountered_break);

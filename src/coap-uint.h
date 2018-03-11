@@ -12,10 +12,12 @@
 namespace moducom { namespace coap {
 
 // where all the static helper methods will live
+// This UInt helper class accepts network-order buffers in and decodes them
+// to host order
 class UInt
 {
 public:
-    // fully untested
+    // lightly tested (16-bit values pushed through)
     template <typename TReturn>
     static TReturn get(const uint8_t* value, const size_t len = sizeof(TReturn))
     {
