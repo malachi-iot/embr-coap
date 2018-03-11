@@ -252,6 +252,17 @@ public:
             while (!process_iterate(value));
         }
 
+        const uint8_t* process(const uint8_t* value)
+        {
+            do
+            {
+                process(*value++);
+            }
+            while(state() != Done);
+
+            return value;
+        }
+
         State state() const { return _state; }
 
 #ifdef CBOR_FEATURE_FLOAT
