@@ -252,6 +252,7 @@ public:
             while (!process_iterate(value));
         }
 
+        // TODO: likely this is better suited to a non-inline call
         const uint8_t* process(const uint8_t* value)
         {
             do
@@ -261,6 +262,46 @@ public:
             while(state() != Done);
 
             return value;
+        }
+
+        enum ParseResult
+        {
+            OK = 0,
+            Partial = 1,
+            InvalidType = 2
+        };
+
+        // TODO: Probably move this out to non-inline
+        // TODO: Make this an internal get_string_array or similar to share array acquisition code
+        pipeline::MemoryChunk::readonly_t get_string_experimental(const uint8_t** value, size_t maxlen, ParseResult* result = NULLPTR)
+        {
+            *value = process(*value);
+            // TODO: analyze output *value to assist in creating *result
+
+            if(type() != String)
+            {
+                if(result != NULLPTR) *result = InvalidType;
+                return pipeline::MemoryChunk::readonly_t(NULLPTR, 0);
+            }
+
+            // FIX: Need to weed this out of bits_none, bits_8, etc.
+            uint8_t len = get_simple_value();
+
+            if(len > maxlen)
+            {
+                if(result != NULLPTR) *result = Partial;
+                len = maxlen;
+            }
+            else
+            {
+                if(result != NULLPTR) *result = OK;
+            }
+
+            pipeline::MemoryChunk::readonly_t chunk(*value, len);
+
+            *value += len;
+
+            return chunk;
         }
 
         State state() const { return _state; }

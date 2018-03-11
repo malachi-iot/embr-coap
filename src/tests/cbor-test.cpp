@@ -31,6 +31,14 @@ static const uint8_t* assert(CBOR::Decoder& decoder, const uint8_t* v, std::stri
     return v;
 }
 
+
+static std::string decoder_get_string(CBOR::Decoder& decoder, const uint8_t** v)
+{
+    pipeline::MemoryChunk::readonly_t chunk = decoder.get_string_experimental(v, 999);
+    std::string s((const char*)chunk.data(), chunk.length());
+    return s;
+}
+
 TEST_CASE("CBOR decoder tests", "[cbor-decoder]")
 {
     SECTION("True/false test")
@@ -86,5 +94,17 @@ TEST_CASE("CBOR decoder tests", "[cbor-decoder]")
 
         v = decoder.process(v);
         v = assert(decoder, v, "secret");
+    }
+    SECTION("Synthetic cred-set test: with helpers")
+    {
+        CBOR::Decoder decoder;
+        const uint8_t* v = cbor_cred;
+
+        v = decoder.process(v); // skip map entry, prior unit test ensures it's proper
+
+        REQUIRE(decoder_get_string(decoder, &v) == "ssid");
+        REQUIRE(decoder_get_string(decoder, &v) == "ssid_name");
+        REQUIRE(decoder_get_string(decoder, &v) == "pass");
+        REQUIRE(decoder_get_string(decoder, &v) == "secret");
     }
 }
