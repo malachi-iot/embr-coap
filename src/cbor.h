@@ -266,10 +266,30 @@ public:
 
         enum ParseResult
         {
-            OK = 0,
-            Partial = 1,
-            InvalidType = 2
+            OK,
+            // length not known at discovery of major type
+            // https://tools.ietf.org/html/rfc7049#section-2.2
+            //Indefinite,
+            // a soft buffer underrun - presented buffer data does not represent entire
+            // discovered CBOR type
+            Partial,
+            // requested type not the one we encountered
+            InvalidType
         };
+
+
+        uint16_t get_map_experimental(const uint8_t** value, size_t maxlen, ParseResult* result = NULLPTR)
+        {
+            *value = process(*value);
+
+            if(type() != Map)
+            {
+                if(result != NULLPTR) *result = InvalidType;
+                return 0;
+            }
+
+            return get_simple_value();
+        }
 
         // TODO: Probably move this out to non-inline
         // TODO: Make this an internal get_string_array or similar to share array acquisition code

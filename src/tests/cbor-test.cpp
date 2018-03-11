@@ -39,6 +39,33 @@ static std::string decoder_get_string(CBOR::Decoder& decoder, const uint8_t** v)
     return s;
 }
 
+
+struct DecoderHelper
+{
+    CBOR::Decoder& decoder;
+    const uint8_t* value;
+    CBOR::Decoder::ParseResult result;
+
+    DecoderHelper(CBOR::Decoder& decoder, const uint8_t* value) :
+        decoder(decoder), value(value)
+    {}
+
+    std::string string()
+    {
+        pipeline::MemoryChunk::readonly_t chunk = decoder.get_string_experimental(&value, 999, &result);
+        __glibcxx_assert(result == CBOR::Decoder::OK);
+        std::string s((const char*)chunk.data(), chunk.length());
+        return s;
+    }
+
+    int map()
+    {
+        int ret_val = decoder.get_map_experimental(&value, 999, &result);
+        __glibcxx_assert(result == CBOR::Decoder::OK);
+        return  ret_val;
+    }
+};
+
 TEST_CASE("CBOR decoder tests", "[cbor-decoder]")
 {
     SECTION("True/false test")
@@ -100,11 +127,19 @@ TEST_CASE("CBOR decoder tests", "[cbor-decoder]")
         CBOR::Decoder decoder;
         const uint8_t* v = cbor_cred;
 
-        v = decoder.process(v); // skip map entry, prior unit test ensures it's proper
-
+        REQUIRE(decoder.get_map_experimental(&v, 999) == 2);
         REQUIRE(decoder_get_string(decoder, &v) == "ssid");
         REQUIRE(decoder_get_string(decoder, &v) == "ssid_name");
         REQUIRE(decoder_get_string(decoder, &v) == "pass");
         REQUIRE(decoder_get_string(decoder, &v) == "secret");
+
+        v = cbor_cred;
+        DecoderHelper dh(decoder, v);
+
+        REQUIRE(dh.map() == 2);
+        REQUIRE(dh.string() == "ssid");
+        REQUIRE(dh.string() == "ssid_name");
+        REQUIRE(dh.string() == "pass");
+        REQUIRE(dh.string() == "secret");
     }
 }
