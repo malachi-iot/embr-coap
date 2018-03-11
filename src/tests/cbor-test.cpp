@@ -47,15 +47,22 @@ static std::string decoder_get_string(CBOR::Decoder& decoder, const uint8_t** v)
     return s;
 }
 
-
+template <class TDecoder = CBOR::Decoder>
 struct DecoderHelper
 {
-    CBOR::Decoder& decoder;
+    TDecoder decoder;
+    // TODO: Need to refactor whole thing to take chunks so that we can more sensibly
+    // manage max_len and its diminishing size
     const uint8_t* value;
+    //size_t max_len;
     CBOR::Decoder::ParseResult result;
 
-    DecoderHelper(CBOR::Decoder& decoder, const uint8_t* value) :
-        decoder(decoder), value(value)
+    DecoderHelper(const uint8_t* value) : value(value)
+    {}
+
+    DecoderHelper(TDecoder& decoder, const uint8_t* value) :
+            decoder(decoder),
+            value(value)
     {}
 
     std::string string()
@@ -149,7 +156,7 @@ TEST_CASE("CBOR decoder tests", "[cbor-decoder]")
         REQUIRE(decoder_get_string(decoder, &v) == "secret");
 
         v = cbor_cred;
-        DecoderHelper dh(decoder, v);
+        DecoderHelper<CBOR::Decoder&> dh(decoder, v);
 
         REQUIRE(dh.map() == 2);
         REQUIRE(dh.string() == "ssid");
@@ -159,8 +166,7 @@ TEST_CASE("CBOR decoder tests", "[cbor-decoder]")
     }
     SECTION("int decoder")
     {
-        CBOR::Decoder decoder;
-        DecoderHelper dh(decoder, cbor_int);
+        DecoderHelper<> dh(cbor_int);
 
         REQUIRE(dh.map() == 1);
         REQUIRE(dh.string() == "val");

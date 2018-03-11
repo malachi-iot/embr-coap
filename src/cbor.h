@@ -332,7 +332,8 @@ public:
         }
 
 
-        size_t get_map_experimental(const uint8_t** value, size_t maxlen, ParseResult* result = NULLPTR)
+        template <typename TSize>
+        TSize get_map_experimental(const uint8_t** value, TSize maxlen, ParseResult* result = NULLPTR)
         {
             *value = process(*value);
 
@@ -342,7 +343,7 @@ public:
                 return 0;
             }
 
-            return this->value<size_t>();
+            return this->value<TSize>();
         }
 
         // TODO: Probably move this out to non-inline
