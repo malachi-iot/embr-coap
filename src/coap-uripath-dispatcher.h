@@ -4,6 +4,7 @@
 #pragma  once
 
 #include "coap-dispatcher.h"
+#include "mc/experimental-factory.h"
 
 namespace moducom { namespace coap {
 
@@ -173,6 +174,44 @@ experimental::IDispatcherHandler* uri_plus_observer_dispatcher(experimental::Fac
 }
 
 
+
+namespace experimental {
+
+class UriDispatcherHandler : public experimental::DispatcherHandlerBase
+{
+public:
+    struct Context
+    {
+        pipeline::MemoryChunk chunk;
+    };
+
+    typedef FnFactoryTraits<const char*, int, Context> traits_t;
+    typedef FnFactoryHelper<traits_t> fn_t;
+    typedef fn_t::factory_t factory_t;
+    typedef fn_t::item_t item_t;
+
+protected:
+
+    factory_t factory;
+
+    Context context;
+
+public:
+
+    // NOTE: fanciness not really necessary just a generic class T
+    // would probably be fine, factory itself dissects all that
+    template <const size_t N>
+    UriDispatcherHandler(fn_t::item_t (&items) [N]) : factory(items)
+    {
+
+    }
+
+    virtual void on_option(number_t number,
+                           const pipeline::MemoryChunk::readonly_t& option_value_part,
+                           bool last_chunk) OVERRIDE;
+};
+
+}
 
 
 

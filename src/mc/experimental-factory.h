@@ -112,11 +112,11 @@ inline FnFactoryItem<TKey, TValue> factory_item_helper(TKey key,
 }
 */
 
-template <class TKey, class TValue>
-inline FnFactoryItem<TKey, TValue> factory_item_helper(TKey key,
-       TValue (*factory_fn)(typename FnFactoryTraits<TKey, TValue>::context_t))
+template <class TKey, class TValue, class TContext>
+inline FnFactoryItem<TKey, TValue, TContext> factory_item_helper(TKey key,
+       TValue (*factory_fn)(TContext context))
 {
-    FnFactoryItem<TKey, TValue> item;
+    FnFactoryItem<TKey, TValue, TContext> item;
 
     item.key = key;
     item.factory_fn = factory_fn;
@@ -126,6 +126,7 @@ inline FnFactoryItem<TKey, TValue> factory_item_helper(TKey key,
 
 
 // TODO: merge FnFactory and FnFactoryHelper - one can use it either static or instantiated that way
+// TODO: split out "Map" portion of FnFactory, and place it under layer3
 template <class TKey, class TValue, class TTraits = FnFactoryTraits<TKey, TValue> >
 class FnFactory
 {

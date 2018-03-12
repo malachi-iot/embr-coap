@@ -5,8 +5,10 @@
 #include "../mc/experimental.h"
 //#include "../mc/pipeline.h"
 #include "../mc/experimental-factory.h"
+#include "../coap-uripath-dispatcher.h"
 
 using namespace moducom::coap;
+using namespace moducom::coap::experimental;
 //using namespace moducom::pipeline;
 
 int test(experimental::FnFactoryContext context)
@@ -17,6 +19,12 @@ int test(experimental::FnFactoryContext context)
 int test_wilma(experimental::FnFactoryContext context)
 {
     return 77;
+}
+
+
+int test_barny(UriDispatcherHandler::Context ctx)
+{
+    return 777;
 }
 
 
@@ -156,5 +164,20 @@ TEST_CASE("experimental tests", "[experimental]")
         result = factory.create(chunk, context);
 
         REQUIRE(result == 7);
+    }
+    SECTION("experimental new uri dispatcher")
+    {
+        typedef UriDispatcherHandler::fn_t fn_t;
+        typedef UriDispatcherHandler::item_t item_t;
+        moducom::pipeline::MemoryChunk fake_uri((uint8_t*)"barny", 5);
+
+        item_t items[] =
+        {
+            fn_t::item("barny", test_barny)
+        };
+
+        UriDispatcherHandler dh(items);
+
+        dh.on_option(Option::UriPath, fake_uri, true);
     }
 }
