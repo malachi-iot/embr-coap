@@ -67,8 +67,7 @@ public:
         // TODO: doublecheck to see if we magically update outgoing header TKL
         // I think we do, though even if we don't the previous .raw = .raw
         // SHOULD copy it, assuming our on_header starts getting called again
-        if(context->token())
-            global_encoder->token(*context->token());
+        global_encoder->token(context->token());
 
         // just echo back the incoming payload, for now
         // API not ready yet
@@ -85,12 +84,7 @@ extern dispatcher_handler_factory_fn v1_factories[];
 moducom::coap::experimental::IDispatcherHandler* context_dispatcher(
     moducom::coap::experimental::FactoryDispatcherHandlerContext& ctx)
 {
-    typedef moducom::dynamic::OutOfBandPool<moducom::coap::layer2::Token> token_pool_t;
-
-    static moducom::coap::layer2::Token _dummy[4];
-    static token_pool_t dummy(_dummy, 4);
-
-    return new (ctx.handler_memory.data()) ContextDispatcherHandler(ctx.incoming_context, dummy);
+    return new (ctx.handler_memory.data()) ContextDispatcherHandler(ctx.incoming_context);
 }
 
 dispatcher_handler_factory_fn root_factories[] =
@@ -139,7 +133,8 @@ extern "C" void coap_daemon(void *pvParameters)
         // track them also in memory chunk
         pipeline::MemoryChunk chunk((uint8_t*)data, len);
 
-        FactoryDispatcherHandler fdh(dispatcherBuffer, root_factories, 2);
+        IncomingContext context;
+        FactoryDispatcherHandler fdh(dispatcherBuffer, context, root_factories, 2);
         Dispatcher dispatcher;
         pipeline::layer3::SimpleBufferedPipelineWriter writer(outbuf);
         moducom::coap::experimental::BlockingEncoder encoder(writer);
