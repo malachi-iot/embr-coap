@@ -17,6 +17,59 @@ struct FnFactoryKeyTraits
     static bool equals(TKey left, TKey right) { return left == right; }
 };
 
+template <class TValue>
+struct FnFactoryValueTraits
+{
+    static TValue not_found_value() { return NULLPTR; }
+};
+
+
+
+template <class TKey, class TValue, class TTraits>
+class Map
+{
+public:
+    typedef FnFactoryKeyTraits<TKey> key_traits_t;
+    typedef FnFactoryValueTraits<TValue> value_traits_t;
+
+    struct Item
+    {
+        TKey key;
+        TValue value;
+    };
+
+    typedef Item item_t;
+
+protected:
+    // TODO: switch this out to a layer3-specific entity
+    //       and utilize layer3::Array in the process
+    const Item* items;
+    const int count;
+
+public:
+    template <const size_t N>
+    Map(Item (&t) [N]) :
+        items(t),
+        count(N)
+    {
+    }
+
+    const TValue find(TKey key)
+    {
+        for(int i = 0; i < count; i++)
+        {
+            const item_t& item = items[i];
+
+            if(key_traits_t::equals(key, item.key))
+            {
+                return item.value;
+            }
+        }
+
+        return value_traits_t::not_found_value();
+    }
+};
+
 // FIX: shamelessly copy/pasted out of coap-uripath-dispatcher
 // consolidated the starts_with code
 
@@ -55,12 +108,6 @@ struct FnFactoryKeyTraits<const char*>
     }
 };
 
-
-template <class TValue>
-struct FnFactoryValueTraits
-{
-    static TValue not_found_value() { return NULLPTR; }
-};
 
 template <>
 struct FnFactoryValueTraits<int>

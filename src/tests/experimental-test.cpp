@@ -180,4 +180,19 @@ TEST_CASE("experimental tests", "[experimental]")
 
         dh.on_option(Option::UriPath, fake_uri, true);
     }
+    SECTION("Map")
+    {
+        typedef Map<const char*, int, int> map_t;
+
+        map_t::item_t items[] =
+        {
+            { "fred", 7 },
+            { "barny", 77 }
+        };
+        map_t map(items);
+
+        REQUIRE(map.find("fred") == 7);
+        REQUIRE(map.find("barny") == 77);
+        REQUIRE(map.find("wilma") == -1);
+    }
 }

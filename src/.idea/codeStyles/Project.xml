@@ -38,6 +38,9 @@
       <option name="BRACE_STYLE" value="5" />
       <option name="CLASS_BRACE_STYLE" value="5" />
       <option name="WHILE_BRACE_FORCE" value="1" />
+      <indentOptions>
+        <option name="CONTINUATION_INDENT_SIZE" value="4" />
+      </indentOptions>
     </codeStyleSettings>
   </code_scheme>
 </component>

@@ -3,6 +3,7 @@
 //
 
 #include "experimental.h"
+#include "experimental-factory.h"
 
 namespace moducom { namespace coap { namespace experimental {
 
