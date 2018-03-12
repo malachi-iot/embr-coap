@@ -32,6 +32,26 @@ public:
         return v;
     }
 
+
+    template <typename TInput>
+    inline static uint8_t assess_bytes_used(TInput input)
+    {
+        uint8_t bytes_used;
+
+        if(input == 0)
+            bytes_used = 0;
+        else if(input <= 0xFF)
+            bytes_used = 1;
+        else if(input <= 0xFFFF)
+            bytes_used = 2;
+        else if(input <= 0XFFFFFF)
+            bytes_used = 3;
+        else
+            bytes_used = 4;
+
+        return bytes_used;
+    }
+
     // untested
     template <class TInput, class TOutput>
     inline static void set_padded(TInput input, TOutput& output, size_t output_size)
@@ -96,6 +116,17 @@ public:
         }
 
         return bytes_used;
+    }
+
+
+    template <class TInput, class TOutput>
+    inline static void set(TInput input, TOutput& output, uint8_t output_length)
+    {
+        for(int i = output_length; i-- > 0;)
+        {
+            output[i] = input & 0xFF;
+            input >>= 8;
+        }
     }
 };
 

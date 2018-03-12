@@ -2,6 +2,7 @@
 
 #include <string.h>
 #include "../cbor.h"
+#include "../cbor/encoder.h"
 
 using namespace moducom;
 
@@ -171,5 +172,13 @@ TEST_CASE("CBOR decoder tests", "[cbor-decoder]")
         REQUIRE(dh.map() == 1);
         REQUIRE(dh.string() == "val");
         REQUIRE(dh.integer() == -123456789);
+    }
+    SECTION("basic encoder")
+    {
+        cbor::EncoderBase<uint8_t[8]> encoder;
+
+        encoder.integer(10);
+        encoder.integer(100);
+        encoder.integer(1000);
     }
 }

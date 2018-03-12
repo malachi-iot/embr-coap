@@ -25,7 +25,7 @@ set(SOURCE_FILES
         main.cpp coap.cpp coap.h tests/main_test.cpp tests/coap.cpp
         coap_transmission.cpp coap_transmission.h tests/coap_lowlevel.cpp coap_subscription.cpp
         coap_subscription.h
-        cbor.cpp tests/cbor-test.cpp cbor/features.h
+        cbor.cpp tests/cbor-test.cpp cbor/features.h cbor/encoder.h
         tests/coap_send.cpp
         coap_daemon.h
         tests/coap_daemon.cpp mc/pipeline.h tests/pipeline_test.cpp
