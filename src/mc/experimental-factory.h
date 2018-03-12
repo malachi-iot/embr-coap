@@ -12,61 +12,80 @@ struct FnFactoryContext
 
 
 template <class TKey>
-struct FnFactoryKeyTraits
+struct KeyTraits
 {
     static bool equals(TKey left, TKey right) { return left == right; }
 };
 
 template <class TValue>
-struct FnFactoryValueTraits
+struct ValueTraits
 {
     static TValue not_found_value() { return NULLPTR; }
 };
 
 
 
+template <class TKey, class TValue>
+struct KeyValuePair
+{
+    typedef TValue value_t;
+    typedef TKey key_t;
+
+    key_t key;
+    value_t value;
+};
+
+
+template <class TKeyValuePair,
+    class TKeyTraits,
+    class TValueTraits>
+inline static typename TKeyValuePair::value_t find(
+    const TKeyValuePair* items, int count,
+    typename TKeyValuePair::key_t key)
+{
+    typedef TKeyValuePair item_t;
+    typedef TKeyTraits key_traits_t;
+    typedef TValueTraits value_traits_t;
+
+    for(int i = 0; i < count; i++)
+    {
+        const item_t& item = items[i];
+
+        if(key_traits_t::equals(key, item.key))
+        {
+            return item.value;
+        }
+    }
+
+    return value_traits_t::not_found_value();
+}
+
 template <class TKey, class TValue, class TTraits>
 class Map
 {
 public:
-    typedef FnFactoryKeyTraits<TKey> key_traits_t;
-    typedef FnFactoryValueTraits<TValue> value_traits_t;
+    typedef KeyTraits<TKey> key_traits_t;
+    typedef ValueTraits<TValue> value_traits_t;
 
-    struct Item
-    {
-        TKey key;
-        TValue value;
-    };
-
-    typedef Item item_t;
+    typedef KeyValuePair<TKey, TValue> item_t;
 
 protected:
     // TODO: switch this out to a layer3-specific entity
     //       and utilize layer3::Array in the process
-    const Item* items;
+    const item_t* items;
     const int count;
 
 public:
     template <const size_t N>
-    Map(Item (&t) [N]) :
+    Map(item_t (&t) [N]) :
         items(t),
         count(N)
     {
     }
 
-    const TValue find(TKey key)
+    TValue find(TKey key)
     {
-        for(int i = 0; i < count; i++)
-        {
-            const item_t& item = items[i];
-
-            if(key_traits_t::equals(key, item.key))
-            {
-                return item.value;
-            }
-        }
-
-        return value_traits_t::not_found_value();
+        return experimental::find<item_t, key_traits_t, value_traits_t>(items, count, key);
     }
 };
 
@@ -95,7 +114,7 @@ inline bool starts_with(pipeline::MemoryChunk::readonly_t chunk, const char* pre
 
 
 template <>
-struct FnFactoryKeyTraits<const char*>
+struct KeyTraits<const char*>
 {
     static bool equals(const char* left, const char* right)
     { return strcmp(left, right) == 0; }
@@ -110,7 +129,7 @@ struct FnFactoryKeyTraits<const char*>
 
 
 template <>
-struct FnFactoryValueTraits<int>
+struct ValueTraits<int>
 {
     static int not_found_value() { return -1; }
 };
@@ -126,8 +145,8 @@ struct FnFactoryTraits
 
     typedef TValue (*factory_fn_t)(context_t context);
 
-    typedef FnFactoryKeyTraits<TKey> key_traits_t;
-    typedef FnFactoryValueTraits<TValue> value_traits_t;
+    typedef KeyTraits<TKey> key_traits_t;
+    typedef ValueTraits<TValue> value_traits_t;
 };
 
 
