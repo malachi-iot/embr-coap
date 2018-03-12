@@ -7,10 +7,13 @@ namespace moducom { namespace cbor {
 template <class TBuffer>
 class EncoderBase
 {
+protected:
     TBuffer buffer;
 
+public:
     uint8_t* data() { return buffer; }
 
+protected:
     static uint8_t additional_integer_information_from_wordsize(uint8_t wordsize)
     {
         switch(wordsize)
@@ -26,12 +29,13 @@ class EncoderBase
         }
     }
 
-protected:
     typedef CBOR::Types types_t;
     typedef CBOR::Decoder::AdditionalIntegerInformation add_int_info_t;
 
+    // returns number of bytes occupied - remember, this excludes "contents"
+    // such as array items, string contents, etc.
     template <typename TInt>
-    void major_type_and_integer(types_t type, TInt value)
+    uint8_t major_type_and_integer(types_t type, TInt value)
     {
         uint8_t* d = data();
 
@@ -41,6 +45,7 @@ protected:
         if(value <= 24)
         {
             *d = type << 5 | value;
+            return 1;
         }
         else
         {
@@ -64,25 +69,57 @@ protected:
 
             d--;
             *d = type << 5 | additional_integer_information_from_wordsize(bytes_used);
+            return bytes_used + 1;
         }
     }
 
 public:
 
     template <typename TInt>
-    void integer(TInt value)
+    uint8_t integer(TInt value)
     {
         if(value >= 0)
-            major_type_and_integer(CBOR::UnsignedInteger, value);
+            return major_type_and_integer(CBOR::UnsignedInteger, value);
         else
-            major_type_and_integer(CBOR::NegativeInteger, -value);
+            return major_type_and_integer(CBOR::NegativeInteger, -value);
     }
 
 
-    void string(int length)
+    // NOTE: this only encodes string preamble, literal string contents
+    // itself are outside the scope of this encoder
+    uint8_t string(unsigned length)
     {
+        return major_type_and_integer(CBOR::String, length);
+    }
 
+
+    // NOTE: this only encodes array preamble, literal string contents
+    // itself are outside the scope of this encoder
+    uint8_t array(unsigned length)
+    {
+        return major_type_and_integer(CBOR::ByteArray, length);
     }
 };
+
+
+namespace layer1 {
+
+class Encoder : public cbor::EncoderBase<uint8_t[5]>
+{
+
+};
+
+}
+
+
+namespace layer3 {
+
+class Encoder : public cbor::EncoderBase<uint8_t*>
+{
+public:
+    Encoder(uint8_t* buffer) { this->buffer = buffer; }
+};
+
+}
 
 }}

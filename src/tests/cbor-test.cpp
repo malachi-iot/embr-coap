@@ -173,12 +173,43 @@ TEST_CASE("CBOR decoder tests", "[cbor-decoder]")
         REQUIRE(dh.string() == "val");
         REQUIRE(dh.integer() == -123456789);
     }
-    SECTION("basic encoder")
+    SECTION("basic encoder: layer1")
     {
-        cbor::EncoderBase<uint8_t[8]> encoder;
+        cbor::layer1::Encoder encoder;
 
         encoder.integer(10);
+
+        REQUIRE(encoder.data()[0] == 10);
+
         encoder.integer(100);
         encoder.integer(1000);
+    }
+    SECTION("basic encoder: layer3")
+    {
+        uint8_t buffer[9];
+        cbor::layer3::Encoder encoder(buffer);
+
+        encoder.integer(10);
+
+        REQUIRE(encoder.data()[0] == 10);
+
+        encoder.integer(100);
+
+        REQUIRE(encoder.data()[0] == CBOR::Decoder::bits_8);
+
+        encoder.integer(1000);
+    }
+    SECTION("more advanced encoder: layer1")
+    {
+        cbor::layer1::Encoder encoder;
+
+        encoder.integer(-123456789);
+
+        REQUIRE(encoder.data()[0] == (CBOR::NegativeInteger << 5 | CBOR::Decoder::bits_32));
+
+        int len = encoder.string(5);
+
+        REQUIRE(len == 1);
+        REQUIRE(encoder.data()[0] == (CBOR::String << 5 | 5));
     }
 }
