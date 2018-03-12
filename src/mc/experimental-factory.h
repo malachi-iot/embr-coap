@@ -151,15 +151,13 @@ struct FnFactoryTraits
 
 
 template <class TKey, class TValue, class TContext = typename FnFactoryTraits<TKey, TValue>::context_t>
-struct FnFactoryItem
+struct FnFactoryItem : public KeyValuePair<TKey, TValue (*)(TContext)>
 {
-    typedef TKey key_t;
-    typedef TValue value_t;
+    typedef KeyValuePair<TKey, TValue (*)(TContext)> base_t;
     typedef TContext context_t;
-    typedef value_t (*factory_fn_t)(context_t context);
+    typedef TValue (*factory_fn_t)(context_t context);
 
-    key_t key;
-    factory_fn_t factory_fn;
+    TValue factory_fn(context_t context) const { return this->value(context); };
 };
 
 
@@ -185,7 +183,7 @@ inline FnFactoryItem<TKey, TValue, TContext> factory_item_helper(TKey key,
     FnFactoryItem<TKey, TValue, TContext> item;
 
     item.key = key;
-    item.factory_fn = factory_fn;
+    item.value = factory_fn;
 
     return item;
 }
@@ -222,6 +220,8 @@ public:
     template <class _TKey>
     static TValue create(const item_t* items, int count, _TKey key, context_ref_t context)
     {
+        //value_t found = find<item_t, key_traits_t, value_traits_t>(items, count, key);
+
         for(int i = 0; i < count; i++)
         {
             const item_t& item = items[i];
