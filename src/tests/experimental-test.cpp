@@ -22,9 +22,9 @@ int test_wilma(experimental::FnFactoryContext context)
 }
 
 
-int test_barny(UriDispatcherHandler::Context ctx)
+IDispatcherHandler* test_barny(UriDispatcherHandler::Context& ctx)
 {
-    return 777;
+    return NULLPTR;
 }
 
 

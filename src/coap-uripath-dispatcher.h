@@ -185,7 +185,7 @@ public:
         pipeline::MemoryChunk chunk;
     };
 
-    typedef FnFactoryTraits<const char*, int, Context> traits_t;
+    typedef FnFactoryTraits<const char*, IDispatcherHandler*, Context&> traits_t;
     typedef FnFactoryHelper<traits_t> fn_t;
     typedef fn_t::factory_t factory_t;
     typedef fn_t::item_t item_t;

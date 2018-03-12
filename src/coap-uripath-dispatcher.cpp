@@ -12,7 +12,7 @@ void UriDispatcherHandler::on_option(number_t number,
                                      const pipeline::MemoryChunk::readonly_t& option_value_part,
                                      bool last_chunk)
 {
-    int result = factory.create(option_value_part, context);
+    IDispatcherHandler* handler = factory.create(option_value_part, context);
 }
 
 }
