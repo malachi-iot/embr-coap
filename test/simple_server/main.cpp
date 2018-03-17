@@ -85,12 +85,16 @@ public:
 
     virtual void on_header(Header header) OVERRIDE
     {
+        std::clog << "Received header: " << header << std::endl;
+
         context.header(header);
     }
 
 
     virtual void on_token(const moducom::pipeline::MemoryChunk::readonly_t& chunk, bool last_chunk)
     {
+        std::clog << "Received token: " << chunk.length() << " bytes" << std::endl;
+
         context.token(&chunk);
     }
 
@@ -145,7 +149,27 @@ public:
     }
 
 #ifdef FEATURE_MCCOAP_COMPLETE_OBSERVER
-    virtual void on_complete() OVERRIDE {}
+    // FIX: Not getting called yet, but needs to (feature
+    // apparently not fully active)
+    virtual void on_complete() OVERRIDE
+    {
+        if(!header_sent)
+        {
+            Header outgoing_header =
+
+            create_response(context.header(), Header::Code::BadRequest);
+
+            std::cout << "Sending header: " << outgoing_header << std::endl;
+
+            encoder.header(outgoing_header);
+
+            if (context.token_present())
+                encoder.token(context.token());
+
+            header_sent = true;
+        }
+
+    }
 #endif
 
     virtual interested_t interested() const OVERRIDE

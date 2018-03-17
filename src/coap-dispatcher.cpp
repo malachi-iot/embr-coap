@@ -42,7 +42,17 @@ bool Dispatcher::dispatch_iterate(Context& context)
             std::clog << __func__ << ": 1 optionDecoder state = " << (optionDecoder.state()) << std::endl;
 #endif
 
-            pos += dispatch_option(chunk.remainder(pos));
+            // Explicitly check for payload marker here as it's permissible to receive a message
+            // with no options but a payload present
+            pipeline::MemoryChunk::readonly_t remainder = chunk.remainder(pos);
+            if(remainder[0] == 0xFF)
+            {
+                // OptionsDone will check 0xFF again
+                // FIX: Seems a bit inefficient so revisit
+                state(OptionsDone);
+                break;
+            }
+            pos += dispatch_option(remainder);
 
 #ifdef DEBUG2
             std::clog << __func__ << ": 2 optionDecoder state = " << (optionDecoder.state()) << std::endl;
