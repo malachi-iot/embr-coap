@@ -43,9 +43,10 @@ const char* to_string(Header::TypeEnum type)
     }
 }
 
-std::ostream& operator <<(std::ostream& out, Header::TypeEnum type)
+inline std::ostream& operator <<(std::ostream& out, Header::TypeEnum type)
 {
     out << to_string(type);
+    return out;
 }
 
 // for setfill, setw
@@ -70,12 +71,13 @@ std::ostream& operator <<(std::ostream& out, Header& header)
 
     // this appears to crash things
     //out.flags(f);
+
+    return out;
 }
 
 class TestDispatcherHandler : public moducom::coap::experimental::IDispatcherHandler
 {
     experimental::BlockingEncoder& encoder;
-    layer2::Token token;
     IncomingContext context;
 
 public:
@@ -89,8 +91,7 @@ public:
 
     virtual void on_token(const moducom::pipeline::MemoryChunk::readonly_t& chunk, bool last_chunk)
     {
-        token.copy_from(chunk);
-        context.token(&token);
+        context.token(&chunk);
     }
 
     // FIX: just crappy test code, don't do this in real life
@@ -115,10 +116,9 @@ public:
 
             encoder.header(outgoing_header);
 
-            if (context.token() != nullptr)
+            if (context.token_present())
             {
-                // FIX: Broken, _length vs (not yet made) length-used
-                encoder.token(*context.token());
+                encoder.token(context.token());
             }
 
             encoder.payload("Response payload");
@@ -143,6 +143,10 @@ public:
     virtual void on_payload(const moducom::pipeline::MemoryChunk::readonly_t& chunk, bool last_chunk) OVERRIDE
     {
     }
+
+#ifdef FEATURE_MCCOAP_COMPLETE_OBSERVER
+    virtual void on_complete() OVERRIDE {}
+#endif
 
     virtual interested_t interested() const OVERRIDE
     { return interested_t::Always; }
