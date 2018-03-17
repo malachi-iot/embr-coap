@@ -149,8 +149,6 @@ public:
     }
 
 #ifdef FEATURE_MCCOAP_COMPLETE_OBSERVER
-    // FIX: Not getting called yet, but needs to (feature
-    // apparently not fully active)
     virtual void on_complete() OVERRIDE
     {
         if(!header_sent)
@@ -227,6 +225,10 @@ int main()
 
         dispatcher.head(&handler);
         dispatcher.dispatch(inbuf, true);
+
+        // FIX: only temporary as on_complete() feature still gets build out
+        // eventually dispatcher will auto call this
+        handler.on_complete();
 
         // send(...) is for connection oriented
         //send(newsockfd, outbuf._data(), outbuf._length(), 0);
