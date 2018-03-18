@@ -38,10 +38,11 @@ struct KeyValuePair
 
 template <class TKeyValuePair,
     class TKeyTraits,
-    class TValueTraits>
+    class TValueTraits,
+    class TKey>
 inline static typename TKeyValuePair::value_t find(
     const TKeyValuePair* items, int count,
-    typename TKeyValuePair::key_t key)
+    TKey key)
 {
     typedef TKeyValuePair item_t;
     typedef TKeyTraits key_traits_t;
@@ -58,6 +59,18 @@ inline static typename TKeyValuePair::value_t find(
     }
 
     return value_traits_t::not_found_value();
+}
+
+
+template <class TKeyValuePair, class TKey>
+inline static typename TKeyValuePair::value_t find2(
+    const TKeyValuePair* items, int count,
+    TKey key)
+{
+    return find<TKeyValuePair,
+        KeyTraits<typename TKeyValuePair::key_t>,
+        ValueTraits<typename TKeyValuePair::value_t>,
+        TKey>(items, count, key);
 }
 
 template <class TKey, class TValue, class TTraits>
@@ -201,6 +214,8 @@ class FnFactory
     typedef typename traits_t::value_traits_t value_traits_t;
     typedef typename traits_t::context_t context_t;
     typedef typename traits_t::context_ref_t context_ref_t;
+    typedef typename traits_t::factory_fn_t factory_fn_t;
+    typedef ValueTraits<factory_fn_t> factory_fn_traits_t;
     typedef FnFactoryItem<key_t, value_t, context_t> item_t;
 
     const item_t* items;
@@ -221,6 +236,13 @@ public:
     static TValue create(const item_t* items, int count, _TKey key, context_ref_t context)
     {
         //value_t found = find<item_t, key_traits_t, value_traits_t>(items, count, key);
+        //factory_fn_t found = find<item_t, key_traits_t, factory_fn_traits_t>(items, count, key);
+        factory_fn_t found = find2(items, count, key);
+
+        if(factory_fn_traits_t::not_found_value() == found)
+            return value_traits_t::not_found_value();
+
+        return found(context);
 
         for(int i = 0; i < count; i++)
         {
