@@ -409,6 +409,27 @@ inline bool process_response(Header input, Header* output)
 }
 
 
+inline const char* to_string(Header::TypeEnum type)
+{
+    switch(type)
+    {
+        case Header::Confirmable:       return "Confirmable";
+        case Header::NonConfirmable:    return "NonConfirmable";
+        case Header::Acknowledgement:   return "Acknowledgement";
+        case Header::Reset:             return "Reset";
+    }
+}
+
+
+#ifdef FEATURE_MCCOAP_IOSTREAM_NATIVE
+inline std::ostream& operator <<(std::ostream& out, Header::TypeEnum type)
+{
+    out << to_string(type);
+    return out;
+}
+#endif
+
+
 }}
 
 #endif //MC_COAP_TEST_COAP_HEADER_H

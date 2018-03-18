@@ -31,23 +31,10 @@ using namespace moducom::coap;
 #include "../../src/mc/pipeline-decoder.h"
 #include <mc/memory-chunk.h>
 
+#ifndef FEATURE_MCCOAP_COMPLETE_OBSERVER
+#error "Requires on_complete presence"
+#endif
 
-const char* to_string(Header::TypeEnum type)
-{
-    switch(type)
-    {
-        case Header::Confirmable:       return "Confirmable";
-        case Header::NonConfirmable:    return "NonConfirmable";
-        case Header::Acknowledgement:   return "Acknowledgement";
-        case Header::Reset:             return "Reset";
-    }
-}
-
-inline std::ostream& operator <<(std::ostream& out, Header::TypeEnum type)
-{
-    out << to_string(type);
-    return out;
-}
 
 // for setfill, setw
 #include <iomanip>
@@ -74,6 +61,27 @@ std::ostream& operator <<(std::ostream& out, Header& header)
 
     return out;
 }
+
+
+
+template <class TEncoder>
+void encode_response(TEncoder& encoder, const IncomingContext& context, Header::Code::Codes code)
+{
+    Header outgoing_header =
+
+            create_response(context.header(), code);
+
+    // TODO: also ifdef this out based on debug level
+#if defined(FEATURE_MCCOAP_IOSTREAM_NATIVE)
+    std::clog << "Sending header: " << outgoing_header << std::endl;
+#endif
+
+    encoder.header(outgoing_header);
+
+    if (context.token_present())
+        encoder.token(context.token());
+}
+
 
 class TestDispatcherHandler : public moducom::coap::experimental::IDispatcherHandler
 {
@@ -110,20 +118,7 @@ public:
         // we respond
         if(!header_sent)
         {
-            Header outgoing_header;
-
-            process_request(context.header(), &outgoing_header);
-
-            outgoing_header.response_code(Header::Code::Valid);
-
-            std::cout << "Sending header: " << outgoing_header << std::endl;
-
-            encoder.header(outgoing_header);
-
-            if (context.token_present())
-            {
-                encoder.token(context.token());
-            }
+            encode_response(encoder, context, Header::Code::Valid);
 
             encoder.payload("Response payload");
 
@@ -153,17 +148,7 @@ public:
     {
         if(!header_sent)
         {
-            Header outgoing_header =
-
-            create_response(context.header(), Header::Code::BadRequest);
-
-            std::cout << "Sending header: " << outgoing_header << std::endl;
-
-            encoder.header(outgoing_header);
-
-            if (context.token_present())
-                encoder.token(context.token());
-
+            encode_response(encoder, context, Header::Code::NotFound);
             header_sent = true;
         }
 
