@@ -183,6 +183,9 @@ public:
     struct Context
     {
         pipeline::MemoryChunk chunk;
+        IncomingContext& context;
+
+        Context(IncomingContext& context) : context(context) {}
     };
 
     typedef FnFactoryTraits<const char*, IDispatcherHandler*, Context&> traits_t;
@@ -201,7 +204,9 @@ public:
     // NOTE: fanciness not really necessary just a generic class T
     // would probably be fine, factory itself dissects all that
     template <const size_t N>
-    UriDispatcherHandler(fn_t::item_t (&items) [N]) : factory(items)
+    UriDispatcherHandler(IncomingContext& incomingContext, fn_t::item_t (&items) [N]) :
+        factory(items),
+        context(incomingContext)
     {
 
     }

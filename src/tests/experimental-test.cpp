@@ -170,13 +170,14 @@ TEST_CASE("experimental tests", "[experimental]")
         typedef UriDispatcherHandler::fn_t fn_t;
         typedef UriDispatcherHandler::item_t item_t;
         moducom::pipeline::MemoryChunk fake_uri((uint8_t*)"barny", 5);
+        IncomingContext incomingContext;
 
         item_t items[] =
         {
             fn_t::item("barny", test_barny)
         };
 
-        UriDispatcherHandler dh(items);
+        UriDispatcherHandler dh(incomingContext, items);
 
         dh.on_option(Option::UriPath, fake_uri, true);
     }
