@@ -48,6 +48,12 @@ static std::string decoder_get_string(CBOR::Decoder& decoder, const uint8_t** v)
     return s;
 }
 
+
+#ifdef __APPLE__
+#define __glibcxx_assert(dummy)
+#else
+#endif
+
 template <class TDecoder = CBOR::Decoder>
 struct DecoderHelper
 {

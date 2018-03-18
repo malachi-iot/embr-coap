@@ -143,6 +143,12 @@ public:
                 case bits_16: return 2;
                 case bits_32: return 4;
                 case bits_64: return 8;
+
+                default:
+#ifdef DEBUG
+                    // TODO: Extra diagnostic reporting for invalid state
+#endif
+                    return -1;
             }
         }
 
