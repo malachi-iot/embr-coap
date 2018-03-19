@@ -22,9 +22,28 @@ int test_wilma(experimental::FnFactoryContext context)
 }
 
 
+class TestBarnyObsever : public DispatcherHandlerBase
+{
+public:
+    TestBarnyObsever(IncomingContext& context)
+    {
+        set_context(context);
+    }
+
+    void on_option(number_t number,
+                           const moducom::pipeline::MemoryChunk::readonly_t& option_value_part,
+                           bool last_chunk) OVERRIDE
+    {
+        // FIX: For some reason this isn't called, but it should be
+    }
+};
+
 IDispatcherHandler* test_barny(UriDispatcherHandler::Context& ctx)
 {
-    return NULLPTR;
+    moducom::pipeline::MemoryChunk chunk =
+    ctx.chunk.carve_experimental(0, sizeof(TestBarnyObsever));
+    void* p = chunk.data();
+    return new (p) TestBarnyObsever(ctx.context);
 }
 
 
@@ -169,6 +188,14 @@ TEST_CASE("experimental tests", "[experimental]")
     {
         typedef UriDispatcherHandler::fn_t fn_t;
         typedef UriDispatcherHandler::item_t item_t;
+        moducom::pipeline::layer1::MemoryChunk<512> buffer;
+        // FIX: Something is quite wrong with the constructor
+        // for _buffer, data() pointer seems to get corrupted
+        moducom::pipeline::MemoryChunk _buffer = buffer;
+        const void* test = buffer.data();
+        const void* test2 = _buffer.data();
+        moducom::pipeline::MemoryChunk __buffer((uint8_t*)test, 512);
+        const void* test3 = __buffer.data();
         moducom::pipeline::MemoryChunk fake_uri((uint8_t*)"barny", 5);
         IncomingContext incomingContext;
 
@@ -177,7 +204,7 @@ TEST_CASE("experimental tests", "[experimental]")
             fn_t::item("barny", test_barny)
         };
 
-        UriDispatcherHandler dh(incomingContext, items);
+        UriDispatcherHandler dh(__buffer, incomingContext, items);
 
         dh.on_option(Option::UriPath, fake_uri, true);
     }

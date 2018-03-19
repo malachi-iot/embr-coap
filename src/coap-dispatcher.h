@@ -255,23 +255,23 @@ public:
 
     void on_header(Header header) OVERRIDE { }
 
-    void on_token(const pipeline::MemoryChunk::readonly_t& token_part,
+    virtual void on_token(const pipeline::MemoryChunk::readonly_t& token_part,
                   bool last_chunk) OVERRIDE
     {}
 
-    void on_option(number_t number, uint16_t length) OVERRIDE
+    virtual void on_option(number_t number, uint16_t length) OVERRIDE
     {
 
     }
 
-    void on_option(number_t number,
+    virtual void on_option(number_t number,
                    const pipeline::MemoryChunk::readonly_t& option_value_part,
                    bool last_chunk) OVERRIDE
     {
 
     }
 
-    void on_payload(const pipeline::MemoryChunk::readonly_t& payload_part,
+    virtual void on_payload(const pipeline::MemoryChunk::readonly_t& payload_part,
                     bool last_chunk) OVERRIDE
     {
 
