@@ -28,7 +28,7 @@ const pipeline::MemoryChunk::readonly_t v2::ManagedBuffer::current_ro(boundary_t
 {
     if(boundary == 0)
     {
-        ro_chunk_t temp((uint8_t*) chunk.data(current_pos), chunk.length() - current_pos);
+        ro_chunk_t temp((const uint8_t*) chunk.data(current_pos), chunk.length() - current_pos);
 
         return temp;
     }
@@ -55,7 +55,7 @@ const pipeline::MemoryChunk::readonly_t v2::ManagedBuffer::current_ro(boundary_t
 
         temp_length -= current_pos;
 
-        ro_chunk_t temp((uint8_t*) chunk.data(current_pos), temp_length);
+        ro_chunk_t temp((const uint8_t*) chunk.data(current_pos), temp_length);
 
         return temp;
     }

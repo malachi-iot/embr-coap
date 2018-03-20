@@ -362,7 +362,7 @@ public:
             if(type() != String)
             {
                 if(result != NULLPTR) *result = InvalidType;
-                return pipeline::MemoryChunk::readonly_t(NULLPTR, 0);
+                return pipeline::MemoryChunk::readonly_t((const uint8_t*)NULLPTR, 0);
             }
 
             // FIX: Need to weed this out of bits_none, bits_8, etc.

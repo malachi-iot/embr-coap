@@ -178,7 +178,7 @@ TEST_CASE("experimental tests", "[experimental]")
 
         REQUIRE(result == 77);
 
-        moducom::pipeline::MemoryChunk::readonly_t chunk((uint8_t*)"fred", 4);
+        moducom::pipeline::MemoryChunk::readonly_t chunk((const uint8_t*)"fred", 4);
 
         result = factory.create(chunk, context);
 
