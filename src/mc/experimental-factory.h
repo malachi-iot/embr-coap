@@ -33,6 +33,14 @@ struct KeyValuePair
 
     key_t key;
     value_t value;
+
+    /*
+    KeyValuePair() {}
+
+    KeyValuePair(key_t key, value_t value) :
+        key(key),
+        value(value)
+    {} */
 };
 
 
@@ -169,6 +177,12 @@ struct FnFactoryItem : public KeyValuePair<TKey, TValue (*)(TContext)>
     typedef KeyValuePair<TKey, TValue (*)(TContext)> base_t;
     typedef TContext context_t;
     typedef TValue (*factory_fn_t)(context_t context);
+
+    /*
+     * Not a terrible idea but ignites a requirement for C++11
+    FnFactoryItem() {}
+
+    FnFactoryItem(TKey key, TValue value) : base_t(key, value) {} */
 
     TValue factory_fn(context_t context) const { return this->value(context); };
 };

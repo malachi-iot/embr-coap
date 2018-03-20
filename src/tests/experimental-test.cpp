@@ -189,14 +189,7 @@ TEST_CASE("experimental tests", "[experimental]")
         typedef UriDispatcherHandler::fn_t fn_t;
         typedef UriDispatcherHandler::item_t item_t;
         moducom::pipeline::layer1::MemoryChunk<512> buffer;
-        // FIX: Something is quite wrong with the constructor
-        // for _buffer, data() pointer seems to get corrupted
-        moducom::pipeline::MemoryChunk _buffer = buffer;
-        const void* test = buffer.data();
-        const void* test2 = _buffer.data();
-        moducom::pipeline::MemoryChunk __buffer((uint8_t*)test, 512);
-        const void* test3 = __buffer.data();
-        moducom::pipeline::MemoryChunk fake_uri((uint8_t*)"barny", 5);
+        moducom::pipeline::MemoryChunk::readonly_t fake_uri((const uint8_t*)"barny", 5);
         IncomingContext incomingContext;
 
         item_t items[] =
@@ -204,7 +197,7 @@ TEST_CASE("experimental tests", "[experimental]")
             fn_t::item("barny", test_barny)
         };
 
-        UriDispatcherHandler dh(__buffer, incomingContext, items);
+        UriDispatcherHandler dh(buffer, incomingContext, items);
 
         dh.on_option(Option::UriPath, fake_uri, true);
     }
