@@ -22,6 +22,8 @@ int test_wilma(experimental::FnFactoryContext context)
 }
 
 
+const moducom::pipeline::MemoryChunk::readonly_t* test_value_1 = NULLPTR;
+
 class TestBarnyObsever : public DispatcherHandlerBase
 {
 public:
@@ -34,7 +36,7 @@ public:
                            const moducom::pipeline::MemoryChunk::readonly_t& option_value_part,
                            bool last_chunk) OVERRIDE
     {
-        // FIX: For some reason this isn't called, but it should be
+        test_value_1 = &option_value_part;
     }
 };
 
@@ -200,6 +202,8 @@ TEST_CASE("experimental tests", "[experimental]")
         UriDispatcherHandler dh(buffer, incomingContext, items);
 
         dh.on_option(Option::UriPath, fake_uri, true);
+
+        REQUIRE(test_value_1 == &fake_uri);
     }
     SECTION("Map")
     {
