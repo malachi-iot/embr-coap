@@ -191,7 +191,8 @@ TEST_CASE("experimental tests", "[experimental]")
         typedef UriDispatcherHandler::fn_t fn_t;
         typedef UriDispatcherHandler::item_t item_t;
         moducom::pipeline::layer1::MemoryChunk<512> buffer;
-        moducom::pipeline::MemoryChunk::readonly_t fake_uri((const uint8_t*)"barny", 5);
+        moducom::pipeline::MemoryChunk::readonly_t
+            fake_uri = moducom::pipeline::MemoryChunk::readonly_t::str_ptr("barny");
         IncomingContext incomingContext;
 
         item_t items[] =

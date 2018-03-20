@@ -86,7 +86,7 @@ TEST_CASE("CoAP encoder tests", "[coap-encoder]")
     SECTION("Read Only Memory Buffer")
     {
         // TODO: Make a layer2::string merely to be a wrapper around const char*
-        MemoryChunk::readonly_t str("Test");
+        MemoryChunk::readonly_t str = MemoryChunk::readonly_t::str_ptr("Test");
 
         REQUIRE(str.length() == 4);
     }
