@@ -5,6 +5,7 @@
 
 #include "coap-dispatcher.h"
 #include "mc/experimental-factory.h"
+#include "mc/objstack.h"
 
 namespace moducom { namespace coap {
 
@@ -177,15 +178,25 @@ experimental::IDispatcherHandler* uri_plus_observer_dispatcher(experimental::Fac
 
 namespace experimental {
 
+// Newer, better replacement UriDispatcherHandler
+// does not maintain interested-state , since this particular
+// dispatcher chooses one at most interested URI.  Because of that,
+// objstack usage is potentially a small waste - but we'll use it
+// here anyway as a proving grounds of its usefulness
 class UriDispatcherHandler : public experimental::DispatcherHandlerBase
 {
+    typedef experimental::DispatcherHandlerBase base_t;
+
 public:
     struct Context
     {
-        pipeline::MemoryChunk chunk;
+        dynamic::ObjStack objstack;
         IncomingContext& context;
 
-        Context(IncomingContext& context) : context(context) {}
+        Context(const dynamic::ObjStack& objstack,
+                IncomingContext& context) :
+            objstack(objstack),
+            context(context) {}
     };
 
     typedef FnFactoryTraits<const char*, IDispatcherHandler*, Context&> traits_t;
@@ -199,6 +210,8 @@ protected:
 
     Context context;
 
+    IDispatcherHandler* handler;
+
 public:
 
     // NOTE: fanciness not really necessary just a generic class T
@@ -208,14 +221,23 @@ public:
                          IncomingContext& incomingContext,
                          fn_t::item_t (&items) [N]) :
         factory(items),
-        context(incomingContext)
+        context(chunk, incomingContext),
+        handler(NULLPTR)
     {
-        context.chunk = chunk;
     }
 
     virtual void on_option(number_t number,
                            const pipeline::MemoryChunk::readonly_t& option_value_part,
                            bool last_chunk) OVERRIDE;
+
+    virtual void on_payload(const pipeline::MemoryChunk::readonly_t& payload_part,
+                            bool last_chunk) OVERRIDE;
+
+#ifdef FEATURE_MCCOAP_COMPLETE_OBSERVER
+    virtual void on_complete() OVERRIDE;
+#else
+    // TODO: Issue a warning or error that on_complete is needed
+#endif
 };
 
 }

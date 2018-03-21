@@ -42,10 +42,7 @@ public:
 
 IDispatcherHandler* test_barny(UriDispatcherHandler::Context& ctx)
 {
-    moducom::pipeline::MemoryChunk chunk =
-    ctx.chunk.carve_experimental(0, sizeof(TestBarnyObsever));
-    void* p = chunk.data();
-    return new (p) TestBarnyObsever(ctx.context);
+    return new (ctx.objstack) TestBarnyObsever(ctx.context);
 }
 
 
@@ -203,6 +200,7 @@ TEST_CASE("experimental tests", "[experimental]")
         UriDispatcherHandler dh(buffer, incomingContext, items);
 
         dh.on_option(Option::UriPath, fake_uri, true);
+        dh.on_complete();
 
         REQUIRE(test_value_1 == &fake_uri);
     }
