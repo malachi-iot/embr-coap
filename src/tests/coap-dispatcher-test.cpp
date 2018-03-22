@@ -142,7 +142,7 @@ IDispatcherHandler* uri_plus_factory_dispatcher(MemoryChunk chunk)
 IDispatcherHandler* test_factory2(FactoryDispatcherHandlerContext& ctx)
 {
     MemoryChunk& uri_handler_chunk = ctx.handler_memory;
-    MemoryChunk v1_handler_chunk = ctx.handler_memory.remainder(sizeof(UriPathDispatcherHandler));
+    MemoryChunk v1_handler_chunk = ctx.handler_memory.remainder(sizeof(SingleUriPathObserver));
     MemoryChunk v1_handler_inner_chunk = v1_handler_chunk.remainder(sizeof(FactoryDispatcherHandler));
 
     FactoryDispatcherHandler* fdh = new (v1_handler_chunk.data()) FactoryDispatcherHandler(
@@ -151,7 +151,7 @@ IDispatcherHandler* test_factory2(FactoryDispatcherHandlerContext& ctx)
             test_sub_factories, 1);
 
     // TODO: will need some way to invoke fdh destructor
-    return new (uri_handler_chunk.data()) UriPathDispatcherHandler("v1", *fdh);
+    return new (uri_handler_chunk.data()) SingleUriPathObserver("v1", *fdh);
 }
 
 extern CONSTEXPR char STR_TEST[] = "TEST";
@@ -275,7 +275,7 @@ TEST_CASE("CoAP dispatcher tests", "[coap-dispatcher]")
         int size4 = sizeof(IDispatcherHandler);
         int size5 = sizeof(IIsInterested);
         int size6 = sizeof(DispatcherHandlerBase);
-        int size7 = sizeof(UriPathDispatcherHandler);
+        int size7 = sizeof(SingleUriPathObserver);
         int size8 = sizeof(FactoryDispatcherHandler);
     }
 }

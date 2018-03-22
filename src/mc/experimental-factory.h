@@ -127,7 +127,7 @@ inline bool starts_with(const TChar* s, int slen, const char* prefix)
 }
 
 
-inline bool starts_with(pipeline::MemoryChunk::readonly_t chunk, const char* prefix)
+inline bool starts_with(const pipeline::MemoryChunk::readonly_t& chunk, const char* prefix)
 {
     return starts_with(chunk.data(), chunk.length(), prefix);
 }
@@ -140,7 +140,7 @@ struct KeyTraits<const char*>
     static bool equals(const char* left, const char* right)
     { return strcmp(left, right) == 0; }
 
-    static bool equals(pipeline::MemoryChunk::readonly_t& chunk, const char* right)
+    static bool equals(const pipeline::MemoryChunk::readonly_t& chunk, const char* right)
     {
         // TODO: This specialization lets us compare any key type with great detail
         // we don't have to rely on just an automatic operator conversion
@@ -309,6 +309,7 @@ struct FnFactoryHelper
         return factory_item_helper(key, factory_fn);
     };
 
+#if defined(__CPP11__) || __cplusplus >= 201103L
     // We would rather this be somewhere more like AggregateUriPathObserver
     // it's too specific to be living here
     template <class TObserver>
@@ -316,13 +317,14 @@ struct FnFactoryHelper
     {
         return item(key, [](context_t& c)
         {
-            auto observer = new (c.objstack) TObserver;
+            TObserver observer = new (c.objstack) TObserver;
 
             observer->set_context(c.context);
 
             return static_cast<IDispatcherHandler*>(observer);
         });
     }
+#endif
 
     static context_t context() { context_t c; return c; }
 

@@ -40,7 +40,7 @@ public:
     }
 };
 
-IDispatcherHandler* test_barny(UriDispatcherHandler::Context& ctx)
+IDispatcherHandler* test_barny(AggregateUriPathObserver::Context& ctx)
 {
     return new (ctx.objstack) TestBarnyObsever(ctx.context);
 }
@@ -185,8 +185,8 @@ TEST_CASE("experimental tests", "[experimental]")
     }
     SECTION("experimental new uri dispatcher")
     {
-        typedef UriDispatcherHandler::fn_t fn_t;
-        typedef UriDispatcherHandler::item_t item_t;
+        typedef AggregateUriPathObserver::fn_t fn_t;
+        typedef AggregateUriPathObserver::item_t item_t;
         moducom::pipeline::layer1::MemoryChunk<512> buffer;
         moducom::pipeline::MemoryChunk::readonly_t
             fake_uri = moducom::pipeline::MemoryChunk::readonly_t::str_ptr("barny");
@@ -197,7 +197,7 @@ TEST_CASE("experimental tests", "[experimental]")
             fn_t::item("barny", test_barny)
         };
 
-        UriDispatcherHandler dh(buffer, incomingContext, items);
+        AggregateUriPathObserver dh(buffer, incomingContext, items);
 
         dh.on_option(Option::UriPath, fake_uri, true);
         dh.on_complete();
