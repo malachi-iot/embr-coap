@@ -88,33 +88,32 @@ IDispatcherHandler* fallthrough_404(FactoryDispatcherHandlerContext& ctx)
 
 IDispatcherHandler* new_v1_factory(FactoryDispatcherHandlerContext& ctx)
 {
-    // TODO: this will get cleaned up when objstack is perpetrated throughout the code
-    // TODO: clean up this NASTY naming mess with uriDispatcherHandler
-    void* uriDispatcherHandlerMemory = ctx.handler_memory.data();
-    auto remainder_chunk = ctx.handler_memory.remainder(sizeof(AggregateUriPathObserver));
-    void* uriPathDispatcherHandlerMemory = remainder_chunk.data();
-    remainder_chunk = remainder_chunk.remainder(sizeof(SingleUriPathObserver));
+    dynamic::ObjStack objstack(ctx.handler_memory);
 
+    // Have to do pre-alloc like this because of how remainder_chunk is utilized
+    void* aggregateObserverMemory = objstack.alloc(sizeof(AggregateUriPathObserver));
+    void* singleObserverMemory = objstack.alloc(sizeof(SingleUriPathObserver));;
+    pipeline::MemoryChunk remainder_chunk = objstack;
 
     // FIX: For some reason it doesn't template-discover array size of new_v1_factories
     // probably has to do with our forward-extern up above
-    auto aggregateObserver = new (uriDispatcherHandlerMemory)
+    auto aggregateObserver = new (aggregateObserverMemory)
             AggregateUriPathObserver(
                 remainder_chunk,
                 ctx.incoming_context,
                 new_v1_factories, 1);
 
-    aggregateObserver->set_context(ctx.incoming_context);
+    //aggregateObserver->set_context(ctx.incoming_context);
 
-    auto uriPathDispatcherHandler = new (uriPathDispatcherHandlerMemory)
+    auto singleObserver = new (singleObserverMemory)
             SingleUriPathObserver("v1", *aggregateObserver);
 
-    uriPathDispatcherHandler->set_context(ctx.incoming_context);
+    singleObserver->set_context(ctx.incoming_context);
 
     // FIX: Do clean this up, but wait until after objstack is in place
     // AND after naming is better (then we can more sensibly fuse these two
     // together)
-    return uriPathDispatcherHandler;
+    return singleObserver;
 }
 
 // OLD and NEW both seem to suffer from everything passing through too much, something
