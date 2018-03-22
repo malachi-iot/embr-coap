@@ -123,6 +123,10 @@ inline bool starts_with(const TChar* s, int slen, const char* prefix)
         if(*prefix++ != *s++) return false;
     }
 
+    // If we haven't reached end of prefix, then s was too short and
+    // didn't match prefix
+    if(*prefix) return false;
+
     return true;
 }
 
