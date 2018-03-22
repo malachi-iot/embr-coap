@@ -12,6 +12,7 @@ constexpr char STR_URI_TEST[] = "test";
 constexpr char STR_URI_TEST2[] = "test2";
 
 extern dispatcher_handler_factory_fn v1_factories[];
+extern UriDispatcherHandler::item_t new_v1_factories[];
 
 // FIX: experimental naming
 void issue_response(BlockingEncoder* encoder, IncomingContext* context,
@@ -85,10 +86,34 @@ IDispatcherHandler* fallthrough_404(FactoryDispatcherHandlerContext& ctx)
 }
 
 
+IDispatcherHandler* new_v1_factory(FactoryDispatcherHandlerContext& ctx)
+{
+    // TODO: this will get cleaned up when objstack is perpetrated throughout the code
+    void* uriDispatcherHandlerMemory = ctx.handler_memory.data();
+    auto remainder_chunk = ctx.handler_memory.remainder(sizeof(UriDispatcherHandler));
+
+    // FIX: For some reason it doesn't template-discover array size of new_v1_factories
+    // probably has to do with our forward-extern up above
+    return new (ctx.handler_memory.data())
+            UriDispatcherHandler(
+                remainder_chunk,
+                ctx.incoming_context,
+                new_v1_factories, 1);
+}
+
+// OLD and NEW both seem to suffer from everything passing through too much, something
+// maybe about how FactoryDispatcherHandler does things.  Though OLD only does this
+// when not giving a URI at all (not well tested for NEW)
+#define OLD
+
 dispatcher_handler_factory_fn root_factories[] =
 {
     context_dispatcher,
+#ifdef OLD
     uri_plus_factory_dispatcher<STR_URI_V1, v1_factories, 1>,
+#else
+    new_v1_factory,
+#endif
     // FIX: Enabling this causes a crash in the on_option area
     //fallthrough_404
 };
@@ -126,6 +151,17 @@ public:
 dispatcher_handler_factory_fn v1_factories[] =
 {
     uri_plus_observer_dispatcher<STR_URI_TEST, TestDispatcherHandler>
+};
+
+
+UriDispatcherHandler::item_t new_v1_factories[] =
+{
+    UriDispatcherHandler::fn_t::item(STR_URI_TEST,
+                                     [](UriDispatcherHandler::Context& c)
+     {
+         auto observer = new (c.objstack) TestDispatcherHandler;
+         return static_cast<IDispatcherHandler*>(observer);
+     })
 };
 
 

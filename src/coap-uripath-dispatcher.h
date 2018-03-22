@@ -226,6 +226,15 @@ public:
     {
     }
 
+    UriDispatcherHandler(pipeline::MemoryChunk chunk,
+                         IncomingContext& incomingContext,
+                         fn_t::item_t* items, size_t item_count) :
+            factory(items, item_count),
+            context(chunk, incomingContext),
+            handler(NULLPTR)
+    {
+    }
+
     virtual void on_option(number_t number,
                            const pipeline::MemoryChunk::readonly_t& option_value_part,
                            bool last_chunk) OVERRIDE;
