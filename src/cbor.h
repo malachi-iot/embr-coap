@@ -203,7 +203,7 @@ public:
         template <typename T>
         T value_additional() const
         {
-            CONSTEXPR uint8_t incoming_wordsize = additional_integer_information_wordsize();
+            uint8_t incoming_wordsize = additional_integer_information_wordsize();
 
             ASSERT_ERROR(true, sizeof(T) >= incoming_wordsize, "presented word size not large enough");
 

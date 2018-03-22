@@ -166,11 +166,11 @@ CONSTEXPR dispatcher_handler_factory_fn uri_helper_helper(T a [size], const char
 
 
 template <class TArray>
-dispatcher_handler_factory_fn uri_helper2(CONSTEXPR TArray& array)
+dispatcher_handler_factory_fn uri_helper2(const TArray& array)
 {
     typedef array_helper<TArray> array_helper_t;
 
-    CONSTEXPR int count = _array_helper_count(array);
+    int count = _array_helper_count(array);
     const void* contents = _array_helper_contents(array);
 
     // really needs real constexpr from C++11 to work

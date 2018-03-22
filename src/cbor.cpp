@@ -284,6 +284,8 @@ void CBOR::Encoder::encode(uint8_t value)
 void CBOR::DecodeToObserver::decode(const uint8_t *cbor, size_t len)
 {
 #ifdef __CPP11__
+    typedef Decoder::State state_t;
+    typedef CBOR::Types type_t;
 #else
     typedef Decoder state_t;
     typedef CBOR type_t;

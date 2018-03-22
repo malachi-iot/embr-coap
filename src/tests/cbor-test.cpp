@@ -51,6 +51,8 @@ static std::string decoder_get_string(CBOR::Decoder& decoder, const uint8_t** v)
 
 #ifdef __APPLE__
 #define __glibcxx_assert(dummy)
+#elif defined(_MSC_VER)
+#define __glibcxx_assert(dummy)
 #else
 #endif
 

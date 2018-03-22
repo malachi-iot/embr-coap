@@ -41,8 +41,8 @@ public:
     typedef experimental::option_number_t option_number_t;
 
 #ifdef __CPP11__
-    typedef CoAP::ParserDeprecated::State state_t;
-    typedef CoAP::ParserDeprecated::SubState substate_t;
+    typedef experimental::_root_state_t::State state_t;
+    typedef Option::State substate_t;
 #else
     typedef experimental::_root_state_t state_t;
     typedef Option substate_t;
