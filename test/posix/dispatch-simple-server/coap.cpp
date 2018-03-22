@@ -12,7 +12,7 @@ constexpr char STR_URI_TEST[] = "test";
 constexpr char STR_URI_TEST2[] = "test2";
 
 extern dispatcher_handler_factory_fn v1_factories[];
-extern UriDispatcherHandler::item_t new_v1_factories[];
+extern AggregateUriPathObserver::item_t new_v1_factories[];
 
 // FIX: experimental naming
 void issue_response(BlockingEncoder* encoder, IncomingContext* context,
@@ -91,23 +91,23 @@ IDispatcherHandler* new_v1_factory(FactoryDispatcherHandlerContext& ctx)
     // TODO: this will get cleaned up when objstack is perpetrated throughout the code
     // TODO: clean up this NASTY naming mess with uriDispatcherHandler
     void* uriDispatcherHandlerMemory = ctx.handler_memory.data();
-    auto remainder_chunk = ctx.handler_memory.remainder(sizeof(UriDispatcherHandler));
+    auto remainder_chunk = ctx.handler_memory.remainder(sizeof(AggregateUriPathObserver));
     void* uriPathDispatcherHandlerMemory = remainder_chunk.data();
-    remainder_chunk = remainder_chunk.remainder(sizeof(UriPathDispatcherHandler));
+    remainder_chunk = remainder_chunk.remainder(sizeof(SingleUriPathObserver));
 
 
     // FIX: For some reason it doesn't template-discover array size of new_v1_factories
     // probably has to do with our forward-extern up above
-    auto uriDispatcherHandler = new (uriDispatcherHandlerMemory)
-            UriDispatcherHandler(
+    auto aggregateObserver = new (uriDispatcherHandlerMemory)
+            AggregateUriPathObserver(
                 remainder_chunk,
                 ctx.incoming_context,
                 new_v1_factories, 1);
 
-    uriDispatcherHandler->set_context(ctx.incoming_context);
+    aggregateObserver->set_context(ctx.incoming_context);
 
     auto uriPathDispatcherHandler = new (uriPathDispatcherHandlerMemory)
-            UriPathDispatcherHandler("v1", *uriDispatcherHandler);
+            SingleUriPathObserver("v1", *aggregateObserver);
 
     uriPathDispatcherHandler->set_context(ctx.incoming_context);
 
@@ -173,17 +173,18 @@ dispatcher_handler_factory_fn v1_factories[] =
 };
 
 
-UriDispatcherHandler::item_t new_v1_factories[] =
+AggregateUriPathObserver::item_t new_v1_factories[] =
 {
-    UriDispatcherHandler::fn_t::item(STR_URI_TEST,
-                                     [](UriDispatcherHandler::Context& c)
+    AggregateUriPathObserver::fn_t::item(STR_URI_TEST,
+                                     [](AggregateUriPathObserver::Context& c)
      {
          auto observer = new (c.objstack) TestDispatcherHandler;
 
          observer->set_context(c.context);
 
          return static_cast<IDispatcherHandler*>(observer);
-     })
+     }),
+    AggregateUriPathObserver::fn_t::item_experimental<TestDispatcherHandler>(STR_URI_TEST2)
 };
 
 

@@ -129,12 +129,13 @@ public:
 };
 
 
-class UriPathDispatcherHandler :
+// links a single observer to a particular uri prefix
+class SingleUriPathObserver :
         public UriPathDispatcherHandlerBase<experimental::IDispatcherHandler>
 {
     typedef UriPathDispatcherHandlerBase<experimental::IDispatcherHandler> base_t;
 public:
-    UriPathDispatcherHandler(const char* prefix, experimental::IDispatcherHandler& observer)
+    SingleUriPathObserver(const char* prefix, experimental::IDispatcherHandler& observer)
             : base_t(prefix, observer)
     {
 
@@ -148,7 +149,7 @@ experimental::IDispatcherHandler* uri_plus_factory_dispatcher(experimental::Fact
     pipeline::MemoryChunk& chunk = ctx.handler_memory;
     pipeline::MemoryChunk& uri_handler_chunk = chunk;
     // semi-objstack behavior
-    CONSTEXPR size_t sizeUriPathDispatcher = sizeof(UriPathDispatcherHandler);
+    CONSTEXPR size_t sizeUriPathDispatcher = sizeof(SingleUriPathObserver);
     CONSTEXPR size_t sizeFactoryDispatcher = sizeof(experimental::FactoryDispatcherHandler);
 
     pipeline::MemoryChunk sub_handler_chunk = chunk.remainder(sizeUriPathDispatcher);
@@ -161,7 +162,7 @@ experimental::IDispatcherHandler* uri_plus_factory_dispatcher(experimental::Fact
             ctx.incoming_context,
             factories, count);
 
-    return new (uri_handler_chunk.data()) UriPathDispatcherHandler(uri_path, *fdh);
+    return new (uri_handler_chunk.data()) SingleUriPathObserver(uri_path, *fdh);
 }
 
 
@@ -176,7 +177,7 @@ experimental::IDispatcherHandler* uri_plus_observer_dispatcher(experimental::Fac
     // a better solution so that we can push context thru via constructor
     observer.set_context(ctx.incoming_context);
 
-    return new (ctx.handler_memory.data()) UriPathDispatcherHandler(uri_path, observer);
+    return new (ctx.handler_memory.data()) SingleUriPathObserver(uri_path, observer);
 }
 
 
@@ -190,7 +191,7 @@ namespace experimental {
 // here anyway as a proving grounds of its usefulness
 //
 // an aggregate of single-uri-path-element to IDispatcherHandler* mappings
-class UriDispatcherHandler : public experimental::DispatcherHandlerBase
+class AggregateUriPathObserver : public experimental::DispatcherHandlerBase
 {
     typedef experimental::DispatcherHandlerBase base_t;
 
@@ -224,7 +225,7 @@ public:
     // NOTE: fanciness not really necessary just a generic class T
     // would probably be fine, factory itself dissects all that
     template <const size_t N>
-    UriDispatcherHandler(pipeline::MemoryChunk chunk,
+    AggregateUriPathObserver(pipeline::MemoryChunk chunk,
                          IncomingContext& incomingContext,
                          fn_t::item_t (&items) [N]) :
         factory(items),
@@ -233,7 +234,7 @@ public:
     {
     }
 
-    UriDispatcherHandler(pipeline::MemoryChunk chunk,
+    AggregateUriPathObserver(pipeline::MemoryChunk chunk,
                          IncomingContext& incomingContext,
                          fn_t::item_t* items, size_t item_count) :
             factory(items, item_count),

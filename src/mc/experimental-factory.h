@@ -288,6 +288,9 @@ FnFactory<typename TItem::key_t, typename TItem::value_t> factory_helper(TItem (
 }
 
 
+// FIX: Move this and the item_experimental out of here
+class IDispatcherHandler;
+
 template <class TTraits>
 struct FnFactoryHelper
 {
@@ -305,6 +308,21 @@ struct FnFactoryHelper
     {
         return factory_item_helper(key, factory_fn);
     };
+
+    // We would rather this be somewhere more like AggregateUriPathObserver
+    // it's too specific to be living here
+    template <class TObserver>
+    static item_t item_experimental(key_t key)
+    {
+        return item(key, [](context_t& c)
+        {
+            auto observer = new (c.objstack) TObserver;
+
+            observer->set_context(c.context);
+
+            return static_cast<IDispatcherHandler*>(observer);
+        });
+    }
 
     static context_t context() { context_t c; return c; }
 

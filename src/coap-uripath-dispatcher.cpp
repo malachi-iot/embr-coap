@@ -8,7 +8,7 @@ namespace moducom { namespace coap {
 
 namespace experimental {
 
-void UriDispatcherHandler::on_option(number_t number,
+void AggregateUriPathObserver::on_option(number_t number,
                                      const pipeline::MemoryChunk::readonly_t& option_value_part,
                                      bool last_chunk)
 {
@@ -45,7 +45,7 @@ void UriDispatcherHandler::on_option(number_t number,
 }
 
 
-void UriDispatcherHandler::on_payload(
+void AggregateUriPathObserver::on_payload(
     const pipeline::MemoryChunk::readonly_t& payload_part,
     bool last_chunk)
 {
@@ -58,12 +58,17 @@ void UriDispatcherHandler::on_payload(
 
 
 #ifdef FEATURE_MCCOAP_COMPLETE_OBSERVER
-void UriDispatcherHandler::on_complete()
+void AggregateUriPathObserver::on_complete()
 {
     // NOTE: Shouldn't need to do NULLPTR check, should only come here when set
     // 'interested'
+    // Not explicitly true right now, look up on_payload comments
+    // Consider though we might want to receive an on_complete() even if we
+    // didn't specify interested --- though I think it's unlikely
 
     // NOTE: This currently assumes we're doing in-place memory management
+    // And if so, we might consider auto popping objstack here... but to do
+    // so would require us to track objstack usage more thoroughly
     if (handler != NULLPTR)
     {
         handler->on_complete();
