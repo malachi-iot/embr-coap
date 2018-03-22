@@ -49,8 +49,9 @@ void UriDispatcherHandler::on_payload(
     const pipeline::MemoryChunk::readonly_t& payload_part,
     bool last_chunk)
 {
-    // NOTE: Shouldn't need to do NULLPTR check, should only come here when set
-    // 'interested'
+    // It's possible handler doesn't get set due to lack of adequate uri-path options
+    // to investigate (investigating uri-path is what sets interest level, so we might
+    // still be "interested" when we arrive here)
     if(handler != NULLPTR)
         handler->on_payload(payload_part, last_chunk);
 }

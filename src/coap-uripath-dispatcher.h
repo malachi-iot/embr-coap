@@ -47,6 +47,7 @@ protected:
     }
 };
 
+// a 1:1 uripath to observer mapper
 template <class TObserver, bool destruct_observer = false>
 class UriPathDispatcherHandlerBase : public UriPathDispatcherHandlerBaseBase<>
 {
@@ -110,6 +111,10 @@ public:
 
     void on_payload(const pipeline::MemoryChunk::readonly_t& payload_part, bool last_chunk) OVERRIDE
     {
+        // Currently interested can happen if we never encounter the general uri-path
+        // we're looking for (currently gets changed to always or never during URI processing)
+        if(interested() == Currently) return;
+
         ASSERT_WARN(true, is_always_interested(), "Should only arrive here if interested");
 
         observer().on_payload(payload_part, last_chunk);
@@ -183,6 +188,8 @@ namespace experimental {
 // dispatcher chooses one at most interested URI.  Because of that,
 // objstack usage is potentially a small waste - but we'll use it
 // here anyway as a proving grounds of its usefulness
+//
+// an aggregate of single-uri-path-element to IDispatcherHandler* mappings
 class UriDispatcherHandler : public experimental::DispatcherHandlerBase
 {
     typedef experimental::DispatcherHandlerBase base_t;
