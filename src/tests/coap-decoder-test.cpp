@@ -25,4 +25,12 @@ TEST_CASE("CoAP decoder tests", "[coap-decoder]")
         // pretty much ready to TRY testing, just need to load in appropriate data into buffer_in
         //decoder.process_iterate(net_in, &option);
     }
+    SECTION("Payload only test")
+    {
+        Decoder decoder;
+        MemoryChunk::readonly_t chunk((const uint8_t*)buffer_payload_only, sizeof(buffer_payload_only));
+
+        // FIX: not quite handling payload-only correctly yet
+        decoder.process(chunk);
+    }
 }
