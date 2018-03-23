@@ -383,6 +383,7 @@ bool Decoder::process_iterate(Context& context)
 // handle option a.1), a.2) or b.1) described below
             if ((pos == chunk.length() && last_chunk) || chunk[pos] == 0xFF)
             {
+                // FIX: Doesn't handle case for no options at all and just payload marker
                 ASSERT_ERROR(true,
                              (optionDecoder.state() == OptionDecoder::OptionValueDone) ||
                              (optionDecoder.state() == OptionDecoder::OptionDeltaAndLengthDone),

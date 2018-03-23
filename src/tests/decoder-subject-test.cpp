@@ -1,5 +1,4 @@
 #include <catch.hpp>
-#include "../coap-dispatcher.h"
 #include "../coap/decoder-subject.hpp"
 
 using namespace moducom::coap;
