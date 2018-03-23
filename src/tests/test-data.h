@@ -31,7 +31,7 @@ static uint8_t buffer_plausible[] = {
 };
 
 
-static uint8_t buffer_payload_only[] =
+const static uint8_t buffer_payload_only[] =
 {
     0x40, 0x00, 0x00, 0x00, // 4: fully blank header
     0xFF,

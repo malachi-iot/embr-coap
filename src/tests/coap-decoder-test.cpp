@@ -12,7 +12,7 @@ TEST_CASE("CoAP decoder tests", "[coap-decoder]")
     //layer3::MemoryChunk<1024> buffer_in;
     //buffer_in.memcpy(buffer_16bit_delta, sizeof(buffer_16bit_delta));
 
-    MemoryChunk buffer_in(buffer_16bit_delta, sizeof(buffer_16bit_delta));
+    MemoryChunk::readonly_t buffer_in(buffer_16bit_delta);
 
 
     layer3::SimpleBufferedPipeline net_in(buffer_in);
@@ -28,7 +28,7 @@ TEST_CASE("CoAP decoder tests", "[coap-decoder]")
     SECTION("Payload only test")
     {
         Decoder decoder;
-        MemoryChunk::readonly_t chunk((const uint8_t*)buffer_payload_only, sizeof(buffer_payload_only));
+        MemoryChunk::readonly_t chunk(buffer_payload_only);
 
         // FIX: not quite handling payload-only correctly yet
         decoder.process(chunk);
