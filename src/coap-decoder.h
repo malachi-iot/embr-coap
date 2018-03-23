@@ -333,10 +333,14 @@ public:
     // TODO: exposing this is not proper, get some accessor methods going
     OptionDecoder::OptionExperimental optionHolder;
 
+    // evaluates incoming chunk up until the next state change OR end
+    // of presented chunk, then stops
     // returns true when context.chunk is fully processed, even if it is not
-    // the last_chunk
+    // the last_chunk.  State may or may not change in this circumstance
     bool process_iterate(Context& context);
 
+    // Of limited to no use, since we blast through chunk without caller having a chance
+    // to inspect what's going on
     void process(const pipeline::experimental::ReadOnlyMemoryChunk& chunk, bool last_chunk = true)
     {
         Context context(chunk, last_chunk);

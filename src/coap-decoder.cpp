@@ -84,12 +84,18 @@ bool Decoder::process_iterate(Context& context)
 // handle option a.1), a.2) or b.1) described below
             if ((pos == chunk.length() && last_chunk) || chunk[pos] == 0xFF)
             {
-                // FIX: Doesn't handle case for no options at all and just payload marker
+                // OptionsValueDone = processing one option, and reached the end of the entire option
+                // Payload = never even processed an option, but instead hit payload marker immediately
+                //           [this needs work, as Payload marker technically can appear even when actual
+                //            options were encountered]
+                // OptionDeltaAndLengthDone = TODO: not sure why we allow this here, seems like a partial state thing
+                //                            perhaps to accomodate chunking
                 ASSERT_ERROR(true,
                              (optionDecoder.state() == OptionDecoder::OptionValueDone) ||
+                             (optionDecoder.state() == OptionDecoder::Payload) ||
                              (optionDecoder.state() == OptionDecoder::OptionDeltaAndLengthDone),
                              "Must be either optionValueDone or optionDeltaAndlengthDone.  Got: " << optionDecoder.state());
-                // will check again for 0xFF
+                // will check again for 0xFF if necessary
                 state(OptionsDone);
             }
             else
