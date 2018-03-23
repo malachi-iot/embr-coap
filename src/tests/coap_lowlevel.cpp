@@ -99,17 +99,17 @@ TEST_CASE("CoAP low level tests", "[coap-lowlevel]")
         typedef experimental::_root_state_t _state_t;
         typedef experimental::root_state_t state_t;
 
-        uint8_t* buffer = buffer_16bit_delta;
+        const uint8_t* buffer = buffer_16bit_delta;
 
         parser_t parser;
 
         for (int i = 0; i < sizeof(buffer_16bit_delta); i++)
         {
-            uint8_t& value = buffer[i];
-
             // A little clunky but should work, just to stay 1:1 with old test
-            moducom::pipeline::MemoryChunk temp_chunk(&value, 1);
-            parser.process(temp_chunk, i == sizeof(buffer_16bit_delta) - 1);
+            moducom::pipeline::MemoryChunk::readonly_t temp_chunk(&buffer[i], 1);
+            parser_t::Context context(temp_chunk, i == sizeof(buffer_16bit_delta) - 1);
+
+            while(!parser.process_iterate(context));
 
             state_t state = parser.state();
 
