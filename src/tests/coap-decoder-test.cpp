@@ -29,8 +29,26 @@ TEST_CASE("CoAP decoder tests", "[coap-decoder]")
     {
         Decoder decoder;
         MemoryChunk::readonly_t chunk(buffer_payload_only);
+        Decoder::Context context(chunk, true);
 
-        // FIX: not quite handling payload-only correctly yet
-        decoder.process(chunk);
+        REQUIRE(decoder.process_iterate(context) == false);
+        REQUIRE(decoder.state() == Decoder::Header);
+        REQUIRE(decoder.process_iterate(context) == false);
+        REQUIRE(decoder.state() == Decoder::HeaderDone);
+        REQUIRE(decoder.process_iterate(context) == false);
+        REQUIRE(decoder.state() == Decoder::OptionsStart);
+        REQUIRE(decoder.process_iterate(context) == false);
+        // FIX: Really shouldn't have an Options stage with an overall
+        // decoder if no options present.  This may be a case where a little
+        // code overlap is desired - just because OptionsDecoder *can* detect
+        // payload marker doesn't need we *should* utilize it, though reuse
+        // dictates we must consider it
+        REQUIRE(decoder.state() == Decoder::Options);
+        // FIX: in any case, we shouldn't be done with the buffer at this point,
+        // so failing unit test here is a bug
+        REQUIRE(decoder.process_iterate(context) == false);
+        REQUIRE(decoder.state() == Decoder::OptionsDone);
+        REQUIRE(decoder.process_iterate(context) == true);
+        REQUIRE(decoder.state() == Decoder::Payload);
     }
 }
