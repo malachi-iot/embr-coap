@@ -11,7 +11,10 @@ static DecoderSubjectBase<experimental::ContextDispatcherHandler> test(test_ctx)
 // ---
 
 // FIX: putting this above causes compilation issues, clean that up
+#include "test-observer.h"
+
 using namespace moducom::pipeline;
+//static DecoderSubjectBase<Buffer16BitDeltaObserver> test2(test_ctx);
 
 TEST_CASE("CoAP decoder subject tests", "[coap-decoder-subject]")
 {
