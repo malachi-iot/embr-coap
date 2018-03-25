@@ -68,6 +68,7 @@ public:
     virtual void on_payload(const MemoryChunk::readonly_t& payload_part, bool last_chunk) OVERRIDE
     {
         REQUIRE(payload_part[0] == buffer_16bit_delta[12]);
+        REQUIRE(payload_part[1] == buffer_16bit_delta[13]);
         REQUIRE(payload_part[payload_part.length()] == buffer_16bit_delta[12 + payload_part.length()]);
     }
 };

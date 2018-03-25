@@ -334,7 +334,12 @@ public:
     Decoder() : StateHelper(_state_t::Uninitialized) {}
 
     // TODO: exposing this is not proper, get some accessor methods going
+    // TODO: Also be sure to union-ize this, if appropriate
     OptionDecoder::OptionExperimental optionHolder;
+
+    // Available only during select times during Options state
+    uint16_t option_number_delta() const { return optionHolder.number_delta; }
+    uint16_t option_length() const { return optionHolder.length; }
 
     // evaluates incoming chunk up until the next state change OR end
     // of presented chunk, then stops

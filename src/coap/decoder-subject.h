@@ -49,6 +49,7 @@ class DecoderSubjectBase
 
     void dispatch_header();
     void dispatch_token();
+    void dispatch_option(Decoder::Context& context);
 
     // optionChunk is a subset/processed version of dispatch(chunk)
     size_t dispatch_option(const pipeline::MemoryChunk::readonly_t& optionChunk);

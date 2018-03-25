@@ -27,50 +27,13 @@ bool DecoderSubjectBase<TMessageObserver>::dispatch_iterate(Decoder::Context& co
 
         case Decoder::Options:
         {
-            OptionDecoder& option_decoder = decoder.option_decoder();
-
-            // Repeating ourselves (and not calling) from decoder because of the special way in which
-            // dispatcher reads out options
-#ifdef DEBUG2
-            std::clog << __func__ << ": 1 optionDecoder state = " << (optionDecoder.state()) << std::endl;
-#endif
-
-            // Explicitly check for payload marker here as it's permissible to receive a message
-            // with no options but a payload present
             pipeline::MemoryChunk::readonly_t remainder = chunk.remainder(pos);
-            // FIX: this code is broken until decoder itself properly processes no-option
-            // but-payload-marker-found event
-            if(remainder[0] == 0xFF)
-            {
-                // OptionsDone will check 0xFF again
-                // FIX: Seems a bit inefficient so revisit
-                // decoder.state(Decoder::OptionsDone);
-                break;
-            }
+            // TODO: process_iterate gets called within dispatch_option, but for consisency
+            // we should call it out here in the switch statement
             pos += dispatch_option(remainder);
-
-#ifdef DEBUG2
-            std::clog << __func__ << ": 2 optionDecoder state = " << (optionDecoder.state()) << std::endl;
-#endif
-
-            // handle option a.1), a.2) or b.1) described below
-            if ((pos == chunk.length() && context.last_chunk) || chunk[pos] == 0xFF)
-            {
-                ASSERT_ERROR(true,
-                             (option_decoder.state() == OptionDecoder::OptionValueDone) ||
-                             (option_decoder.state() == OptionDecoder::OptionDeltaAndLengthDone),
-                             "Must be either optionValueDone or optionDeltaAndlengthDone.  Got: " << option_decoder.state());
-                // will check again for 0xFF
-                // FIX: Very naughty, repair this
-                decoder.state_for_decoder_subject(Decoder::OptionsDone);
-            }
-            else
-            {
-                // UNSUPPORTED
-                // b.2 means we are not sure if another option or an incoming chunk[0] == 0xFF is coming
-                // MAY need an OptionsBoundary state, but hopefully not
-                // better would be to beef up OptionDecoder awareness of Payload marker
-            }
+            /*
+            dispatch_option();
+            decoder.process_iterate(context); */
 
             break;
         }
@@ -108,6 +71,46 @@ void DecoderSubjectBase<TMessageObserver>::dispatch_header()
     observer_on_header(decoder.header_decoder());
 }
 
+
+// New and improved flavor
+template <class TMessageObserver>
+void DecoderSubjectBase<TMessageObserver>::dispatch_option(Decoder::Context& context)
+{
+    const pipeline::MemoryChunk::readonly_t& chunk = context.chunk;
+    size_t& pos = context.pos; // how far into chunk our locus of processing should be
+    pipeline::MemoryChunk::readonly_t option_chunk = chunk.remainder(pos);
+    const OptionDecoder& option_decoder = decoder.option_decoder();
+
+#ifdef FEATURE_DISCRETE_OBSERVERS
+    typedef IOptionObserver::number_t option_number_t;
+#else
+    typedef IMessageObserver::number_t option_number_t;
+#endif
+
+    switch (option_decoder.state())
+    {
+        case OptionDecoder::ValueStart:
+        {
+            option_number_t option_number = (option_number_t) decoder.option_number_delta();
+            uint16_t option_length = decoder.option_length();
+
+            observer_on_option(option_number, option_length);
+            break;
+        }
+
+        case OptionDecoder::OptionValue:
+        {
+            option_number_t option_number = (option_number_t) decoder.option_number_delta();
+            observer_on_option(option_number, option_chunk, false);
+
+            break;
+        }
+
+        default:
+            break;
+    }
+}
+
 // also handles pre-dispatch processing
 template <class TMessageObserver>
 size_t DecoderSubjectBase<TMessageObserver>::dispatch_option(const pipeline::MemoryChunk::readonly_t& optionChunk)
@@ -118,6 +121,10 @@ size_t DecoderSubjectBase<TMessageObserver>::dispatch_option(const pipeline::Mem
 
     // FIX: we generally expect to be at FirstByte state here, however in the future this
     // requirement should go away (once we clean up needs_value_processed behavior)
+    // FIX: we should not call option_decoder.process iterate directly, but instead call
+    // decoder.process_iterate and just read out its results - if we can.  It seems we
+    // do need to make these low level calls to be aware of how far forward we've moved, though
+    // this can be deduced with context.pos
     size_t processed_length = option_decoder.process_iterate(optionChunk, &optionHolder);
     size_t value_pos = processed_length;
 

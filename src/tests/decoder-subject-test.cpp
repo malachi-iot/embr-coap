@@ -29,6 +29,8 @@ TEST_CASE("CoAP decoder subject tests", "[coap-decoder-subject]")
     {
         IncomingContext test_ctx2;
         DecoderSubjectBase<Buffer16BitDeltaObserver> test2(test_ctx2);
+        // FIX: on_payload not evaluating for these tests, not surprising
+        // since subject-decoder is revamping how payload processing works
         MemoryChunk::readonly_t chunk(buffer_16bit_delta);
         test2.dispatch(chunk);
     }
@@ -42,6 +44,7 @@ TEST_CASE("CoAP decoder subject tests", "[coap-decoder-subject]")
     SECTION("payload only")
     {
         MemoryChunk::readonly_t chunk(buffer_payload_only);
+        // TODO: Make an observer to evaluate that payload is appearing as expected
         test.dispatch(chunk);
 
         REQUIRE(test_ctx.have_header());

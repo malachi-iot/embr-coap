@@ -191,6 +191,7 @@ bool OptionDecoder::process_iterate(uint8_t value)
 
             // Because some compilers don't like lingering cases
         case Payload:
+            ASSERT_ERROR(true, false, "Should not arrive here: OptionDecoder called when Payload marker already discovered");
             break;
     }
 
