@@ -12,12 +12,13 @@ using namespace moducom::coap;
 using namespace moducom::coap::experimental;
 using namespace moducom::pipeline;
 
-class TestDispatcherHandler : public DispatcherHandlerBase
+// designed specifically to test against "buffer_16bit_delta" buffer
+class Buffer16BitDeltaObserver : public DispatcherHandlerBase
 {
     int option_test_number;
 
 public:
-    TestDispatcherHandler(InterestedEnum i = Always) :
+    Buffer16BitDeltaObserver(InterestedEnum i = Always) :
             DispatcherHandlerBase(i),
             option_test_number(0) {}
 
@@ -88,7 +89,7 @@ IDispatcherHandler* context_handler_factory(FactoryDispatcherHandlerContext& ctx
 
 IDispatcherHandler* test_factory1(FactoryDispatcherHandlerContext& ctx)
 {
-    return new (ctx.handler_memory.data()) TestDispatcherHandler(IsInterestedBase::Never);
+    return new (ctx.handler_memory.data()) Buffer16BitDeltaObserver(IsInterestedBase::Never);
 }
 
 
@@ -229,7 +230,7 @@ TEST_CASE("CoAP dispatcher tests", "[coap-dispatcher]")
     {
         MemoryChunk chunk(buffer_16bit_delta, sizeof(buffer_16bit_delta));
 
-        TestDispatcherHandler dispatcherHandler;
+        Buffer16BitDeltaObserver dispatcherHandler;
         Dispatcher dispatcher;
         //layer3::MemoryChunk<128> chunk;
 
@@ -253,7 +254,7 @@ TEST_CASE("CoAP dispatcher tests", "[coap-dispatcher]")
         FactoryDispatcherHandler fdh(dispatcherBuffer, context, test_factories);
         Dispatcher dispatcher;
 
-        // doesn't fully test new UriPath handler because TestDispatcherHandler
+        // doesn't fully test new UriPath handler because Buffer16BitDeltaObserver
         // is not stateless (and shouldn't be expected to be) but because of that
         // setting it to "Currently" makes it unable to test its own options properly
         dispatcher.head(&fdh);

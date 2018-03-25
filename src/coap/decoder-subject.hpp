@@ -241,7 +241,7 @@ void DecoderSubjectBase<TMessageObserver>::dispatch_token()
     TokenDecoder& token_decoder = decoder.token_decoder();
     // NOTE: 90% sure it's safe to intermingle header decoder + token decoder (pretty
     // sure we retain header all the way thru) but doublecheck and document
-    pipeline::MemoryChunk chunk(token_decoder.data(),
+    pipeline::MemoryChunk::readonly_t chunk(token_decoder.data(),
                                             decoder.header_decoder().token_length());
 
     // FIX: TODO: Chunking out token eventually will be necessary
