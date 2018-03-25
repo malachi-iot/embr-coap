@@ -14,6 +14,10 @@ class Buffer16BitDeltaObserver : public DispatcherHandlerBase
     int option_test_number;
 
 public:
+    Buffer16BitDeltaObserver(IncomingContext& dummy) :
+        DispatcherHandlerBase(Always),
+        option_test_number(0) {}
+
     Buffer16BitDeltaObserver(InterestedEnum i = Always) :
         DispatcherHandlerBase(i),
         option_test_number(0) {}
