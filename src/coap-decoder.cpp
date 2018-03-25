@@ -81,8 +81,14 @@ bool Decoder::process_iterate(Context& context)
         {
             pos += optionDecoder.process_iterate(chunk.remainder(pos), &optionHolder);
 
+            // FIX: Payload now discovered and heeded in optionDecoder, do so out here
+            // as well
 // handle option a.1), a.2) or b.1) described below
-            if ((pos == chunk.length() && last_chunk) || chunk[pos] == 0xFF)
+            if (optionDecoder.state() == OptionDecoder::Payload)
+            {
+                // FIX: Clunky and not working
+            }
+            else if ((pos == chunk.length() && last_chunk) || chunk[pos] == 0xFF)
             {
                 // OptionsValueDone = processing one option, and reached the end of the entire option
                 // Payload = never even processed an option, but instead hit payload marker immediately
