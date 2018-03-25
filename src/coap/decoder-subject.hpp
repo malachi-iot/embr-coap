@@ -31,9 +31,9 @@ bool DecoderSubjectBase<TMessageObserver>::dispatch_iterate(Decoder::Context& co
             // TODO: process_iterate gets called within dispatch_option, but for consisency
             // we should call it out here in the switch statement
             pos += dispatch_option(remainder);
-            /*
-            dispatch_option();
-            decoder.process_iterate(context); */
+
+            //dispatch_option(context);
+            //decoder.process_iterate(context);
 
             break;
         }
@@ -72,20 +72,13 @@ void DecoderSubjectBase<TMessageObserver>::dispatch_header()
 }
 
 
-// New and improved flavor
+// New and improved flavor.  Compiling but not functional yet
 template <class TMessageObserver>
 void DecoderSubjectBase<TMessageObserver>::dispatch_option(Decoder::Context& context)
 {
-    const pipeline::MemoryChunk::readonly_t& chunk = context.chunk;
     size_t& pos = context.pos; // how far into chunk our locus of processing should be
-    pipeline::MemoryChunk::readonly_t option_chunk = chunk.remainder(pos);
+    const pipeline::MemoryChunk::readonly_t& chunk = context.chunk.remainder(pos);
     const OptionDecoder& option_decoder = decoder.option_decoder();
-
-#ifdef FEATURE_DISCRETE_OBSERVERS
-    typedef IOptionObserver::number_t option_number_t;
-#else
-    typedef IMessageObserver::number_t option_number_t;
-#endif
 
     switch (option_decoder.state())
     {
@@ -101,7 +94,12 @@ void DecoderSubjectBase<TMessageObserver>::dispatch_option(Decoder::Context& con
         case OptionDecoder::OptionValue:
         {
             option_number_t option_number = (option_number_t) decoder.option_number_delta();
-            observer_on_option(option_number, option_chunk, false);
+            uint16_t option_length = decoder.option_length();
+            bool partial_chunk = chunk.length() < option_length;
+            if(partial_chunk)
+                observer_on_option(option_number, chunk, false);
+            else
+                observer_on_option(option_number, chunk.subset(option_length), true);
 
             break;
         }
@@ -135,11 +133,6 @@ size_t DecoderSubjectBase<TMessageObserver>::dispatch_option(const pipeline::Mem
     // value is never processed
     bool needs_value_processed = true;
     size_t total_length = processed_length;
-#ifdef FEATURE_DISCRETE_OBSERVERS
-    typedef IOptionObserver::number_t option_number_t;
-#else
-    typedef IMessageObserver::number_t option_number_t;
-#endif
 
     switch (option_decoder.state())
     {
