@@ -74,7 +74,11 @@ bool Decoder::process_iterate(Context& context)
             init_option_decoder();
             optionHolder.number_delta = 0;
             optionHolder.length = 0;
-            state(Options);
+            pos += optionDecoder.process_iterate(chunk.remainder(pos), &optionHolder);
+            if(optionDecoder.state() == OptionDecoder::Payload)
+                state(OptionsDone);
+            else
+                state(Options);
             break;
 
         case Options:
@@ -86,9 +90,11 @@ bool Decoder::process_iterate(Context& context)
 // handle option a.1), a.2) or b.1) described below
             if (optionDecoder.state() == OptionDecoder::Payload)
             {
-                // FIX: Clunky and not working
+                state(OptionsDone);
             }
-            else if ((pos == chunk.length() && last_chunk) || chunk[pos] == 0xFF)
+            // reach here under circumstance where there is no payload at all -
+            // we're at the end of the buffer and no payload marker seen
+            else if ((pos == chunk.length() && last_chunk))
             {
                 // OptionsValueDone = processing one option, and reached the end of the entire option
                 // Payload = never even processed an option, but instead hit payload marker immediately
@@ -98,14 +104,15 @@ bool Decoder::process_iterate(Context& context)
                 //                            perhaps to accomodate chunking
                 ASSERT_ERROR(true,
                              (optionDecoder.state() == OptionDecoder::OptionValueDone) ||
-                             (optionDecoder.state() == OptionDecoder::Payload) ||
                              (optionDecoder.state() == OptionDecoder::OptionDeltaAndLengthDone),
                              "Must be either optionValueDone or optionDeltaAndlengthDone.  Got: " << optionDecoder.state());
                 // will check again for 0xFF if necessary
                 state(OptionsDone);
             }
+            // reach here when we are not at last chunk but still in mid-options processing
             else
             {
+                //ASSERT_ERROR(false, optionDecoder.state() == OptionDecoder::OptionValueDone, "dummy test");
                 // UNSUPPORTED
                 // b.2 means we are not sure if another option or an incoming chunk[0] == 0xFF is coming
                 // MAY need an OptionsBoundary state, but hopefully not
@@ -116,6 +123,12 @@ bool Decoder::process_iterate(Context& context)
         }
 
         case OptionsDone:
+            // Encounters this when we lead with a payload, eventually all payload markers
+            // I want handled this way so we can eliminate the explicit 0xFF later
+            if(optionDecoder.state() == OptionDecoder::Payload)
+            {
+                state(Payload);
+            } else
             // TODO: Need to peer into incoming data stream to determine if a payload is on the way
             // or not - specifically need to also check size.  Here there are 3 possibilities:
             //
@@ -131,6 +144,8 @@ bool Decoder::process_iterate(Context& context)
             }
             else if (chunk[pos] == 0xFF)
             {
+                // FIX: This code should no longer be called, but it still getting activated by
+                // Dispatcher.  Address this with new DecoderSubject class, leave dispatcher alone
                 pos++;
 
                 // this is for condition a.1 or 1.2

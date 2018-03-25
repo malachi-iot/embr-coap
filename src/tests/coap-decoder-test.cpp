@@ -43,12 +43,10 @@ TEST_CASE("CoAP decoder tests", "[coap-decoder]")
         // code overlap is desired - just because OptionsDecoder *can* detect
         // payload marker doesn't need we *should* utilize it, though reuse
         // dictates we must consider it
-        REQUIRE(decoder.state() == Decoder::Options);
+        REQUIRE(decoder.state() == Decoder::OptionsDone);
         // FIX: in any case, we shouldn't be done with the buffer at this point,
         // so failing unit test here is a bug
         REQUIRE(decoder.process_iterate(context) == false);
-        REQUIRE(decoder.state() == Decoder::OptionsDone);
-        REQUIRE(decoder.process_iterate(context) == true);
         REQUIRE(decoder.state() == Decoder::Payload);
     }
 }

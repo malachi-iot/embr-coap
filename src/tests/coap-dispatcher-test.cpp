@@ -237,6 +237,8 @@ TEST_CASE("CoAP dispatcher tests", "[coap-dispatcher]")
         dispatcher.dispatch(chunk);
 
 
+        // Dummy test just so we can set a breakpoint here
+        REQUIRE(chunk.length() == sizeof(buffer_16bit_delta));
     }
     SECTION("Factory")
     {

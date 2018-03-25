@@ -165,8 +165,12 @@ TEST_CASE("CoAP low level tests", "[coap-lowlevel]")
                     break;
 
                 case 11:
-                    REQUIRE(state == _state_t::OptionsDone);
+                    REQUIRE(state == _state_t::Options);
                     REQUIRE(sub_state == option_parser_t::OptionValueDone);
+                    break;
+
+                case 12:
+                    REQUIRE(state == _state_t::OptionsDone);
                     break;
             }
         }
