@@ -111,6 +111,7 @@ public:
     };
 
 
+    // ValueStart is always processed, even on option length 0 items
     enum State
     {
         //OptionStart, // header portion for pre processing

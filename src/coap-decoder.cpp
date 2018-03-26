@@ -78,7 +78,25 @@ bool Decoder::process_iterate(Context& context)
             if(optionDecoder.state() == OptionDecoder::Payload)
                 state(OptionsDone);
             else
+            {
                 state(Options);
+
+                /*
+                // Dispatcher/DecoderSubject don't like this , but eventually should
+                // To prep, have Dispatcher/DecoderSubject look for 'ValueStart' rather
+                // than "option header" end condition
+
+                // If we *do* have options and we aren't done processing "option header"
+                if(optionDecoder.state() != OptionDecoder::OptionDeltaAndLengthDone)
+                {
+                    // And we have more chunk data available,
+                    // go ahead and proceed to iterate a bit more through the options
+                    if (pos < chunk.length()) return process_iterate(context);
+                }
+                // we don't want to push forward if we're at OptionsDeltaAndLengthDone
+                // since we want to give consumers a chance to react to that
+                */
+            }
             break;
 
         case Options:
