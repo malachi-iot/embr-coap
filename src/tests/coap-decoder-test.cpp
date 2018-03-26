@@ -49,4 +49,25 @@ TEST_CASE("CoAP decoder tests", "[coap-decoder]")
         REQUIRE(decoder.process_iterate(context) == false);
         REQUIRE(decoder.state() == Decoder::Payload);
     }
+    SECTION("16 bit delta test")
+    {
+        Decoder decoder;
+        MemoryChunk::readonly_t chunk(buffer_16bit_delta);
+        Decoder::Context context(chunk, true);
+
+        REQUIRE(decoder.process_iterate(context) == false);
+        REQUIRE(decoder.state() == Decoder::Header);
+        REQUIRE(decoder.process_iterate(context) == false);
+        REQUIRE(decoder.state() == Decoder::HeaderDone);
+        REQUIRE(decoder.process_iterate(context) == false);
+        REQUIRE(decoder.state() == Decoder::OptionsStart);
+        REQUIRE(decoder.process_iterate(context) == false);
+        REQUIRE(decoder.state() == Decoder::Options);
+        REQUIRE(decoder.option_length() == 1);
+        REQUIRE(decoder.option_number_delta() == 270);
+        REQUIRE(decoder.process_iterate(context) == false);
+        REQUIRE(decoder.state() == Decoder::Options);
+        REQUIRE(decoder.option_length() == 2);
+        REQUIRE(decoder.option_number_delta() == 271);
+    }
 }

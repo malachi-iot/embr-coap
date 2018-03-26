@@ -4,7 +4,7 @@
 
 static uint8_t buffer_16bit_delta[] = {
         0x40, 0x00, 0x00, 0x00, // 4: fully blank header
-        0xE1, // 5: option with delta 1 length 1
+        0xE1, // 5: option with 16-bit delta 1 length 1
         0x00, // 6: delta ext byte #1
         0x01, // 7: delta ext byte #2
         0x03, // 8: value single byte of data
