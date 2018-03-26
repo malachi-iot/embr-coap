@@ -338,7 +338,7 @@ public:
     OptionDecoder::OptionExperimental optionHolder;
 
     // Available only during select times during Options state
-    uint16_t option_number_delta() const { return optionHolder.number_delta; }
+    uint16_t option_number() const { return optionHolder.number_delta; }
     uint16_t option_length() const { return optionHolder.length; }
 
     // evaluates incoming chunk up until the next state change OR end

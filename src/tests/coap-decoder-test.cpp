@@ -61,13 +61,33 @@ TEST_CASE("CoAP decoder tests", "[coap-decoder]")
         REQUIRE(decoder.state() == Decoder::HeaderDone);
         REQUIRE(decoder.process_iterate(context) == false);
         REQUIRE(decoder.state() == Decoder::OptionsStart);
+        // kicks off option decoding itself, first stops after
+        // length is processed
         REQUIRE(decoder.process_iterate(context) == false);
         REQUIRE(decoder.state() == Decoder::Options);
+        REQUIRE(decoder.option_decoder().state() == OptionDecoder::OptionLengthDone);
         REQUIRE(decoder.option_length() == 1);
-        REQUIRE(decoder.option_number_delta() == 270);
+        REQUIRE(decoder.process_iterate(context) == false);
+        // Would really prefer OptionDeltaDone or OptionLengthAndDeltaDone were exposed here
+        REQUIRE(decoder.option_decoder().state() == OptionDecoder::ValueStart);
+        REQUIRE(decoder.option_number() == 270);
+        REQUIRE(decoder.option_decoder().option_delta() == 270);
         REQUIRE(decoder.process_iterate(context) == false);
         REQUIRE(decoder.state() == Decoder::Options);
+        REQUIRE(decoder.option_decoder().state() == OptionDecoder::OptionValueDone);
+        REQUIRE(decoder.process_iterate(context) == false);
+        REQUIRE(decoder.state() == Decoder::Options);
+        REQUIRE(decoder.option_decoder().state() == OptionDecoder::OptionDeltaAndLengthDone);
         REQUIRE(decoder.option_length() == 2);
-        REQUIRE(decoder.option_number_delta() == 271);
+        REQUIRE(decoder.option_number() == 271);
+        REQUIRE(decoder.option_decoder().option_delta() == 1);
+        REQUIRE(decoder.process_iterate(context) == false);
+        REQUIRE(decoder.state() == Decoder::Options);
+        REQUIRE(decoder.option_decoder().state() == OptionDecoder::ValueStart);
+        REQUIRE(decoder.process_iterate(context) == false);
+        REQUIRE(decoder.state() == Decoder::Options);
+        REQUIRE(decoder.option_decoder().state() == OptionDecoder::OptionValueDone);
+        REQUIRE(decoder.process_iterate(context) == false);
+        REQUIRE(decoder.state() == Decoder::OptionsDone);
     }
 }

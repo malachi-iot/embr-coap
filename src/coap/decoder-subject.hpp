@@ -84,7 +84,7 @@ void DecoderSubjectBase<TMessageObserver>::dispatch_option(Decoder::Context& con
     {
         case OptionDecoder::ValueStart:
         {
-            option_number_t option_number = (option_number_t) decoder.option_number_delta();
+            option_number_t option_number = (option_number_t) decoder.option_number();
             uint16_t option_length = decoder.option_length();
 
             observer_on_option(option_number, option_length);
@@ -93,7 +93,7 @@ void DecoderSubjectBase<TMessageObserver>::dispatch_option(Decoder::Context& con
 
         case OptionDecoder::OptionValue:
         {
-            option_number_t option_number = (option_number_t) decoder.option_number_delta();
+            option_number_t option_number = (option_number_t) decoder.option_number();
             uint16_t option_length = decoder.option_length();
             bool partial_chunk = chunk.length() < option_length;
             if(partial_chunk)
