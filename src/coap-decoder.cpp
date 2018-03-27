@@ -195,7 +195,7 @@ bool Decoder::process_iterate(Context& context)
 
     }
 
-    // TODO: Do an assert to make sure pos never is >
+    // TODO: Do an assert to make sure pos never exceeds chunk boundary
     ASSERT_ERROR(true, pos <= chunk.length(), "pos should never exceed chunk length");
 
     return pos == chunk.length();

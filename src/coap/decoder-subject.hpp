@@ -10,9 +10,6 @@ namespace moducom { namespace coap {
 template <class TMessageObserver>
 bool DecoderSubjectBase<TMessageObserver>::dispatch_iterate(Decoder::Context& context)
 {
-    const ro_chunk_t& chunk = context.chunk;
-    size_t& pos = context.pos; // how far into chunk our locus of processing should be
-
     switch(decoder.state())
     {
         case Decoder::HeaderDone:
@@ -34,12 +31,7 @@ bool DecoderSubjectBase<TMessageObserver>::dispatch_iterate(Decoder::Context& co
         default: break;
     }
 
-    decoder.process_iterate(context);
-
-    // TODO: Do an assert to make sure pos never is >
-    ASSERT_ERROR(true, pos <= chunk.length(), "pos should never exceed chunk length");
-
-    return pos == chunk.length();
+    return decoder.process_iterate(context);
 }
 
 
@@ -63,7 +55,8 @@ void DecoderSubjectBase<TMessageObserver>::observer_on_option(const ro_chunk_t& 
 }
 
 
-// New and improved flavor.  Compiling but not functional yet
+// during times where we are processing options at the Decoder level, handle
+// incoming "option header" and option-value data
 template <class TMessageObserver>
 void DecoderSubjectBase<TMessageObserver>::dispatch_option(Decoder::Context& context)
 {
