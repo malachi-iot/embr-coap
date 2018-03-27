@@ -4,21 +4,27 @@
 
 namespace moducom { namespace coap {
 
-// In-progress: revamped "Dispatcher"
+// Revamped "Dispatcher"
+// Now passing basic test suite
 template <class TMessageObserver>
 class DecoderSubjectBase
 {
     Decoder decoder;
     TMessageObserver observer;
     typedef experimental::option_number_t option_number_t;
+    typedef pipeline::MemoryChunk::readonly_t ro_chunk_t;
 
     // do these observer_xxx versions so that compile errors are easier to track
     inline void observer_on_option(option_number_t n,
-                                   const pipeline::MemoryChunk::readonly_t& optionChunk,
+                                   const ro_chunk_t& optionChunk,
                                    bool last_chunk)
     {
         observer.on_option(n, optionChunk, last_chunk);
     }
+
+
+    // yanks info from decoder.option_number and decoder.option_length
+    void observer_on_option(const ro_chunk_t& option_chunk);
 
 
     inline void observer_on_option(option_number_t n, uint16_t len)
@@ -60,7 +66,7 @@ public:
     DecoderSubjectBase(IncomingContext& context) : observer(context) {}
 
     // returns number of bytes processed from chunk
-    size_t dispatch(const pipeline::MemoryChunk::readonly_t& chunk, bool last_chunk = true)
+    size_t dispatch(const ro_chunk_t& chunk, bool last_chunk = true)
     {
         Decoder::Context context(chunk, last_chunk);
 

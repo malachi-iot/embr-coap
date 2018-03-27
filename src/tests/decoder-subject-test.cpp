@@ -50,4 +50,10 @@ TEST_CASE("CoAP decoder subject tests", "[coap-decoder-subject]")
         REQUIRE(test_ctx.have_header());
         REQUIRE(test_ctx.header().is_request());
     }
+    SECTION("'plausible' coap buffer")
+    {
+        MemoryChunk::readonly_t chunk(buffer_plausible);
+
+        test.dispatch(chunk);
+    }
 }
