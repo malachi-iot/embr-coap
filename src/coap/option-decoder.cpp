@@ -294,7 +294,8 @@ size_t OptionDecoder::process_iterate(const pipeline::MemoryChunk::readonly_t& c
             case Payload:
                 return data - chunk.data();
 
-                // Since some compilers hate any unattended cases
+            // OptionValue gets eaten here, but data position
+            // does move forward and is ultimately recorded
             default: break;
         }
     }

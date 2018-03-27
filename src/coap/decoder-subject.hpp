@@ -27,13 +27,13 @@ bool DecoderSubjectBase<TMessageObserver>::dispatch_iterate(Decoder::Context& co
 
         case Decoder::Options:
         {
-            pipeline::MemoryChunk::readonly_t remainder = chunk.remainder(pos);
+            //pipeline::MemoryChunk::readonly_t remainder = chunk.remainder(pos);
             // TODO: process_iterate gets called within dispatch_option, but for consisency
             // we should call it out here in the switch statement
-            pos += dispatch_option(remainder);
+            //pos += dispatch_option(remainder);
 
-            //dispatch_option(context);
-            //decoder.process_iterate(context);
+            dispatch_option(context);
+            decoder.process_iterate(context);
 
             break;
         }
@@ -76,8 +76,7 @@ void DecoderSubjectBase<TMessageObserver>::dispatch_header()
 template <class TMessageObserver>
 void DecoderSubjectBase<TMessageObserver>::dispatch_option(Decoder::Context& context)
 {
-    size_t& pos = context.pos; // how far into chunk our locus of processing should be
-    const pipeline::MemoryChunk::readonly_t& chunk = context.chunk.remainder(pos);
+    const pipeline::MemoryChunk::readonly_t& chunk = context.remainder();
     const OptionDecoder& option_decoder = decoder.option_decoder();
 
     switch (option_decoder.state())
@@ -88,19 +87,42 @@ void DecoderSubjectBase<TMessageObserver>::dispatch_option(Decoder::Context& con
             uint16_t option_length = decoder.option_length();
 
             observer_on_option(option_number, option_length);
+            bool partial_chunk = chunk.length() < option_length;
+            if(partial_chunk)
+            {
+                observer_on_option(option_number, chunk, false);
+            }
+            else
+            {
+                observer_on_option(option_number, chunk.subset(option_length), true);
+            }
+            // do not increase pos, Decoder will do that
             break;
         }
 
+        // TODO: Combine this with above code, once we are satisfied it is passing
+        // all tests
         case OptionDecoder::OptionValue:
         {
+            // Only arrive here if we have remainder(s) of
+            // option values to send
             option_number_t option_number = (option_number_t) decoder.option_number();
             uint16_t option_length = decoder.option_length();
             bool partial_chunk = chunk.length() < option_length;
             if(partial_chunk)
+            {
                 observer_on_option(option_number, chunk, false);
+            }
             else
+            {
                 observer_on_option(option_number, chunk.subset(option_length), true);
+            }
 
+            break;
+        }
+
+        case OptionDecoder::OptionValueDone:
+        {
             break;
         }
 

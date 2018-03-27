@@ -293,8 +293,12 @@ public:
     // making context public (hopefully temporarily) since we use Decoder in a
     // composable (has a) vs hierarchical (is-a) way
 public:
+    // NOTE: Running into this pattern a lot, a memory chunk augmented by a "worker position"
+    // which moves through it
     struct Context
     {
+        typedef pipeline::experimental::ReadOnlyMemoryChunk chunk_t;
+
         // TODO: optimize by making this a value not a ref, and bump up "data" pointer
         // (and down length) instead of bumping up pos.  A little more fiddly, but then
         // we less frequently have to create new temporary memorychunks on the stack
@@ -302,7 +306,7 @@ public:
         // a memory chunk is living somewhere for this context to operate.  Note though
         // that we need to remember what our original length was, so we still need
         // pos, unless we decrement length along the way
-        const pipeline::experimental::ReadOnlyMemoryChunk& chunk;
+        const chunk_t& chunk;
 
         // current processing position.  Should be chunk.length once processing is done
         size_t pos;
@@ -315,8 +319,10 @@ public:
         // Unused helper function
         const uint8_t* data() const { return chunk.data() + pos; }
 
+        chunk_t remainder() const { return chunk.remainder(pos); }
+
     public:
-        Context(const pipeline::experimental::ReadOnlyMemoryChunk& chunk, bool last_chunk) :
+        Context(const chunk_t& chunk, bool last_chunk) :
                 chunk(chunk),
                 pos(0),
                 last_chunk(last_chunk)
