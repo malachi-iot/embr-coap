@@ -72,8 +72,11 @@ void DecoderSubjectBase<TMessageObserver>::dispatch_option(Decoder::Context& con
         case OptionDecoder::ValueStart:
         {
             option_number_t option_number = (option_number_t) decoder.option_number();
+            uint16_t option_length = decoder.option_length();
 
-            observer_on_option(option_number, decoder.option_length());
+            observer_on_option(option_number, option_length);
+
+            if(option_length == 0) break;
         }
 
         case OptionDecoder::OptionValue:
