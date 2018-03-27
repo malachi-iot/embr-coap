@@ -53,13 +53,8 @@ class DecoderSubjectBase
     // returns true once it has
     bool dispatch_iterate(Decoder::Context& context);
 
-    void dispatch_header();
     void dispatch_token();
     void dispatch_option(Decoder::Context& context);
-
-    // optionChunk is a subset/processed version of dispatch(chunk)
-    size_t dispatch_option(const pipeline::MemoryChunk::readonly_t& optionChunk);
-    void dispatch_payload(const pipeline::MemoryChunk::readonly_t& payloadChunk, bool last_chunk);
 
 public:
     DecoderSubjectBase(TMessageObserver observer) : observer(observer) {}

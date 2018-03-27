@@ -16,7 +16,7 @@ bool DecoderSubjectBase<TMessageObserver>::dispatch_iterate(Decoder::Context& co
     switch(decoder.state())
     {
         case Decoder::HeaderDone:
-            dispatch_header();
+            observer_on_header(decoder.header_decoder());
             break;
 
         case Decoder::TokenDone:
@@ -28,19 +28,8 @@ bool DecoderSubjectBase<TMessageObserver>::dispatch_iterate(Decoder::Context& co
             break;
 
         case Decoder::Payload:
-        {
-            bool last_payload_chunk = context.last_chunk;
-
-            if(pos == 0)
-                // arrives here in the unlikely case payload starts on new chunk
-                // boundary
-                dispatch_payload(chunk, last_payload_chunk);
-            else
-                // typically represents an a.1 scenario, but doesn't have to
-                dispatch_payload(chunk.remainder(pos), last_payload_chunk);
-
+            observer_on_payload(context.remainder(), context.last_chunk);
             break;
-        }
 
         default: break;
     }
@@ -53,11 +42,6 @@ bool DecoderSubjectBase<TMessageObserver>::dispatch_iterate(Decoder::Context& co
     return pos == chunk.length();
 }
 
-template <class TMessageObserver>
-void DecoderSubjectBase<TMessageObserver>::dispatch_header()
-{
-    observer_on_header(decoder.header_decoder());
-}
 
 template <class TMessageObserver>
 void DecoderSubjectBase<TMessageObserver>::observer_on_option(const ro_chunk_t& chunk)
@@ -101,13 +85,6 @@ void DecoderSubjectBase<TMessageObserver>::dispatch_option(Decoder::Context& con
     }
 }
 
-
-
-template <class TMessageObserver>
-void DecoderSubjectBase<TMessageObserver>::dispatch_payload(const pipeline::MemoryChunk::readonly_t& payloadChunk, bool last_chunk)
-{
-    observer_on_payload(payloadChunk, last_chunk);
-}
 
 
 template <class TMessageObserver>
