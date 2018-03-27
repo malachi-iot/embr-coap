@@ -169,21 +169,6 @@ dispatcher_handler_factory_fn test_sub_factories[] =
 
 TEST_CASE("CoAP dispatcher tests", "[coap-dispatcher]")
 {
-    SECTION("Test 1")
-    {
-        MemoryChunk chunk(buffer_16bit_delta, sizeof(buffer_16bit_delta));
-
-        Buffer16BitDeltaObserver dispatcherHandler;
-        Dispatcher dispatcher;
-        //layer3::MemoryChunk<128> chunk;
-
-        dispatcher.head(&dispatcherHandler);
-        dispatcher.dispatch(chunk);
-
-
-        // Dummy test just so we can set a breakpoint here
-        REQUIRE(chunk.length() == sizeof(buffer_16bit_delta));
-    }
     SECTION("Factory")
     {
         MemoryChunk chunk(buffer_plausible, sizeof(buffer_plausible));
