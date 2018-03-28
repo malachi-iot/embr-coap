@@ -6,6 +6,7 @@
 //#include "../mc/pipeline.h"
 #include "../mc/experimental-factory.h"
 #include "../coap-uripath-dispatcher.h"
+#include "../coap/experimental-observer.h"
 
 using namespace moducom::coap;
 using namespace moducom::coap::experimental;
@@ -218,5 +219,10 @@ TEST_CASE("experimental tests", "[experimental]")
         REQUIRE(map.find("fred") == 7);
         REQUIRE(map.find("barny") == 77);
         REQUIRE(map.find("wilma") == -1);
+    }
+    SECTION("IMessageObserverWrapper")
+    {
+        // doesn't work - GOOD
+        //layer5::IMessageObserverWrapper<int> test(5);
     }
 }

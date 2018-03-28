@@ -37,6 +37,7 @@ set(SOURCE_FILES
         tests/coap-dispatcher-test.cpp tests/test-data.h tests/coap-encoder-test.cpp
         coap-blockwise.h coap-blockwise.cpp coap-token.h coap-token.cpp tests/coap-token-test.cpp
         coap-uint.h mc/experimental.h tests/experimental-test.cpp coap-header.h coap-observable.h
+        coap/experimental-observer.h
         mc/experimental.cpp coap-uripath-dispatcher.cpp coap-uripath-dispatcher.h
         mc/experimental-factory.h coap-features.h
         coap/context.h coap/decoder-subject.hpp tests/decoder-subject-test.cpp coap/decoder-subject.h coap/option-decoder.cpp tests/test-observer.h)
