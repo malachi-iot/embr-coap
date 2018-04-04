@@ -8,6 +8,10 @@ namespace moducom { namespace coap { namespace experimental {
 struct FnFactoryContext
 {
     pipeline::MemoryChunk chunk;
+
+#ifndef FEATURE_MCCOAP_REWRITABLE_MEMCHUNK
+    FnFactoryContext() : chunk(NULLPTR, 0) {}
+#endif
 };
 
 

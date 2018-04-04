@@ -17,9 +17,7 @@ bool BufferProviderPipeline::get_buffer(pipeline::MemoryChunk **memory_chunk)
 
 pipeline::MemoryChunk BufferProviderPipeline::advance(size_t size, PipelineMessage::CopiedStatus status)
 {
-    pipeline::MemoryChunk chunk;
-
-    chunk.data(NULLPTR);
+    pipeline::MemoryChunk chunk(NULLPTR, 0);
 
     return chunk;
 }

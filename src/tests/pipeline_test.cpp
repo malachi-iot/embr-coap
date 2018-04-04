@@ -40,7 +40,7 @@ TEST_CASE("Pipeline basic tests", "[pipeline]")
 {
     SECTION("1")
     {
-        MemoryChunk chunk;
+        layer1::MemoryChunk<128> chunk;
         layer3::SimpleBufferedPipeline p(chunk);
     }
     SECTION("experimental")

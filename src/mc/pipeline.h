@@ -38,6 +38,14 @@ public:
 
     virtual PipelineMessage read() OVERRIDE
     {
+        for(;;)
+        {
+            PipelineMessage message = underlying.read();
+
+            if(message.length() > 0) return message;
+        }
+
+        /*
         PipelineMessage message;
 
         do
@@ -46,7 +54,7 @@ public:
             // put a yield into here also
         } while(message.length() == 0);
 
-        return message;
+        return message; */
     }
 
     virtual bool write(const PipelineMessage &chunk) OVERRIDE
@@ -73,14 +81,17 @@ class BasicPipeline : public IPipeline
     PipelineMessage chunk;
 
 public:
-    BasicPipeline() { chunk.length(0); }
+    BasicPipeline() : chunk(NULLPTR, 0) { }
 
     virtual PipelineMessage read() OVERRIDE
     {
+        // FIX: Not fully functional
+        return chunk;
+        /*
         PipelineMessage return_chunk = chunk;
         chunk.length(0);
         chunk.data(0);
-        return return_chunk;
+        return return_chunk; */
     }
 
     virtual bool write(const PipelineMessage& chunk) OVERRIDE
@@ -146,6 +157,7 @@ class IReferencedReadPipeline
     virtual const PipelineMessage& read() = 0;
 };
 
+#ifdef FEATURE_MCCOAP_REWRITABLE_MEMCHUNK
 class QueuedReferencePipeline : public IReferencedReadPipeline
 {
 protected:
@@ -182,6 +194,7 @@ public:
         return pipeline.write(message);
     }
 };
+#endif
 
 }
 
@@ -227,6 +240,12 @@ public:
 
     virtual PipelineMessage peek() OVERRIDE
     {
+        size_t len = length_used - length_read;
+        uint8_t* data = length_used > 0 ? buffer.data() + length_read : NULLPTR;
+
+        PipelineMessage msg(data, len);
+
+        /*
         PipelineMessage msg;
 
         if(length_used == 0)
@@ -235,6 +254,7 @@ public:
             msg.data(buffer.data() + length_read);
 
         msg.length(length_used - length_read);
+        */
         msg.status = NULLPTR;
         msg.copied_status = copied_status;
 
@@ -250,6 +270,11 @@ public:
 
     virtual PipelineMessage read() OVERRIDE
     {
+        uint8_t* data = length_used > 0 ? buffer.data() : NULLPTR;
+
+        PipelineMessage msg(data, length_used);
+
+        /*
         PipelineMessage msg;
 
         if(length_used == 0)
@@ -257,7 +282,7 @@ public:
         else
             msg.data(buffer.data());
 
-        msg.length(length_used);
+        msg.length(length_used); */
         msg.status = NULLPTR;
         msg.copied_status = copied_status;
 
@@ -328,6 +353,11 @@ public:
 
     virtual PipelineMessage read() OVERRIDE
     {
+        uint8_t* data = length_used > 0 ? buffer.data() : NULLPTR;
+
+        PipelineMessage msg(data, length_used);
+
+        /*
         PipelineMessage msg;
 
         if(length_used == 0)
@@ -335,7 +365,7 @@ public:
         else
             msg.data(buffer.data());
 
-        msg.length(length_used);
+        msg.length(length_used); */
         msg.status = NULLPTR;
         msg.copied_status = copied_status;
 
