@@ -16,7 +16,11 @@ namespace moducom { namespace  coap {
 struct ObservableContext
 {
     // increases with each observe notification.  Technically only needs to be 24 bits
-    // so if we do need flags, we can make this into a bit field
+    // so if we do need flags, we can make this into a bit field.  Also, as suggested
+    // in RFC7641, we might do without a sequence# altogether and instead use a mangled
+    // version of system timestamp.  In that case, holding on to sequence# here might
+    // be a waste.  What does not seem to be specified at all is how to
+    // handle rollover/overflow conditions.
     uint32_t sequence;
 
     layer1::Token token;
