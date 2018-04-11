@@ -7,6 +7,7 @@
 
 #include "coap.h"
 #include "coap-token.h"
+#include "coap/decoder-subject.h"
 
 namespace moducom { namespace  coap {
 
@@ -24,6 +25,20 @@ struct ObservableContext
     uint32_t sequence;
 
     layer1::Token token;
+};
+
+
+class ObservableOptionObserverBase
+{
+    const IncomingContext& context;
+
+    typedef experimental::option_number_t option_number_t;
+    typedef pipeline::MemoryChunk::readonly_t ro_chunk_t;
+
+public:
+    ObservableOptionObserverBase(IncomingContext& context) : context(context) {}
+
+    void on_option(option_number_t number, const ro_chunk_t& chunk, bool last_chunk);
 };
 
 }}

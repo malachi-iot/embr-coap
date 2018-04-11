@@ -90,10 +90,14 @@ public:
             ServerError = 5
         };
 
-        // RFC7252 Section 12.1.2
+        // RFC7252 Section 12.1.2 and 12.1.1
         enum Codes
         {
             Empty =             COAP_RESPONSE_CODE(0, 00),
+            Get =               COAP_RESPONSE_CODE(0, 01),
+            Post =              COAP_RESPONSE_CODE(0, 02),
+            Put =               COAP_RESPONSE_CODE(0, 03),
+            Delete =            COAP_RESPONSE_CODE(0, 04),
             Created =           COAP_RESPONSE_CODE(Success, 01),
             Deleted =           COAP_RESPONSE_CODE(Success, 02),
             Valid =             COAP_RESPONSE_CODE(Success, 03),
@@ -124,6 +128,8 @@ public:
         uint8_t detail() const { return _code & 0x1F; }
 
         Codes code() const { return (Codes) _code; }
+
+        bool is_request() const { return get_class() == Request; }
     };
 
     // RFC 7252 Section 12.1.1
@@ -207,7 +213,7 @@ public:
         mask_or<COAP_HEADER_FIXED_TYPE_POS>(0, type);
     }
 
-    Code& code_experimental() const
+    const Code& code_experimental() const
     {
         void* buffer = (void*)&bytes[1];
         Code* instance = new (buffer) Code;

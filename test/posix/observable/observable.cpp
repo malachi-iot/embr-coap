@@ -3,6 +3,8 @@
 #include <sys/socket.h>
 #include "main.h"
 
+#include "coap-observable.h"
+
 using namespace moducom::pipeline;
 
 template <>
