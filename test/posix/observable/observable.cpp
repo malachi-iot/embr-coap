@@ -1,18 +1,20 @@
 #include <coap.h>
 #include <mc/memory-chunk.h>
+#include <sys/socket.h>
+#include "main.h"
 
 using namespace moducom::pipeline;
 
-// TODO: Will need a push-style service_coap_out as well
-
-void service_coap_in(MemoryChunk& inbuf, MemoryChunk& outbuf)
+template <>
+size_t service_coap_in(const struct sockaddr_in& address_in, MemoryChunk& inbuf, MemoryChunk& outbuf)
 {
-
+    return 0;
 }
 
 
 // return 0 always, for now
-size_t service_coap_out(MemoryChunk& outbuf)
+template <>
+size_t service_coap_out(struct sockaddr_in* address_out, MemoryChunk& outbuf)
 {
     return 0;
 }

@@ -9,11 +9,7 @@
 
 #include "coap-dispatcher.h"
 
-size_t service_coap_in(moducom::pipeline::MemoryChunk& in,
-                     moducom::pipeline::MemoryChunk& out);
-
-size_t service_coap_out(moducom::pipeline::MemoryChunk& out);
-
+#include "main.h"
 
 #define COAP_UDP_PORT 5683
 
@@ -80,7 +76,7 @@ int main()
         if(n > 0)
         {
             moducom::pipeline::MemoryChunk inbuf(buffer, n);
-            send_bytes = service_coap_in(inbuf, outbuf);
+            send_bytes = service_coap_in(cli_addr, inbuf, outbuf);
         }
         else
         {
@@ -89,7 +85,7 @@ int main()
             //  we aren't listening.  Rather than the complexity of threads, we will live with
             //  this imperfection since it should be a very small sliver of time in which we aren't
             //  listening
-            send_bytes = service_coap_out(outbuf);
+            send_bytes = service_coap_out(&cli_addr, outbuf);
 
             // do this rather than spamming cout with no response created warnings
             if(send_bytes == 0) continue;

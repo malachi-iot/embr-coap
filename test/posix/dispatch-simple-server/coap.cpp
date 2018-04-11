@@ -2,6 +2,7 @@
 #include <coap-uripath-dispatcher.h>
 #include <coap-encoder.h>
 #include "experimental.h"
+#include "main.h"
 
 using namespace moducom;
 using namespace moducom::coap;
@@ -191,7 +192,9 @@ AggregateUriPathObserver::item_t new_v1_factories[] =
 static pipeline::layer3::MemoryChunk<256> dispatcherBuffer;
 
 
-size_t service_coap_in(pipeline::MemoryChunk& in, pipeline::MemoryChunk& outbuf)
+
+template <>
+size_t service_coap_in(const struct sockaddr_in& addr, pipeline::MemoryChunk& in, pipeline::MemoryChunk& outbuf)
 {
     moducom::pipeline::layer3::SimpleBufferedPipelineWriter writer(outbuf);
     // NOTE: Consider renaming dispatcher to something more like DecodeAndObserve, though
@@ -227,7 +230,8 @@ size_t service_coap_in(pipeline::MemoryChunk& in, pipeline::MemoryChunk& outbuf)
     return send_bytes;
 }
 
-size_t service_coap_out(pipeline::MemoryChunk& outbuf)
+template <>
+size_t service_coap_out(struct sockaddr_in* addr, pipeline::MemoryChunk& outbuf)
 {
     return 0;
 }
