@@ -470,10 +470,15 @@ void FactoryDispatcherHandler::on_payload(const pipeline::MemoryChunk::readonly_
     {
         chosen->on_payload(payload_part, last_chunk);
 
+#ifndef FEATURE_MCCOAP_COMPLETE_OBSERVER
         // NOTE: Keep an eye on this.  Not sure if this is the exact right
         // place for lifecycle management, but should be a good spot
         if(last_chunk)
             chosen->~IDecoderObserver();
+
+
+        context.incoming_context.objstack.free(chosen);
+#endif
 
         return;
     }

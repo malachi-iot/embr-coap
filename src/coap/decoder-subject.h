@@ -49,6 +49,13 @@ class DecoderSubjectBase
         observer.on_payload(payloadChunk, last_chunk);
     }
 
+#ifdef FEATURE_MCCOAP_COMPLETE_OBSERVER
+    inline void observer_on_complete()
+    {
+        observer.on_complete();
+    }
+#endif
+
     // returns false while chunk/context has not been exhausted
     // returns true once it has
     bool dispatch_iterate(Decoder::Context& context);
@@ -61,6 +68,12 @@ public:
     DecoderSubjectBase(IncomingContext& context) : observer(context) {}
 
     // returns number of bytes processed from chunk
+    /**
+     * @brief dispatch
+     * @param chunk
+     * @param last_chunk denotes whether we have reached complete end of coap message with this chunk
+     * @return
+     */
     size_t dispatch(const ro_chunk_t& chunk, bool last_chunk = true)
     {
         Decoder::Context context(chunk, last_chunk);
@@ -68,6 +81,13 @@ public:
         while(!dispatch_iterate(context) && decoder.state() != Decoder::Done);
 
         return context.pos;
+    }
+
+    // FIX: A little kludgey, lets use reuse this exact DecoderSubjectBase over again for a dispatch
+    // consider this only for test purposes
+    void reset()
+    {
+        new (&decoder) Decoder;
     }
 };
 

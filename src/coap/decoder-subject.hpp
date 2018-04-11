@@ -26,6 +26,19 @@ bool DecoderSubjectBase<TMessageObserver>::dispatch_iterate(Decoder::Context& co
 
         case Decoder::Payload:
             observer_on_payload(context.remainder(), context.last_chunk);
+
+            // FIX: A little hacky, falls through to brute force on_complete
+            // we *might* run into double-calls of Decoder::Done in this case
+            if(!context.last_chunk) break;
+
+        case Decoder::Done:
+            // FIX: Frequently not called, needs work -
+            // DecoderSubjectBase needs to know
+            // incoming message length (is exhausted) to really ascertain this
+            // That said, incoming message chunks denote 'last chunk'
+            // indicating whether to expect more data, that should
+            // be enough to deduce a done state
+            observer_on_complete();
             break;
 
         default: break;

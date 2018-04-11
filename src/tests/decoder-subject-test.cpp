@@ -44,7 +44,9 @@ TEST_CASE("CoAP decoder subject tests", "[coap-decoder-subject]")
     SECTION("payload only")
     {
         MemoryChunk::readonly_t chunk(buffer_payload_only);
+
         // TODO: Make an observer to evaluate that payload is appearing as expected
+        test.reset();
         test.dispatch(chunk);
 
         REQUIRE(test_ctx.have_header());
@@ -54,6 +56,7 @@ TEST_CASE("CoAP decoder subject tests", "[coap-decoder-subject]")
     {
         MemoryChunk::readonly_t chunk(buffer_plausible);
 
+        test.reset();
         test.dispatch(chunk);
     }
 }
