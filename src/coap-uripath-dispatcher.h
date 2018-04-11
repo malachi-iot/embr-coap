@@ -205,6 +205,10 @@ public:
                 IncomingContext& context) :
             objstack(objstack),
             context(context) {}
+
+        Context(const Context& copy_from) :
+            objstack(copy_from.objstack),
+            context(copy_from.context) {}
     };
 
     typedef FnFactoryTraits<const char*, IDispatcherHandler*, Context&> traits_t;
@@ -240,6 +244,16 @@ public:
             factory(items, item_count),
             context(chunk, incomingContext),
             handler(NULLPTR)
+    {
+    }
+
+
+    template <const size_t N>
+    AggregateUriPathObserver(Context& context,
+                         fn_t::item_t (&items) [N]) :
+        factory(items),
+        context(context),
+        handler(NULLPTR)
     {
     }
 
