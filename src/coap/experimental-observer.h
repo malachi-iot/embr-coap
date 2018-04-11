@@ -4,6 +4,32 @@
 
 namespace moducom { namespace coap { namespace experimental {
 
+// use this to make non-virtual versions
+// TODO: Do further testing to see how optimal that really is (maybe
+// compiler optimizations make unused virtual tables less costly?  If
+// so, may not be worth the effort to make a non-virtualized flavor)
+class MessageObserverBase : public IsInterestedBase
+{
+protected:
+    typedef experimental::option_number_t option_number_t;
+    typedef pipeline::MemoryChunk::readonly_t ro_chunk_t;
+
+    const IncomingContext& context;
+
+    MessageObserverBase(const IncomingContext& context) : context(context) {}
+
+public:
+    void on_header(const Header& header) {}
+
+    void on_token(const ro_chunk_t& token, bool last_chunk) {}
+
+    void on_option(option_number_t number, uint16_t len) {}
+
+    void on_option(option_number_t number, const ro_chunk_t& chunk, bool last_chunk) {}
+
+    void on_payload(const ro_chunk_t& chunk, bool last_chunk) {}
+};
+
 namespace layer5 {
 
 // Experimental code to bring in classes which weren't initially declared virtual

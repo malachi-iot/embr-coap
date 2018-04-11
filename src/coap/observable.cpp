@@ -17,25 +17,73 @@ void ObservableOptionObserverBase::on_option(option_number_t number,
             switch(chunk[0])
             {
                 case 0: // register
-                    // also denote as always-interested so we can do add URI to list
+                    // denote as always-interested so we can do add URI to list
                     // while remembering we want to register
+                    interested(Always);
                     break;
 
                 case 1: // deregister
-                    // also denote as always-interested so we can remove URI from list
+                    // denote as always-interested so we can remove URI from list
                     // while remembering we want to deregister
+                    interested(Always);
                     break;
 
                 default:
                     // error
+                    interested(Never);
                     break;
             }
             break;
 
         case Option::UriPath:
+            if(is_always_interested())
+            {
+                registrar_t::Context context(is_registering, this->context.address());
+
+                // pass on uri path for registrar to evaluate.  It may or may not end
+                // up being a valid registrable path
+                registrar.on_uri_path(context, chunk, last_chunk);
+
+                // if always interested, then we will have permanantly allocated some space so we know if
+                // we're registering or not
+                if(is_registering)
+                {
+                    // build registration.  Remember UriPath shows up in pieces
+                }
+                else
+                {
+                    // build deregistration.  Remember UriPath shows up in pieces
+                }
+            }
+            else
+                // if we haven't determined we are always interested by now, we are never interested
+                interested(Never);
+
             break;
 
         default:break;
+    }
+}
+
+
+void ObservableOptionObserverBase::on_complete()
+{
+    if(is_always_interested())
+    {
+        registrar_t::Context context(is_registering, this->context.address());
+
+        // uri path gathering is complete.  Now registrar will
+        // either act on the valid uri path or ignore the invalid uri path
+        registrar.on_complete(context);
+
+        if(is_registering)
+        {
+            // issue registration
+        }
+        else
+        {
+            // issue deregistration
+        }
     }
 }
 

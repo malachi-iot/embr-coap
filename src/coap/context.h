@@ -14,6 +14,19 @@
 namespace moducom { namespace coap {
 
 
+namespace experimental {
+
+template <class TAddr>
+class AddressContext
+{
+    TAddr addr;
+
+public:
+    const TAddr& address() const { return addr; }
+};
+
+}
+
 class TokenContext
 {
 #ifdef FEATURE_MCCOAP_INLINE_TOKEN
@@ -111,7 +124,10 @@ public:
 // when we are the server (ACKs, etc)
 class IncomingContext :
         public TokenContext,
-        public HeaderContext
+        public HeaderContext,
+        // Really dislike this AddressContext, but we do need some way to pass
+        // down source-address information so that Observable can look at it
+        public experimental::AddressContext<uint8_t[4]>
 {
 public:
 #ifdef FEATURE_MCCOAP_INLINE_TOKEN
