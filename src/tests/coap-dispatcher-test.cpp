@@ -181,9 +181,6 @@ TEST_CASE("CoAP dispatcher tests", "[coap-dispatcher]")
     {
         MemoryChunk chunk(buffer_plausible, sizeof(buffer_plausible));
 
-        // in-place new holder
-        // FIX: OK all those virtual function tables seem to be bloating
-        // our handlers way, way up...
         layer3::MemoryChunk<512> dispatcherBuffer;
         ObserverContext context(dispatcherBuffer);
 

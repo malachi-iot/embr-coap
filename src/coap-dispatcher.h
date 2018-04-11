@@ -492,10 +492,6 @@ class FactoryDispatcherHandler : public IDecoderObserver
         return reinterpret_cast<State*>(_handler_memory.data());
     }
 
-    void init_states()
-    {
-        moducom::experimental::ArrayHelperBase<State>::construct(handler_states(), handler_factory_count);
-    }
 #else
 #ifdef FEATURE_MCCOAP_LEGACY_PREOBJSTACK
     const pipeline::MemoryChunk& handler_memory() const
@@ -510,6 +506,12 @@ class FactoryDispatcherHandler : public IDecoderObserver
     State* handler_states() { return _handler_states; }
 
 #endif
+
+    // TODO: Redundant for simple array-pooled version, but we'll clean that up later
+    void init_states()
+    {
+        moducom::experimental::ArrayHelperBase<State>::construct(handler_states(), handler_factory_count);
+    }
 
     IDecoderObserver* chosen;
 
@@ -549,10 +551,7 @@ public:
              ),
              chosen(NULLPTR)
     {
-#ifdef FEATURE_FDH_FANCYMEM
         init_states();
-#endif
-
     }
 
 
@@ -579,9 +578,7 @@ public:
              chosen(NULLPTR)
 
     {
-#ifdef FEATURE_FDH_FANCYMEM
         init_states();
-#endif
     }
 
 

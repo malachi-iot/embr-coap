@@ -355,6 +355,9 @@ inline void FactoryDispatcherHandler::observer_helper_end(context_t& context, ID
         // upside to using GNU-style is a lot less code is involved, including no need
         // for explicit deallocation in virtual destructors.  Something about that
         // feels like almost too much of a shortcut, though technically it is sound
+#ifndef FEATURE_MCCOAP_LEGACY_PREOBJSTACK
+        context.incoming_context.objstack.free(handler);
+#endif
     }
 }
 
