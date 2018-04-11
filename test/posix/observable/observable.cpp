@@ -20,7 +20,16 @@ using namespace moducom::coap::experimental;
 
 IDispatcherHandler* sensor1_handler(AggregateUriPathObserver::Context& ctx)
 {
-    return nullptr;
+    // TODO: In here, handle both a subscription request as well as
+    // the resource request itself.  TBD whether we need to return 'Observe'
+    // option with the (piggybacked) ACK from here
+    dispatcher_handler_factory_fn factories[] =
+    {
+
+    };
+
+    // FIX: Beware, this results in an alloc which does not get freed
+    return new (ctx.objstack) FactoryDispatcherHandler(ctx.objstack, ctx.incoming_context, factories);
 }
 
 
@@ -41,6 +50,7 @@ IDispatcherHandler* v1_handler(AggregateUriPathObserver::Context& ctx)
         fn_t::item("sensor2", sensor2_handler)
     };
 
+    // FIX: Beware, this results in an alloc which does not get freed
     return new (ctx.objstack) AggregateUriPathObserver(ctx, items);
 }
 
@@ -72,12 +82,10 @@ IDispatcherHandler* v1_dispatcher(FactoryDispatcherHandlerContext& ctx)
 
 
 
-dispatcher_handler_factory_fn root_factories[] =
+static dispatcher_handler_factory_fn root_factories[] =
 {
     context_dispatcher,
-    v1_dispatcher,
-    // FIX: Enabling this causes a crash in the on_option area
-    //fallthrough_404
+    v1_dispatcher
 };
 
 template <>
@@ -90,11 +98,6 @@ size_t service_coap_in(const struct sockaddr_in& address_in, MemoryChunk& inbuf,
     DecoderSubjectBase<IDispatcherHandler&> decoder(dh);
 
     decoder.dispatch(inbuf);
-
-    //IncomingContext context;
-    //DecoderSubjectBase<ObservableOptionObserverBase> decoder(context);
-
-    //decoder.dispatch(inbuf);
 
     return 0;
 }
