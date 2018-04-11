@@ -12,6 +12,8 @@
 size_t service_coap_in(moducom::pipeline::MemoryChunk& in,
                      moducom::pipeline::MemoryChunk& out);
 
+size_t service_coap_out(moducom::pipeline::MemoryChunk& out);
+
 
 #define COAP_UDP_PORT 5683
 
@@ -49,6 +51,15 @@ int main()
         //int newsockfd = accept(sockfd, (sockaddr *) &cli_addr, &clilen);
         int newsockfd = sockfd;
 
+        // should work, but keeping commented until proper tests are conducted
+        /*
+        struct timeval tv;
+        tv.tv_sec = 0;
+        tv.tv_usec = 100000;
+        if (setsockopt(newsockfd, SOL_SOCKET, SO_RCVTIMEO,&tv,sizeof(tv)) < 0) {
+            error("Error");
+        } */
+
         //if(newsockfd < 1) error("ERROR on accept");
 
         bzero(buffer, 1024);
@@ -60,11 +71,29 @@ int main()
 
         std::cout << "Got packet: " << n << " bytes" << std::endl;
 
-        if(n <= 0) continue;
+        if(n == 0)
+            continue;
 
-        moducom::pipeline::MemoryChunk inbuf(buffer, n);
         moducom::pipeline::layer3::MemoryChunk<256> outbuf;
-        size_t send_bytes = service_coap_in(inbuf, outbuf);
+        size_t send_bytes;
+
+        if(n > 0)
+        {
+            moducom::pipeline::MemoryChunk inbuf(buffer, n);
+            send_bytes = service_coap_in(inbuf, outbuf);
+        }
+        else
+        {
+            // NOTE: expected this is where timeout code will live
+            // NOTE: timeout-ish code very likely will result in an occasional lost packet when
+            //  we aren't listening.  Rather than the complexity of threads, we will live with
+            //  this imperfection since it should be a very small sliver of time in which we aren't
+            //  listening
+            send_bytes = service_coap_out(outbuf);
+
+            // do this rather than spamming cout with no response created warnings
+            if(send_bytes == 0) continue;
+        }
 
         if(send_bytes == 0)
         {

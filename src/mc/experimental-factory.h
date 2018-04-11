@@ -325,7 +325,7 @@ struct FnFactoryHelper
     {
         return item(key, [](context_t& c)
         {
-            TObserver observer = new (c.objstack) TObserver;
+            TObserver* observer = new (c.objstack) TObserver;
 
             observer->set_context(c.context);
 

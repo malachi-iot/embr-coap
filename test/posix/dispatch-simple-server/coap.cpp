@@ -226,3 +226,8 @@ size_t service_coap_in(pipeline::MemoryChunk& in, pipeline::MemoryChunk& outbuf)
 
     return send_bytes;
 }
+
+size_t service_coap_out(pipeline::MemoryChunk& outbuf)
+{
+    return 0;
+}

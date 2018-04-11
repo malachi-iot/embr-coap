@@ -9,3 +9,10 @@ void service_coap_in(MemoryChunk& inbuf, MemoryChunk& outbuf)
 {
 
 }
+
+
+// return 0 always, for now
+size_t service_coap_out(MemoryChunk& outbuf)
+{
+    return 0;
+}
