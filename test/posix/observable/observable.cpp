@@ -34,7 +34,7 @@ IDecoderObserver* sensor1_handler(AggregateUriPathObserver::Context& ctx)
     // NOTE: Also have to be very, very careful that the passed in ctx.objstack
     //      reflects the state of ctx.objstack *after* placement new, so must
     //      always pass in by reference/pointer
-    return new (ctx.objstack) FactoryDispatcherHandler(ctx.objstack, ctx.context, factories);
+    return new (ctx.context.objstack) FactoryDispatcherHandler(ctx.context.objstack, ctx.context, factories);
 }
 
 
@@ -56,18 +56,17 @@ IDecoderObserver* v1_handler(AggregateUriPathObserver::Context& ctx)
     };
 
     // FIX: Beware, this results in an alloc which does not get freed
-    return new (ctx.objstack) AggregateUriPathObserver(ctx, items);
+    return new (ctx.context.objstack) AggregateUriPathObserver(ctx, items);
 }
 
 IDecoderObserver* context_dispatcher(FactoryDispatcherHandlerContext& ctx)
 {
-    return new (ctx.handler_memory.data()) ContextDispatcherHandler(ctx.incoming_context);
+    return new (ctx) ContextDispatcherHandler(ctx.incoming_context);
 }
 
 
 IDecoderObserver* v1_dispatcher(FactoryDispatcherHandlerContext& ctx)
 {
-    moducom::dynamic::ObjStack objstack(ctx.handler_memory);
     typedef AggregateUriPathObserver::fn_t fn_t;
     typedef AggregateUriPathObserver::item_t item_t;
 
@@ -79,8 +78,8 @@ IDecoderObserver* v1_dispatcher(FactoryDispatcherHandlerContext& ctx)
     // FIX: Since objstack implementation bumps up its own m_data, we can safely pass it
     // in for the used memorychunk.  However, this is all clumsy and we should be passing
     // around objstack more universally
-    AggregateUriPathObserver* observer = new (objstack)
-            AggregateUriPathObserver(objstack, ctx.incoming_context, items);
+    AggregateUriPathObserver* observer = new (ctx)
+            AggregateUriPathObserver(ctx.incoming_context.objstack, ctx.incoming_context, items);
 
     return observer;
 }
@@ -97,7 +96,7 @@ template <>
 size_t service_coap_in(const struct sockaddr_in& address_in, MemoryChunk& inbuf, MemoryChunk& outbuf)
 {
     moducom::pipeline::layer1::MemoryChunk<512> buffer;
-    IncomingContext incoming_context;
+    ObserverContext incoming_context(buffer);
 
     FactoryDispatcherHandler dh(buffer, incoming_context, root_factories);
     DecoderSubjectBase<IDecoderObserver&> decoder(dh);

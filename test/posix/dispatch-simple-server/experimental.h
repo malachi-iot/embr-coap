@@ -19,7 +19,7 @@ static void root_helper(pipeline::MemoryChunk& dispatcherBuffer,
     //moducom::coap::experimental::Dispatcher dispatcher;
     moducom::coap::experimental::BlockingEncoder encoder(writer);
 
-    IncomingContext incoming_context;
+    ObserverContext incoming_context(dispatcherBuffer);
 
     FactoryDispatcherHandler handler(dispatcherBuffer, incoming_context, root_factories);
 }

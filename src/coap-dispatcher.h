@@ -338,7 +338,7 @@ public:
 
 struct FactoryDispatcherHandlerContext
 {
-    IncomingContext& incoming_context;
+    ObserverContext& incoming_context;
 
     // this one may change through the stack walk
     pipeline::MemoryChunk handler_memory;
@@ -352,7 +352,7 @@ struct FactoryDispatcherHandlerContext
     size_t reserve_bytes;
 #endif
 
-    FactoryDispatcherHandlerContext(IncomingContext& ic, const pipeline::MemoryChunk& hm)
+    FactoryDispatcherHandlerContext(ObserverContext& ic, const pipeline::MemoryChunk& hm)
             :
 #ifdef FEATURE_MCCOAP_RESERVED_DISPATCHER
               reserve_bytes(0),
@@ -361,7 +361,6 @@ struct FactoryDispatcherHandlerContext
               handler_memory(hm)
     {}
 };
-
 
 
 // An in-place new is expected
@@ -500,7 +499,7 @@ class FactoryDispatcherHandler : public IDecoderObserver
 public:
     FactoryDispatcherHandler(
             const pipeline::MemoryChunk& handler_memory,
-            IncomingContext& incoming_context,
+            ObserverContext& incoming_context,
             dispatcher_handler_factory_fn* handler_factories,
             int handler_factory_count)
 
@@ -520,7 +519,7 @@ public:
 
     template<size_t n>
     FactoryDispatcherHandler(const pipeline::MemoryChunk& handler_memory,
-                             IncomingContext& incoming_context,
+                             ObserverContext& incoming_context,
                              dispatcher_handler_factory_fn (&handler_factories)[n]
     )
             :_handler_memory(handler_memory),
@@ -641,5 +640,11 @@ public:
 }
 
 }}
+
+inline void* operator new(size_t sz, moducom::coap::experimental::FactoryDispatcherHandlerContext& ctx)
+{
+    return ctx.incoming_context.objstack.alloc(sz);
+}
+
 
 #endif //MC_COAP_TEST_COAP_DISPATCHER_H

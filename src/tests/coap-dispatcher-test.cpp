@@ -16,15 +16,13 @@ using namespace moducom::coap::experimental;
 using namespace moducom::pipeline;
 
 
-
 extern dispatcher_handler_factory_fn test_sub_factories[];
 
 IDecoderObserver* context_handler_factory(FactoryDispatcherHandlerContext& ctx)
 {
     IncomingContext& context = ctx.incoming_context;
-
 #ifdef FEATURE_MCCOAP_INLINE_TOKEN
-    return new (ctx.handler_memory.data()) ContextDispatcherHandler(context);
+    return new (ctx) ContextDispatcherHandler(context);
 #else
     static moducom::dynamic::PoolBase<moducom::coap::layer2::Token, 8> token_pool;
     return new (ctx.handler_memory.data()) ContextDispatcherHandler(context, token_pool);
@@ -34,7 +32,7 @@ IDecoderObserver* context_handler_factory(FactoryDispatcherHandlerContext& ctx)
 
 IDecoderObserver* test_factory1(FactoryDispatcherHandlerContext& ctx)
 {
-    return new (ctx.handler_memory.data()) Buffer16BitDeltaObserver(IsInterestedBase::Never);
+    return new (ctx) Buffer16BitDeltaObserver(IsInterestedBase::Never);
 }
 
 
@@ -179,7 +177,7 @@ TEST_CASE("CoAP dispatcher tests", "[coap-dispatcher]")
         // FIX: OK all those virtual function tables seem to be bloating
         // our handlers way, way up...
         layer3::MemoryChunk<512> dispatcherBuffer;
-        IncomingContext context;
+        ObserverContext context(dispatcherBuffer);
 
         FactoryDispatcherHandler fdh(dispatcherBuffer, context, test_factories);
 #ifdef FEATURE_MCCOAP_LEGACY_DISPATCHER

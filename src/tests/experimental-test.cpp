@@ -43,7 +43,7 @@ public:
 
 IDecoderObserver* test_barny(AggregateUriPathObserver::Context& ctx)
 {
-    return new (ctx.objstack) TestBarnyObsever(ctx.context);
+    return new (ctx.context.objstack) TestBarnyObsever(ctx.context);
 }
 
 
@@ -191,7 +191,7 @@ TEST_CASE("experimental tests", "[experimental]")
         moducom::pipeline::layer1::MemoryChunk<512> buffer;
         moducom::pipeline::MemoryChunk::readonly_t
             fake_uri = moducom::pipeline::MemoryChunk::readonly_t::str_ptr("barny");
-        IncomingContext incomingContext;
+        ObserverContext incomingContext(buffer);
 
         item_t items[] =
         {

@@ -323,13 +323,13 @@ struct FnFactoryHelper
     template <class TObserver>
     static item_t item_experimental(key_t key)
     {
-        return item(key, [](context_t& c)
+        return item(key, [](context_t& c) -> IDecoderObserver*
         {
-            TObserver* observer = new (c.objstack) TObserver;
+            auto observer = new (c.context.objstack) TObserver;
 
             observer->set_context(c.context);
 
-            return static_cast<IDecoderObserver*>(observer);
+            return observer;
         });
     }
 #endif

@@ -198,11 +198,14 @@ class AggregateUriPathObserver : public experimental::DispatcherHandlerBase
 public:
     struct Context
     {
+    private:
         dynamic::ObjStack objstack;
-        IncomingContext& context;
+
+    public:
+        ObserverContext& context;
 
         Context(const dynamic::ObjStack& objstack,
-                IncomingContext& context) :
+                ObserverContext& context) :
             objstack(objstack),
             context(context) {}
 
@@ -230,7 +233,7 @@ public:
     // would probably be fine, factory itself dissects all that
     template <const size_t N>
     AggregateUriPathObserver(const pipeline::MemoryChunk& chunk,
-                         IncomingContext& incoming_context,
+                             ObserverContext& incoming_context,
                          fn_t::item_t (&items) [N]) :
         factory(items),
         context(chunk, incoming_context),
@@ -239,7 +242,7 @@ public:
     }
 
     AggregateUriPathObserver(const pipeline::MemoryChunk& chunk,
-                         IncomingContext& incoming_context,
+                             ObserverContext& incoming_context,
                          fn_t::item_t* items, size_t item_count) :
             factory(items, item_count),
             context(chunk, incoming_context),

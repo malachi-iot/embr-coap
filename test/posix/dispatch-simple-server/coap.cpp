@@ -36,7 +36,7 @@ void issue_response(BlockingEncoder* encoder, IncomingContext* context,
 IDecoderObserver* context_dispatcher(FactoryDispatcherHandlerContext& ctx)
 {
 #ifdef FEATURE_MCCOAP_INLINE_TOKEN
-    return new (ctx.handler_memory.data()) ContextDispatcherHandler(ctx.incoming_context);
+    return new (ctx) ContextDispatcherHandler(ctx.incoming_context);
 #else
     typedef moducom::dynamic::OutOfBandPool<moducom::coap::layer2::Token> token_pool_t;
 
@@ -84,7 +84,7 @@ public:
 
 IDecoderObserver* fallthrough_404(FactoryDispatcherHandlerContext& ctx)
 {
-    return new (ctx.handler_memory.data()) FallThroughHandler(ctx.incoming_context);
+    return new (ctx) FallThroughHandler(ctx.incoming_context);
 }
 
 
@@ -179,7 +179,7 @@ AggregateUriPathObserver::item_t new_v1_factories[] =
     AggregateUriPathObserver::fn_t::item(STR_URI_TEST,
                                      [](AggregateUriPathObserver::Context& c) -> IDecoderObserver*
      {
-         auto observer = new (c.objstack) TestDispatcherHandler;
+         auto observer = new (c.context.objstack) TestDispatcherHandler;
 
          observer->set_context(c.context);
 
@@ -206,7 +206,7 @@ size_t service_coap_in(const struct sockaddr_in& addr, pipeline::MemoryChunk& in
     moducom::coap::experimental::Dispatcher dispatcher;
 #endif
     moducom::coap::experimental::BlockingEncoder encoder(writer);
-    IncomingContext incoming_context;
+    ObserverContext incoming_context(dispatcherBuffer);
 
     FactoryDispatcherHandler handler(dispatcherBuffer, incoming_context, root_factories);
     //TestDispatcherHandler handler;
