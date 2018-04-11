@@ -1,6 +1,7 @@
 #include "coap-dispatcher.h"
 #include <coap-uripath-dispatcher.h>
 #include <coap-encoder.h>
+#include <coap/decoder-subject.hpp>
 #include "experimental.h"
 #include "main.h"
 
@@ -32,7 +33,7 @@ void issue_response(BlockingEncoder* encoder, IncomingContext* context,
 }
 
 
-IDispatcherHandler* context_dispatcher(FactoryDispatcherHandlerContext& ctx)
+IDecoderObserver* context_dispatcher(FactoryDispatcherHandlerContext& ctx)
 {
 #ifdef FEATURE_MCCOAP_INLINE_TOKEN
     return new (ctx.handler_memory.data()) ContextDispatcherHandler(ctx.incoming_context);
@@ -81,13 +82,13 @@ public:
 #endif
 };
 
-IDispatcherHandler* fallthrough_404(FactoryDispatcherHandlerContext& ctx)
+IDecoderObserver* fallthrough_404(FactoryDispatcherHandlerContext& ctx)
 {
     return new (ctx.handler_memory.data()) FallThroughHandler(ctx.incoming_context);
 }
 
 
-IDispatcherHandler* new_v1_factory(FactoryDispatcherHandlerContext& ctx)
+IDecoderObserver* new_v1_factory(FactoryDispatcherHandlerContext& ctx)
 {
     dynamic::ObjStack objstack(ctx.handler_memory);
 
@@ -176,13 +177,13 @@ dispatcher_handler_factory_fn v1_factories[] =
 AggregateUriPathObserver::item_t new_v1_factories[] =
 {
     AggregateUriPathObserver::fn_t::item(STR_URI_TEST,
-                                     [](AggregateUriPathObserver::Context& c)
+                                     [](AggregateUriPathObserver::Context& c) -> IDecoderObserver*
      {
          auto observer = new (c.objstack) TestDispatcherHandler;
 
          observer->set_context(c.context);
 
-         return static_cast<IDispatcherHandler*>(observer);
+         return observer;
      }),
     AggregateUriPathObserver::fn_t::item_experimental<TestDispatcherHandler>(STR_URI_TEST2)
 };
@@ -201,7 +202,9 @@ size_t service_coap_in(const struct sockaddr_in& addr, pipeline::MemoryChunk& in
     // form is wrong.  Proper form would be more like DecoderThenObserver or DecodeAndObserver
     // but those sound bad.  Perhaps MessageObservable?  DecodeMessageObservable? yuck.
     // ObservableMessage?  Nope... all bad, every one.
+#ifdef FEATURE_MCCOAP_LEGACY_DISPATCHER
     moducom::coap::experimental::Dispatcher dispatcher;
+#endif
     moducom::coap::experimental::BlockingEncoder encoder(writer);
     IncomingContext incoming_context;
 
@@ -211,8 +214,14 @@ size_t service_coap_in(const struct sockaddr_in& addr, pipeline::MemoryChunk& in
     // FIX: fix this gruesomeness
     global_encoder = &encoder;
 
+#ifdef FEATURE_MCCOAP_LEGACY_DISPATCHER
     dispatcher.head(&handler);
     dispatcher.dispatch(in, true);
+#else
+    DecoderSubjectBase<IDecoderObserver&> decoder_subject(handler);
+
+    decoder_subject.dispatch(in);
+#endif
 
     size_t send_bytes = writer.length_experimental();
 

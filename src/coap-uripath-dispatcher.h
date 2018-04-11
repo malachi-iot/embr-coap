@@ -131,11 +131,11 @@ public:
 
 // links a single observer to a particular uri prefix
 class SingleUriPathObserver :
-        public UriPathDispatcherHandlerBase<experimental::IDispatcherHandler>
+        public UriPathDispatcherHandlerBase<experimental::IDecoderObserver>
 {
-    typedef UriPathDispatcherHandlerBase<experimental::IDispatcherHandler> base_t;
+    typedef UriPathDispatcherHandlerBase<experimental::IDecoderObserver> base_t;
 public:
-    SingleUriPathObserver(const char* prefix, experimental::IDispatcherHandler& observer)
+    SingleUriPathObserver(const char* prefix, experimental::IDecoderObserver& observer)
             : base_t(prefix, observer)
     {
 
@@ -144,7 +144,7 @@ public:
 
 
 template <const char* uri_path, experimental::dispatcher_handler_factory_fn* factories, int count>
-experimental::IDispatcherHandler* uri_plus_factory_dispatcher(experimental::FactoryDispatcherHandlerContext& ctx)
+experimental::IDecoderObserver* uri_plus_factory_dispatcher(experimental::FactoryDispatcherHandlerContext& ctx)
 {
     pipeline::MemoryChunk& chunk = ctx.handler_memory;
     pipeline::MemoryChunk& uri_handler_chunk = chunk;
@@ -168,7 +168,7 @@ experimental::IDispatcherHandler* uri_plus_factory_dispatcher(experimental::Fact
 
 // Creates a unique static TMessageObserver associated with this uri_path
 template <const char* uri_path, class TMessageObserver>
-experimental::IDispatcherHandler* uri_plus_observer_dispatcher(experimental::FactoryDispatcherHandlerContext& ctx)
+experimental::IDecoderObserver* uri_plus_observer_dispatcher(experimental::FactoryDispatcherHandlerContext& ctx)
 {
     static TMessageObserver observer;
 
@@ -211,7 +211,7 @@ public:
             context(copy_from.context) {}
     };
 
-    typedef FnFactoryTraits<const char*, IDispatcherHandler*, Context&> traits_t;
+    typedef FnFactoryTraits<const char*, IDecoderObserver*, Context&> traits_t;
     typedef FnFactoryHelper<traits_t> fn_t;
     typedef fn_t::factory_t factory_t;
     typedef fn_t::item_t item_t;
@@ -222,7 +222,7 @@ protected:
 
     Context context;
 
-    IDispatcherHandler* handler;
+    IDecoderObserver* handler;
 
 public:
 

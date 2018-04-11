@@ -18,14 +18,14 @@ using namespace moducom::coap::experimental;
 
 
 
-IDispatcherHandler* sensor1_handler(AggregateUriPathObserver::Context& ctx)
+IDecoderObserver* sensor1_handler(AggregateUriPathObserver::Context& ctx)
 {
     // TODO: In here, handle both a subscription request as well as
     // the resource request itself.  TBD whether we need to return 'Observe'
     // option with the (piggybacked) ACK from here
     dispatcher_handler_factory_fn factories[] =
     {
-        //[](FactoryDispatcherHandlerContext& c) -> IDispatcherHandler*
+        //[](FactoryDispatcherHandlerContext& c) -> IDecoderObserver*
         //{ return new (c.handler_memory.data()) int; },
         nullptr
     };
@@ -38,13 +38,13 @@ IDispatcherHandler* sensor1_handler(AggregateUriPathObserver::Context& ctx)
 }
 
 
-IDispatcherHandler* sensor2_handler(AggregateUriPathObserver::Context& ctx)
+IDecoderObserver* sensor2_handler(AggregateUriPathObserver::Context& ctx)
 {
     return nullptr;
 }
 
 
-IDispatcherHandler* v1_handler(AggregateUriPathObserver::Context& ctx)
+IDecoderObserver* v1_handler(AggregateUriPathObserver::Context& ctx)
 {
     typedef AggregateUriPathObserver::fn_t fn_t;
     typedef AggregateUriPathObserver::item_t item_t;
@@ -59,13 +59,13 @@ IDispatcherHandler* v1_handler(AggregateUriPathObserver::Context& ctx)
     return new (ctx.objstack) AggregateUriPathObserver(ctx, items);
 }
 
-IDispatcherHandler* context_dispatcher(FactoryDispatcherHandlerContext& ctx)
+IDecoderObserver* context_dispatcher(FactoryDispatcherHandlerContext& ctx)
 {
     return new (ctx.handler_memory.data()) ContextDispatcherHandler(ctx.incoming_context);
 }
 
 
-IDispatcherHandler* v1_dispatcher(FactoryDispatcherHandlerContext& ctx)
+IDecoderObserver* v1_dispatcher(FactoryDispatcherHandlerContext& ctx)
 {
     moducom::dynamic::ObjStack objstack(ctx.handler_memory);
     typedef AggregateUriPathObserver::fn_t fn_t;
@@ -100,7 +100,7 @@ size_t service_coap_in(const struct sockaddr_in& address_in, MemoryChunk& inbuf,
     IncomingContext incoming_context;
 
     FactoryDispatcherHandler dh(buffer, incoming_context, root_factories);
-    DecoderSubjectBase<IDispatcherHandler&> decoder(dh);
+    DecoderSubjectBase<IDecoderObserver&> decoder(dh);
 
     decoder.dispatch(inbuf);
 

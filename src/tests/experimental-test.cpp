@@ -41,7 +41,7 @@ public:
     }
 };
 
-IDispatcherHandler* test_barny(AggregateUriPathObserver::Context& ctx)
+IDecoderObserver* test_barny(AggregateUriPathObserver::Context& ctx)
 {
     return new (ctx.objstack) TestBarnyObsever(ctx.context);
 }

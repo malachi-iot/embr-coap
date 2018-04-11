@@ -181,8 +181,9 @@ struct IIsInterested
 // one particular dispatcher handler will become the main handler for the remainder of the
 // incoming CoAP message
 
-class IDispatcherHandler :
-    public moducom::experimental::forward_node<IDispatcherHandler>,
+// FIX: Change name to IDecoderObserver to mate to DecoderSubject, and get rid of forward_node
+class IDecoderObserver :
+    public moducom::experimental::forward_node<IDecoderObserver>,
     public IMessageObserver
 #ifdef FEATURE_IISINTERESTED
         ,
@@ -190,7 +191,7 @@ class IDispatcherHandler :
 #endif
 {
 public:
-    virtual ~IDispatcherHandler() {}
+    virtual ~IDecoderObserver() {}
 
 #ifndef FEATURE_IISINTERESTED
     typedef IsInterestedBase::InterestedEnum interested_t;
@@ -214,7 +215,7 @@ public:
 
 // Convenience class for building dispatcher handlers
 class DispatcherHandlerBase :
-        public IDispatcherHandler,
+        public IDecoderObserver,
         public IsInterestedBase
 {
 protected:
@@ -226,7 +227,7 @@ protected:
     inline bool is_always_interested() const
     {
         // ensure we pick up the one that utilizes virtual interested()
-        return IDispatcherHandler::is_always_interested();
+        return IDecoderObserver::is_always_interested();
     }
 #endif
 
@@ -283,7 +284,7 @@ public:
 };
 
 
-
+#ifdef FEATURE_MCCOAP_LEGACY_DISPATCHER
 // Dispatches one CoAP message at a time based on externally provided input
 // TODO: Break this out into Decoder base class, right now dispatching and decoding
 // are just a little bit too fused together, at least better than IMessageHandler and IMessageObserver
@@ -333,7 +334,7 @@ public:
         reset();
     }
 };
-
+#endif
 
 struct FactoryDispatcherHandlerContext
 {
@@ -364,7 +365,7 @@ struct FactoryDispatcherHandlerContext
 
 
 // An in-place new is expected
-typedef IDispatcherHandler* (*dispatcher_handler_factory_fn)(FactoryDispatcherHandlerContext&);
+typedef IDecoderObserver* (*dispatcher_handler_factory_fn)(FactoryDispatcherHandlerContext&);
 
 
 /*
@@ -392,7 +393,7 @@ struct ShimDispatcherHandlerTraits
 // an "Always" interested as the one and only one to further process the message
 // clearly this isn't a system-wide desirable behavior, so be warned.  We do this
 // because the memory management scheme only supports one truly active IDispatcherHandler
-class FactoryDispatcherHandler : public IDispatcherHandler
+class FactoryDispatcherHandler : public IDecoderObserver
 {
     pipeline::MemoryChunk _handler_memory;
 
@@ -481,7 +482,7 @@ class FactoryDispatcherHandler : public IDispatcherHandler
     State* handler_states() { return _handler_states; }
 
 #endif
-    IDispatcherHandler* chosen;
+    IDecoderObserver* chosen;
 
     size_t handler_states_size() const
     {
@@ -490,9 +491,9 @@ class FactoryDispatcherHandler : public IDispatcherHandler
 
     State& handler_state(int index) { return handler_states()[index]; }
 
-    IDispatcherHandler* observer_helper_begin(context_t& context, int i);
+    IDecoderObserver* observer_helper_begin(context_t& context, int i);
 
-    void observer_helper_end(context_t& context, IDispatcherHandler* handler);
+    void observer_helper_end(context_t& context, IDecoderObserver* handler);
 
     void free_reserved();
 

@@ -9,6 +9,8 @@
 #include "test-data.h"
 #include "test-observer.h"
 
+#include "coap/decoder-subject.hpp"
+
 using namespace moducom::coap;
 using namespace moducom::coap::experimental;
 using namespace moducom::pipeline;
@@ -17,7 +19,7 @@ using namespace moducom::pipeline;
 
 extern dispatcher_handler_factory_fn test_sub_factories[];
 
-IDispatcherHandler* context_handler_factory(FactoryDispatcherHandlerContext& ctx)
+IDecoderObserver* context_handler_factory(FactoryDispatcherHandlerContext& ctx)
 {
     IncomingContext& context = ctx.incoming_context;
 
@@ -30,7 +32,7 @@ IDispatcherHandler* context_handler_factory(FactoryDispatcherHandlerContext& ctx
 }
 
 
-IDispatcherHandler* test_factory1(FactoryDispatcherHandlerContext& ctx)
+IDecoderObserver* test_factory1(FactoryDispatcherHandlerContext& ctx)
 {
     return new (ctx.handler_memory.data()) Buffer16BitDeltaObserver(IsInterestedBase::Never);
 }
@@ -83,7 +85,7 @@ IDispatcherHandler* uri_plus_factory_dispatcher(MemoryChunk chunk)
 
 } */
 
-IDispatcherHandler* test_factory2(FactoryDispatcherHandlerContext& ctx)
+IDecoderObserver* test_factory2(FactoryDispatcherHandlerContext& ctx)
 {
     MemoryChunk& uri_handler_chunk = ctx.handler_memory;
     MemoryChunk v1_handler_chunk = ctx.handler_memory.remainder(sizeof(SingleUriPathObserver));
@@ -169,7 +171,7 @@ dispatcher_handler_factory_fn test_sub_factories[] =
 
 TEST_CASE("CoAP dispatcher tests", "[coap-dispatcher]")
 {
-    SECTION("Factory")
+    SECTION("Dispatcher Factory")
     {
         MemoryChunk chunk(buffer_plausible, sizeof(buffer_plausible));
 
@@ -180,6 +182,7 @@ TEST_CASE("CoAP dispatcher tests", "[coap-dispatcher]")
         IncomingContext context;
 
         FactoryDispatcherHandler fdh(dispatcherBuffer, context, test_factories);
+#ifdef FEATURE_MCCOAP_LEGACY_DISPATCHER
         Dispatcher dispatcher;
 
         // doesn't fully test new UriPath handler because Buffer16BitDeltaObserver
@@ -187,6 +190,11 @@ TEST_CASE("CoAP dispatcher tests", "[coap-dispatcher]")
         // setting it to "Currently" makes it unable to test its own options properly
         dispatcher.head(&fdh);
         dispatcher.dispatch(chunk);
+#else
+        DecoderSubjectBase<IDecoderObserver&> decoder_subject(fdh);
+
+        decoder_subject.dispatch(chunk);
+#endif
     }
     SECTION("Array experimentation")
     {
@@ -203,7 +211,7 @@ TEST_CASE("CoAP dispatcher tests", "[coap-dispatcher]")
         int size2 = sizeof(IOptionAndPayloadObserver);
         int size3 = sizeof(IOptionObserver);
 #endif
-        int size4 = sizeof(IDispatcherHandler);
+        int size4 = sizeof(IDecoderObserver);
         int size5 = sizeof(IIsInterested);
         int size6 = sizeof(DispatcherHandlerBase);
         int size7 = sizeof(SingleUriPathObserver);

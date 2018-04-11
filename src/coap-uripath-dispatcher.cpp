@@ -72,7 +72,7 @@ void AggregateUriPathObserver::on_complete()
     if (handler != NULLPTR)
     {
         handler->on_complete();
-        handler->~IDispatcherHandler();
+        handler->~IDecoderObserver();
     }
 }
 #endif

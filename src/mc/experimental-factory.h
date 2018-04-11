@@ -297,7 +297,7 @@ FnFactory<typename TItem::key_t, typename TItem::value_t> factory_helper(TItem (
 
 
 // FIX: Move this and the item_experimental out of here
-class IDispatcherHandler;
+class IDecoderObserver;
 
 template <class TTraits>
 struct FnFactoryHelper
@@ -329,7 +329,7 @@ struct FnFactoryHelper
 
             observer->set_context(c.context);
 
-            return static_cast<IDispatcherHandler*>(observer);
+            return static_cast<IDecoderObserver*>(observer);
         });
     }
 #endif

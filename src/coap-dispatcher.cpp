@@ -15,6 +15,8 @@ namespace moducom { namespace coap {
 
 namespace experimental {
 
+#ifdef FEATURE_MCCOAP_LEGACY_DISPATCHER
+
 // TODO: Eventually clean up dispatch_option and then
 // just run process_iterate always at the bottom
 bool Dispatcher::dispatch_iterate(Context& context)
@@ -282,8 +284,9 @@ void Dispatcher::dispatch_token()
     }
 }
 
+#endif
 
-inline IDispatcherHandler* FactoryDispatcherHandler::observer_helper_begin(context_t& context, int i)
+inline IDecoderObserver* FactoryDispatcherHandler::observer_helper_begin(context_t& context, int i)
 {
     State& state = handler_state(i);
     context.state = &state;
@@ -295,12 +298,12 @@ inline IDispatcherHandler* FactoryDispatcherHandler::observer_helper_begin(conte
     if(state.reserved) return state.reserved;
 #endif
 
-    IDispatcherHandler* handler = handler_factories[i](context);
+    IDecoderObserver* handler = handler_factories[i](context);
     return handler;
 }
 
 
-inline void FactoryDispatcherHandler::observer_helper_end(context_t& context, IDispatcherHandler* handler)
+inline void FactoryDispatcherHandler::observer_helper_end(context_t& context, IDecoderObserver* handler)
 {
     State& state = *context.state;
 
@@ -337,7 +340,7 @@ inline void FactoryDispatcherHandler::observer_helper_end(context_t& context, ID
         // this is called every time lock step with observer_helper_begin
         // unless using experimental reserved mode OR we are in always-
         // interested mode
-        handler->~IDispatcherHandler();
+        handler->~IDecoderObserver();
 
         // TODO: Somehow we need an intelligent objstack.free right here
         // which knows correct amount of bytes to free
@@ -367,7 +370,7 @@ void FactoryDispatcherHandler::on_header(Header header)
     {
         context_t ctx(context, handler_memory());
 
-        IDispatcherHandler* handler = observer_helper_begin(ctx, i);
+        IDecoderObserver* handler = observer_helper_begin(ctx, i);
 
         if(handler == NULLPTR) continue;
 
@@ -399,7 +402,7 @@ void FactoryDispatcherHandler::on_token(const pipeline::MemoryChunk::readonly_t&
     {
         context_t ctx(context, handler_memory());
 
-        IDispatcherHandler* handler = observer_helper_begin(ctx, i);
+        IDecoderObserver* handler = observer_helper_begin(ctx, i);
 
         if(handler == NULLPTR) continue;
 
@@ -433,7 +436,7 @@ void FactoryDispatcherHandler::on_option(number_t number,
     {
         context_t ctx(context, handler_memory());
 
-        IDispatcherHandler* handler = observer_helper_begin(ctx, i);
+        IDecoderObserver* handler = observer_helper_begin(ctx, i);
 
         if(handler == NULLPTR) continue;
 
@@ -455,7 +458,7 @@ void FactoryDispatcherHandler::on_payload(const pipeline::MemoryChunk::readonly_
         // NOTE: Keep an eye on this.  Not sure if this is the exact right
         // place for lifecycle management, but should be a good spot
         if(last_chunk)
-            chosen->~IDispatcherHandler();
+            chosen->~IDecoderObserver();
 
         return;
     }
@@ -464,7 +467,7 @@ void FactoryDispatcherHandler::on_payload(const pipeline::MemoryChunk::readonly_
     {
         context_t ctx(context, handler_memory());
 
-        IDispatcherHandler* handler = observer_helper_begin(ctx, i);
+        IDecoderObserver* handler = observer_helper_begin(ctx, i);
 
         if(handler == NULLPTR) continue;
 
@@ -485,7 +488,7 @@ void FactoryDispatcherHandler::on_complete()
     {
         context_t ctx(context, handler_memory());
 
-        IDispatcherHandler* handler = observer_helper_begin(ctx, i);
+        IDecoderObserver* handler = observer_helper_begin(ctx, i);
 
         if(handler == NULLPTR) continue;
 

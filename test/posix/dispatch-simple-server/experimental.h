@@ -16,7 +16,7 @@ static void root_helper(pipeline::MemoryChunk& dispatcherBuffer,
                         dispatcher_handler_factory_fn (&root_factories)[n])
 {
     moducom::pipeline::layer3::SimpleBufferedPipelineWriter writer(out);
-    moducom::coap::experimental::Dispatcher dispatcher;
+    //moducom::coap::experimental::Dispatcher dispatcher;
     moducom::coap::experimental::BlockingEncoder encoder(writer);
 
     IncomingContext incoming_context;
@@ -24,7 +24,7 @@ static void root_helper(pipeline::MemoryChunk& dispatcherBuffer,
     FactoryDispatcherHandler handler(dispatcherBuffer, incoming_context, root_factories);
 }
 
-IDispatcherHandler* context_dispatcher(FactoryDispatcherHandlerContext& ctx);
+IDecoderObserver* context_dispatcher(FactoryDispatcherHandlerContext& ctx);
 
 
 // NOTE: ALso not used yet because the string-factory template manager still being worked
