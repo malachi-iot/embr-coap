@@ -90,7 +90,7 @@ IDecoderObserver* fallthrough_404(FactoryDispatcherHandlerContext& ctx)
 
 IDecoderObserver* new_v1_factory(FactoryDispatcherHandlerContext& ctx)
 {
-    dynamic::ObjStack objstack(ctx.handler_memory);
+    dynamic::ObjStack& objstack = ctx.incoming_context.objstack;
 
     // Have to do pre-alloc like this because of how remainder_chunk is utilized
     void* aggregateObserverMemory = objstack.alloc(sizeof(AggregateUriPathObserver));
@@ -101,7 +101,6 @@ IDecoderObserver* new_v1_factory(FactoryDispatcherHandlerContext& ctx)
     // probably has to do with our forward-extern up above
     auto aggregateObserver = new (aggregateObserverMemory)
             AggregateUriPathObserver(
-                remainder_chunk,
                 ctx.incoming_context,
                 new_v1_factories, 1);
 
@@ -179,7 +178,7 @@ AggregateUriPathObserver::item_t new_v1_factories[] =
     AggregateUriPathObserver::fn_t::item(STR_URI_TEST,
                                      [](AggregateUriPathObserver::Context& c) -> IDecoderObserver*
      {
-         auto observer = new (c.context.objstack) TestDispatcherHandler;
+         auto observer = new (c) TestDispatcherHandler;
 
          observer->set_context(c.context);
 

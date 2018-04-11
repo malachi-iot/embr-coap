@@ -198,7 +198,7 @@ TEST_CASE("experimental tests", "[experimental]")
             fn_t::item("barny", test_barny)
         };
 
-        AggregateUriPathObserver dh(buffer, incomingContext, items);
+        AggregateUriPathObserver dh(incomingContext, items);
 
         dh.on_option(Option::UriPath, fake_uri, true);
         dh.on_complete();

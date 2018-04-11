@@ -85,6 +85,7 @@ IDispatcherHandler* uri_plus_factory_dispatcher(MemoryChunk chunk)
 
 IDecoderObserver* test_factory2(FactoryDispatcherHandlerContext& ctx)
 {
+#ifdef FEATURE_MCCOAP_LEGACY_PREOBJSTACK
     MemoryChunk& uri_handler_chunk = ctx.handler_memory;
     MemoryChunk v1_handler_chunk = ctx.handler_memory.remainder(sizeof(SingleUriPathObserver));
     MemoryChunk v1_handler_inner_chunk = v1_handler_chunk.remainder(sizeof(FactoryDispatcherHandler));
@@ -96,6 +97,13 @@ IDecoderObserver* test_factory2(FactoryDispatcherHandlerContext& ctx)
 
     // TODO: will need some way to invoke fdh destructor
     return new (uri_handler_chunk.data()) SingleUriPathObserver("v1", *fdh);
+#else
+    FactoryDispatcherHandler* fdh = new (ctx) FactoryDispatcherHandler(
+            ctx.incoming_context,
+            test_sub_factories, 1);
+
+    return new (ctx) SingleUriPathObserver("v1", *fdh);
+#endif
 }
 
 extern CONSTEXPR char STR_TEST[] = "TEST";
@@ -179,7 +187,12 @@ TEST_CASE("CoAP dispatcher tests", "[coap-dispatcher]")
         layer3::MemoryChunk<512> dispatcherBuffer;
         ObserverContext context(dispatcherBuffer);
 
+#ifdef FEATURE_MCCOAP_LEGACY_PREOBJSTACK
         FactoryDispatcherHandler fdh(dispatcherBuffer, context, test_factories);
+#else
+        FactoryDispatcherHandler fdh(context, test_factories);
+#endif
+
 #ifdef FEATURE_MCCOAP_LEGACY_DISPATCHER
         Dispatcher dispatcher;
 

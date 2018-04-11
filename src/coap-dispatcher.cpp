@@ -368,7 +368,11 @@ void FactoryDispatcherHandler::on_header(Header header)
 
     for(int i = 0; i < handler_factory_count; i++)
     {
+#ifdef FEATURE_MCCOAP_LEGACY_PREOBJSTACK
         context_t ctx(context, handler_memory());
+#else
+        context_t ctx(context);
+#endif
 
         IDecoderObserver* handler = observer_helper_begin(ctx, i);
 
@@ -400,7 +404,11 @@ void FactoryDispatcherHandler::on_token(const pipeline::MemoryChunk::readonly_t&
     // token feels like an explicitly pre known circumstance i.e. session management feature
     for(int i = 0; i < handler_factory_count; i++)
     {
+#ifdef FEATURE_MCCOAP_LEGACY_PREOBJSTACK
         context_t ctx(context, handler_memory());
+#else
+        context_t ctx(context);
+#endif
 
         IDecoderObserver* handler = observer_helper_begin(ctx, i);
 
@@ -434,7 +442,11 @@ void FactoryDispatcherHandler::on_option(number_t number,
 
     for(int i = 0; i < handler_factory_count; i++)
     {
+#ifdef FEATURE_MCCOAP_LEGACY_PREOBJSTACK
         context_t ctx(context, handler_memory());
+#else
+        context_t ctx(context);
+#endif
 
         IDecoderObserver* handler = observer_helper_begin(ctx, i);
 
@@ -465,7 +477,11 @@ void FactoryDispatcherHandler::on_payload(const pipeline::MemoryChunk::readonly_
 
     for(int i = 0; i < handler_factory_count; i++)
     {
+#ifdef FEATURE_MCCOAP_LEGACY_PREOBJSTACK
         context_t ctx(context, handler_memory());
+#else
+        context_t ctx(context);
+#endif
 
         IDecoderObserver* handler = observer_helper_begin(ctx, i);
 
@@ -486,7 +502,11 @@ void FactoryDispatcherHandler::on_complete()
     // (unlikely use case)
     for(int i = 0; i < handler_factory_count; i++)
     {
+#ifdef FEATURE_MCCOAP_LEGACY_PREOBJSTACK
         context_t ctx(context, handler_memory());
+#else
+        context_t ctx(context);
+#endif
 
         IDecoderObserver* handler = observer_helper_begin(ctx, i);
 

@@ -34,7 +34,7 @@ IDecoderObserver* sensor1_handler(AggregateUriPathObserver::Context& ctx)
     // NOTE: Also have to be very, very careful that the passed in ctx.objstack
     //      reflects the state of ctx.objstack *after* placement new, so must
     //      always pass in by reference/pointer
-    return new (ctx.context.objstack) FactoryDispatcherHandler(ctx.context.objstack, ctx.context, factories);
+    return new (ctx) FactoryDispatcherHandler(ctx.context.objstack, ctx.context, factories);
 }
 
 
@@ -79,7 +79,7 @@ IDecoderObserver* v1_dispatcher(FactoryDispatcherHandlerContext& ctx)
     // in for the used memorychunk.  However, this is all clumsy and we should be passing
     // around objstack more universally
     AggregateUriPathObserver* observer = new (ctx)
-            AggregateUriPathObserver(ctx.incoming_context.objstack, ctx.incoming_context, items);
+            AggregateUriPathObserver(ctx.incoming_context, items);
 
     return observer;
 }

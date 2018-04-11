@@ -11,6 +11,11 @@
 #include "coap/context.h"
 #include "mc/memory-pool.h"
 
+// Doesn't really work, but will let us compile
+// Expect memory corruption errors while using this -
+// Specifically we get a problem during "CoAP dispatcher tests"::"Dispatcher Factory"
+#define FEATURE_MCCOAP_LEGACY_PREOBJSTACK
+
 // This adds 8 bytes to IDispatcherHandler class when enabled
 //#define FEATURE_IISINTERESTED
 
@@ -340,8 +345,15 @@ struct FactoryDispatcherHandlerContext
 {
     ObserverContext& incoming_context;
 
+//private:
     // this one may change through the stack walk
+    // FIX: BROKEN - expect code that uses this to not function properly, phase out
+    // in favor of incoming_context.objstack
+#ifdef FEATURE_MCCOAP_LEGACY_PREOBJSTACK
     pipeline::MemoryChunk handler_memory;
+#endif
+
+public:
 
 #ifdef FEATURE_MCCOAP_RESERVED_DISPATCHER
     // EXPERIMENTAL:  Number of bytes from handler_memory we wish to permenantly
@@ -352,13 +364,20 @@ struct FactoryDispatcherHandlerContext
     size_t reserve_bytes;
 #endif
 
-    FactoryDispatcherHandlerContext(ObserverContext& ic, const pipeline::MemoryChunk& hm)
+    FactoryDispatcherHandlerContext(ObserverContext& ic
+#ifdef FEATURE_MCCOAP_LEGACY_PREOBJSTACK
+            , const pipeline::MemoryChunk& hm
+#endif
+        )
             :
 #ifdef FEATURE_MCCOAP_RESERVED_DISPATCHER
               reserve_bytes(0),
 #endif
-              incoming_context(ic),
+              incoming_context(ic)
+#ifdef FEATURE_MCCOAP_LEGACY_PREOBJSTACK
+            ,
               handler_memory(hm)
+#endif
     {}
 };
 
@@ -394,7 +413,9 @@ struct ShimDispatcherHandlerTraits
 // because the memory management scheme only supports one truly active IDispatcherHandler
 class FactoryDispatcherHandler : public IDecoderObserver
 {
+#ifdef FEATURE_MCCOAP_LEGACY_PREOBJSTACK
     pipeline::MemoryChunk _handler_memory;
+#endif
 
     const dispatcher_handler_factory_fn* handler_factories;
     const int handler_factory_count;
@@ -438,8 +459,13 @@ class FactoryDispatcherHandler : public IDecoderObserver
     {
         State* state;
 
+#ifdef FEATURE_MCCOAP_LEGACY_PREOBJSTACK
         Context(FactoryDispatcherHandlerContext& ctx, const pipeline::MemoryChunk& chunk)
             : FactoryDispatcherHandlerContext(ctx.incoming_context, chunk) {}
+#else
+        Context(FactoryDispatcherHandlerContext& ctx) :
+            FactoryDispatcherHandlerContext(ctx) {}
+#endif
     };
 
     typedef Context context_t;
@@ -447,7 +473,7 @@ class FactoryDispatcherHandler : public IDecoderObserver
     FactoryDispatcherHandlerContext context;
 
 
-#define FEATURE_FDH_FANCYMEM
+//#define FEATURE_FDH_FANCYMEM
 
 #ifdef FEATURE_FDH_FANCYMEM
     // where candidate handlers get their semi-objstack from
@@ -471,16 +497,20 @@ class FactoryDispatcherHandler : public IDecoderObserver
         moducom::experimental::ArrayHelperBase<State>::construct(handler_states(), handler_factory_count);
     }
 #else
+#ifdef FEATURE_MCCOAP_LEGACY_PREOBJSTACK
     const pipeline::MemoryChunk& handler_memory() const
     {
         return _handler_memory;
     }
+#else
+#endif
 
     State _handler_states[10];
 
     State* handler_states() { return _handler_states; }
 
 #endif
+
     IDecoderObserver* chosen;
 
     size_t handler_states_size() const
@@ -498,16 +528,25 @@ class FactoryDispatcherHandler : public IDecoderObserver
 
 public:
     FactoryDispatcherHandler(
+#ifdef FEATURE_MCCOAP_LEGACY_PREOBJSTACK
             const pipeline::MemoryChunk& handler_memory,
+#endif
             ObserverContext& incoming_context,
             dispatcher_handler_factory_fn* handler_factories,
             int handler_factory_count)
 
-            :_handler_memory(handler_memory),
+            :
+#ifdef FEATURE_MCCOAP_LEGACY_PREOBJSTACK
+             _handler_memory(handler_memory),
+#endif
              handler_factories(handler_factories),
              handler_factory_count(handler_factory_count),
              incoming_context(incoming_context),
-             context(incoming_context, handler_memory),
+             context(incoming_context
+#ifdef FEATURE_MCCOAP_LEGACY_PREOBJSTACK
+                     , handler_memory
+#endif
+             ),
              chosen(NULLPTR)
     {
 #ifdef FEATURE_FDH_FANCYMEM
@@ -518,15 +557,25 @@ public:
 
 
     template<size_t n>
-    FactoryDispatcherHandler(const pipeline::MemoryChunk& handler_memory,
+    FactoryDispatcherHandler(
+#ifdef FEATURE_MCCOAP_LEGACY_PREOBJSTACK
+                             const pipeline::MemoryChunk& handler_memory,
+#endif
                              ObserverContext& incoming_context,
                              dispatcher_handler_factory_fn (&handler_factories)[n]
     )
-            :_handler_memory(handler_memory),
+            :
+#ifdef FEATURE_MCCOAP_LEGACY_PREOBJSTACK
+             _handler_memory(handler_memory),
+#endif
              handler_factories(handler_factories),
              handler_factory_count(n),
              incoming_context(incoming_context),
+#ifdef FEATURE_MCCOAP_LEGACY_PREOBJSTACK
              context(incoming_context, handler_memory),
+#else
+             context(incoming_context),
+#endif
              chosen(NULLPTR)
 
     {

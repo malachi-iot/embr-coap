@@ -146,6 +146,7 @@ public:
 template <const char* uri_path, experimental::dispatcher_handler_factory_fn* factories, int count>
 experimental::IDecoderObserver* uri_plus_factory_dispatcher(experimental::FactoryDispatcherHandlerContext& ctx)
 {
+#ifdef FEATURE_MCCOAP_LEGACY_PREOBJSTACK
     pipeline::MemoryChunk& chunk = ctx.handler_memory;
     pipeline::MemoryChunk& uri_handler_chunk = chunk;
     // semi-objstack behavior
@@ -163,6 +164,14 @@ experimental::IDecoderObserver* uri_plus_factory_dispatcher(experimental::Factor
             factories, count);
 
     return new (uri_handler_chunk.data()) SingleUriPathObserver(uri_path, *fdh);
+#else
+    experimental::FactoryDispatcherHandler* fdh =
+            new (ctx) experimental::FactoryDispatcherHandler(
+                    ctx.incoming_context,
+                    factories, count);
+
+    return new (ctx) SingleUriPathObserver(uri_path, *fdh);
+#endif
 }
 
 
@@ -177,7 +186,7 @@ experimental::IDecoderObserver* uri_plus_observer_dispatcher(experimental::Facto
     // a better solution so that we can push context thru via constructor
     observer.set_context(ctx.incoming_context);
 
-    return new (ctx.handler_memory.data()) SingleUriPathObserver(uri_path, observer);
+    return new (ctx) SingleUriPathObserver(uri_path, observer);
 }
 
 
@@ -198,19 +207,13 @@ class AggregateUriPathObserver : public experimental::DispatcherHandlerBase
 public:
     struct Context
     {
-    private:
-        dynamic::ObjStack objstack;
-
     public:
         ObserverContext& context;
 
-        Context(const dynamic::ObjStack& objstack,
-                ObserverContext& context) :
-            objstack(objstack),
+        Context(ObserverContext& context) :
             context(context) {}
 
         Context(const Context& copy_from) :
-            objstack(copy_from.objstack),
             context(copy_from.context) {}
     };
 
@@ -232,20 +235,18 @@ public:
     // NOTE: fanciness not really necessary just a generic class T
     // would probably be fine, factory itself dissects all that
     template <const size_t N>
-    AggregateUriPathObserver(const pipeline::MemoryChunk& chunk,
-                             ObserverContext& incoming_context,
+    AggregateUriPathObserver(ObserverContext& incoming_context,
                          fn_t::item_t (&items) [N]) :
         factory(items),
-        context(chunk, incoming_context),
+        context(incoming_context),
         handler(NULLPTR)
     {
     }
 
-    AggregateUriPathObserver(const pipeline::MemoryChunk& chunk,
-                             ObserverContext& incoming_context,
+    AggregateUriPathObserver(ObserverContext& incoming_context,
                          fn_t::item_t* items, size_t item_count) :
             factory(items, item_count),
-            context(chunk, incoming_context),
+            context(incoming_context),
             handler(NULLPTR)
     {
     }
@@ -279,3 +280,9 @@ public:
 
 
 }}
+
+
+inline void* operator new(size_t sz, moducom::coap::experimental::AggregateUriPathObserver::Context& ctx)
+{
+    return ctx.context.objstack.alloc(sz);
+}
