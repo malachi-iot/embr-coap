@@ -25,11 +25,16 @@ IDispatcherHandler* sensor1_handler(AggregateUriPathObserver::Context& ctx)
     // option with the (piggybacked) ACK from here
     dispatcher_handler_factory_fn factories[] =
     {
-
+        //[](FactoryDispatcherHandlerContext& c) -> IDispatcherHandler*
+        //{ return new (c.handler_memory.data()) int; },
+        nullptr
     };
 
     // FIX: Beware, this results in an alloc which does not get freed
-    return new (ctx.objstack) FactoryDispatcherHandler(ctx.objstack, ctx.incoming_context, factories);
+    // NOTE: Also have to be very, very careful that the passed in ctx.objstack
+    //      reflects the state of ctx.objstack *after* placement new, so must
+    //      always pass in by reference/pointer
+    return new (ctx.objstack) FactoryDispatcherHandler(ctx.objstack, ctx.context, factories);
 }
 
 

@@ -229,20 +229,20 @@ public:
     // NOTE: fanciness not really necessary just a generic class T
     // would probably be fine, factory itself dissects all that
     template <const size_t N>
-    AggregateUriPathObserver(pipeline::MemoryChunk chunk,
-                         IncomingContext& incomingContext,
+    AggregateUriPathObserver(const pipeline::MemoryChunk& chunk,
+                         IncomingContext& incoming_context,
                          fn_t::item_t (&items) [N]) :
         factory(items),
-        context(chunk, incomingContext),
+        context(chunk, incoming_context),
         handler(NULLPTR)
     {
     }
 
-    AggregateUriPathObserver(pipeline::MemoryChunk chunk,
-                         IncomingContext& incomingContext,
+    AggregateUriPathObserver(const pipeline::MemoryChunk& chunk,
+                         IncomingContext& incoming_context,
                          fn_t::item_t* items, size_t item_count) :
             factory(items, item_count),
-            context(chunk, incomingContext),
+            context(chunk, incoming_context),
             handler(NULLPTR)
     {
     }
