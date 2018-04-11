@@ -334,7 +334,24 @@ inline void FactoryDispatcherHandler::observer_helper_end(context_t& context, ID
         }
 
         // placement new demands explicit destructor invocation
+        // this is called every time lock step with observer_helper_begin
+        // unless using experimental reserved mode OR we are in always-
+        // interested mode
         handler->~IDispatcherHandler();
+
+        // TODO: Somehow we need an intelligent objstack.free right here
+        // which knows correct amount of bytes to free
+
+        // consider solving this by using GNU recommended style
+        // described here https://www.gnu.org/software/libc/manual/html_node/Obstacks.html
+        // stating that a free operation is more or less an explicit
+        // reposition to the specified pointer location.  This is less aligned
+        // with traditional allocation techniques (and as such may be harder
+        // to enhance our dispatcher/observers with traditional allocation)
+
+        // upside to using GNU-style is a lot less code is involved, including no need
+        // for explicit deallocation in virtual destructors.  Something about that
+        // feels like almost too much of a shortcut, though technically it is sound
     }
 }
 
@@ -346,7 +363,6 @@ void FactoryDispatcherHandler::on_header(Header header)
         header.type(), header.message_id());
 #endif
 
-    // NOTE: Very unlikely that we'd dispatch on header itself, but conceivable
     for(int i = 0; i < handler_factory_count; i++)
     {
         context_t ctx(context, handler_memory());
@@ -444,8 +460,6 @@ void FactoryDispatcherHandler::on_payload(const pipeline::MemoryChunk::readonly_
         return;
     }
 
-    // Extremely unlikely that we won't have a chosen handler by now
-    // (unlikely use case)
     for(int i = 0; i < handler_factory_count; i++)
     {
         context_t ctx(context, handler_memory());

@@ -432,7 +432,7 @@ class FactoryDispatcherHandler : public IDispatcherHandler
         {}
     };
 
-    // Context local to FactoryDispatcherHandler, carries around
+    // Context local to FactoryDispatcherHandler::on_xxx calls, carries around
     // local state for convenience
     struct Context : public FactoryDispatcherHandlerContext
     {
