@@ -4,6 +4,13 @@
 
 namespace moducom { namespace coap { namespace experimental {
 
+// has access to simplistic memory allocation/management (good candidate is to use
+// up and coming memory alloc stuff from moducom_memory_lib)
+// and can coordinate memory chunks from there
+class MultiNeBufMemoryWriter
+{
+
+};
 
 // implicitly layer3
 class OutgoingPacketManager
