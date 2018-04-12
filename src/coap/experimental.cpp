@@ -5,7 +5,7 @@
 namespace moducom { namespace coap { namespace experimental {
 
 
-// implicitly layer2+layer3
+// implicitly layer3
 class OutgoingPacketManager
 {
     typedef struct { uint8_t raw[4]; } addr_t;
@@ -13,8 +13,9 @@ class OutgoingPacketManager
     class Item
     {
         addr_t addr;
-        //io::experimental::layer3::NetBufMemoryReader reader;
-        //io::experimental::layer3::NetBufMemoryReader<1> writer;
+        // eventually will probably be layer5 and/or templatized
+        io::experimental::layer3::NetBufMemoryReader reader;
+        io::experimental::layer3::NetBufMemoryReader writer;
     };
 };
 
