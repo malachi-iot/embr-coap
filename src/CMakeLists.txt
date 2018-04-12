@@ -6,13 +6,16 @@ project(mc-coap)
 set(CMAKE_CXX_STANDARD 98)
 
 set(MC_MEM_DIR ../ext/moducom-memory/src)
+set(ESTDLIB_DIR ../ext/estdlib/src)
 
 include_directories(${MC_MEM_DIR})
+include_directories(${ESTDLIB_DIR})
 
 # set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "../../../bin")
 # add_subdirectory(. CMAKE_RUNTIME_OUTPUT_DIRECTORY)
 # add_subdirectory(${MC_MEM_DIR} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
 add_subdirectory(${MC_MEM_DIR} CMAKE_RUNTIME_OUTPUT_DIRECTORY)
+add_subdirectory(${ESTDLIB_DIR} CMAKE_RUNTIME_OUTPUT_DIRECTORY/estdlib)
 
 # using technique from https://coderwall.com/p/y3zzbq/use-cmake-enabled-libraries-in-your-cmake-project
 #include(ExternalProject)
