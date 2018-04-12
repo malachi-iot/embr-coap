@@ -7,6 +7,7 @@
 #include "../mc/experimental-factory.h"
 #include "../coap-uripath-dispatcher.h"
 #include "../coap/experimental-observer.h"
+#include "../coap/experimental-packet-manager.h"
 
 using namespace moducom::coap;
 using namespace moducom::coap::experimental;
@@ -224,5 +225,17 @@ TEST_CASE("experimental tests", "[experimental]")
     {
         // doesn't work - GOOD
         //layer5::IMessageObserverWrapper<int> test(5);
+    }
+    SECTION("OutgoingPacketManager")
+    {
+        OutgoingPacketManager opm;
+        moducom::io::experimental::layer5::INetBuf* nb;
+        OutgoingPacketManager::item_t item;
+
+        item = opm.add(nb);
+
+        REQUIRE(item != NULLPTR);
+        REQUIRE(item->is_active() == true);
+        REQUIRE(item->ready_to_send() == false);
     }
 }
