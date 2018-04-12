@@ -165,12 +165,16 @@ experimental::IDecoderObserver* uri_plus_factory_dispatcher(experimental::Factor
 
     return new (uri_handler_chunk.data()) SingleUriPathObserver(uri_path, *fdh);
 #else
+    // FIX: Clumsy, but should be effective for now; ensures order of allocation is correct
+    //      so that later deallocation for objstack doesn't botch
+    void* buffer1 = ctx.incoming_context.objstack.alloc(sizeof(SingleUriPathObserver));
+
     experimental::FactoryDispatcherHandler* fdh =
             new (ctx) experimental::FactoryDispatcherHandler(
                     ctx.incoming_context,
                     factories, count);
 
-    return new (ctx) SingleUriPathObserver(uri_path, *fdh);
+    return new (buffer1) SingleUriPathObserver(uri_path, *fdh);
 #endif
 }
 

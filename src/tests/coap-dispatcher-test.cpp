@@ -98,11 +98,15 @@ IDecoderObserver* test_factory2(FactoryDispatcherHandlerContext& ctx)
     // TODO: will need some way to invoke fdh destructor
     return new (uri_handler_chunk.data()) SingleUriPathObserver("v1", *fdh);
 #else
+    // FIX: Clumsy, but should be effective for now; ensures order of allocation is correct
+    //      so that later deallocation for objstack doesn't botch
+    void* buffer1 = ctx.incoming_context.objstack.alloc(sizeof(SingleUriPathObserver));
+
     FactoryDispatcherHandler* fdh = new (ctx) FactoryDispatcherHandler(
             ctx.incoming_context,
             test_sub_factories, 1);
 
-    return new (ctx) SingleUriPathObserver("v1", *fdh);
+    return new (buffer1) SingleUriPathObserver("v1", *fdh);
 #endif
 }
 

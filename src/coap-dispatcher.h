@@ -14,7 +14,7 @@
 // Doesn't really work, but will let us compile
 // Expect memory corruption errors while using this -
 // Specifically we get a problem during "CoAP dispatcher tests"::"Dispatcher Factory"
-#define FEATURE_MCCOAP_LEGACY_PREOBJSTACK
+//#define FEATURE_MCCOAP_LEGACY_PREOBJSTACK
 
 // This adds 8 bytes to IDispatcherHandler class when enabled
 //#define FEATURE_IISINTERESTED
