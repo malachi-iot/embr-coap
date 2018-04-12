@@ -21,7 +21,11 @@ static void root_helper(pipeline::MemoryChunk& dispatcherBuffer,
 
     ObserverContext incoming_context(dispatcherBuffer);
 
+#ifdef FEATURE_MCCOAP_LEGACY_PREOBJSTACK
     FactoryDispatcherHandler handler(dispatcherBuffer, incoming_context, root_factories);
+#else
+    FactoryDispatcherHandler handler(incoming_context, root_factories);
+#endif
 }
 
 IDecoderObserver* context_dispatcher(FactoryDispatcherHandlerContext& ctx);

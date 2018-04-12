@@ -1,6 +1,6 @@
 #include "experimental-observer.h"
 //#include "estd/queue.h"
-//#include "exp/netbuf.h"
+#include "exp/netbuf.h"
 
 namespace moducom { namespace coap { namespace experimental {
 

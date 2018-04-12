@@ -207,7 +207,11 @@ size_t service_coap_in(const struct sockaddr_in& addr, pipeline::MemoryChunk& in
     moducom::coap::experimental::BlockingEncoder encoder(writer);
     ObserverContext incoming_context(dispatcherBuffer);
 
+#ifdef FEATURE_MCCOAP_LEGACY_PREOBJSTACK
     FactoryDispatcherHandler handler(dispatcherBuffer, incoming_context, root_factories);
+#else
+    FactoryDispatcherHandler handler(incoming_context, root_factories);
+#endif
     //TestDispatcherHandler handler;
 
     // FIX: fix this gruesomeness
