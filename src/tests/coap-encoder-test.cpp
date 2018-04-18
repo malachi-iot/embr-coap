@@ -4,6 +4,9 @@
 #include "../coap_transmission.h"
 #include "../coap-token.h"
 #include "../mc/experimental.h"
+#include "coap/encoder.hpp"
+
+#include "exp/netbuf.h"
 
 using namespace moducom::coap;
 using namespace moducom::pipeline;
@@ -89,5 +92,16 @@ TEST_CASE("CoAP encoder tests", "[coap-encoder]")
         MemoryChunk::readonly_t str = MemoryChunk::readonly_t::str_ptr("Test");
 
         REQUIRE(str.length() == 4);
+    }
+    SECTION("NetBuf encoder")
+    {
+        typedef moducom::io::experimental::layer2::NetBufMemoryWriter<256> netbuf_t;
+        netbuf_t netbuf;
+        Header header;
+        NetBufEncoder<netbuf_t&> encoder(netbuf);
+
+        encoder.header(header);
+
+        netbuf_t& w = encoder.netbuf();
     }
 }

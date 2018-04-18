@@ -41,6 +41,7 @@ set(SOURCE_FILES
         coap/experimental.cpp coap/experimental-observer.h
         mc/experimental.cpp coap-uripath-dispatcher.cpp coap-uripath-dispatcher.h
         mc/experimental-factory.h coap-features.h
+        coap/encoder.h coap/encoder.hpp
         coap/observable.cpp coap/observable.h
         coap/context.h coap/decoder-subject.hpp coap/decoder-subject.h coap/option-decoder.cpp)
 

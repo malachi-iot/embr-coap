@@ -181,8 +181,7 @@ public:
 
 
 
-
-class BlockingEncoder
+class EncoderBase
 {
 protected:
     typedef experimental::root_state_t state_t;
@@ -200,6 +199,9 @@ protected:
     {
         ASSERT_ERROR(true, c != consistency, "Invalid state");
     }
+
+    EncoderBase() :
+        consistency(_state_t::Header) {}
 #else
     void state(state_t) {}
     void assert_state(state_t) {}
@@ -207,19 +209,19 @@ protected:
 
 #endif
 
+};
+
+class BlockingEncoder : public EncoderBase
+{
+
 protected:
     ExperimentalPrototypeBlockingOptionEncoder1 optionEncoder;
     ExperimentalPrototypeBlockingPayloadEncoder1 payloadEncoder;
 
     pipeline::IPipelineWriter& writer;
 
-
-
 public:
     BlockingEncoder(pipeline::IPipelineWriter& writer) :
-#ifdef DEBUG
-            consistency(_state_t::Header),
-#endif
             writer(writer) {}
 
     void header(const Header& header)
