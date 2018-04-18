@@ -87,6 +87,7 @@ TEST_CASE("CoAP encoder tests", "[coap-encoder]")
     {
         typedef moducom::io::experimental::layer2::NetBufMemoryWriter<256> netbuf_t;
         netbuf_t netbuf;
+        MemoryChunk chunk = netbuf.chunk();
         Header header;
         NetBufEncoder<netbuf_t&> encoder(netbuf);
         Option::Numbers n = Option::UriPath;
@@ -95,5 +96,19 @@ TEST_CASE("CoAP encoder tests", "[coap-encoder]")
         encoder.option(n, MemoryChunk((uint8_t*)"test", 4));
 
         netbuf_t& w = encoder.netbuf();
+
+        // Header + option "header" of size 1 + option_value of 4
+        size_t expected_msg_size = 4 + 1 + 4;
+
+        // TODO: Make a distinctive netbuf length_written vs length_free, right now
+        // length() represents amount available in current 'PBUF'
+        REQUIRE(netbuf.length() + expected_msg_size == chunk.length());
+
+        encoder.option(n, std::string("test2"));
+
+        // option "header" of size 1 + option_value of size 5
+        expected_msg_size += (1 + 5);
+
+        REQUIRE(netbuf.length() + expected_msg_size == chunk.length());
     }
 }

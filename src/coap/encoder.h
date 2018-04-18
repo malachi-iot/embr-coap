@@ -20,40 +20,50 @@ class NetBufEncoder : protected experimental::EncoderBase
 
     OptionEncoder option_encoder;
     typedef Option::Numbers option_number_t;
+    // this represents TNetBuf size_type
+    typedef int size_type;
 
 protected:
     // consolidate netbuf access so as to more easily diagnose incorrect TNetBuf
     // FIX: not cool this const-dropping cast
     uint8_t* data() { return (uint8_t*) m_netbuf.data(); }
 
-    void advance(int amount) { m_netbuf.advance(amount); }
+    void advance(size_type amount) { m_netbuf.advance(amount); }
 
-    int size() const { return m_netbuf.length(); }
+    size_type size() const { return m_netbuf.length(); }
 
     // TODO: next should return a tri-state, success, fail, or pending
     bool next() { return m_netbuf.next(); }
 
     // TODO: make a netbuf-native version of this call, and/or do
     // some extra trickery to ensure chunk() is always efficient
-    int max_size() { return m_netbuf.chunk().size; }
+    size_type max_size() { return m_netbuf.chunk().size; }
 
-    void write(const uint8_t* d, int len)
+    size_type write(const uint8_t* d, int len)
     {
+        if(len > size()) len = size();
+
         memcpy(data(), d, len);
         advance(len);
+
+        // TODO: decide if we want to issue a next() call here or externally
+        return len;
     }
 
     template <int N>
-    void write(uint8_t (&d) [N])
+    size_type write(uint8_t (&d) [N])
     {
-        write(d, N);
+        return write(d, N);
     }
 
     template <int N>
-    void write(const uint8_t (&d) [N])
+    size_type write(const uint8_t (&d) [N])
     {
-        write(d, N);
+        return write(d, N);
     }
+
+    // process all NON-value portion of option
+    bool option_header(option_number_t number, uint16_t value_length);
 
 public:
     template <class TNetBufInitParam>
@@ -87,9 +97,13 @@ public:
 
     bool option(option_number_t number, const pipeline::MemoryChunk& option_value);
 
-    void option(option_number_t number)
+    // TString should match std::string signature
+    template <class TString>
+    bool option(option_number_t number, TString s);
+
+    bool option(option_number_t number)
     {
-        //option_encoder.option(writer, number);
+        return option_header(number, 0);
     }
 
     // acquire direct access to underlying netbuf, useful for bulk operations like
