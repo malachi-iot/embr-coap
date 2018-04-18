@@ -113,8 +113,19 @@ TEST_CASE("CoAP encoder tests", "[coap-encoder]")
 
         encoder.option(n, std::string("test2"));
 
+        REQUIRE(data[expected_msg_size] == 0x05); // still option 11, length 5
+
         // option "header" of size 1 + option_value of size 5
         expected_msg_size += (1 + 5);
+
+        REQUIRE(netbuf.length() + expected_msg_size == chunk.length());
+
+        encoder.payload(std::string("payload"));
+
+        REQUIRE(data[expected_msg_size] == 0xFF); // payload marker
+        REQUIRE(data[expected_msg_size + 1] == 'p');
+
+        expected_msg_size += (1 + 7); // payload marker + "payload"
 
         REQUIRE(netbuf.length() + expected_msg_size == chunk.length());
     }

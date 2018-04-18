@@ -20,13 +20,22 @@ bool NetBufEncoder<TNetBuf>::option_header(option_number_t number, uint16_t valu
     // itself is serviced outside option_header
     ob.length =  value_length;
 
-    // This should work even on partial calls to option_header *provided* number and value_length
-    // remain constant across calls.  If they do not, behavior is undefined
-    oe.next(ob);
-
     // OptionValueDone is for non-value version benefit (always reached, whether value is present or not)
     // OptionValue is for value version benefit, as we manually handle value output
     Option::State isDone = value_length > 0 ? Option::OptionValue : Option::OptionValueDone;
+
+    if(oe.state() == isDone || oe.state() == Option::FirstByte)
+    {
+        // This should work even on partial calls to option_header *provided* number and value_length
+        // remain constant across calls.  If they do not, behavior is undefined
+        oe.next(ob);
+    }
+    else
+    {
+        // FIX: need to reassign option base here.  May get a false positive of operational
+        // because stack frame might be identical when we get here, but don't be lazy and
+        // let that slide
+    }
 
     uint8_t* output_data = data();
     int pos = 0;
@@ -47,13 +56,17 @@ bool NetBufEncoder<TNetBuf>::option_header(option_number_t number, uint16_t valu
 
     state(_state_t::Options);
 
-    return oe.state() == isDone;
+    bool retval = oe.state() == isDone;
+
+    return retval;
 }
 
 
 template <class TNetBuf>
-bool NetBufEncoder<TNetBuf>::option(option_number_t number, const pipeline::MemoryChunk& option_value)
+bool NetBufEncoder<TNetBuf>::option(option_number_t number, const pipeline::MemoryChunk& option_value, bool last_chunk)
 {
+    // NOTE: last_chunk not yet supported
+
     const uint16_t len = option_value.length();
 
     if(!option_header(number, len)) return false;
@@ -63,7 +76,22 @@ bool NetBufEncoder<TNetBuf>::option(option_number_t number, const pipeline::Memo
     // TODO: resolve who tracks partial written position.  Perhaps inbuild OptionDecoder's pos is
     // a good candidate, though presently it's only an 8-bit value since it's oriented towards header
     // output tracking only
-    return written == len;
+    bool done = written == len;
+
+    // if this is the last_chunk *and* we have written all the value bytes
+    if(last_chunk && done)
+    {
+        // then indicate to option encoder it's time to start over (we're skipping option_encoder's value
+        // processor in this case.  Might be better to have a specialized call for that)
+
+        // FIX: reset vs initialize vs next a bit confusing, simplify
+        option_encoder.next();
+    }
+    else
+    {
+    }
+
+    return done;
 }
 
 template <class TNetBuf>
@@ -74,15 +102,20 @@ bool NetBufEncoder<TNetBuf>::option(option_number_t number, TString s)
 
     if(!option_header(number, len)) return false;
 
-    int copied = s.copy((char*)data(), size());
+    // return true if we copied all the string bytes
+    // return false if we copied less than all the string bytes
+    return write(s) == s.length();
+}
 
-    advance(copied);
-
-    ASSERT_ERROR(false, copied > s.length(), "Somehow copied more than was available!");
+template <class TNetBuf>
+template <class TString>
+bool NetBufEncoder<TNetBuf>::payload(TString s)
+{
+    if(!payload_header()) return false;
 
     // return true if we copied all the string bytes
     // return false if we copied less than all the string bytes
-    return copied == s.length();
+    return write(s) == s.length();
 }
 
 }}

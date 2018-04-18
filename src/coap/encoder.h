@@ -62,13 +62,70 @@ protected:
         return write(d, N);
     }
 
+    template <class TString>
+    size_type write(TString s)
+    {
+        int copied = s.copy((char*)data(), size());
+
+        advance(copied);
+
+        ASSERT_ERROR(false, copied > s.length(), "Somehow copied more than was available!");
+
+        return copied;
+    }
+
     // process all NON-value portion of option
     bool option_header(option_number_t number, uint16_t value_length);
+
+#ifndef DEBUG
+    // NOTE: having this presents a strong case to *always* do state/consistency
+    // feature, not just debug mode
+    bool m_payload_marker_written;
+#endif
+
+    bool payload_marker_written() const
+    {
+#ifdef DEBUG
+        return state() == _state_t::Payload;
+#else
+#endif
+    }
+
+    void payload_marker_written(bool is_written)
+    {
+#ifndef DEBUG
+        m_payload_marker_written = is_written;
+#endif
+    }
+
+    bool payload_header()
+    {
+        assert_not_state(_state_t::Header);
+        assert_not_state(_state_t::Token);
+        assert_not_state(_state_t::Payload);
+
+        if(!payload_marker_written())
+        {
+            if(size() == 0) return false;
+
+            data()[0] = 0xFF;
+            advance(1);
+            payload_marker_written(true);
+        }
+
+        state(_state_t::Payload);
+
+        return true;
+    }
+
 
 public:
     template <class TNetBufInitParam>
     NetBufEncoder(TNetBufInitParam& netbufinitparam) :
-        m_netbuf(netbufinitparam) {}
+        m_netbuf(netbufinitparam)
+    {
+        payload_marker_written(false);
+    }
 
     bool header(const Header& header)
     {
@@ -95,7 +152,7 @@ public:
         return true;
     }
 
-    bool option(option_number_t number, const pipeline::MemoryChunk& option_value);
+    bool option(option_number_t number, const pipeline::MemoryChunk& option_value, bool last_chunk = true);
 
     // TString should match std::string signature
     template <class TString>
@@ -105,6 +162,22 @@ public:
     {
         return option_header(number, 0);
     }
+
+
+    // NOTE: this has no provision for chunking, this is a one-shot payload string
+    // assignment
+    template <class TString>
+    bool payload(TString s);
+
+    bool payload(const pipeline::MemoryChunk& option_value, bool last_chunk = true);
+
+    // marks end of encoding - oftentimes, encoder cannot reasonably figure this out due to optional
+    // presence of both options and payload.  Only during presence of payload can we
+    // indicate a 'last chunk'.  To avoid mixing and matching complete-detection techniques,
+    // an explicit call to complete() is always required to signal to underlying netbuf
+    // (or perhaps alternate signalling mechanism?) - At time of this writing no formalized
+    // signaling mechanism is present
+    void complete() {}
 
     // acquire direct access to underlying netbuf, useful for bulk operations like
     // payload writes

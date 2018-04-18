@@ -191,6 +191,8 @@ protected:
     state_t consistency;
 
     void state(state_t c) { consistency = c; }
+    state_t state() const { return consistency; }
+
     void assert_state(state_t c)
     {
         ASSERT_ERROR(c, consistency, "State mismatch");
