@@ -75,16 +75,6 @@ TEST_CASE("CoAP encoder tests", "[coap-encoder]")
         REQUIRE(chunk[option_pos + 6] == 0xFF);
 //#endif
     }
-    SECTION("Token test")
-    {
-        moducom::coap::layer2::Token token;
-
-        token.set(0);
-
-        token[0] = '3';
-
-        REQUIRE(token[0] == '3');
-    }
     // TODO: Move this to more proper test file location
     SECTION("Read Only Memory Buffer")
     {

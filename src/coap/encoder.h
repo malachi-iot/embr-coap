@@ -49,6 +49,12 @@ protected:
         write(d, N);
     }
 
+    template <int N>
+    void write(const uint8_t (&d) [N])
+    {
+        write(d, N);
+    }
+
 public:
     template <class TNetBufInitParam>
     NetBufEncoder(TNetBufInitParam& netbufinitparam) :
