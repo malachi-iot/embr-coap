@@ -99,8 +99,10 @@ TEST_CASE("CoAP encoder tests", "[coap-encoder]")
         netbuf_t netbuf;
         Header header;
         NetBufEncoder<netbuf_t&> encoder(netbuf);
+        Option::Numbers n = Option::UriPath;
 
         encoder.header(header);
+        encoder.option(n, MemoryChunk((uint8_t*)"test", 4));
 
         netbuf_t& w = encoder.netbuf();
     }
