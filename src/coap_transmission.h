@@ -21,7 +21,13 @@ namespace coap {
 namespace experimental {
 namespace layer2 {
 
-class OptionValue
+class OptionLength
+{
+public:
+    uint16_t length;
+};
+
+class OptionValue //: public OptionLength
 {
 protected:
 public:
@@ -32,8 +38,6 @@ public:
         const uint16_t  value_uint;
     };
 
-    uint16_t length;
-    
     // C++98 requirement
     OptionValue() : value_uint(0) {}
 };
@@ -49,7 +53,7 @@ class OptionOpaque : public OptionValue
 {
 public:
     const uint8_t* value() { return value_opaque; }
-    uint16_t length() { return OptionValue::length; }
+    //uint16_t length() { return OptionValue::length; }
 };
 
 
@@ -62,13 +66,22 @@ public:
     OptionNumber(uint16_t number) : number(number) {}
 };
 
-class OptionBase : public OptionValue,
-                        public OptionNumber
+
+class OptionHeader :
+        public OptionLength,
+        public OptionNumber
 {
 public:
-    OptionBase(uint16_t number) : OptionNumber(number) {}
+    OptionHeader(uint16_t number) : OptionNumber(number) {}
 };
 
+class OptionBase :
+        public OptionHeader,
+        public OptionValue
+{
+public:
+    OptionBase(uint16_t number) : OptionHeader(number) {}
+};
 
 class OptionGenerator : public OptionBase
 {

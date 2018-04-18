@@ -35,6 +35,7 @@ bool NetBufEncoder<TNetBuf>::option_header(option_number_t number, uint16_t valu
         // FIX: need to reassign option base here.  May get a false positive of operational
         // because stack frame might be identical when we get here, but don't be lazy and
         // let that slide
+        oe.resume(ob);
     }
 
     uint8_t* output_data = data();
@@ -57,6 +58,8 @@ bool NetBufEncoder<TNetBuf>::option_header(option_number_t number, uint16_t valu
     state(_state_t::Options);
 
     bool retval = oe.state() == isDone;
+
+    if(!retval) oe.pause();
 
     return retval;
 }

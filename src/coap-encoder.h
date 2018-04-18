@@ -13,6 +13,10 @@
 
 namespace moducom { namespace coap {
 
+// TODO: Split this out into OptionEncoderBase,
+// OptionEncoder and OptionEncoderWithValue, the latter being the rarified case
+// in which we wish to actually push the value through the encoder, vs. merely
+// skipping past it
 class OptionEncoder : public Option,
     public StateHelper<Option::State>
 {
@@ -89,11 +93,37 @@ public:
         option_base = &option;
     }
 
+
+    // for scenarios when we had to leave off option processing and our option_base when
+    // out of scope
+    void resume(const option_base_t& option)
+    {
+        option_base = &option;
+    }
+
+
+    // for scenarios when we have to leave off option processing, usually because we
+    // temporarily ran out of input or output buffer
+    void pause()
+    {
+        option_base = NULLPTR;
+    }
+
     void reset()
     {
         initialize();
     }
 
+
+    // use this to specifically fast forward the state machine past the value bytes
+    void fast_forward()
+    {
+        ASSERT_ERROR(OptionValue, state(), "Can only call fast forward during option value processing");
+
+        state(OptionValueDone);
+    }
+
+    // deprectated
     bool process_iterate(pipeline::IBufferedPipelineWriter& writer);
 };
 

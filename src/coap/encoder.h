@@ -77,6 +77,16 @@ protected:
     // process all NON-value portion of option
     bool option_header(option_number_t number, uint16_t value_length);
 
+    // process ONLY value portion of option
+    bool option_value(pipeline::MemoryChunk chunk, bool last_chunk)
+    {
+        if(write(chunk.data(), chunk.length()) == chunk.length())
+        {
+            if (last_chunk)
+                option_encoder.fast_forward();
+        }
+    }
+
 #ifndef DEBUG
     // NOTE: having this presents a strong case to *always* do state/consistency
     // feature, not just debug mode
