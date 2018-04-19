@@ -85,7 +85,8 @@ protected:
     // process ONLY value portion of option
     bool option_value(pipeline::MemoryChunk chunk, bool last_chunk)
     {
-        if(write(chunk.data(), chunk.length()) == chunk.length())
+        size_type written = write(chunk.data(), chunk.length());
+        if(written == chunk.length())
         {
             if (last_chunk)
                 option_encoder.fast_forward();
@@ -93,7 +94,10 @@ protected:
             return true;
         }
         else
+        {
+            this->written(written);
             return false;
+        }
     }
 
 #ifndef DEBUG
@@ -137,6 +141,12 @@ protected:
         return true;
     }
 
+    // represents how many bytes were written during last public/high level encode operation
+    // only available if encode operation comes back as false.  Undefined when operation
+    // succeeds
+    size_type m_written;
+
+    void written(size_type w) { m_written = w; }
 
 public:
     template <class TNetBufInitParam>
@@ -145,6 +155,8 @@ public:
     {
         payload_marker_written(false);
     }
+
+    size_type written() const { return m_written; }
 
     bool header(const Header& header)
     {
@@ -159,27 +171,30 @@ public:
         }
         else
         {
+            written(0);
             return false;
         }
     }
 
 
     // this variety does not handle chunking on the input
-    size_type token(const uint8_t* data, size_type tkl)
+    bool token(const uint8_t* data, size_type tkl)
     {
         assert_state(_state_t::HeaderDone);
         size_type written = write(data, tkl);
         state(_state_t::TokenDone);
-        return written;
+        this->written(written);
+        return written == tkl;
     }
 
-    size_type token(const pipeline::MemoryChunk::readonly_t& value, bool last_chunk = true)
+    bool token(const pipeline::MemoryChunk::readonly_t& value, bool last_chunk = true)
     {
         // TODO: handle chunking
         assert_state(_state_t::HeaderDone);
         size_type written = write(value);
         state(_state_t::TokenDone);
-        return written;
+        this->written(written);
+        return written == value.length();
     }
 
 

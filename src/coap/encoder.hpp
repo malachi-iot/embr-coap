@@ -57,7 +57,11 @@ bool NetBufEncoder<TNetBuf>::option_header(option_number_t number, uint16_t valu
 
     bool retval = oe.state() == isDone;
 
-    if(!retval) oe.pause();
+    if(!retval)
+    {
+        written(pos);
+        oe.pause();
+    }
 
     return retval;
 }
@@ -73,28 +77,6 @@ bool NetBufEncoder<TNetBuf>::option(option_number_t number, const pipeline::Memo
     if(!option_header(number, len)) return false;
 
     return this->option_value(option_value, last_chunk);
-
-    size_type written = write(option_value.data(), len);
-
-    // TODO: resolve who tracks partial written position.  Perhaps inbuild OptionDecoder's pos is
-    // a good candidate, though presently it's only an 8-bit value since it's oriented towards header
-    // output tracking only
-    bool done = written == len;
-
-    // if this is the last_chunk *and* we have written all the value bytes
-    if(last_chunk && done)
-    {
-        // then indicate to option encoder it's time to start over (we're skipping option_encoder's value
-        // processor in this case.  Might be better to have a specialized call for that)
-
-        // FIX: reset vs initialize vs next a bit confusing, simplify
-        option_encoder.next();
-    }
-    else
-    {
-    }
-
-    return done;
 }
 
 template <class TNetBuf>
