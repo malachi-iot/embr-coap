@@ -5,7 +5,6 @@
 #include "../coap-token.h"
 #include "../mc/experimental.h"
 #include "coap/encoder.hpp"
-#include "coap-uint.h"
 
 #include "exp/netbuf.h"
 
@@ -133,10 +132,7 @@ TEST_CASE("CoAP encoder tests", "[coap-encoder]")
         // + option "header" of size 1 + option_value of 4
         expected_msg_size += 1 + 4;
 
-        // TODO: Make a distinctive netbuf length_written vs length_free, right now
-        // length() represents amount available in current 'PBUF'
         REQUIRE(netbuf.length_processed() == expected_msg_size);
-        //REQUIRE(0xB4 == chunk.data()[4]); // option 11, length 4
 
         encoder.option(n, std::string("test2"));
 
@@ -147,15 +143,10 @@ TEST_CASE("CoAP encoder tests", "[coap-encoder]")
 
         REQUIRE(netbuf.length_processed() == expected_msg_size);
 
-        //n = Option::ContentFormat;
-        // layer1 doesn't work yet
-        moducom::coap::layer2::UInt<2> contentFormat;
+        encoder.option(Option::ContentFormat, 50);
 
-        contentFormat.set(50);
-
-        moducom::pipeline::MemoryChunk d2(contentFormat);
-
-        encoder.option(n, d2);
+        REQUIRE(data[expected_msg_size] == 0x11);
+        REQUIRE(data[expected_msg_size + 1] == 50);
 
         expected_msg_size += 2; // option 'header' + one byte for '50'
 

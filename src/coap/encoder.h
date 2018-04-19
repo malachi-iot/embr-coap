@@ -2,6 +2,9 @@
 
 #include "../coap-encoder.h"
 #include "mc/netbuf.h"
+#include "../coap-uint.h"
+
+#include <utility>
 
 namespace moducom { namespace coap {
 
@@ -46,8 +49,26 @@ protected:
         return base_t::write(chunk.data(), chunk.length());
     }
 
+    size_type write(ulong val)
+    {
+        return 0;
+    }
+
+    template<typename T>
+    class is_class {
+        typedef char yes[1];
+        typedef char no [2];
+        template<typename C> static yes& test(int C::*); // selected if C is a class type
+        template<typename C> static no&  test(...);      // selected otherwise
+    public:
+        static bool const value = sizeof(test<T>(0)) == sizeof(yes);
+    };
+
+
+    // would use declval to deduce a .data() and .length() provider or not but that's
+    // a C++ only thing, so probably gotta retrofit it into estdlib
     template <class TString>
-    size_type write(const TString& s)
+    size_type write(const TString (&s))
     {
         return base_t::write(s);
     }
@@ -216,6 +237,17 @@ public:
         ro_chunk_t& ov = option_value;
 
         return option(number, ov, last_chunk);
+    }
+
+    // FIX: clumsy but helpful.  Once we get SFINAE working right to
+    // properly select underlying write operation, things will be cleaner
+    bool option(option_number_t number, int option_value)
+    {
+        coap::layer2::UInt<> v;
+
+        v.set(option_value);
+
+        return option(number, pipeline::MemoryChunk(v));
     }
 
     // TString should match std::string signature
