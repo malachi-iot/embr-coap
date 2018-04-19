@@ -68,15 +68,15 @@ bool NetBufEncoder<TNetBuf>::option_header(option_number_t number, uint16_t valu
 
 
 template <class TNetBuf>
-bool NetBufEncoder<TNetBuf>::option(option_number_t number, const pipeline::MemoryChunk& option_value, bool last_chunk)
+bool NetBufEncoder<TNetBuf>::option(option_number_t number, const pipeline::MemoryChunk::readonly_t& ov, bool last_chunk)
 {
     // NOTE: last_chunk not yet supported
 
-    const uint16_t len = option_value.length();
+    const uint16_t len = ov.length();
 
     if(!option_header(number, len)) return false;
 
-    return this->option_value(option_value, last_chunk);
+    return this->option_value(ov, last_chunk);
 }
 
 template <class TNetBuf>
@@ -89,7 +89,8 @@ bool NetBufEncoder<TNetBuf>::option(option_number_t number, TString s)
 
     // return true if we copied all the string bytes
     // return false if we copied less than all the string bytes
-    return base_t::write(s) == s.length();
+    //return base_t::write(s) == s.length();
+    return option_value(s, true);
 }
 
 template <class TNetBuf>

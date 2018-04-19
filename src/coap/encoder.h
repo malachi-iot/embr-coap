@@ -18,6 +18,7 @@ class NetBufEncoder :
 {
     typedef TNetBuf netbuf_t;
     typedef moducom::io::experimental::NetBufWriter<TNetBuf> base_t;
+    typedef const pipeline::MemoryChunk::readonly_t ro_chunk_t;
 
     OptionEncoder option_encoder;
 
@@ -45,6 +46,12 @@ protected:
         return base_t::write(chunk.data(), chunk.length());
     }
 
+    template <class TString>
+    size_type write(const TString& s)
+    {
+        return base_t::write(s);
+    }
+
     template <int N>
     size_type write(uint8_t (&d) [N])
     {
@@ -57,19 +64,20 @@ protected:
         return base_t::write(d, N);
     }
 
-    size_type write(uint8_t byte)
+    bool putchar(uint8_t byte)
     {
         netbuf().unprocessed()[0] = byte;
-        return this->advance(1) ? 1 : 0;
+        return this->advance(1);
     }
 
     // process all NON-value portion of option
     bool option_header(option_number_t number, uint16_t value_length);
 
     // process ONLY value portion of option
-    bool option_value(pipeline::MemoryChunk chunk, bool last_chunk)
+    template <class TMemory>
+    bool option_value(const TMemory& chunk, bool last_chunk)
     {
-        size_type written = base_t::write(chunk.data(), chunk.length());
+        size_type written = write(chunk);
         if(written == chunk.length())
         {
             if (last_chunk)
@@ -119,7 +127,7 @@ protected:
                 return false;
             }
 
-            this->write(COAP_PAYLOAD_MARKER);
+            this->putchar(COAP_PAYLOAD_MARKER);
 
             payload_marker_written(true);
         }
@@ -195,7 +203,20 @@ public:
         return true;
     } */
 
-    bool option(option_number_t number, const pipeline::MemoryChunk& option_value, bool last_chunk = true);
+    bool option(option_number_t number,
+                ro_chunk_t& option_value,
+                bool last_chunk = true);
+
+    // have to explicitly do this, otherwise the string-capable version greedily
+    // eats things up
+    bool option(option_number_t number,
+                const pipeline::MemoryChunk& option_value,
+                bool last_chunk = true)
+    {
+        ro_chunk_t& ov = option_value;
+
+        return option(number, ov, last_chunk);
+    }
 
     // TString should match std::string signature
     template <class TString>
@@ -212,7 +233,7 @@ public:
     template <class TString>
     bool payload(TString s);
 
-    bool payload(const pipeline::MemoryChunk& option_value, bool last_chunk = true);
+    bool payload(ro_chunk_t option_value, bool last_chunk = true);
 
     // marks end of encoding - oftentimes, encoder cannot reasonably figure this out due to optional
     // presence of both options and payload.  Only during presence of payload can we
@@ -220,7 +241,7 @@ public:
     // an explicit call to complete() is always required to signal to underlying netbuf
     // (or perhaps alternate signalling mechanism?) - At time of this writing no formalized
     // signaling mechanism is present
-    void complete() {}
+    void complete() { }
 };
 
 

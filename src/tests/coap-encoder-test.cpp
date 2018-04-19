@@ -5,6 +5,7 @@
 #include "../coap-token.h"
 #include "../mc/experimental.h"
 #include "coap/encoder.hpp"
+#include "coap-uint.h"
 
 #include "exp/netbuf.h"
 
@@ -146,13 +147,29 @@ TEST_CASE("CoAP encoder tests", "[coap-encoder]")
 
         REQUIRE(netbuf.length_processed() == expected_msg_size);
 
+        //n = Option::ContentFormat;
+        // layer1 doesn't work yet
+        moducom::coap::layer2::UInt<2> contentFormat;
+
+        contentFormat.set(50);
+
+        moducom::pipeline::MemoryChunk d2(contentFormat);
+
+        encoder.option(n, d2);
+
+        expected_msg_size += 2; // option 'header' + one byte for '50'
+
+        REQUIRE(netbuf.length_processed() == expected_msg_size);
+
         encoder.payload(std::string("payload"));
 
-        REQUIRE(data[expected_msg_size] == 0xFF); // payload marker
+        REQUIRE(data[expected_msg_size] == COAP_PAYLOAD_MARKER); // payload marker
         REQUIRE(data[expected_msg_size + 1] == 'p');
 
         expected_msg_size += (1 + 7); // payload marker + "payload"
 
         REQUIRE(netbuf.length_processed() == expected_msg_size);
+
+        encoder.complete();
     }
 }
