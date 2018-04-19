@@ -23,23 +23,16 @@ class NetBufEncoder :
 
 public:
     typedef Option::Numbers option_number_t;
-    // this represents TNetBuf size_type.  Can't easily pull this out of netbuf directly
-    // due to the possibility TNetBuf might be a reference (will instead have to do fancy
-    // C++11 decltype/declval things to deduce it)
-    typedef int size_type;
+    typedef typename base_t::size_type size_type;
 
     // acquire direct access to underlying netbuf, useful for bulk operations like
     // payload writes
-    netbuf_t& netbuf() const
+    netbuf_t& netbuf()
     {
         return this->m_netbuf;
     }
 
 protected:
-    // consolidated netbuf access so as to more easily diagnose incorrect TNetBuf
-    // FIX: not cool this const-dropping cast
-    uint8_t* data() { return (uint8_t*) netbuf().unprocessed(); }
-
     // TODO: next should return a tri-state, success, fail, or pending
     bool next() { return netbuf().next(); }
 
@@ -62,6 +55,12 @@ protected:
     size_type write(const uint8_t (&d) [N])
     {
         return base_t::write(d, N);
+    }
+
+    size_type write(uint8_t byte)
+    {
+        netbuf().unprocessed()[0] = byte;
+        return this->advance(1) ? 1 : 0;
     }
 
     // process all NON-value portion of option
@@ -114,10 +113,14 @@ protected:
 
         if(!payload_marker_written())
         {
-            if(this->size() == 0) return false;
+            if(this->size() == 0)
+            {
+                written(0);
+                return false;
+            }
 
-            data()[0] = 0xFF;
-            this->advance(1);
+            this->write(COAP_PAYLOAD_MARKER);
+
             payload_marker_written(true);
         }
 

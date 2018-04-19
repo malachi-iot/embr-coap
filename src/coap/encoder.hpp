@@ -36,7 +36,7 @@ bool NetBufEncoder<TNetBuf>::option_header(option_number_t number, uint16_t valu
         oe.resume(ob);
     }
 
-    uint8_t* output_data = data();
+    uint8_t* output_data = netbuf().unprocessed();
     int pos = 0;
 
     // while option encoder is not done, keep spitting out to netbuf

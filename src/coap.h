@@ -49,6 +49,8 @@ namespace coap {
 #define COAP_EXTENDED8_BIT_MAX  (255 - 13)
 #define COAP_EXTENDED16_BIT_MAX (0xFFFF - 269)
 
+#define COAP_PAYLOAD_MARKER     0xFF
+
 #define COAP_FEATURE_SUBSCRIPTIONS
 
 // Base helper class to assist with ALL option related things.  Mainly
