@@ -125,6 +125,7 @@ public:
         ValueStart, // when we are ready to begin processing value.  This is reached even when no value is present
         OptionValue, // processing value portion (this decoder merely skips value, outer processors handle it)
         OptionValueDone, // done with value portion.  Also indicates completion of option, even with zero-length value
+        OptionDone, // Not used yet, but indicates option done - I might prefer this to overloading OptionValueDone
         Payload // payload marker found
     };
 

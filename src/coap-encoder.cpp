@@ -126,6 +126,12 @@ OptionEncoder::output_t OptionEncoder::generate_iterate()
 
             return signal_continue;
 
+            // Not yet used, a little trick to activate due to the fall-through/dispatch logic
+            // of OptionDeltaAndLengthDone and OptionLengthDone.  In the meantime, OptionLengthDone
+            // is a reliable substitute for ValueStart
+        case _state_t::ValueStart:
+            return signal_continue;
+
         case _state_t::OptionValue:
             // TODO: Document why we're doing length - 1 here
             if (pos == option_base.length - 1)
@@ -134,6 +140,13 @@ OptionEncoder::output_t OptionEncoder::generate_iterate()
             return option_base.value_opaque[pos++];
 
         case _state_t::OptionValueDone:
+            // technically it's more like a signal_done but until a new option
+            // is loaded in, it's reasonable for state machine to iterate forever
+            // on OptionValueDone state
+            state(_state_t::OptionDone);
+            return this->signal_continue;
+
+        case _state_t::OptionDone:
             // technically it's more like a signal_done but until a new option
             // is loaded in, it's reasonable for state machine to iterate forever
             // on OptionValueDone state

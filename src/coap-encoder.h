@@ -120,7 +120,7 @@ public:
     {
         ASSERT_ERROR(OptionValue, state(), "Can only call fast forward during option value processing");
 
-        state(OptionValueDone);
+        state(OptionDone);
     }
 
     // deprectated

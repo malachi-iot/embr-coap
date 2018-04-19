@@ -84,7 +84,11 @@ protected:
         {
             if (last_chunk)
                 option_encoder.fast_forward();
+
+            return true;
         }
+        else
+            return false;
     }
 
 #ifndef DEBUG

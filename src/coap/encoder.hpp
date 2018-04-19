@@ -22,19 +22,17 @@ bool NetBufEncoder<TNetBuf>::option_header(option_number_t number, uint16_t valu
 
     // OptionValueDone is for non-value version benefit (always reached, whether value is present or not)
     // OptionValue is for value version benefit, as we manually handle value output
+    // TODO: instead let's move towards OptionDone state check
     Option::State isDone = value_length > 0 ? Option::OptionValue : Option::OptionValueDone;
 
-    if(oe.state() == isDone || oe.state() == Option::FirstByte)
+    if(oe.state() == Option::FirstByte || oe.state() == Option::OptionDone)
     {
-        // This should work even on partial calls to option_header *provided* number and value_length
-        // remain constant across calls.  If they do not, behavior is undefined
         oe.next(ob);
     }
     else
     {
-        // FIX: need to reassign option base here.  May get a false positive of operational
-        // because stack frame might be identical when we get here, but don't be lazy and
-        // let that slide
+        // This should work even on partial calls to option_header *provided* number and value_length
+        // remain constant across calls.  If they do not, behavior is undefined
         oe.resume(ob);
     }
 
@@ -73,6 +71,8 @@ bool NetBufEncoder<TNetBuf>::option(option_number_t number, const pipeline::Memo
     const uint16_t len = option_value.length();
 
     if(!option_header(number, len)) return false;
+
+    return this->option_value(option_value, last_chunk);
 
     size_type written = write(option_value.data(), len);
 
