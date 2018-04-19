@@ -86,13 +86,14 @@ TEST_CASE("CoAP encoder tests", "[coap-encoder]")
     SECTION("NetBuf encoder")
     {
         typedef moducom::io::experimental::layer2::NetBufMemory<256> netbuf_t;
-        netbuf_t netbuf;
-        // FIX: netbuf.chunk() broken in this context in that the data
-        // it's inspecting appears to not be the netbuf_t buffer.  length is correct
-        MemoryChunk chunk = netbuf.chunk();
-        //const moducom::pipeline::layer1::MemoryChunk<256>& chunk = netbuf.chunk();
-        const uint8_t* data = chunk.data();
-        NetBufEncoder<netbuf_t&> encoder(netbuf);
+
+        // also works, external buf
+        //netbuf_t netbuf;
+        //NetBufEncoder<netbuf_t&> encoder(netbuf);
+
+        NetBufEncoder<netbuf_t> encoder;
+        netbuf_t& netbuf = encoder.netbuf();
+        const uint8_t* data = netbuf.chunk().data();
 
         moducom::coap::layer2::Token token;
 

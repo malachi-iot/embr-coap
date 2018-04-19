@@ -54,17 +54,6 @@ protected:
         return 0;
     }
 
-    template<typename T>
-    class is_class {
-        typedef char yes[1];
-        typedef char no [2];
-        template<typename C> static yes& test(int C::*); // selected if C is a class type
-        template<typename C> static no&  test(...);      // selected otherwise
-    public:
-        static bool const value = sizeof(test<T>(0)) == sizeof(yes);
-    };
-
-
     // would use declval to deduce a .data() and .length() provider or not but that's
     // a C++ only thing, so probably gotta retrofit it into estdlib
     template <class TString>
@@ -172,6 +161,9 @@ public:
     {
         payload_marker_written(false);
     }
+
+
+    NetBufEncoder() { payload_marker_written(false); }
 
     size_type written() const { return m_written; }
 
