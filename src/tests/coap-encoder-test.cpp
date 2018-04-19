@@ -114,13 +114,18 @@ TEST_CASE("CoAP encoder tests", "[coap-encoder]")
 
         REQUIRE(netbuf.length() + expected_msg_size == chunk.length());
 
-        //encoder.token(token);
+        encoder.token(token);
 
-        //expected_msg_size += token.length();
+        REQUIRE(data[expected_msg_size] == 1);
+        REQUIRE(data[expected_msg_size + 1] == 2);
+
+        expected_msg_size += token.length();
 
         REQUIRE(netbuf.length() + expected_msg_size == chunk.length());
 
         encoder.option(n, MemoryChunk((uint8_t*)"test", 4));
+
+        REQUIRE(0xB4 == data[expected_msg_size]); // option 11, length 4
 
         netbuf_t& w = encoder.netbuf();
 
@@ -130,7 +135,6 @@ TEST_CASE("CoAP encoder tests", "[coap-encoder]")
         // TODO: Make a distinctive netbuf length_written vs length_free, right now
         // length() represents amount available in current 'PBUF'
         REQUIRE(netbuf.length() + expected_msg_size == chunk.length());
-        REQUIRE(0xB4 == data[4]); // option 11, length 4
         //REQUIRE(0xB4 == chunk.data()[4]); // option 11, length 4
 
         encoder.option(n, std::string("test2"));

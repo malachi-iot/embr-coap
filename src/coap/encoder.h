@@ -20,15 +20,23 @@ class NetBufEncoder : protected experimental::EncoderBase
 
     OptionEncoder option_encoder;
     typedef Option::Numbers option_number_t;
-    // this represents TNetBuf size_type
+    // this represents TNetBuf size_type.  Can't easily pull this out of netbuf directly
+    // due to the possibility TNetBuf might be a reference (will instead have to do fancy
+    // C++11 decltype/declval things to deduce it)
     typedef int size_type;
 
 protected:
-    // consolidate netbuf access so as to more easily diagnose incorrect TNetBuf
+    // consolidated netbuf access so as to more easily diagnose incorrect TNetBuf
     // FIX: not cool this const-dropping cast
     uint8_t* data() { return (uint8_t*) m_netbuf.data(); }
 
-    void advance(size_type amount) { m_netbuf.advance(amount); }
+    bool advance(size_type amount)
+    {
+        // TODO: add true/false on advance to underlying netbuf itself to aid in runtime
+        // detection of boundary failure
+        m_netbuf.advance(amount);
+        return true;
+    }
 
     size_type size() const { return m_netbuf.length(); }
 
