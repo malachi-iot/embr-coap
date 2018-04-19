@@ -221,7 +221,7 @@ public:
     template <class TInput>
     inline void set(TInput input)
     {
-        uint8_t* data = this->writable_data_experimental();
+        uint8_t* data = base_t::data();
         uint8_t byte_length = moducom::coap::UInt::set(input, data);
         base_t::length(byte_length);
     }

@@ -1,91 +1,23 @@
 #pragma once
 
 #include "../coap-encoder.h"
+#include "mc/netbuf.h"
 
 namespace moducom { namespace coap {
 
 
-// a thinner wrapper around netbuf, mainly adding convenience methods for
-// writes
-template <class TNetBuf>
-class NetBufWriter
-{
-protected:
-    typedef TNetBuf netbuf_t;
 
-    // outgoing network buffer
-    // TODO: for netbuf, modify APIs slightly to be more C++ std lib like, specifically
-    // a size/capacity/max_size kind of thing
-    netbuf_t m_netbuf;
-
-public:
-    template <class TNetBufInitParam>
-    NetBufWriter(TNetBufInitParam& netbufinitparam) :
-            m_netbuf(netbufinitparam)
-    {}
-
-    // acquire direct access to underlying netbuf, useful for bulk operations like
-    // payload writes
-    netbuf_t& netbuf() const
-    {
-        return this->m_netbuf;
-    }
-
-    // this represents TNetBuf size_type.  Can't easily pull this out of netbuf directly
-    // due to the possibility TNetBuf might be a reference (will instead have to do fancy
-    // C++11 decltype/declval things to deduce it)
-    typedef int size_type;
-
-    bool advance(size_type amount)
-    {
-        // TODO: add true/false on advance to underlying netbuf itself to aid in runtime
-        // detection of boundary failure
-        netbuf().advance(amount);
-        return true;
-    }
-
-    size_type size() const { return netbuf().length(); }
-
-
-    size_type write(const uint8_t* d, int len)
-    {
-        if(len > size()) len = size();
-
-        // FIX: ugly, netbuf itself really needs to drop const, at least when
-        // it's a writeable netbuf
-        memcpy((void*)netbuf().data(), d, len);
-        bool advance_success = advance(len);
-
-        ASSERT_ERROR(true, advance_success, "Problem advancing through netbuf");
-
-        // TODO: decide if we want to issue a next() call here or externally
-        return len;
-    }
-
-    template <class TString>
-    size_type write(TString s)
-    {
-        int copied = s.copy((char*)netbuf().data(), this->size());
-
-        this->advance(copied);
-
-        ASSERT_ERROR(false, copied > s.length(), "Somehow copied more than was available!");
-
-        return copied;
-    }
-
-};
 
 // 4/18/2018 - after much experimentation, I have settled on network-buffer pattern
 // reigning supreme for shuttling memory around, so then this is the canonical go-to
 // encoder
 template <class TNetBuf>
 class NetBufEncoder :
-        public NetBufWriter<TNetBuf>,
+        public moducom::io::experimental::NetBufWriter<TNetBuf>,
         protected experimental::EncoderBase
 {
     typedef TNetBuf netbuf_t;
-    typedef NetBufWriter<TNetBuf> base_t;
+    typedef moducom::io::experimental::NetBufWriter<TNetBuf> base_t;
 
     OptionEncoder option_encoder;
 
@@ -106,7 +38,7 @@ public:
 protected:
     // consolidated netbuf access so as to more easily diagnose incorrect TNetBuf
     // FIX: not cool this const-dropping cast
-    uint8_t* data() { return (uint8_t*) netbuf().data(); }
+    uint8_t* data() { return (uint8_t*) netbuf().unprocessed(); }
 
     // TODO: next should return a tri-state, success, fail, or pending
     bool next() { return netbuf().next(); }
@@ -204,7 +136,7 @@ protected:
 public:
     template <class TNetBufInitParam>
     NetBufEncoder(TNetBufInitParam& netbufinitparam) :
-        NetBufWriter<TNetBuf>(netbufinitparam)
+        base_t(netbufinitparam)
     {
         payload_marker_written(false);
     }

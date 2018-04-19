@@ -85,13 +85,14 @@ TEST_CASE("CoAP encoder tests", "[coap-encoder]")
     }
     SECTION("NetBuf encoder")
     {
-        typedef moducom::io::experimental::layer2::NetBufMemoryWriter<256> netbuf_t;
+        typedef moducom::io::experimental::layer2::NetBufMemory<256> netbuf_t;
         netbuf_t netbuf;
         // FIX: netbuf.chunk() broken in this context in that the data
         // it's inspecting appears to not be the netbuf_t buffer.  length is correct
         MemoryChunk chunk = netbuf.chunk();
         //const moducom::pipeline::layer1::MemoryChunk<256>& chunk = netbuf.chunk();
-        const uint8_t* data = netbuf.data();
+        const uint8_t* data = chunk.data();
+        NetBufEncoder<netbuf_t&> encoder(netbuf);
 
         moducom::coap::layer2::Token token;
 
@@ -104,7 +105,6 @@ TEST_CASE("CoAP encoder tests", "[coap-encoder]")
 
         header.token_length(token.length());
 
-        NetBufEncoder<netbuf_t&> encoder(netbuf);
         Option::Numbers n = Option::UriPath;
 
         encoder.header(header);
@@ -112,7 +112,7 @@ TEST_CASE("CoAP encoder tests", "[coap-encoder]")
         // Header is always 4
         size_t expected_msg_size = 4;
 
-        REQUIRE(netbuf.length() + expected_msg_size == chunk.length());
+        REQUIRE(netbuf.length_processed() == expected_msg_size);
 
         encoder.token(token);
 
@@ -121,7 +121,7 @@ TEST_CASE("CoAP encoder tests", "[coap-encoder]")
 
         expected_msg_size += token.length();
 
-        REQUIRE(netbuf.length() + expected_msg_size == chunk.length());
+        REQUIRE(netbuf.length_processed() == expected_msg_size);
 
         encoder.option(n, MemoryChunk((uint8_t*)"test", 4));
 
@@ -134,7 +134,7 @@ TEST_CASE("CoAP encoder tests", "[coap-encoder]")
 
         // TODO: Make a distinctive netbuf length_written vs length_free, right now
         // length() represents amount available in current 'PBUF'
-        REQUIRE(netbuf.length() + expected_msg_size == chunk.length());
+        REQUIRE(netbuf.length_processed() == expected_msg_size);
         //REQUIRE(0xB4 == chunk.data()[4]); // option 11, length 4
 
         encoder.option(n, std::string("test2"));
@@ -144,7 +144,7 @@ TEST_CASE("CoAP encoder tests", "[coap-encoder]")
         // option "header" of size 1 + option_value of size 5
         expected_msg_size += (1 + 5);
 
-        REQUIRE(netbuf.length() + expected_msg_size == chunk.length());
+        REQUIRE(netbuf.length_processed() == expected_msg_size);
 
         encoder.payload(std::string("payload"));
 
@@ -153,6 +153,6 @@ TEST_CASE("CoAP encoder tests", "[coap-encoder]")
 
         expected_msg_size += (1 + 7); // payload marker + "payload"
 
-        REQUIRE(netbuf.length() + expected_msg_size == chunk.length());
+        REQUIRE(netbuf.length_processed() == expected_msg_size);
     }
 }

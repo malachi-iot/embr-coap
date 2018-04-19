@@ -29,6 +29,7 @@ TEST_CASE("CoAP token tests", "[coap-token]")
             REQUIRE(uint_val[0] == 0xFE);
 
             //uint32_t val = uint_val.get_uint32_t();
+            const uint8_t* data = uint_val.data();
 
             uint32_t val = moducom::coap::UInt::get<uint32_t>(uint_val.data(), uint_val.length());
 
