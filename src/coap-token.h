@@ -37,6 +37,14 @@ public:
     {
         memcpy(t.data(), tkl);
     }
+
+    // TODO: put this into MemoryChunk itself
+    // we don't expose ReadOnly constructor which can do this copy because
+    // it might lose the const qualifiers
+    operator moducom::pipeline::MemoryChunk::readonly_t() const
+    {
+        return moducom::pipeline::MemoryChunk::readonly_t(data(), length());
+    }
 };
 
 

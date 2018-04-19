@@ -93,17 +93,39 @@ TEST_CASE("CoAP encoder tests", "[coap-encoder]")
         //const moducom::pipeline::layer1::MemoryChunk<256>& chunk = netbuf.chunk();
         const uint8_t* data = netbuf.data();
 
+        moducom::coap::layer2::Token token;
+
+        token[0] = 1;
+        token[1] = 2;
+        token[2] = 3;
+        token.length(3);
+
         Header header;
+
+        header.token_length(token.length());
+
         NetBufEncoder<netbuf_t&> encoder(netbuf);
         Option::Numbers n = Option::UriPath;
 
         encoder.header(header);
+
+        // Header is always 4
+        size_t expected_msg_size = 4;
+
+        REQUIRE(netbuf.length() + expected_msg_size == chunk.length());
+
+        //encoder.token(token);
+
+        //expected_msg_size += token.length();
+
+        REQUIRE(netbuf.length() + expected_msg_size == chunk.length());
+
         encoder.option(n, MemoryChunk((uint8_t*)"test", 4));
 
         netbuf_t& w = encoder.netbuf();
 
-        // Header + option "header" of size 1 + option_value of 4
-        size_t expected_msg_size = 4 + 1 + 4;
+        // + option "header" of size 1 + option_value of 4
+        expected_msg_size += 1 + 4;
 
         // TODO: Make a distinctive netbuf length_written vs length_free, right now
         // length() represents amount available in current 'PBUF'

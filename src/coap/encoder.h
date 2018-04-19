@@ -50,6 +50,11 @@ protected:
         return len;
     }
 
+    size_type write(const pipeline::MemoryChunk::readonly_t& chunk)
+    {
+        return write(chunk.data(), chunk.length());
+    }
+
     template <int N>
     size_type write(uint8_t (&d) [N])
     {
@@ -158,13 +163,34 @@ public:
         }
     }
 
+
+    // this variety does not handle chunking on the input
+    size_type token(const uint8_t* data, size_type tkl)
+    {
+        assert_state(_state_t::HeaderDone);
+        size_type written = write(data, tkl);
+        state(_state_t::TokenDone);
+        return written;
+    }
+
+    size_type token(const pipeline::MemoryChunk::readonly_t& value, bool last_chunk = true)
+    {
+        // TODO: handle chunking
+        assert_state(_state_t::HeaderDone);
+        size_type written = write(value);
+        state(_state_t::TokenDone);
+        return written;
+    }
+
+
+    /*
     bool token(const moducom::coap::layer2::Token& value)
     {
         assert_state(_state_t::HeaderDone);
         write(value.data(), value.length());
         state(_state_t::TokenDone);
         return true;
-    }
+    } */
 
     bool option(option_number_t number, const pipeline::MemoryChunk& option_value, bool last_chunk = true);
 
