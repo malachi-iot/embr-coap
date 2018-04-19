@@ -40,7 +40,7 @@ bool NetBufEncoder<TNetBuf>::option_header(option_number_t number, uint16_t valu
     int pos = 0;
 
     // while option encoder is not done, keep spitting out to netbuf
-    while (oe.state() != isDone && pos < size())
+    while (oe.state() != isDone && pos < this->size())
     {
         oe_t::output_t output = oe.generate_iterate();
 
@@ -51,7 +51,7 @@ bool NetBufEncoder<TNetBuf>::option_header(option_number_t number, uint16_t valu
             output_data[pos++] = output;
     }
 
-    advance(pos);
+    this->advance(pos);
 
     state(_state_t::Options);
 
@@ -89,7 +89,7 @@ bool NetBufEncoder<TNetBuf>::option(option_number_t number, TString s)
 
     // return true if we copied all the string bytes
     // return false if we copied less than all the string bytes
-    return write(s) == s.length();
+    return base_t::write(s) == s.length();
 }
 
 template <class TNetBuf>
@@ -100,7 +100,7 @@ bool NetBufEncoder<TNetBuf>::payload(TString s)
 
     // return true if we copied all the string bytes
     // return false if we copied less than all the string bytes
-    return write(s) == s.length();
+    return base_t::write(s) == s.length();
 }
 
 }}

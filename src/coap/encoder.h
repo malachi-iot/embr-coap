@@ -5,12 +5,12 @@
 namespace moducom { namespace coap {
 
 
-// 4/18/2018 - after much experimentation, I have settled on network-buffer pattern
-// reigning supreme for shuttling memory around, so then this is the canonical go-to
-// encoder
+// a thinner wrapper around netbuf, mainly adding convenience methods for
+// writes
 template <class TNetBuf>
-class NetBufEncoder : protected experimental::EncoderBase
+class NetBufWriter
 {
+protected:
     typedef TNetBuf netbuf_t;
 
     // outgoing network buffer
@@ -18,73 +18,118 @@ class NetBufEncoder : protected experimental::EncoderBase
     // a size/capacity/max_size kind of thing
     netbuf_t m_netbuf;
 
+public:
+    template <class TNetBufInitParam>
+    NetBufWriter(TNetBufInitParam& netbufinitparam) :
+            m_netbuf(netbufinitparam)
+    {}
+
+    // acquire direct access to underlying netbuf, useful for bulk operations like
+    // payload writes
+    netbuf_t& netbuf() const
+    {
+        return this->m_netbuf;
+    }
+
+    // this represents TNetBuf size_type.  Can't easily pull this out of netbuf directly
+    // due to the possibility TNetBuf might be a reference (will instead have to do fancy
+    // C++11 decltype/declval things to deduce it)
+    typedef int size_type;
+
+    bool advance(size_type amount)
+    {
+        // TODO: add true/false on advance to underlying netbuf itself to aid in runtime
+        // detection of boundary failure
+        netbuf().advance(amount);
+        return true;
+    }
+
+    size_type size() const { return netbuf().length(); }
+
+
+    size_type write(const uint8_t* d, int len)
+    {
+        if(len > size()) len = size();
+
+        // FIX: ugly, netbuf itself really needs to drop const, at least when
+        // it's a writeable netbuf
+        memcpy((void*)netbuf().data(), d, len);
+        bool advance_success = advance(len);
+
+        ASSERT_ERROR(true, advance_success, "Problem advancing through netbuf");
+
+        // TODO: decide if we want to issue a next() call here or externally
+        return len;
+    }
+
+    template <class TString>
+    size_type write(TString s)
+    {
+        int copied = s.copy((char*)netbuf().data(), this->size());
+
+        this->advance(copied);
+
+        ASSERT_ERROR(false, copied > s.length(), "Somehow copied more than was available!");
+
+        return copied;
+    }
+
+};
+
+// 4/18/2018 - after much experimentation, I have settled on network-buffer pattern
+// reigning supreme for shuttling memory around, so then this is the canonical go-to
+// encoder
+template <class TNetBuf>
+class NetBufEncoder :
+        public NetBufWriter<TNetBuf>,
+        protected experimental::EncoderBase
+{
+    typedef TNetBuf netbuf_t;
+    typedef NetBufWriter<TNetBuf> base_t;
+
     OptionEncoder option_encoder;
+
+public:
     typedef Option::Numbers option_number_t;
     // this represents TNetBuf size_type.  Can't easily pull this out of netbuf directly
     // due to the possibility TNetBuf might be a reference (will instead have to do fancy
     // C++11 decltype/declval things to deduce it)
     typedef int size_type;
 
+    // acquire direct access to underlying netbuf, useful for bulk operations like
+    // payload writes
+    netbuf_t& netbuf() const
+    {
+        return this->m_netbuf;
+    }
+
 protected:
     // consolidated netbuf access so as to more easily diagnose incorrect TNetBuf
     // FIX: not cool this const-dropping cast
-    uint8_t* data() { return (uint8_t*) m_netbuf.data(); }
-
-    bool advance(size_type amount)
-    {
-        // TODO: add true/false on advance to underlying netbuf itself to aid in runtime
-        // detection of boundary failure
-        m_netbuf.advance(amount);
-        return true;
-    }
-
-    size_type size() const { return m_netbuf.length(); }
+    uint8_t* data() { return (uint8_t*) netbuf().data(); }
 
     // TODO: next should return a tri-state, success, fail, or pending
-    bool next() { return m_netbuf.next(); }
+    bool next() { return netbuf().next(); }
 
     // TODO: make a netbuf-native version of this call, and/or do
     // some extra trickery to ensure chunk() is always efficient
-    size_type max_size() { return m_netbuf.chunk().size; }
-
-    size_type write(const uint8_t* d, int len)
-    {
-        if(len > size()) len = size();
-
-        memcpy(data(), d, len);
-        advance(len);
-
-        // TODO: decide if we want to issue a next() call here or externally
-        return len;
-    }
+    size_type max_size() { return netbuf().chunk().size; }
 
     size_type write(const pipeline::MemoryChunk::readonly_t& chunk)
     {
-        return write(chunk.data(), chunk.length());
+        return base_t::write(chunk.data(), chunk.length());
     }
 
     template <int N>
     size_type write(uint8_t (&d) [N])
     {
-        return write(d, N);
+        return base_t::write(d, N);
     }
 
     template <int N>
     size_type write(const uint8_t (&d) [N])
     {
-        return write(d, N);
-    }
-
-    template <class TString>
-    size_type write(TString s)
-    {
-        int copied = s.copy((char*)data(), size());
-
-        advance(copied);
-
-        ASSERT_ERROR(false, copied > s.length(), "Somehow copied more than was available!");
-
-        return copied;
+        return base_t::write(d, N);
     }
 
     // process all NON-value portion of option
@@ -93,7 +138,7 @@ protected:
     // process ONLY value portion of option
     bool option_value(pipeline::MemoryChunk chunk, bool last_chunk)
     {
-        size_type written = write(chunk.data(), chunk.length());
+        size_type written = base_t::write(chunk.data(), chunk.length());
         if(written == chunk.length())
         {
             if (last_chunk)
@@ -137,10 +182,10 @@ protected:
 
         if(!payload_marker_written())
         {
-            if(size() == 0) return false;
+            if(this->size() == 0) return false;
 
             data()[0] = 0xFF;
-            advance(1);
+            this->advance(1);
             payload_marker_written(true);
         }
 
@@ -159,7 +204,7 @@ protected:
 public:
     template <class TNetBufInitParam>
     NetBufEncoder(TNetBufInitParam& netbufinitparam) :
-        m_netbuf(netbufinitparam)
+        NetBufWriter<TNetBuf>(netbufinitparam)
     {
         payload_marker_written(false);
     }
@@ -171,7 +216,7 @@ public:
         assert_state(_state_t::Header);
 
         // TODO: handle incomplete write
-        if(size() >= 4)
+        if(this->size() >= 4)
         {
             write(header.bytes);
             state(_state_t::HeaderDone);
@@ -241,13 +286,6 @@ public:
     // (or perhaps alternate signalling mechanism?) - At time of this writing no formalized
     // signaling mechanism is present
     void complete() {}
-
-    // acquire direct access to underlying netbuf, useful for bulk operations like
-    // payload writes
-    netbuf_t& netbuf()
-    {
-        return m_netbuf;
-    }
 };
 
 
