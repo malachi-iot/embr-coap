@@ -49,7 +49,8 @@ protected:
         return base_t::write(chunk.data(), chunk.length());
     }
 
-    size_type write(ulong val)
+    // experimental
+    size_type write(unsigned long val)
     {
         return 0;
     }
@@ -113,6 +114,7 @@ protected:
 #ifdef DEBUG
         return state() == _state_t::Payload;
 #else
+        return m_payload_marker_written;
 #endif
     }
 

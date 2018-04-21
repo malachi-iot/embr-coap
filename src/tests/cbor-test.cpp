@@ -28,7 +28,7 @@ static uint8_t cbor_int[] =
         };
 
 
-static const uint8_t* assert(CBOR::Decoder& decoder, const uint8_t* v, std::string expected)
+static const uint8_t* cbor_assert(CBOR::Decoder& decoder, const uint8_t* v, std::string expected)
 {
     REQUIRE(decoder.type() == CBOR::String);
     REQUIRE(decoder.get_simple_value() == expected.length());
@@ -142,16 +142,16 @@ TEST_CASE("CBOR decoder tests", "[cbor-decoder]")
         REQUIRE(len == 2);
 
         v = decoder.process(v);
-        v = assert(decoder, v, "ssid");
+        v = cbor_assert(decoder, v, "ssid");
 
         v = decoder.process(v);
-        v = assert(decoder, v, "ssid_name");
+        v = cbor_assert(decoder, v, "ssid_name");
 
         v = decoder.process(v);
-        v = assert(decoder, v, "pass");
+        v = cbor_assert(decoder, v, "pass");
 
         v = decoder.process(v);
-        v = assert(decoder, v, "secret");
+        v = cbor_assert(decoder, v, "secret");
     }
     SECTION("Synthetic cred-set test: with helpers")
     {
