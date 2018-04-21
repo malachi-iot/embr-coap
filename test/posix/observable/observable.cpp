@@ -34,7 +34,7 @@ IDecoderObserver* sensor1_handler(AggregateUriPathObserver::Context& ctx)
     // NOTE: Also have to be very, very careful that the passed in ctx.objstack
     //      reflects the state of ctx.objstack *after* placement new, so must
     //      always pass in by reference/pointer
-    return new (ctx) FactoryDispatcherHandler(ctx.context.objstack, ctx.context, factories);
+    return new (ctx) FactoryDispatcherHandler(ctx.context, factories);
 }
 
 
@@ -98,7 +98,7 @@ size_t service_coap_in(const struct sockaddr_in& address_in, MemoryChunk& inbuf,
     moducom::pipeline::layer1::MemoryChunk<512> buffer;
     ObserverContext incoming_context(buffer);
 
-    FactoryDispatcherHandler dh(buffer, incoming_context, root_factories);
+    FactoryDispatcherHandler dh(incoming_context, root_factories);
     DecoderSubjectBase<IDecoderObserver&> decoder(dh);
 
     decoder.dispatch(inbuf);
