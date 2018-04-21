@@ -14,8 +14,9 @@ include_directories(${ESTDLIB_DIR})
 # set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "../../../bin")
 # add_subdirectory(. CMAKE_RUNTIME_OUTPUT_DIRECTORY)
 # add_subdirectory(${MC_MEM_DIR} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
-add_subdirectory(${MC_MEM_DIR} CMAKE_RUNTIME_OUTPUT_DIRECTORY)
-add_subdirectory(${ESTDLIB_DIR} CMAKE_RUNTIME_OUTPUT_DIRECTORY/estdlib)
+
+# add_subdirectory(${MC_MEM_DIR} mcmem)
+# add_subdirectory(${ESTDLIB_DIR} estdlib)
 
 # using technique from https://coderwall.com/p/y3zzbq/use-cmake-enabled-libraries-in-your-cmake-project
 #include(ExternalProject)
