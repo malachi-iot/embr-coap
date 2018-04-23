@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-#include "platform.h"
+#include <mc/mem/platform.h>
 #include "cbor/features.h"
 // TODO: Change naming and decouple UInt helpers from coap
 #include "coap-uint.h"

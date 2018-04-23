@@ -7,7 +7,7 @@
 
 #include <stdint.h>
 #include <string.h>
-#include "platform.h"
+#include <mc/mem/platform.h>
 #include "mc/memory-chunk.h"
 
 namespace moducom { namespace coap {

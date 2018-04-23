@@ -6,7 +6,7 @@
 //#define DEBUG2
 
 
-#include "platform.h"
+#include <mc/mem/platform.h>
 #include "mc/pipeline.h"
 #include <stdint.h>
 #include <stdlib.h>

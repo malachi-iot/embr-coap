@@ -5,7 +5,7 @@
 #ifndef SRC_COAP_TRANSMISSION_H
 #define SRC_COAP_TRANSMISSION_H
 
-#include "platform.h"
+#include <mc/mem/platform.h>
 #include "coap.h"
 #include "mc/string.h"
 

@@ -6,7 +6,7 @@
 #define MC_COAP_TEST_PIPELINE_H
 
 //#include "../coap_transmission.h"
-#include <platform.h>
+#include <mc/mem/platform.h>
 #include <stdint.h>
 #include <string.h>
 #include <mc/memory-chunk.h>
