@@ -23,6 +23,8 @@ class AddressContext
     TAddr addr;
 
 public:
+    typedef TAddr addr_t;
+
     const TAddr& address() const { return addr; }
 };
 
@@ -132,19 +134,9 @@ class IncomingContext :
 {
 public:
 #ifdef FEATURE_MCCOAP_INLINE_TOKEN
-    inline const pipeline::MemoryChunk::readonly_t token() const
+    inline const layer2::Token token() const
     {
-        size_t tkl = header().token_length();
-
-        // Have to create an inline chunk since our native token has no length
-        // and a pointer would clearly violate stack rules
-        // Considering strongly using an inline layer2::Token but that would be a shame
-        // since we'd be tracking token length in two places - but at this point, no
-        // less efficient than _token_present flag
-        // Separately, considering instead using a decoder::state() pointer which would take
-        // an extra byte but could provide a lot of utility - such as more accurate assertion
-        // of a valid header
-        return _token.subset(tkl);
+        return layer2::Token(_token, header().token_length());
     }
 
     void token(const pipeline::MemoryChunk::readonly_t* t)

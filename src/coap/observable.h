@@ -18,17 +18,26 @@ struct ObservableSession
     // handle rollover/overflow conditions.
     uint32_t sequence;
 
-    layer1::Token token;
+    // we are the subject, so addr is address of observer - the one
+    // who subscribed to us
+    IncomingContext::addr_t addr;
+
+    // token is one presented during initial subscription
+    layer2::Token token;
 };
 
 
-template <class TEnumeration, class TAddr = uint8_t[4]>
+// A registrar represents ONE subject's list of listeners.  By subject
+// we generally mean one subscribable URI path
+template <class TCollection>
 class ObservableRegistrar
 {
     typedef pipeline::MemoryChunk::readonly_t ro_chunk_t;
 
     // Enumeration shall be of type ObservableSession, or something similar to it
-    TEnumeration registrations;
+    TCollection registrations;
+
+    typedef typename TCollection::value_type observable_session_t;
 
 public:
     // When evaluating a registration or deregistration, utilize this context
@@ -39,18 +48,13 @@ public:
         // false = is deregistering
         const bool is_registering;
 
+        // will be carrying address info
         const IncomingContext& incomingContext;
 
-        // super-experimental, but we do need this IP(or other type) address during registration
-        // either that, or some kinda wacky out of band token<-->address map
-        TAddr addr;
-
-        Context(const IncomingContext& incomingContext, bool is_registering, const TAddr& addr) :
+        Context(const IncomingContext& incomingContext, bool is_registering) :
             incomingContext(incomingContext),
             is_registering(is_registering)
         {
-            // FIX: definitely not gonna work for all scenarios
-            memcpy(&this->addr, &addr, sizeof(TAddr));
         }
     };
 
@@ -63,6 +67,9 @@ public:
     void on_complete(Context& context)
     {
         ObservableSession test;
+
+        test.token = context.incomingContext.token();
+        //test.addr = context.incomingContext.address();
 
         // ObservableSession equality shall rest on the token value
         if(context.is_registering)

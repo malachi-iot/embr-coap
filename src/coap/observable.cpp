@@ -38,7 +38,7 @@ void ObservableOptionObserverBase::on_option(option_number_t number,
         case Option::UriPath:
             if(is_always_interested())
             {
-                registrar_t::Context context(this->context, is_registering, this->context.address());
+                registrar_t::Context context(this->context, is_registering);
 
                 // pass on uri path for registrar to evaluate.  It may or may not end
                 // up being a valid registrable path
@@ -70,7 +70,7 @@ void ObservableOptionObserverBase::on_complete()
 {
     if(is_always_interested())
     {
-        registrar_t::Context context(this->context, is_registering, this->context.address());
+        registrar_t::Context context(this->context, is_registering);
 
         // uri path gathering is complete.  Now registrar will
         // either act on the valid uri path or ignore the invalid uri path

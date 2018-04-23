@@ -35,7 +35,6 @@ public:
 
     Token(const layer1::Token& t, size_t tkl)
     {
-        const uint8_t* data = t.data();
         memcpy(t.data(), tkl);
     }
 
