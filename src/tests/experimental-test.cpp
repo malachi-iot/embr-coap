@@ -11,6 +11,9 @@
 
 #include "exp/datapump.hpp"
 
+#include <string>
+#include <estd/string.h>
+
 using namespace moducom::coap;
 using namespace moducom::coap::experimental;
 //using namespace moducom::pipeline;
@@ -242,11 +245,31 @@ TEST_CASE("experimental tests", "[experimental]")
     }
     SECTION("Datapump")
     {
-        typedef moducom::io::experimental::layer2::NetBufMemory<512> netbuf_t;
+        //typedef moducom::io::experimental::layer2::NetBufMemory<512> netbuf_t;
+        typedef moducom::io::experimental::NetBufDynamicMemory<> netbuf_t;
+
+        // will only work if I make it <const char, but then
+        // s.copy won't work since it wants to output to value_type*
+        // which will be const char*
+        //const estd::layer2::basic_string<char, 4> s = "Hi2u";
 
         DataPump<netbuf_t> datapump;
 
-        datapump.transport_out();
+        moducom::io::experimental::NetBufWriter<netbuf_t> writer;
+
+        //writer.write(s);
+
+        writer.write("hi2u", 4);
+
+        datapump.enqueue_out(writer.netbuf());
+
+        netbuf_t* to_transport = datapump.transport_out();
+
+        REQUIRE(to_transport != NULLPTR);
+
+        const uint8_t* p = to_transport->processed();
+
+        REQUIRE(p[0] == 'h');
 
     }
 }

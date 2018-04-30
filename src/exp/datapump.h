@@ -7,7 +7,7 @@ namespace moducom { namespace coap { namespace experimental {
 
 // passive push pull code to bridge transport level to application level
 // kind of a 2nd crack at 'experimental-packet-manager'
-template <class TNetBuf>
+template <class TNetBuf, template <class> class TAllocator = ::std::allocator>
 class DataPump
 {
     struct Item
@@ -36,7 +36,7 @@ public:
     // if no data is ready
     TNetBuf* transport_out()
     {
-        //if(outgoing.empty()) return NULLPTR;
+        if(outgoing.empty()) return NULLPTR;
 
         const Item& f = outgoing.front();
 
@@ -49,6 +49,18 @@ public:
     void enqueue_out(TNetBuf& out)
     {
         outgoing.push(Item(&out));
+    }
+
+    // dequeue complete netbuf which was queued from transport in
+    TNetBuf* dequeue_in()
+    {
+        if(incoming.empty()) return NULLPTR;
+
+        const Item& f = incoming.front();
+
+        incoming.pop();
+
+        return f.netbuf;
     }
 };
 
