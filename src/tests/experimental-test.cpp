@@ -9,6 +9,8 @@
 #include "../coap/experimental-observer.h"
 #include "../coap/experimental-packet-manager.h"
 
+#include "exp/datapump.hpp"
+
 using namespace moducom::coap;
 using namespace moducom::coap::experimental;
 //using namespace moducom::pipeline;
@@ -237,5 +239,14 @@ TEST_CASE("experimental tests", "[experimental]")
         REQUIRE(item != NULLPTR);
         REQUIRE(item->is_active() == true);
         REQUIRE(item->ready_to_send() == false);
+    }
+    SECTION("Datapump")
+    {
+        typedef moducom::io::experimental::layer2::NetBufMemory<512> netbuf_t;
+
+        DataPump<netbuf_t> datapump;
+
+        datapump.transport_out();
+
     }
 }

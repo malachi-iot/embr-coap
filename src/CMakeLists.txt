@@ -31,6 +31,7 @@ set(SOURCE_FILES
         coap_subscription.h
         cbor.cpp cbor/features.h cbor/encoder.h
         coap_daemon.h
+        exp/datapump.h exp/datapump.hpp
         mc/pipeline.h
         mc/pipeline.cpp coap-generator.h coap-generator.cpp coap-encoder.cpp
         coap-encoder.h coap-decoder.cpp coap-decoder.h
