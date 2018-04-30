@@ -255,7 +255,9 @@ TEST_CASE("experimental tests", "[experimental]")
 
         DataPump<netbuf_t> datapump;
 
-        moducom::io::experimental::NetBufWriter<netbuf_t> writer;
+        netbuf_t netbuf;
+
+        moducom::io::experimental::NetBufWriter<netbuf_t&> writer(netbuf);
 
         //writer.write(s);
 
