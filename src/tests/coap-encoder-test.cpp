@@ -1,4 +1,7 @@
 #include <catch.hpp>
+
+#include <stddef.h>
+
 #include "../coap-encoder.h"
 #include "mc/memory.h"
 #include "../coap_transmission.h"
