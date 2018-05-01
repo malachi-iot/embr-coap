@@ -9,6 +9,7 @@
 #include "mc/linkedlist.h"
 #include "mc/array-helper.h"
 #include "coap/context.h"
+
 #include "mc/memory-pool.h"
 
 // Doesn't really work, but will let us compile

@@ -6,8 +6,8 @@
 #define SRC_COAP_TRANSMISSION_H
 
 #include <mc/mem/platform.h>
+#include <mc/memory.h>
 #include "coap.h"
-#include "mc/string.h"
 
 // interim: eventually provide our own memory pool version of map
 #include <map>
@@ -161,7 +161,7 @@ public:
     OptionString(uint8_t number) :
             OptionBase(number) {}
 
-    moducom::std::string value;
+    //moducom::std::string value;
 };
 
 

@@ -26,7 +26,7 @@ include_directories(${ESTDLIB_DIR})
 #find_package ( moducom_memory )
 
 set(SOURCE_FILES
-        main.cpp coap.cpp coap.h
+        coap.cpp coap.h
         coap_transmission.cpp coap_transmission.h coap_subscription.cpp
         coap_subscription.h
         cbor.cpp cbor/features.h cbor/encoder.h
@@ -45,6 +45,7 @@ set(SOURCE_FILES
         mc/experimental-factory.h coap-features.h
         coap/encoder.h coap/encoder.hpp
         coap/observable.cpp coap/observable.h
-        coap/context.h coap/decoder-subject.hpp coap/decoder-subject.h coap/option-decoder.cpp)
+        coap/context.h coap/decoder-subject.hpp
+        coap/decoder-subject.h coap/option-decoder.cpp)
 
 add_library(moducom-coap-lib ${SOURCE_FILES})
