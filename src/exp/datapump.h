@@ -2,6 +2,9 @@
 
 #include <estd/forward_list.h>
 #include <estd/queue.h>
+#include <estd/vector.h>
+
+#include "coap-token.h"
 
 namespace moducom { namespace coap { namespace experimental {
 
@@ -19,6 +22,17 @@ class DataPump
         Item(TNetBuf* netbuf) : netbuf(netbuf) {}
     };
 
+
+    typedef uint8_t addr_t[4];
+
+
+    struct AddrMapper
+    {
+        addr_t address;
+        coap::Header header; // for tkl and mid
+        coap::layer1::Token token;
+    };
+
     // does not want to initialize because Item has no default constructor
     // specifically underlying array is an array of Item...
     // TODO: Make underlying array capable of non-initialized data somehow, since
@@ -27,6 +41,9 @@ class DataPump
     estd::queue<Item, estd::layer1::deque<Item, 10> > outgoing;
 
     //estd::forward_list<> retry;
+
+    // doesn't work yet because std::allocator itself is not able to provide handle_type
+    //estd::vector<AddrMapper> addr_mapping;
 
 public:
     // process data coming in from transport into coap queue
