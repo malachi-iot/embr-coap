@@ -9,9 +9,9 @@
 #endif
 
 #include <iostream>
-#include "mc/string.h"
 #include "MemoryPool.h"
 
+#ifdef UNUSED
 // https://github.com/philsquared/Catch/issues/531
 std::ostream& operator<<(std::ostream& os, moducom::std::string& value)
 {
@@ -63,6 +63,10 @@ TEST_CASE("String tests", "[strings]")
 
     REQUIRE(str3 == str2);
 }
+#else
+#include <catch.hpp>
+#endif
+
 
 // So that Visual Studio doesn't immediately close the window
 #ifdef CATCH_CONFIG_RUNNER

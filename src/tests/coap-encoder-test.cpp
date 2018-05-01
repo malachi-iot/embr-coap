@@ -14,7 +14,7 @@
 using namespace moducom::coap;
 using namespace moducom::pipeline;
 
-
+#include <stdio.h>
 
 
 TEST_CASE("CoAP encoder tests", "[coap-encoder]")
