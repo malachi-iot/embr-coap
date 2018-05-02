@@ -84,22 +84,6 @@ public:
     }
 };
 
-// FIX: stand-in which has our additional locking/handle machanisms
-// eventually have a proper one of these living in memory.h
-template <class T>
-struct experimental_std_allocator : public ::std::allocator<T>
-{
-    typedef ::std::allocator<T> base_t;
-
-    typedef typename base_t::pointer handle_type;
-    typedef const void* const_void_pointer;
-
-    static CONSTEXPR handle_type invalid() { return NULLPTR; }
-
-    static T& lock(handle_type h) { return *h; }
-    void unlock(handle_type) {}
-};
-
 class ObservableOptionObserverBase : public experimental::MessageObserverBase
 {
     typedef experimental::MessageObserverBase base_t;
@@ -110,7 +94,7 @@ class ObservableOptionObserverBase : public experimental::MessageObserverBase
             ObservableSession,
             estd::inlinevalue_node_traits<
                     estd::experimental::forward_node_base,
-                    experimental_std_allocator > >
+                    estd::experimental_std_allocator > >
             enumeration_t;
 
     typedef ObservableRegistrar<enumeration_t> registrar_t;
