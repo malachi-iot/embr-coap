@@ -37,13 +37,14 @@ class DataPump
     // specifically underlying array is an array of Item...
     // TODO: Make underlying array capable of non-initialized data somehow, since
     // a queue is technically that to start with
-    estd::queue<Item, estd::layer1::deque<Item, 10> > incoming;
-    estd::queue<Item, estd::layer1::deque<Item, 10> > outgoing;
+    estd::layer1::queue<Item, 10> incoming;
+    estd::layer1::queue<Item, 10> outgoing;
 
     //estd::forward_list<> retry;
 
-    // doesn't work yet because std::allocator itself is not able to provide handle_type
-    //estd::vector<AddrMapper> addr_mapping;
+    // might be better served by 2 different maps or some kind of memory_pool,
+    // but we'll roll with just a low-tech vector for now
+    estd::layer1::vector<AddrMapper, 10> addr_mapping;
 
 public:
     // process data coming in from transport into coap queue
