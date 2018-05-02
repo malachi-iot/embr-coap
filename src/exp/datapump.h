@@ -13,6 +13,10 @@ namespace moducom { namespace coap { namespace experimental {
 template <class TNetBuf, template <class> class TAllocator = ::std::allocator>
 class DataPump
 {
+public:
+    typedef uint8_t addr_t[4];
+
+private:
     struct Item
     {
         TNetBuf* netbuf;
@@ -22,8 +26,6 @@ class DataPump
         Item(TNetBuf* netbuf) : netbuf(netbuf) {}
     };
 
-
-    typedef uint8_t addr_t[4];
 
 
     struct AddrMapper
@@ -46,15 +48,24 @@ class DataPump
     // but we'll roll with just a low-tech vector for now
     estd::layer1::vector<AddrMapper, 10> addr_mapping;
 
+    static bool find_mapper_by_addr(const AddrMapper& mapper)
+    {
+
+    }
+
 public:
     // process data coming in from transport into coap queue
-    void transport_in(TNetBuf& in);
+    void transport_in(TNetBuf& in, addr_t& addr);
 
     // provide a netbuf containing data to be sent out over transport, or NULLPTR
     // if no data is ready
-    TNetBuf* transport_out()
+    TNetBuf* transport_out(addr_t* addr_out)
     {
         if(outgoing.empty()) return NULLPTR;
+
+        // can't quite do it because it wants AddrMapper (by way of iterator) to have ==
+        // but I am not convinced that's the best approach
+        //std::find(addr_mapping.begin(), addr_mapping.end(), find_mapper_by_addr);
 
         const Item& f = outgoing.front();
 

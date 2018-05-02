@@ -254,6 +254,7 @@ TEST_CASE("experimental tests", "[experimental]")
         //const estd::layer2::basic_string<char, 4> s = "Hi2u";
 
         DataPump<netbuf_t> datapump;
+        DataPump<netbuf_t>::addr_t addr;
 
         netbuf_t netbuf;
 
@@ -265,7 +266,7 @@ TEST_CASE("experimental tests", "[experimental]")
 
         datapump.enqueue_out(writer.netbuf());
 
-        netbuf_t* to_transport = datapump.transport_out();
+        netbuf_t* to_transport = datapump.transport_out(&addr);
 
         REQUIRE(to_transport != NULLPTR);
 
