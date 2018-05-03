@@ -17,6 +17,6 @@ TEST_CASE("experimental 2 tests")
         retry.enqueue(fakeaddr, fakenetbuf);
 
         // Not yet, need newer estdlib first with cleaned up iterators
-        //Retry<int>::Item* test = retry.front();
+        Retry<int>::Item* test = retry.front();
     }
 }

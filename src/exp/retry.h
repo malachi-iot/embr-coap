@@ -95,11 +95,11 @@ public:
 
         while(i != retry_list.end())
         {
-            Item* v = *i;
+            Item& v = *i;
             if(best == NULLPTR)
-                best = v;
-            else if(v->due < best->due)
-                best = v;
+                best = &v;
+            else if(v.due < best->due)
+                best = &v;
 
             i++;
         }
