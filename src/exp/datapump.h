@@ -4,6 +4,7 @@
 #include <estd/queue.h>
 #include <estd/vector.h>
 
+#include "coap-header.h"
 #include "coap-token.h"
 
 namespace moducom { namespace coap { namespace experimental {
@@ -20,6 +21,7 @@ private:
     struct Item
     {
         TNetBuf* netbuf;
+        addr_t addr;
 
         Item() {}
 

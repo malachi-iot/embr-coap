@@ -40,7 +40,7 @@ set(SOURCE_FILES
         coap-observable-test.cpp
         experimental-test.cpp
         decoder-subject-test.cpp
-        test-observer.h)
+        test-observer.h experimental2-test.cpp)
 
 add_executable(mc-coap-test ${SOURCE_FILES})
 

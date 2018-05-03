@@ -46,6 +46,6 @@ set(SOURCE_FILES
         coap/encoder.h coap/encoder.hpp
         coap/observable.cpp coap/observable.h
         coap/context.h coap/decoder-subject.hpp
-        coap/decoder-subject.h coap/option-decoder.cpp)
+        coap/decoder-subject.h coap/option-decoder.cpp exp/retry.h)
 
 add_library(moducom-coap-lib ${SOURCE_FILES})
