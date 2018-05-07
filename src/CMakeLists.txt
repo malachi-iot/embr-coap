@@ -32,6 +32,10 @@ set(SOURCE_FILES
         cbor.cpp cbor/features.h cbor/encoder.h
         coap_daemon.h
         exp/datapump.h exp/datapump.hpp
+
+        platform/posix/sockets-datapump.cpp
+        platform/arduino/datapump.cpp
+
         mc/pipeline.h
         mc/pipeline.cpp coap-generator.h coap-generator.cpp coap-encoder.cpp
         coap-encoder.h coap-decoder.cpp coap-decoder.h
@@ -45,6 +49,7 @@ set(SOURCE_FILES
         mc/experimental-factory.h coap-features.h
         coap/encoder.h coap/encoder.hpp
         coap/observable.cpp coap/observable.h
+        coap/platform.h
         coap/context.h coap/decoder-subject.hpp
         coap/decoder-subject.h coap/option-decoder.cpp exp/retry.h)
 
