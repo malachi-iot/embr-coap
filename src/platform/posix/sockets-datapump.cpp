@@ -20,6 +20,7 @@ static void error(const char *msg)
 
 // mostly copy/pasted from our old main.cpp code.  Will want to enable timeout code and change
 // the 'continue' code so that we can properly service datapump-push calls
+// NOTE: technically with just a bit of templating this could be non-datapump specific
 int blocking_datapump_handler(volatile const bool& service_active)
 {
     int sockfd = socket(AF_INET, SOCK_DGRAM, 0);
