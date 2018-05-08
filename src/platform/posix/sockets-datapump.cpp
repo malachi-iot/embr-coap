@@ -2,13 +2,20 @@
 
 #ifdef FEATURE_MCCOAP_SOCKETS
 
-#include "exp/datapump.h"
+#include "exp/datapump.hpp"
+#include "../generic/malloc_netbuf.h"
 
 #include <iostream>
 #include <stdio.h>
 #include <unistd.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
+
+using namespace moducom::coap;
+
+typedef NetBufDynamicExperimental netbuf_t;
+
+static moducom::coap::experimental::DataPump<netbuf_t, sockaddr_in> datapump;
 
 #define COAP_UDP_PORT 5683
 
@@ -18,18 +25,14 @@ static void error(const char *msg)
     exit(1);
 }
 
-// mostly copy/pasted from our old main.cpp code.  Will want to enable timeout code and change
-// the 'continue' code so that we can properly service datapump-push calls
+
+// goes into loop to listen manage datapump + sockets
 // NOTE: technically with just a bit of templating this could be non-datapump specific
 int blocking_datapump_handler(volatile const bool& service_active)
 {
     int sockfd = socket(AF_INET, SOCK_DGRAM, 0);
     sockaddr_in serv_addr, cli_addr;
     socklen_t clilen;
-
-    // TODO: Get more of a netbuf arrangement in place here, being that this is POSIX
-    // stock-standard dynamic allocation is A-OK
-    uint8_t buffer[1024];
 
     if(sockfd < 0) error("ERROR opening socket");
 
@@ -41,75 +44,50 @@ int blocking_datapump_handler(volatile const bool& service_active)
              sizeof(serv_addr)) < 0)
         error("ERROR on binding");
 
-    // listen only for TCP it seems
-    //listen(sockfd, 5);
-
     while(service_active)
     {
-        // accept only for TCP it seems
-        //int newsockfd = accept(sockfd, (sockaddr *) &cli_addr, &clilen);
         int newsockfd = sockfd;
 
-        // should work, but keeping commented until proper tests are conducted
-        /*
+        netbuf_t netbuf_in;
+
+        uint8_t* buffer = netbuf_in.unprocessed();
+        size_t buffer_len = netbuf_in.length_unprocessed();
+
+        // Untested but should work
+        // Sets 100ms timeout on recv (and technically send also)
         struct timeval tv;
         tv.tv_sec = 0;
-        tv.tv_usec = 100000;
+        tv.tv_usec = 100000; // 100 ms
         if (setsockopt(newsockfd, SOL_SOCKET, SO_RCVTIMEO,&tv,sizeof(tv)) < 0) {
             error("Error");
-        } */
+        }
 
         //if(newsockfd < 1) error("ERROR on accept");
 
-        bzero(buffer, 1024);
-
-        std::clog << "Waiting for packet" << std::endl;
-
-        // TODO: reorganize as mentioned above to do a timeout here and heed any outgoing
-        // coap packets too instead of just continuing below
-        ssize_t n = recvfrom(newsockfd, buffer, sizeof(buffer), 0, (sockaddr*) &cli_addr, &clilen);
-
-        std::clog << "Got packet: " << n << " bytes" << std::endl;
-
-        if(n == 0)
-            continue;
-
-        moducom::pipeline::layer3::MemoryChunk<256> outbuf;
-        size_t send_bytes;
+        ssize_t n = recvfrom(newsockfd, buffer, buffer_len, 0, (sockaddr*) &cli_addr, &clilen);
 
         if(n > 0)
         {
-            moducom::pipeline::MemoryChunk inbuf(buffer, n);
-            // FIX: TODO: wire this to datapump
-            //send_bytes = service_coap_in(cli_addr, inbuf, outbuf);
+            std::clog << "Got packet: " << n << " bytes" << std::endl;
+
+            datapump.transport_in(netbuf_in, cli_addr);
         }
         else
         {
-            // NOTE: expected this is where timeout code will live
-            // NOTE: timeout-ish code very likely will result in an occasional lost packet when
-            //  we aren't listening.  Rather than the complexity of threads, we will live with
-            //  this imperfection since it should be a very small sliver of time in which we aren't
-            //  listening
-            // FIX: TODO: wire this to datapump
-            //send_bytes = service_coap_out(&cli_addr, outbuf);
+            const netbuf_t* netbuf_out = datapump.transport_out(&cli_addr);
 
-            // do this rather than spamming cout with no response created warnings
-            if(send_bytes == 0) continue;
-        }
+            if(netbuf_out != NULLPTR)
+            {
+                std::clog << "Responding with " << netbuf_out->length_processed() << " bytes" << std::endl;
 
-        if(send_bytes == 0)
-        {
-            std::clog << "No response created" << std::endl;
-        }
-        else
-        {
-            std::clog << "Responding with " << send_bytes << " bytes" << std::endl;
-
-            sendto(newsockfd, outbuf.data(), send_bytes, 0, (sockaddr*) &cli_addr, clilen);
+                // FIX: Doesn't work for a multipart chunk
+                sendto(newsockfd,
+                       netbuf_out->processed(),
+                       netbuf_out->length_processed(), 0, (sockaddr*) &cli_addr, clilen);
+            }
         }
     }
 
-    // TODO: We never reach here right now, but might someday
     close(sockfd);
 
     return 0;

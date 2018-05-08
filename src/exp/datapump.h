@@ -11,11 +11,11 @@ namespace moducom { namespace coap { namespace experimental {
 
 // passive push pull code to bridge transport level to application level
 // kind of a 2nd crack at 'experimental-packet-manager'
-template <class TNetBuf, template <class> class TAllocator = ::std::allocator>
+template <class TNetBuf, class TAddr, template <class> class TAllocator = ::std::allocator>
 class DataPump
 {
 public:
-    typedef uint8_t addr_t[4];
+    typedef TAddr addr_t;
 
 private:
     struct Item

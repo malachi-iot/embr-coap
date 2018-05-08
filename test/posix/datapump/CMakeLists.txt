@@ -22,4 +22,6 @@ add_subdirectory(${MC_COAP_DIR} coap)
 
 add_executable(${PROJECT_NAME} "main.cpp")
 
+target_link_libraries(${PROJECT_NAME} moducom-coap-lib moducom_memory_lib)
+
 
