@@ -1,4 +1,4 @@
-#include "coap/platform.h"
+#include "../../coap/platform.h"
 
 #ifdef FEATURE_MCCOAP_ARDUINO
 

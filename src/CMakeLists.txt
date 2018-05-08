@@ -5,6 +5,7 @@ project(mc-coap)
 # NOTE: Need to make this set externally and well tested somehow
 # set(CMAKE_CXX_STANDARD 98)
 
+set(ROOT_DIR ..)
 set(MC_MEM_DIR ../ext/moducom-memory/src)
 set(ESTDLIB_DIR ../ext/estdlib/src)
 

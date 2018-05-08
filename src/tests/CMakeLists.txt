@@ -5,11 +5,12 @@ project(mc-coap-test)
 #set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD 98)
 
-set(MC_MEM_DIR ../../ext/moducom-memory/src)
-set(ESTDLIB_DIR ../../ext/estdlib/src)
-set(MC_COAP_DIR ..)
+set(ROOT_DIR ../..)
+set(MC_MEM_DIR ${ROOT_DIR}/ext/moducom-memory/src)
+set(ESTDLIB_DIR ${ROOT_DIR}/ext/estdlib/src)
+set(MC_COAP_DIR ${ROOT_DIR}/src)
 
-include_directories(../../ext/Catch/include)
+include_directories(${ROOT_DIR}/ext/Catch/include)
 include_directories(${MC_MEM_DIR})
 include_directories(${MC_COAP_DIR})
 include_directories(${ESTDLIB_DIR})
@@ -17,6 +18,11 @@ include_directories(${ESTDLIB_DIR})
 # set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "../../../bin")
 # add_subdirectory(. CMAKE_RUNTIME_OUTPUT_DIRECTORY)
 # add_subdirectory(${MC_MEM_DIR} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
+
+# doesn't work because MC_MEM is already pulling it in this way, but
+# preferably MC_MEM would only do include_directories.  Refactor MC_MEM
+# for that
+# add_subdirectory(${ESTDLIB_DIR} estd)
 
 add_subdirectory(${MC_MEM_DIR} mem)
 add_subdirectory(${MC_COAP_DIR} coap)
