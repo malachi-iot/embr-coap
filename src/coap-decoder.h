@@ -63,7 +63,6 @@ class RawDecoder : public CounterDecoder<TCounter>
 public:
     typedef CounterDecoder<TCounter> base_t;
 
-    // TODO: make this a const
     const uint8_t* data() const { return buffer; }
 
     // returns true when all bytes finally accounted for
@@ -257,6 +256,7 @@ public:
 };
 
 
+// TODO: As an optimization, make version of TokenDecoder which is zerocopy
 class Decoder :
     public experimental::Root,
     public StateHelper<experimental::root_state_t>
@@ -331,7 +331,7 @@ public:
 
     // FIX: Repair this, nobody should be peering in and changing state
     // made the name extra ugly just to draw attention to it
-    void state_for_decoder_subject(experimental::root_state_t s)
+    void state_for_decoder_subject_unused(experimental::root_state_t s)
     {
         state(s);
     }

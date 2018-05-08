@@ -36,6 +36,13 @@ public:
     Token(const layer1::Token& t, size_t tkl)
     {
         memcpy(t.data(), tkl);
+        length(tkl);
+    }
+
+    Token(const uint8_t* data, size_t tkl)
+    {
+        memcpy(data, tkl);
+        length(tkl);
     }
 
     // TODO: put this into MemoryChunk itself

@@ -43,7 +43,7 @@ int main()
 
             Header header_in = decoder.header_decoder();
             int tkl = header_in.token_length();
-            layer1::Token token;
+            layer2::Token token;
 
             //cout << "mid=" << header_in.message_id() << endl;
 
@@ -54,7 +54,7 @@ int main()
 
                 ASSERT_ERROR(Decoder::TokenDone, decoder.state(), "Unexpected state");
 
-                token.memcpy(decoder.token_decoder().data(), header_in.token_length());
+                new (&token) layer2::Token(decoder.token_decoder().data(), tkl);
             }
 
             // FIX: Need a much more cohesive way of doing this
@@ -64,17 +64,10 @@ int main()
 
             NetBufEncoder<netbuf_t&> encoder(*netbuf);
 
-            Header header(Header::TypeEnum::Acknowledgement);
-
-            header.type(Header::TypeEnum::Acknowledgement);
-            header.code(Header::Code::Content);
-            header.message_id(header_in.message_id());
-            header.token_length(tkl);
-
             //cout << "mid out=" << header.message_id() << endl;
 
-            encoder.header(header);
-            encoder.token(token.data(), tkl);
+            encoder.header(create_response(header_in, Header::Code::Content));
+            encoder.token(token);
             encoder.complete();
 
             sockets_datapump.enqueue_out(*netbuf, ipaddr);

@@ -247,14 +247,15 @@ TEST_CASE("experimental tests", "[experimental]")
     {
         //typedef moducom::io::experimental::layer2::NetBufMemory<512> netbuf_t;
         typedef moducom::io::experimental::NetBufDynamicMemory<> netbuf_t;
+        typedef uint32_t addr_t;
 
         // will only work if I make it <const char, but then
         // s.copy won't work since it wants to output to value_type*
         // which will be const char*
         //const estd::layer2::basic_string<char, 4> s = "Hi2u";
 
-        DataPump<netbuf_t> datapump;
-        DataPump<netbuf_t>::addr_t addr;
+        DataPump<netbuf_t, addr_t> datapump;
+        addr_t addr;
 
         netbuf_t netbuf;
 
@@ -264,7 +265,7 @@ TEST_CASE("experimental tests", "[experimental]")
 
         writer.write("hi2u", 4);
 
-        datapump.enqueue_out(writer.netbuf());
+        datapump.enqueue_out(writer.netbuf(), addr);
 
         netbuf_t* to_transport = datapump.transport_out(&addr);
 
