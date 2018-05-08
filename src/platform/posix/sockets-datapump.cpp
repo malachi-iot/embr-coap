@@ -26,14 +26,10 @@ static void error(const char *msg)
     exit(1);
 }
 
-
-// goes into loop to listen manage datapump + sockets
-// NOTE: technically with just a bit of templating this could be non-datapump specific
-int blocking_datapump_handler(volatile const bool& service_active)
+int nonblocking_datapump_setup()
 {
     int sockfd = socket(AF_INET, SOCK_DGRAM, 0);
-    sockaddr_in serv_addr, cli_addr;
-    socklen_t clilen;
+    sockaddr_in serv_addr;
 
     if(sockfd < 0) error("ERROR opening socket");
 
@@ -45,55 +41,75 @@ int blocking_datapump_handler(volatile const bool& service_active)
              sizeof(serv_addr)) < 0)
         error("ERROR on binding");
 
-    while(service_active)
+    return sockfd;
+}
+
+
+void nonblocking_datapump_loop(int sockfd)
+{
+    sockaddr_in cli_addr;
+    socklen_t clilen;
+
+    const netbuf_t* netbuf_out = datapump.transport_out(&cli_addr);
+
+    if(netbuf_out != NULLPTR)
     {
-        int newsockfd = sockfd;
+        std::clog << "Responding with " << netbuf_out->length_processed() << " bytes" << std::endl;
 
-        const netbuf_t* netbuf_out = datapump.transport_out(&cli_addr);
-
-        if(netbuf_out != NULLPTR)
-        {
-            std::clog << "Responding with " << netbuf_out->length_processed() << " bytes" << std::endl;
-
-            // FIX: Doesn't work for a multipart chunk
-            sendto(newsockfd,
-                   netbuf_out->processed(),
-                   netbuf_out->length_processed(), 0, (sockaddr*) &cli_addr, clilen);
-        }
-
-        pollfd fd;
-
-        fd.fd = newsockfd;
-        fd.events = POLL_IN; // look for incoming UDP data
-
-        int poll_result = poll(&fd, 1, 100); // wait for 100 ms for input
-
-        // TODO: display error if we get one
-        if(poll_result <= 0) continue;
-
-        //if(newsockfd < 1) error("ERROR on accept");
-
-        netbuf_t* netbuf_in = new netbuf_t;
-
-        uint8_t* buffer = netbuf_in->unprocessed();
-        size_t buffer_len = netbuf_in->length_unprocessed();
-
-        ssize_t n = recvfrom(newsockfd, buffer, buffer_len, 0, (sockaddr*) &cli_addr, &clilen);
-
-        if(n > 0)
-        {
-            std::clog << "Got packet: " << n << " bytes" << std::endl;
-
-            datapump.transport_in(*netbuf_in, cli_addr);
-
-            // FIX: Need to find a way to gracefully deallocate netbuf in, since it's now queued
-            // and needs to hang around for a bit
-        }
+        // FIX: Doesn't work for a multipart chunk
+        sendto(sockfd,
+               netbuf_out->processed(),
+               netbuf_out->length_processed(), 0, (sockaddr*) &cli_addr, clilen);
     }
 
+    pollfd fd;
+
+    fd.fd = sockfd;
+    fd.events = POLL_IN; // look for incoming UDP data
+
+    int poll_result = poll(&fd, 1, 100); // wait for 100 ms for input
+
+    // TODO: display error if we get one
+    if(poll_result <= 0) return;
+
+    //if(newsockfd < 1) error("ERROR on accept");
+
+    netbuf_t* netbuf_in = new netbuf_t;
+
+    uint8_t* buffer = netbuf_in->unprocessed();
+    size_t buffer_len = netbuf_in->length_unprocessed();
+
+    ssize_t n = recvfrom(sockfd, buffer, buffer_len, 0, (sockaddr*) &cli_addr, &clilen);
+
+    if(n > 0)
+    {
+        std::clog << "Got packet: " << n << " bytes" << std::endl;
+
+        datapump.transport_in(*netbuf_in, cli_addr);
+
+        // FIX: Need to find a way to gracefully deallocate netbuf in, since it's now queued
+        // and needs to hang around for a bit
+    }
+}
+
+
+int nonblocking_datapump_shutdown(int sockfd)
+{
     close(sockfd);
 
     return 0;
+}
+
+// goes into loop to listen manage datapump + sockets
+// NOTE: technically with just a bit of templating this could be non-datapump specific
+int blocking_datapump_handler(volatile const bool& service_active)
+{
+    int sockfd = nonblocking_datapump_setup();
+
+    while(service_active)
+        nonblocking_datapump_loop(sockfd);
+
+    return nonblocking_datapump_shutdown(sockfd);
 }
 
 #endif

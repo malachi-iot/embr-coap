@@ -4,13 +4,22 @@ using namespace std;
 
 int blocking_datapump_handler(volatile const bool& service_active);
 
+int nonblocking_datapump_setup();
+void nonblocking_datapump_loop(int);
+int nonblocking_datapump_shutdown(int);
+
 int main()
 {
     cout << "Hello World!" << endl;
 
-    bool service_active = true;
+    int handle = nonblocking_datapump_setup();
 
-    blocking_datapump_handler(service_active);
+    for(;;)
+    {
+        nonblocking_datapump_loop(handle);
+    }
+
+    nonblocking_datapump_shutdown(handle);
 
     return 0;
 }
