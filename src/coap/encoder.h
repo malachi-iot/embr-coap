@@ -192,7 +192,7 @@ public:
     bool token(const uint8_t* data, size_type tkl)
     {
         assert_state(_state_t::HeaderDone);
-        size_type written = write(data, tkl);
+        size_type written = base_t::write(data, tkl);
         state(_state_t::TokenDone);
         this->written(written);
         return written == tkl;

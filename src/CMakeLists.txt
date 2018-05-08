@@ -12,6 +12,7 @@ include_directories(${MC_MEM_DIR})
 include_directories(${ESTDLIB_DIR})
 
 # set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "../../../bin")
+
 # add_subdirectory(. CMAKE_RUNTIME_OUTPUT_DIRECTORY)
 # add_subdirectory(${MC_MEM_DIR} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
 
@@ -33,7 +34,9 @@ set(SOURCE_FILES
         coap_daemon.h
         exp/datapump.h exp/datapump.hpp
 
+        platform/posix/sockets-datapump.h
         platform/posix/sockets-datapump.cpp
+
         platform/arduino/datapump.cpp
 
         mc/pipeline.h

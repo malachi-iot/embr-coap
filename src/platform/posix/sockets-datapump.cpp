@@ -3,7 +3,7 @@
 #ifdef FEATURE_MCCOAP_SOCKETS
 
 #include "exp/datapump.hpp"
-#include "../generic/malloc_netbuf.h"
+#include "sockets-datapump.h"
 
 #include <iostream>
 #include <stdio.h>
@@ -16,7 +16,11 @@ using namespace moducom::coap;
 
 typedef NetBufDynamicExperimental netbuf_t;
 
-static moducom::coap::experimental::DataPump<netbuf_t, sockaddr_in> datapump;
+namespace moducom { namespace coap {
+
+sockets_datapump_t sockets_datapump;
+
+}}
 
 #define COAP_UDP_PORT 5683
 
@@ -44,22 +48,35 @@ int nonblocking_datapump_setup()
     return sockfd;
 }
 
+//extern "C" errno_t errno;
 
 void nonblocking_datapump_loop(int sockfd)
 {
     sockaddr_in cli_addr;
-    socklen_t clilen;
+    // FIX: relying on recv to set this, very much not ideal
+    socklen_t clilen = sizeof(cli_addr);
+    ssize_t n;
 
-    const netbuf_t* netbuf_out = datapump.transport_out(&cli_addr);
+    const netbuf_t* netbuf_out = sockets_datapump.transport_out(&cli_addr);
 
     if(netbuf_out != NULLPTR)
     {
-        std::clog << "Responding with " << netbuf_out->length_processed() << " bytes" << std::endl;
+        std::clog << "Responding with " << netbuf_out->length_processed() << " bytes";
+        //std::clog << " to ip=" << cli_addr.sin_addr.s_addr << ", port=" << cli_addr.sin_port;
+        std::clog << std::endl;
+
+        const void* processed = netbuf_out->processed();
+        n = netbuf_out->length_processed();
 
         // FIX: Doesn't work for a multipart chunk
-        sendto(sockfd,
-               netbuf_out->processed(),
-               netbuf_out->length_processed(), 0, (sockaddr*) &cli_addr, clilen);
+        n = sendto(sockfd,
+               processed,
+               n, 0, (sockaddr*) &cli_addr, clilen);
+
+        if(n == -1) error("Couldn't send UDP");
+
+        // FIX: Not a long-term way to handle netbuf deallocation
+        delete netbuf_out;
     }
 
     pollfd fd;
@@ -67,7 +84,7 @@ void nonblocking_datapump_loop(int sockfd)
     fd.fd = sockfd;
     fd.events = POLL_IN; // look for incoming UDP data
 
-    int poll_result = poll(&fd, 1, 100); // wait for 100 ms for input
+    int poll_result = poll(&fd, 1, 50); // wait for 50 ms for input
 
     // TODO: display error if we get one
     if(poll_result <= 0) return;
@@ -79,13 +96,18 @@ void nonblocking_datapump_loop(int sockfd)
     uint8_t* buffer = netbuf_in->unprocessed();
     size_t buffer_len = netbuf_in->length_unprocessed();
 
-    ssize_t n = recvfrom(sockfd, buffer, buffer_len, 0, (sockaddr*) &cli_addr, &clilen);
+    n = recvfrom(sockfd, buffer, buffer_len, 0, (sockaddr*) &cli_addr, &clilen);
 
     if(n > 0)
     {
-        std::clog << "Got packet: " << n << " bytes" << std::endl;
+        std::clog << "Got packet: " << n << " bytes";
+        //std::clog << " ip=" << cli_addr.sin_addr.s_addr;
+        //std::clog << " port=" << cli_addr.sin_port;
+        std::clog << std::endl;
 
-        datapump.transport_in(*netbuf_in, cli_addr);
+        netbuf_in->advance(n);
+
+        sockets_datapump.transport_in(*netbuf_in, cli_addr);
 
         // FIX: Need to find a way to gracefully deallocate netbuf in, since it's now queued
         // and needs to hang around for a bit

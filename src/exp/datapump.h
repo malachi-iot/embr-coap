@@ -74,15 +74,18 @@ public:
 
         const Item& f = outgoing.front();
 
+        *addr_out = f.addr;
+        TNetBuf* netbuf = f.netbuf;
+
         outgoing.pop();
 
-        return f.netbuf;
+        return netbuf;
     }
 
     // enqueue complete netbuf for outgoing transport to pick up
     void enqueue_out(TNetBuf& out, const addr_t& addr_out)
     {
-        outgoing.push(Item(&out));
+        outgoing.push(Item(&out, addr_out));
     }
 
     // dequeue complete netbuf which was queued from transport in
