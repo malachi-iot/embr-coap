@@ -8,6 +8,7 @@
 #include <iostream>
 #include <stdio.h>
 #include <unistd.h>
+#include <poll.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 
@@ -48,21 +49,34 @@ int blocking_datapump_handler(volatile const bool& service_active)
     {
         int newsockfd = sockfd;
 
-        netbuf_t netbuf_in;
+        const netbuf_t* netbuf_out = datapump.transport_out(&cli_addr);
 
-        uint8_t* buffer = netbuf_in.unprocessed();
-        size_t buffer_len = netbuf_in.length_unprocessed();
+        if(netbuf_out != NULLPTR)
+        {
+            std::clog << "Responding with " << netbuf_out->length_processed() << " bytes" << std::endl;
 
-        // Untested but should work
-        // Sets 100ms timeout on recv (and technically send also)
-        struct timeval tv;
-        tv.tv_sec = 0;
-        tv.tv_usec = 100000; // 100 ms
-        if (setsockopt(newsockfd, SOL_SOCKET, SO_RCVTIMEO,&tv,sizeof(tv)) < 0) {
-            error("Error");
+            // FIX: Doesn't work for a multipart chunk
+            sendto(newsockfd,
+                   netbuf_out->processed(),
+                   netbuf_out->length_processed(), 0, (sockaddr*) &cli_addr, clilen);
         }
 
+        pollfd fd;
+
+        fd.fd = newsockfd;
+        fd.events = POLL_IN; // look for incoming UDP data
+
+        int poll_result = poll(&fd, 1, 100); // wait for 100 ms for input
+
+        // TODO: display error if we get one
+        if(poll_result <= 0) continue;
+
         //if(newsockfd < 1) error("ERROR on accept");
+
+        netbuf_t* netbuf_in = new netbuf_t;
+
+        uint8_t* buffer = netbuf_in->unprocessed();
+        size_t buffer_len = netbuf_in->length_unprocessed();
 
         ssize_t n = recvfrom(newsockfd, buffer, buffer_len, 0, (sockaddr*) &cli_addr, &clilen);
 
@@ -70,21 +84,10 @@ int blocking_datapump_handler(volatile const bool& service_active)
         {
             std::clog << "Got packet: " << n << " bytes" << std::endl;
 
-            datapump.transport_in(netbuf_in, cli_addr);
-        }
-        else
-        {
-            const netbuf_t* netbuf_out = datapump.transport_out(&cli_addr);
+            datapump.transport_in(*netbuf_in, cli_addr);
 
-            if(netbuf_out != NULLPTR)
-            {
-                std::clog << "Responding with " << netbuf_out->length_processed() << " bytes" << std::endl;
-
-                // FIX: Doesn't work for a multipart chunk
-                sendto(newsockfd,
-                       netbuf_out->processed(),
-                       netbuf_out->length_processed(), 0, (sockaddr*) &cli_addr, clilen);
-            }
+            // FIX: Need to find a way to gracefully deallocate netbuf in, since it's now queued
+            // and needs to hang around for a bit
         }
     }
 

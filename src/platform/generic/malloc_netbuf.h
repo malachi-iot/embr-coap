@@ -19,6 +19,8 @@ protected:
     size_type pos;
 
 public:
+    ProcessedMemoryChunkBaseExperimental() : pos(0) {}
+
     const chunk_t& chunk() const { return *m_chunk; }
 
     chunk_t& chunk() { return *m_chunk; }
@@ -92,6 +94,7 @@ public:
         _first();
         chunk_t mem1((uint8_t*)malloc(4096), 4096);
         chunks.push_front(mem1);
+        m_chunk = &chunks.front();
     }
 
     ~NetBufDynamicExperimental()

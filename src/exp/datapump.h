@@ -25,7 +25,10 @@ private:
 
         Item() {}
 
-        Item(TNetBuf* netbuf) : netbuf(netbuf) {}
+        Item(TNetBuf* netbuf, const addr_t& addr) :
+            netbuf(netbuf),
+            addr(addr)
+        {}
     };
 
 
@@ -57,7 +60,7 @@ private:
 
 public:
     // process data coming in from transport into coap queue
-    void transport_in(TNetBuf& in, addr_t& addr);
+    void transport_in(TNetBuf& in, const addr_t& addr);
 
     // provide a netbuf containing data to be sent out over transport, or NULLPTR
     // if no data is ready
@@ -77,21 +80,23 @@ public:
     }
 
     // enqueue complete netbuf for outgoing transport to pick up
-    void enqueue_out(TNetBuf& out)
+    void enqueue_out(TNetBuf& out, const addr_t& addr_out)
     {
         outgoing.push(Item(&out));
     }
 
     // dequeue complete netbuf which was queued from transport in
-    TNetBuf* dequeue_in()
+    TNetBuf* dequeue_in(addr_t* addr_in)
     {
         if(incoming.empty()) return NULLPTR;
 
         const Item& f = incoming.front();
+        TNetBuf* netbuf = f.netbuf;
+        *addr_in = f.addr;
 
         incoming.pop();
 
-        return f.netbuf;
+        return netbuf;
     }
 };
 
