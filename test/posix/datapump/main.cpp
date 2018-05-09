@@ -31,16 +31,10 @@ int main()
             cout << "Got a netbuf";
             //cout << " ip=" << ipaddr.sin_addr.s_addr << endl;
 
-            NetBufDecoder<netbuf_t&> nbdecoder(*netbuf);
+            NetBufDecoder<netbuf_t&> decoder(*netbuf);
 
-            Decoder decoder;
-
-            moducom::pipeline::MemoryChunk::readonly_t chunk(netbuf->processed(), netbuf->length_processed());
-
-            Decoder::Context context(chunk, true);
-
-            decoder.process_iterate(context);
-            decoder.process_iterate(context);
+            decoder.process_iterate();
+            decoder.process_iterate();
 
             ASSERT_ERROR(Decoder::HeaderDone, decoder.state(), "Unexpected state");
 
@@ -52,8 +46,8 @@ int main()
 
             if(tkl > 0)
             {
-                decoder.process_iterate(context);
-                decoder.process_iterate(context);
+                decoder.process_iterate();
+                decoder.process_iterate();
 
                 ASSERT_ERROR(Decoder::TokenDone, decoder.state(), "Unexpected state");
 

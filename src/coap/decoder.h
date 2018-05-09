@@ -7,9 +7,10 @@ namespace moducom { namespace coap {
 // standalone Decoder works well enough, so this is largely just a netbuf-capable
 // wrapper around it
 template <class TNetBuf>
-class NetBufDecoder : Decoder
+class NetBufDecoder : public Decoder
 {
     typedef TNetBuf netbuf_t;
+    typedef Decoder base_t;
 
 protected:
     netbuf_t netbuf;
@@ -26,7 +27,8 @@ public:
 
     bool process_iterate()
     {
-        return process_iterate(context);
+        // TODO: Will know how to advance through netbuf
+        return base_t::process_iterate(context);
     }
 };
 
