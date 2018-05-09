@@ -15,15 +15,16 @@ int main()
 {
     cout << "Hello World!" << endl;
 
-    int handle = nonblocking_datapump_setup();
+    SocketsDatapumpHelper sdh;
 
     for(;;)
     {
-        nonblocking_datapump_loop(handle);
+        sdh.loop();
+
         sockaddr_in ipaddr;
         netbuf_t* netbuf;
 
-        netbuf = sockets_datapump.dequeue_in(&ipaddr);
+        netbuf = sdh.dequeue(&ipaddr);
 
         // echo back out a raw ACK, with no trickery just raw decoding/encoding
         if(netbuf != NULLPTR)
@@ -67,11 +68,9 @@ int main()
             encoder.token(token);
             encoder.complete();
 
-            sockets_datapump.enqueue_out(*netbuf, ipaddr);
+            sdh.enqueue(*netbuf, ipaddr);
         }
     }
-
-    nonblocking_datapump_shutdown(handle);
 
     return 0;
 }

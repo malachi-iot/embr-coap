@@ -50,7 +50,7 @@ int nonblocking_datapump_setup()
 
 //extern "C" errno_t errno;
 
-void nonblocking_datapump_loop(int sockfd)
+void nonblocking_datapump_loop(int sockfd, sockets_datapump_t& sockets_datapump)
 {
     sockaddr_in cli_addr;
     // FIX: relying on recv to set this, very much not ideal

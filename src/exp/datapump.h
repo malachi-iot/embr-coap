@@ -16,6 +16,7 @@ class DataPump
 {
 public:
     typedef TAddr addr_t;
+    typedef TNetBuf netbuf_t;
 
 private:
     struct Item
