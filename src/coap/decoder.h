@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../coap-decoder.h"
+#include "../coap-token.h"
 
 namespace moducom { namespace coap {
 
@@ -29,6 +30,56 @@ public:
     {
         // TODO: Will know how to advance through netbuf
         return base_t::process_iterate(context);
+    }
+
+    // keep processing until we encounter state
+    // keep processing for max_attempts
+    // able to do this because netbuf is able to provide *all* of interested incoming buffers
+    // where core decoder though it knows whether it's the last chunk, it doesn't know how
+    // to retrieve the next one
+    // in debug mode, this should indicate an error if we never reach said state
+    bool process_until_experimental(Decoder::State s, int max_attempts = 50)
+    {
+        while(max_attempts-- > 0)
+        {
+            if(state() != s)
+            {
+                process_iterate();
+            }
+            else
+                return true;
+        }
+
+        // TODO: Reveal error that we couldn't find state s
+        ASSERT_ERROR(false, true, "Unable to find requested state");
+        return false;
+    }
+
+    coap::Header process_header_experimental()
+    {
+        ASSERT_WARN(Decoder::Uninitialized, state(), "Expected to be at beginning of decoder processing");
+
+        process_until_experimental(Decoder::HeaderDone);
+
+        return header_decoder();
+    }
+
+
+    bool process_token_experimental(layer2::Token* token)
+    {
+        ASSERT_WARN(Decoder::HeaderDone, state(), "Expected to be at end of header processing");
+
+        int tkl = header_decoder().token_length();
+
+        // NOTE: Can't 100% remember if TokenDone is triggered on a 0-length token
+        process_until_experimental(Decoder::TokenDone);
+
+        if(tkl > 0)
+        {
+            new (token) layer2::Token(token_decoder().data(), tkl);
+            return true;
+        }
+        else return false;
     }
 };
 

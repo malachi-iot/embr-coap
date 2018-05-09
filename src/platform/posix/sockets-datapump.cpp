@@ -30,7 +30,7 @@ static void error(const char *msg)
     exit(1);
 }
 
-int nonblocking_datapump_setup()
+static int initialize_udp_socket(int port)
 {
     int sockfd = socket(AF_INET, SOCK_DGRAM, 0);
     sockaddr_in serv_addr;
@@ -39,7 +39,7 @@ int nonblocking_datapump_setup()
 
     serv_addr.sin_addr.s_addr = INADDR_ANY;
     serv_addr.sin_family = AF_INET;
-    serv_addr.sin_port = htons(COAP_UDP_PORT);
+    serv_addr.sin_port = htons(port);
 
     if (bind(sockfd, (sockaddr *) &serv_addr,
              sizeof(serv_addr)) < 0)
@@ -48,12 +48,15 @@ int nonblocking_datapump_setup()
     return sockfd;
 }
 
-//extern "C" errno_t errno;
+int nonblocking_datapump_setup()
+{
+    return initialize_udp_socket(COAP_UDP_PORT);
+}
+
 
 void nonblocking_datapump_loop(int sockfd, sockets_datapump_t& sockets_datapump)
 {
     sockaddr_in cli_addr;
-    // FIX: relying on recv to set this, very much not ideal
     socklen_t clilen = sizeof(cli_addr);
     ssize_t n;
 

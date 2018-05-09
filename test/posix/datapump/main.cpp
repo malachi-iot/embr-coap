@@ -29,31 +29,15 @@ int main()
         // echo back out a raw ACK, with no trickery just raw decoding/encoding
         if(netbuf != NULLPTR)
         {
-            cout << "Got a netbuf";
             //cout << " ip=" << ipaddr.sin_addr.s_addr << endl;
 
             NetBufDecoder<netbuf_t&> decoder(*netbuf);
-
-            decoder.process_iterate();
-            decoder.process_iterate();
-
-            ASSERT_ERROR(Decoder::HeaderDone, decoder.state(), "Unexpected state");
-
-            Header header_in = decoder.header_decoder();
-            int tkl = header_in.token_length();
             layer2::Token token;
 
-            //cout << "mid=" << header_in.message_id() << endl;
+            Header header_in = decoder.process_header_experimental();
 
-            if(tkl > 0)
-            {
-                decoder.process_iterate();
-                decoder.process_iterate();
-
-                ASSERT_ERROR(Decoder::TokenDone, decoder.state(), "Unexpected state");
-
-                new (&token) layer2::Token(decoder.token_decoder().data(), tkl);
-            }
+            // populate token, if present.  Expects decoder to be at HeaderDone phase
+            decoder.process_token_experimental(&token);
 
             // FIX: Need a much more cohesive way of doing this
             delete netbuf;
@@ -66,6 +50,9 @@ int main()
 
             encoder.header(create_response(header_in, Header::Code::Content));
             encoder.token(token);
+            // optional and experimental.  Really I think we can do away with encoder.complete()
+            // because coap messages are indicated complete mainly by reaching the transport packet
+            // size - a mechanism which is fully outside the scope of the encoder
             encoder.complete();
 
             sdh.enqueue(*netbuf, ipaddr);
