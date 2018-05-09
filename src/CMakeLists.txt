@@ -42,16 +42,20 @@ set(SOURCE_FILES
         coap/platform.h
         coap/option-decoder.cpp
 
+        coap-encoder.h coap-decoder.cpp coap-decoder.h
+
         exp/datapump.h exp/datapump.hpp
+        exp/retry.h
+
+        platform/arduino/datapump.cpp
+
+        platform/lwip/lwip-datapump.h
 
         platform/posix/sockets-datapump.h
         platform/posix/sockets-datapump.cpp
 
-        platform/arduino/datapump.cpp
-
         mc/pipeline.h
         mc/pipeline.cpp coap-generator.h coap-generator.cpp coap-encoder.cpp
-        coap-encoder.h coap-decoder.cpp coap-decoder.h
         mc/pipeline-encoder.h mc/pipeline-writer.h
         mc/pipeline-reader.h
         mc/pipeline-decoder.h coap-dispatcher.cpp coap-dispatcher.h
@@ -61,6 +65,6 @@ set(SOURCE_FILES
         mc/experimental.cpp coap-uripath-dispatcher.cpp coap-uripath-dispatcher.h
         mc/experimental-factory.h coap-features.h
 
-        exp/retry.h)
+        )
 
 add_library(moducom-coap-lib ${SOURCE_FILES})
