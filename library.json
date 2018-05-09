@@ -3,18 +3,25 @@
     "keywords": "CoAP",
     "description": "Constrained Object Access Protocol for embedded targets",
     "version": "0.1.0",
-    "authors": "Malachi Burke",
+    "authors": 
+    {
+        "name": "Malachi Burke"
+    },
     "repository":
     {
         "type": "git",
         "url": "https://github.com/moducom/mc-coap.git"
     },
     "build": {
-        "flags": "-Isrc",
+        "flags": "-Isrc -Iext/moducom-memory/src -Iext/estdlib/src",
         "srcFilter": [
-            "+<src/*>",
+            "+<src/**>",
             "-<src/tests>"
         ] 
+    },
+    "depdenencies":
+    {
+        "mc-mem": "0.1.0"
     },
     "frameworks": "*"
 }
