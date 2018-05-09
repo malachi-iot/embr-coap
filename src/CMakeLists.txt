@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.8)
+cmake_minimum_required(VERSION 3.6)
 project(mc-coap)
 
 #set(CMAKE_CXX_STANDARD 11)
@@ -6,8 +6,8 @@ project(mc-coap)
 # set(CMAKE_CXX_STANDARD 98)
 
 set(ROOT_DIR ..)
-set(MC_MEM_DIR ../ext/moducom-memory/src)
-set(ESTDLIB_DIR ../ext/estdlib/src)
+set(MC_MEM_DIR ${ROOT_DIR}/ext/moducom-memory/src)
+set(ESTDLIB_DIR ${ROOT_DIR}/ext/estdlib/src)
 
 include_directories(${MC_MEM_DIR})
 include_directories(${ESTDLIB_DIR})
@@ -34,7 +34,13 @@ set(SOURCE_FILES
         cbor.cpp cbor/features.h cbor/encoder.h
         coap_daemon.h
 
+        coap/context.h
         coap/decoder.h
+        coap/decoder-subject.h coap/decoder-subject.hpp
+        coap/encoder.h coap/encoder.hpp
+        coap/observable.cpp coap/observable.h
+        coap/platform.h
+        coap/option-decoder.cpp
 
         exp/datapump.h exp/datapump.hpp
 
@@ -54,10 +60,7 @@ set(SOURCE_FILES
         coap/experimental.cpp coap/experimental-observer.h
         mc/experimental.cpp coap-uripath-dispatcher.cpp coap-uripath-dispatcher.h
         mc/experimental-factory.h coap-features.h
-        coap/encoder.h coap/encoder.hpp
-        coap/observable.cpp coap/observable.h
-        coap/platform.h
-        coap/context.h coap/decoder-subject.hpp
-        coap/decoder-subject.h coap/option-decoder.cpp exp/retry.h)
+
+        exp/retry.h)
 
 add_library(moducom-coap-lib ${SOURCE_FILES})
