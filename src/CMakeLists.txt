@@ -33,6 +33,9 @@ set(SOURCE_FILES
         coap_subscription.h
         cbor.cpp cbor/features.h cbor/encoder.h
         coap_daemon.h
+
+        coap/decoder.h
+
         exp/datapump.h exp/datapump.hpp
 
         platform/posix/sockets-datapump.h

@@ -2,6 +2,7 @@
 
 #include <platform/posix/sockets-datapump.h>
 #include <coap/encoder.h>
+#include <coap/decoder.h>
 #include <coap/decoder-subject.h>
 #include <mc/memory-chunk.h>
 
@@ -29,6 +30,8 @@ int main()
         {
             cout << "Got a netbuf";
             //cout << " ip=" << ipaddr.sin_addr.s_addr << endl;
+
+            NetBufDecoder<netbuf_t&> nbdecoder(*netbuf);
 
             Decoder decoder;
 
