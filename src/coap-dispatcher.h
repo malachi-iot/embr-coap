@@ -637,7 +637,7 @@ public:
 #ifdef FEATURE_MCCOAP_INLINE_TOKEN
     ContextDispatcherHandler(context_t& context)
 #else
-    ContextDispatcherHandler(IncomingContext& context,
+    ContextDispatcherHandler(context_t& context,
                              const token_pool_t& token_pool
     ) : token_pool(token_pool)
 #endif
@@ -652,7 +652,7 @@ public:
 
     virtual interested_t interested() const OVERRIDE
     {
-        const IncomingContext& c = this->context();
+        const context_t& c = this->context();
 
         // If we haven't received a header yet, we're still interested
         if(!c.have_header()) return Currently;

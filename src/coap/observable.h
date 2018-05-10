@@ -8,6 +8,7 @@ namespace moducom { namespace  coap {
 // Not seeing anything specific in RFC7641 mandating or denying the use of CON or NON
 // messaging for observables, thereby implying we don't need to track what flavor
 // we are in this context either
+template <class TAddr>
 struct ObservableSession
 {
     // increases with each observe notification.  Technically only needs to be 24 bits
@@ -20,7 +21,7 @@ struct ObservableSession
 
     // we are the subject, so addr is address of observer - the one
     // who subscribed to us
-    IncomingContext::addr_t addr;
+    TAddr addr;
 
     // token is one presented during initial subscription
     layer2::Token token;
@@ -41,6 +42,7 @@ class ObservableRegistrar
 
 public:
     typedef TRequestContext request_context_t;
+    typedef typename request_context_t::addr_t addr_t;
 
     // When evaluating a registration or deregistration, utilize this context
     class Context
@@ -68,7 +70,7 @@ public:
     // call this
     void on_complete(Context& context)
     {
-        ObservableSession test;
+        observable_session_t test;
 
         test.token = context.incomingContext.token();
         //test.addr = context.incomingContext.address();
@@ -89,13 +91,16 @@ public:
 class ObservableOptionObserverBase : public experimental::MessageObserverBase
 {
     typedef experimental::MessageObserverBase base_t;
+    typedef typename base_t::context_t request_context_t;
+    typedef typename base_t::context_t::addr_t addr_t;
+    typedef ObservableSession<addr_t> observable_session_t;
 
     // FIX: Once LinkedListPool is operational use that for our allocator
     // or at least have it as a default template parameter for ObservableOptionObserverBase itself
     typedef estd::forward_list<
-            ObservableSession,
+            observable_session_t,
                 estd::experimental::ValueNode<
-                    ObservableSession,
+                    observable_session_t,
                     estd::experimental::forward_node_base
                 >
             >
@@ -112,7 +117,7 @@ class ObservableOptionObserverBase : public experimental::MessageObserverBase
     registrar_t registrar;
 
 public:
-    ObservableOptionObserverBase(IncomingContext& context) :
+    ObservableOptionObserverBase(request_context_t& context) :
         base_t(context)
     {}
 
