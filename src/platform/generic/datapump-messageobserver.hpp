@@ -5,12 +5,19 @@
 
 namespace moducom { namespace coap {
 
-template <class TMessageObserver, class TNetBuf>
-void process_messageobserver_netbuf(DecoderSubjectBase<TMessageObserver>& ds, TNetBuf& netbuf)
+template <class TMessageObserver, class TNetBuf, class TAddr>
+void process_messageobserver_netbuf(DecoderSubjectBase<TMessageObserver>& ds, TNetBuf& netbuf, TAddr& addr_incoming)
 {
     typedef pipeline::MemoryChunk::readonly_t chunk_t;
 
     netbuf.first();
+
+    // TODO: Need to assign addr_incoming to the observer, preferably through incoming context
+    // Seems like it might be prudent either for DecoderSubjectBase itself to be more tightly coupled
+    // to that context *OR* to initiate it/control it explicitly from these helper functions
+    // until this happens, we can't actually queue any output messages.  Note also we probably
+    // want a pointer to datapump itself in the context
+    ds.get_observer().get_context();
 
     // FIX: Need to revise end/next to be more tristate because
     // dispatch() wants to know if this is the last chunk, but
@@ -35,16 +42,16 @@ void process_messageobserver(TDataPump& datapump, TDecoderSubject& ds)
     typedef typename datapump_t::netbuf_t netbuf_t;
     typedef typename datapump_t::addr_t addr_t;
 
-    addr_t ipaddr;
+    addr_t addr_incoming;
     netbuf_t* netbuf;
 
-    netbuf = datapump.dequeue_in(&ipaddr);
+    netbuf = datapump.dequeue_in(&addr_incoming);
 
     if(netbuf != NULLPTR)
     {
         //cout << " ip=" << ipaddr.sin_addr.s_addr << endl;
 
-        process_messageobserver_netbuf(ds, *netbuf);
+        process_messageobserver_netbuf(ds, *netbuf, addr_incoming);
 
 #ifdef FEATURE_MCCOAP_DATAPUMP_INLINE
         netbuf_t temporary;

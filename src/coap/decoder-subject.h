@@ -64,6 +64,8 @@ class DecoderSubjectBase
     void dispatch_option(Decoder::Context& context);
 
 public:
+    TMessageObserver& get_observer() { return observer; }
+
     DecoderSubjectBase(TMessageObserver observer) : observer(observer) {}
     DecoderSubjectBase(IncomingContext& context) : observer(context) {}
 

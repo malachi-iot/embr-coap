@@ -255,6 +255,11 @@ public:
         this->context = &context;
     }
 
+    IncomingContext& get_context()
+    {
+        return *this->context;
+    }
+
     virtual InterestedEnum interested() const OVERRIDE
     {
         return IsInterestedBase::interested();
