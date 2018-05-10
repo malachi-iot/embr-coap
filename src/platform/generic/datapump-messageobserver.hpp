@@ -11,6 +11,8 @@ void process_messageobserver_netbuf(DecoderSubjectBase<TMessageObserver>& ds, TN
     typedef pipeline::MemoryChunk::readonly_t chunk_t;
     typedef typename TMessageObserver::context_t request_context_t;
 
+    request_context_t request_context;
+
     netbuf.first();
 
     // TODO: Need to assign addr_incoming to the observer, preferably through incoming context
@@ -18,7 +20,9 @@ void process_messageobserver_netbuf(DecoderSubjectBase<TMessageObserver>& ds, TN
     // to that context *OR* to initiate it/control it explicitly from these helper functions
     // until this happens, we can't actually queue any output messages.  Note also we probably
     // want a pointer to datapump itself in the context
-    ds.get_observer().context();
+    // NOTE: Don't do this just yet, even though it's basically correct, our consuming unit test
+    // is counting on this context remaining in scope
+    //ds.get_observer().context(request_context);
 
     // FIX: Need to revise end/next to be more tristate because
     // dispatch() wants to know if this is the last chunk, but

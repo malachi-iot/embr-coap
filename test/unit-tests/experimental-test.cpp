@@ -28,13 +28,15 @@ int test_wilma(experimental::FnFactoryContext context)
     return 77;
 }
 
+typedef IncomingContext request_context_t;
+
 
 const moducom::pipeline::MemoryChunk::readonly_t* test_value_1 = NULLPTR;
 
 class TestBarnyObsever : public DispatcherHandlerBase
 {
 public:
-    TestBarnyObsever(IncomingContext& context)
+    TestBarnyObsever(request_context_t& context)
     {
         this->context(context);
     }

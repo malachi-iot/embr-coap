@@ -15,12 +15,13 @@ using namespace moducom::coap;
 using namespace moducom::coap::experimental;
 using namespace moducom::pipeline;
 
+typedef IncomingContext request_context_t;
 
 extern dispatcher_handler_factory_fn test_sub_factories[];
 
 IDecoderObserver* context_handler_factory(FactoryDispatcherHandlerContext& ctx)
 {
-    IncomingContext& context = ctx.incoming_context;
+    request_context_t& context = ctx.incoming_context;
 #ifdef FEATURE_MCCOAP_INLINE_TOKEN
     return new (ctx) ContextDispatcherHandler(context);
 #else

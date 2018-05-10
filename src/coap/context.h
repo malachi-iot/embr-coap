@@ -20,6 +20,7 @@ namespace experimental {
 template <class TAddr>
 class AddressContext
 {
+protected:
     TAddr addr;
 
 public:

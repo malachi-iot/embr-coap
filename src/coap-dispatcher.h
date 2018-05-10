@@ -414,7 +414,7 @@ class FactoryDispatcherHandler : public IDecoderObserver
 
     // TODO: Make context & incoming_context something that is passed in
     // even to FactoryDispatcherHandler
-    IncomingContext& incoming_context;
+    //IncomingContext& incoming_context;
 
     class State : public IsInterestedBase
     {
@@ -535,7 +535,7 @@ public:
 #endif
              handler_factories(handler_factories),
              handler_factory_count(handler_factory_count),
-             incoming_context(incoming_context),
+             //incoming_context(incoming_context),
              context(incoming_context
 #ifdef FEATURE_MCCOAP_LEGACY_PREOBJSTACK
                      , handler_memory
@@ -561,7 +561,7 @@ public:
 #endif
              handler_factories(handler_factories),
              handler_factory_count(n),
-             incoming_context(incoming_context),
+             //incoming_context(incoming_context),
 #ifdef FEATURE_MCCOAP_LEGACY_PREOBJSTACK
              context(incoming_context, handler_memory),
 #else
@@ -615,6 +615,11 @@ class ContextDispatcherHandler : public DispatcherHandlerBase
     typedef moducom::coap::layer2::Token token_t;
     typedef DispatcherHandlerBase base_t;
 
+public:
+    typedef typename base_t::context_t context_t;
+
+private:
+
     // NOTE: We aren't using a ref or ptr here as token_pool_t
     // is a relatively inexpensive object, all const, AND
     // could be a wrapper around a regular fixed-array pool
@@ -630,7 +635,7 @@ class ContextDispatcherHandler : public DispatcherHandlerBase
 
 public:
 #ifdef FEATURE_MCCOAP_INLINE_TOKEN
-    ContextDispatcherHandler(IncomingContext& context)
+    ContextDispatcherHandler(context_t& context)
 #else
     ContextDispatcherHandler(IncomingContext& context,
                              const token_pool_t& token_pool

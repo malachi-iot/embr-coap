@@ -29,7 +29,7 @@ struct ObservableSession
 
 // A registrar represents ONE subject's list of listeners.  By subject
 // we generally mean one subscribable URI path
-template <class TCollection>
+template <class TCollection, class TRequestContext = IncomingContext>
 class ObservableRegistrar
 {
     typedef pipeline::MemoryChunk::readonly_t ro_chunk_t;
@@ -40,6 +40,8 @@ class ObservableRegistrar
     typedef typename TCollection::value_type observable_session_t;
 
 public:
+    typedef TRequestContext request_context_t;
+
     // When evaluating a registration or deregistration, utilize this context
     class Context
     {
@@ -49,9 +51,9 @@ public:
         const bool is_registering;
 
         // will be carrying address info
-        const IncomingContext& incomingContext;
+        const request_context_t& incomingContext;
 
-        Context(const IncomingContext& incomingContext, bool is_registering) :
+        Context(const request_context_t& incomingContext, bool is_registering) :
             incomingContext(incomingContext),
             is_registering(is_registering)
         {

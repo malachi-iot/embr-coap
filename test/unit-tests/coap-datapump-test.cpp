@@ -6,6 +6,8 @@
 
 using namespace moducom::coap;
 
+typedef IncomingContext request_context_t;
+
 TEST_CASE("Data pump tests", "[datapump]")
 {
     SECTION("Datapump")
@@ -70,7 +72,7 @@ TEST_CASE("Data pump tests", "[datapump]")
         datapump.transport_in(writer.netbuf(), 0);
 
         // set up message subject+observer
-        IncomingContext test_ctx;
+        request_context_t test_ctx;
         DecoderSubjectBase<experimental::ContextDispatcherHandler> test(test_ctx);
 
         REQUIRE(!test_ctx.have_header());

@@ -4,9 +4,11 @@
 
 using namespace moducom::coap;
 
+typedef IncomingContext request_context_t;
+
 // +++ just to test compilation, eliminate once decent unit tests for
 // DecoderSubjectBase is in place
-static IncomingContext test_ctx;
+static request_context_t test_ctx;
 static DecoderSubjectBase<experimental::ContextDispatcherHandler> test(test_ctx);
 // ---
 
@@ -27,7 +29,7 @@ TEST_CASE("CoAP decoder subject tests", "[coap-decoder-subject]")
     }
     SECTION("16 bit detla: Buffer16BitDeltaObserver")
     {
-        IncomingContext test_ctx2;
+        request_context_t test_ctx2;
         DecoderSubjectBase<Buffer16BitDeltaObserver> test2(test_ctx2);
         // FIX: on_payload not evaluating for these tests, not surprising
         // since subject-decoder is revamping how payload processing works
