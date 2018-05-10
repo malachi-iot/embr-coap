@@ -1,4 +1,3 @@
-#include <platform/posix/sockets-datapump.h>
 #include <coap/encoder.h>
 #include <coap/decoder.h>
 #include <coap/decoder-subject.h>
@@ -31,10 +30,19 @@ void simple_ping_responder(TDataPumpHelper& sdh, typename TDataPumpHelper::datap
         // populate token, if present.  Expects decoder to be at HeaderDone phase
         decoder.process_token_experimental(&token);
 
+#ifdef FEATURE_MCCOAP_DATAPUMP_INLINE
+        netbuf_t temporary;
+
+        // in this scenario, netbuf gets copied around.  Ideally we'd actually do an emplace
+        // but code isn't quite there yet
+        netbuf = &temporary;
+#else
         // FIX: Need a much more cohesive way of doing this
         delete netbuf;
-
         netbuf = new netbuf_t;
+#endif
+
+        sdh.pop(datapump);
 
         NetBufEncoder<netbuf_t&> encoder(*netbuf);
 

@@ -60,7 +60,7 @@ void nonblocking_datapump_loop(int sockfd, sockets_datapump_t& sockets_datapump)
     socklen_t clilen = sizeof(cli_addr);
     ssize_t n;
 
-    const netbuf_t* netbuf_out = sockets_datapump.transport_out(&cli_addr);
+    const netbuf_t* netbuf_out = sockets_datapump.transport_front(&cli_addr);
 
     if(netbuf_out != NULLPTR)
     {
@@ -78,8 +78,13 @@ void nonblocking_datapump_loop(int sockfd, sockets_datapump_t& sockets_datapump)
 
         if(n == -1) error("Couldn't send UDP");
 
+#ifdef FEATURE_MCCOAP_DATAPUMP_INLINE
+#else
         // FIX: Not a long-term way to handle netbuf deallocation
         delete netbuf_out;
+#endif
+
+        sockets_datapump.transport_pop();
     }
 
     pollfd fd;
@@ -94,7 +99,13 @@ void nonblocking_datapump_loop(int sockfd, sockets_datapump_t& sockets_datapump)
 
     //if(newsockfd < 1) error("ERROR on accept");
 
+#ifdef FEATURE_MCCOAP_DATAPUMP_INLINE
+    netbuf_t temporary;
+    // in this scenario, netbuf_in gets value-copied into the queue
+    netbuf_t* netbuf_in = &temporary;
+#else
     netbuf_t* netbuf_in = new netbuf_t;
+#endif
 
     uint8_t* buffer = netbuf_in->unprocessed();
     size_t buffer_len = netbuf_in->length_unprocessed();

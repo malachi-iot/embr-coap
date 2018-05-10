@@ -53,6 +53,11 @@ public:
         return datapump.dequeue_in(addr_in);
     }
 
+    void pop(sockets_datapump_t& datapump = sockets_datapump)
+    {
+        datapump.dequeue_pop();
+    }
+
     // queue up to send out over transport
     void enqueue(netbuf_t& netbuf, const addr_t& addr_out, sockets_datapump_t& datapump = sockets_datapump)
     {

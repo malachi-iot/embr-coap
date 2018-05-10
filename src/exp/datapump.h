@@ -9,6 +9,11 @@
 
 namespace moducom { namespace coap { namespace experimental {
 
+// utilize inline TNetBuf instead of pointer - experimental
+// Not quite happy because NetBufDynamicExperimental gets its pointers copied around and
+// I think freed multiple times
+//#define FEATURE_MCCOAP_DATAPUMP_INLINE
+
 // passive push pull code to bridge transport level to application level
 // kind of a 2nd crack at 'experimental-packet-manager'
 template <class TNetBuf, class TAddr, template <class> class TAllocator = ::std::allocator>
@@ -17,19 +22,41 @@ class DataPump
 public:
     typedef TAddr addr_t;
     typedef TNetBuf netbuf_t;
+#ifdef FEATURE_MCCOAP_DATAPUMP_INLINE
+    typedef TNetBuf pnetbuf_t;
+#else
+    typedef TNetBuf* pnetbuf_t;
+#endif
 
 private:
-    struct Item
+    class Item
     {
-        TNetBuf* netbuf;
-        addr_t addr;
+        pnetbuf_t m_netbuf;
+        addr_t m_addr;
+
+    public:
 
         Item() {}
 
         Item(TNetBuf* netbuf, const addr_t& addr) :
-            netbuf(netbuf),
-            addr(addr)
+#ifdef FEATURE_MCCOAP_DATAPUMP_INLINE
+            m_netbuf(*netbuf),
+#else
+            m_netbuf(netbuf),
+#endif
+            m_addr(addr)
         {}
+
+        const addr_t& addr() const { return m_addr; }
+
+        netbuf_t* netbuf()
+        {
+#ifdef FEATURE_MCCOAP_DATAPUMP_INLINE
+            return &m_netbuf;
+#else
+            return m_netbuf;
+#endif
+        }
     };
 
 
@@ -65,7 +92,7 @@ public:
 
     // provide a netbuf containing data to be sent out over transport, or NULLPTR
     // if no data is ready
-    TNetBuf* transport_out(addr_t* addr_out)
+    TNetBuf* transport_front(addr_t* addr_out)
     {
         if(outgoing.empty()) return NULLPTR;
 
@@ -73,14 +100,22 @@ public:
         // but I am not convinced that's the best approach
         //std::find(addr_mapping.begin(), addr_mapping.end(), find_mapper_by_addr);
 
-        const Item& f = outgoing.front();
+        // FIX: repair this nasty const/nonconst stuff, specifically
+        // f.netbuf() returns a pointer to an Item.netbuf sometimes, which is
+        // intrinsically non-const
+        Item& f = (Item&) outgoing.front();
 
-        *addr_out = f.addr;
-        TNetBuf* netbuf = f.netbuf;
-
-        outgoing.pop();
+        *addr_out = f.addr();
+        TNetBuf* netbuf = f.netbuf();
 
         return netbuf;
+    }
+
+    // manually pop Item away, the above transport_out needs to be followed up
+    // by this call
+    void transport_pop()
+    {
+        outgoing.pop();
     }
 
     // enqueue complete netbuf for outgoing transport to pick up
@@ -94,13 +129,16 @@ public:
     {
         if(incoming.empty()) return NULLPTR;
 
-        const Item& f = incoming.front();
-        TNetBuf* netbuf = f.netbuf;
-        *addr_in = f.addr;
-
-        incoming.pop();
+        Item& f = (Item&) incoming.front();
+        TNetBuf* netbuf = f.netbuf();
+        *addr_in = f.addr();
 
         return netbuf;
+    }
+
+    void dequeue_pop()
+    {
+        incoming.pop();
     }
 };
 

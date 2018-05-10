@@ -13,7 +13,7 @@
         "url": "https://github.com/moducom/mc-coap.git"
     },
     "build": {
-        "flags": "-Isrc -Iext/moducom-memory/src -Iext/estdlib/src",
+        "flags": "-Isrc -Iext/moducom-memory/src -Iext/estdlib/src -Iext/lwipcpp",
         "srcFilter": [
             "+<src/**>",
             "-<src/tests>"
