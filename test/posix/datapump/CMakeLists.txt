@@ -20,7 +20,10 @@ include_directories(${ESTDLIB_DIR})
 add_subdirectory(${MC_MEM_DIR} mem)
 add_subdirectory(${MC_COAP_DIR} coap)
 
-add_executable(${PROJECT_NAME} "main.cpp")
+add_executable(${PROJECT_NAME}
+    "main.cpp"
+    simple-ping-responder.hpp
+    )
 
 target_link_libraries(${PROJECT_NAME} moducom-coap-lib moducom_memory_lib)
 

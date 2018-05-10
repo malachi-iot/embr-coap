@@ -22,12 +22,13 @@ namespace moducom { namespace coap {
 // not 100% sure we always want to do that, but seems good so far
 class SocketsDatapumpHelper
 {
-    typedef sockets_datapump_t::addr_t addr_t;
-    typedef sockets_datapump_t::netbuf_t netbuf_t;
-
     int sockfd;
 
 public:
+    typedef sockets_datapump_t::addr_t addr_t;
+    typedef sockets_datapump_t::netbuf_t netbuf_t;
+    typedef sockets_datapump_t datapump_t;
+
     SocketsDatapumpHelper()
     {
         sockfd = nonblocking_datapump_setup();

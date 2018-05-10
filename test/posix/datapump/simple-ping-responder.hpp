@@ -1,0 +1,1 @@
+../../template/simple-ping-responder.hpp
