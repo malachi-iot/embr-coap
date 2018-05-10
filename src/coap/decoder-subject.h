@@ -14,6 +14,10 @@ class DecoderSubjectBase
     typedef experimental::option_number_t option_number_t;
     typedef pipeline::MemoryChunk::readonly_t ro_chunk_t;
 
+    // doesn't work because TMessageObserver might be a like a raw IDecoderObserver
+    // and/or TMessageObserver&.  Perhaps we can do this with SFINAE
+    //typedef typename TMessageObserver::context_t request_context_t;
+
     // do these observer_xxx versions so that compile errors are easier to track
     inline void observer_on_option(option_number_t n,
                                    const ro_chunk_t& optionChunk,

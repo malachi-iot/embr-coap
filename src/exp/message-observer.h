@@ -15,6 +15,7 @@ protected:
 
 public:
     typedef TRequestContext context_t;
+    typedef TRequestContextTraits context_traits_t;
 
     context_t& context() { return *m_context; }
 
