@@ -50,6 +50,8 @@ set(SOURCE_FILES
 
         platform/arduino/datapump.cpp
 
+        platform/generic/datapump-messageobserver.hpp
+
         platform/lwip/lwip-datapump.h
 
         platform/posix/sockets-datapump.h

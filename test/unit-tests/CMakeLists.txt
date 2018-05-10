@@ -44,6 +44,7 @@ set(SOURCE_FILES
         cbor-test.cpp
         coap_send.cpp
         coap_daemon.cpp pipeline_test.cpp
+        coap-datapump-test.cpp
         coap-decoder-test.cpp
         coap-dispatcher-test.cpp test-data.h coap-encoder-test.cpp
         coap-token-test.cpp
