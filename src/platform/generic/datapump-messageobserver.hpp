@@ -17,7 +17,7 @@ void process_messageobserver_netbuf(DecoderSubjectBase<TMessageObserver>& ds, TN
     // next() potentially invalidates the *current* buffer, yet
     // we don't know by our internal netbuf standards whether the
     // *current* chunk is the last one until after calling next()
-    while(!netbuf.end())
+    //while(!netbuf.end())
     {
         chunk_t chunk(netbuf.processed(), netbuf.length_processed());
 
@@ -28,17 +28,17 @@ void process_messageobserver_netbuf(DecoderSubjectBase<TMessageObserver>& ds, TN
     }
 }
 
-template <class TDataPumpHelper, class TDecoderSubject>
-void process_messageobserver(TDataPumpHelper& dh, typename TDataPumpHelper::datapump_t& datapump, TDecoderSubject& ds)
+template <class TDataPump, class TDecoderSubject>
+void process_messageobserver(TDataPump& datapump, TDecoderSubject& ds)
 {
-    typedef typename TDataPumpHelper::datapump_t datapump_t;
+    typedef TDataPump datapump_t;
     typedef typename datapump_t::netbuf_t netbuf_t;
     typedef typename datapump_t::addr_t addr_t;
 
     addr_t ipaddr;
     netbuf_t* netbuf;
 
-    netbuf = dh.dequeue(&ipaddr, datapump);
+    netbuf = datapump.dequeue_in(&ipaddr);
 
     // echo back out a raw ACK, with no trickery just raw decoding/encoding
     if(netbuf != NULLPTR)
@@ -67,7 +67,7 @@ void process_messageobserver(TDataPumpHelper& dh, typename TDataPumpHelper::data
         netbuf = new netbuf_t;
 #endif
 
-        dh.pop(datapump);
+        datapump.dequeue_pop();
     }
 }
 
