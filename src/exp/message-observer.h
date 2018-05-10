@@ -5,7 +5,14 @@ namespace moducom { namespace coap { namespace experimental {
 // revamped message observer support code
 
 template <class TContext>
-struct request_context_traits;
+struct request_context_traits
+{
+    template <class TAddr>
+    static void set_address(TContext& c, const TAddr& addr)
+    {
+        //c.address(addr);
+    }
+};
 
 template <class TRequestContext, class TRequestContextTraits = request_context_traits<TRequestContext> >
 class RequestContextContainer
