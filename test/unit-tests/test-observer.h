@@ -2,7 +2,7 @@
 
 #include <catch.hpp>
 
-#include "../coap-dispatcher.h"
+#include "coap-dispatcher.h"
 
 using namespace moducom::coap;
 using namespace moducom::coap::experimental;

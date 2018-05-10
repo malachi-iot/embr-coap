@@ -1,9 +1,9 @@
 
 #include <catch.hpp>
 
-#include "../coap.h"
-#include "../coap_transmission.h"
-#include "../coap-encoder.h"
+#include "coap.h"
+#include "coap_transmission.h"
+#include "coap-encoder.h"
 #include "test-data.h"
 
 #define CLEANUP_COAP_CPP

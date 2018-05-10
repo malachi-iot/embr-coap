@@ -3,8 +3,8 @@
 //
 
 #include <catch.hpp>
-#include "../coap-token.h"
-#include "../coap-blockwise.h"
+#include "coap-token.h"
+#include "coap-blockwise.h"
 
 TEST_CASE("CoAP token tests", "[coap-token]")
 {

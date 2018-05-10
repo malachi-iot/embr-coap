@@ -1,13 +1,13 @@
 #include <catch.hpp>
 
-#include "../coap-decoder.h"
+#include "coap-decoder.h"
 #include "test-data.h"
-#include "../mc/experimental.h"
+#include "mc/experimental.h"
 //#include "../mc/pipeline.h"
-#include "../mc/experimental-factory.h"
-#include "../coap-uripath-dispatcher.h"
-#include "../coap/experimental-observer.h"
-#include "../coap/experimental-packet-manager.h"
+#include "mc/experimental-factory.h"
+#include "coap-uripath-dispatcher.h"
+#include "coap/experimental-observer.h"
+#include "coap/experimental-packet-manager.h"
 
 #include "exp/datapump.hpp"
 

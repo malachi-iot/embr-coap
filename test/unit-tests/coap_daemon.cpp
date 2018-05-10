@@ -4,7 +4,7 @@
 #define CLEANUP_COAP_CPP
 #include <catch.hpp>
 
-#include "../coap.h"
+#include "coap.h"
 #ifndef CLEANUP_COAP_CPP
 
 #include "../coap_daemon.h"

@@ -1,10 +1,10 @@
 #include <catch.hpp>
-#include "../coap-encoder.h"
+#include "coap-encoder.h"
 #include "mc/memory.h"
-#include "../coap_transmission.h"
-#include "../coap-token.h"
-#include "../mc/experimental.h"
-#include "../coap-observable.h"
+#include "coap_transmission.h"
+#include "coap-token.h"
+#include "mc/experimental.h"
+#include "coap-observable.h"
 
 using namespace moducom::coap;
 using namespace moducom::pipeline;

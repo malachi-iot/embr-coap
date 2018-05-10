@@ -1,8 +1,7 @@
 #include <catch.hpp>
 
 #include <string.h>
-#include "../cbor.h"
-#include "../cbor/encoder.h"
+#include "cbor/encoder.h"
 
 using namespace moducom;
 

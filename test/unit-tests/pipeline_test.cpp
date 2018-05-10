@@ -4,8 +4,8 @@
 
 #include <catch.hpp>
 
-#include "../mc/pipeline.h"
-#include "../mc/pipeline-encoder.h"
+#include "mc/pipeline.h"
+#include "mc/pipeline-encoder.h"
 #include <stdio.h>
 
 using namespace moducom::pipeline;

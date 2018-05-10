@@ -2,9 +2,8 @@
 
 #include <catch.hpp>
 
-#include "../coap.h"
-#include "../coap_transmission.h"
-#include "../coap-decoder.h"
+#include "coap_transmission.h"
+#include "coap-decoder.h"
 #include "test-data.h"
 
 using namespace moducom::coap;

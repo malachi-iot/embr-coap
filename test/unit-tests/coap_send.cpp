@@ -1,9 +1,8 @@
 
 #include <catch.hpp>
 
-#include "../coap.h"
-#include "../coap_transmission.h"
-#include "../coap-generator.h"
+#include "coap_transmission.h"
+#include "coap-generator.h"
 
 using namespace moducom::coap;
 using namespace moducom::coap::experimental;
