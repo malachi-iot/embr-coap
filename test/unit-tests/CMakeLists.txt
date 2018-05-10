@@ -10,6 +10,10 @@ set(MC_MEM_DIR ${ROOT_DIR}/ext/moducom-memory/src)
 set(ESTDLIB_DIR ${ROOT_DIR}/ext/estdlib/src)
 set(MC_COAP_DIR ${ROOT_DIR}/src)
 
+include_directories(${PROJECT_SOURCE_DIR})
+
+#message(${PROJECT_SOURCE_DIR})
+
 include_directories(${ROOT_DIR}/ext/Catch/include)
 include_directories(${MC_MEM_DIR})
 include_directories(${MC_COAP_DIR})
@@ -46,7 +50,9 @@ set(SOURCE_FILES
         coap-observable-test.cpp
         experimental-test.cpp
         decoder-subject-test.cpp
-        test-observer.h experimental2-test.cpp)
+        mc/opts.h
+        test-observer.h experimental2-test.cpp
+        )
 
 add_executable(mc-coap-test ${SOURCE_FILES})
 

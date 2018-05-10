@@ -43,6 +43,7 @@ set(SOURCE_FILES
         coap/option-decoder.cpp
 
         coap-encoder.h coap-decoder.cpp coap-decoder.h
+        coap-features.h
 
         exp/datapump.h exp/datapump.hpp
         exp/retry.h
@@ -54,6 +55,8 @@ set(SOURCE_FILES
         platform/posix/sockets-datapump.h
         platform/posix/sockets-datapump.cpp
 
+        mc/opts.h
+        mc/opts-internal.h
         mc/pipeline.h
         mc/pipeline.cpp coap-generator.h coap-generator.cpp coap-encoder.cpp
         mc/pipeline-encoder.h mc/pipeline-writer.h
@@ -62,8 +65,10 @@ set(SOURCE_FILES
         coap-blockwise.h coap-blockwise.cpp coap-token.h coap-token.cpp
         coap-uint.h mc/experimental.h coap-header.h coap-observable.h
         coap/experimental.cpp coap/experimental-observer.h
-        mc/experimental.cpp coap-uripath-dispatcher.cpp coap-uripath-dispatcher.h
-        mc/experimental-factory.h coap-features.h
+
+        mc/experimental.cpp
+        coap-uripath-dispatcher.cpp coap-uripath-dispatcher.h
+        mc/experimental-factory.h
 
         )
 

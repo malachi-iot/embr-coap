@@ -9,12 +9,6 @@
 
 namespace moducom { namespace coap { namespace experimental {
 
-// utilize inline TNetBuf instead of pointer - experimental
-// Not quite happy because NetBufDynamicExperimental gets its pointers copied around and
-// I think freed multiple times
-// NOTE: pointer is useful to avoid construction/destruction on non-active Items in the queue
-//#define FEATURE_MCCOAP_DATAPUMP_INLINE
-
 #ifdef FEATURE_MCCOAP_DATAPUMP_INLINE
 #ifndef FEATURE_CPP_MOVESEMANTIC
 #error Move semantic necessary for inline datapump
