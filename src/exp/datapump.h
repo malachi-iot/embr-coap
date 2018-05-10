@@ -12,7 +12,17 @@ namespace moducom { namespace coap { namespace experimental {
 // utilize inline TNetBuf instead of pointer - experimental
 // Not quite happy because NetBufDynamicExperimental gets its pointers copied around and
 // I think freed multiple times
+// NOTE: pointer is useful to avoid construction/destruction on non-active Items in the queue
 //#define FEATURE_MCCOAP_DATAPUMP_INLINE
+
+#ifdef FEATURE_MCCOAP_DATAPUMP_INLINE
+#ifndef FEATURE_CPP_MOVESEMANTIC
+#error Move semantic necessary for inline datapump
+#endif
+#ifndef FEATURE_CPP_VARIADIC
+#error Variadic/emplacement necessary for inline datapump
+#endif
+#endif
 
 // passive push pull code to bridge transport level to application level
 // kind of a 2nd crack at 'experimental-packet-manager'
@@ -38,11 +48,11 @@ private:
 
         Item() {}
 
-        Item(TNetBuf* netbuf, const addr_t& addr) :
+        Item(TNetBuf& netbuf, const addr_t& addr) :
 #ifdef FEATURE_MCCOAP_DATAPUMP_INLINE
-            m_netbuf(*netbuf),
+            m_netbuf(std::forward<netbuf_t>(netbuf)),
 #else
-            m_netbuf(netbuf),
+            m_netbuf(&netbuf),
 #endif
             m_addr(addr)
         {}
@@ -103,7 +113,7 @@ public:
         // FIX: repair this nasty const/nonconst stuff, specifically
         // f.netbuf() returns a pointer to an Item.netbuf sometimes, which is
         // intrinsically non-const
-        Item& f = (Item&) outgoing.front();
+        Item& f = outgoing.front();
 
         *addr_out = f.addr();
         TNetBuf* netbuf = f.netbuf();
@@ -121,7 +131,11 @@ public:
     // enqueue complete netbuf for outgoing transport to pick up
     void enqueue_out(TNetBuf& out, const addr_t& addr_out)
     {
-        outgoing.push(Item(&out, addr_out));
+#if FEATURE_MCCOAP_DATAPUMP_INLINE
+        outgoing.emplace(out, addr_out);
+#else
+        outgoing.push(Item(out, addr_out));
+#endif
     }
 
     // dequeue complete netbuf which was queued from transport in
@@ -129,7 +143,7 @@ public:
     {
         if(incoming.empty()) return NULLPTR;
 
-        Item& f = (Item&) incoming.front();
+        Item& f = incoming.front();
         TNetBuf* netbuf = f.netbuf();
         *addr_in = f.addr();
 

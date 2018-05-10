@@ -9,7 +9,7 @@ struct FnFactoryContext
 {
     pipeline::MemoryChunk chunk;
 
-#ifndef FEATURE_MCCOAP_REWRITABLE_MEMCHUNK
+#ifndef FEATURE_MC_MEM_REWRITABLE_MEMCHUNK
     FnFactoryContext() : chunk(NULLPTR, 0) {}
 #endif
 };

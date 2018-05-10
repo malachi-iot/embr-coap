@@ -177,7 +177,7 @@ public:
             base_t(_state_t::Header),
 // we would prefer in this limited instance for MemoryChunk to go uninitialized,
 // not a great practice but makes code more readable/efficient sometimes
-#ifndef FEATURE_MCCOAP_REWRITABLE_MEMCHUNK
+#ifndef FEATURE_MC_MEM_REWRITABLE_MEMCHUNK
             // being that we can't do that in this case, zero it all out
             buffer(NULLPTR, 0),
 #endif

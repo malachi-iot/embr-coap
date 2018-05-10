@@ -297,7 +297,7 @@ public:
     // which moves through it
     struct Context
     {
-        typedef pipeline::experimental::ReadOnlyMemoryChunk chunk_t;
+        typedef pipeline::experimental::ReadOnlyMemoryChunk<> chunk_t;
 
         // TODO: optimize by making this a value not a ref, and bump up "data" pointer
         // (and down length) instead of bumping up pos.  A little more fiddly, but then
@@ -355,7 +355,7 @@ public:
 
     // Of limited to no use, since we blast through chunk without caller having a chance
     // to inspect what's going on
-    void process(const pipeline::experimental::ReadOnlyMemoryChunk& chunk, bool last_chunk = true)
+    void process(const pipeline::experimental::ReadOnlyMemoryChunk<>& chunk, bool last_chunk = true)
     {
         Context context(chunk, last_chunk);
 

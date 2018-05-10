@@ -1,6 +1,7 @@
 #pragma once
 
 #include "mc/netbuf.h"
+#include "mc/mem/platform.h"
 #include <forward_list>
 
 
@@ -20,6 +21,13 @@ protected:
 
 public:
     ProcessedMemoryChunkBaseExperimental() : pos(0) {}
+
+    ProcessedMemoryChunkBaseExperimental(const ProcessedMemoryChunkBaseExperimental& copy_from) :
+        m_chunk(copy_from.m_chunk),
+        pos(copy_from.pos)
+    {
+
+    }
 
     const chunk_t& chunk() const { return *m_chunk; }
 
@@ -51,9 +59,12 @@ public:
 
 class NetBufDynamicExperimental : public ProcessedMemoryChunkBaseExperimental
 {
-    std::forward_list<pipeline::MemoryChunk> chunks;
+    typedef ProcessedMemoryChunkBaseExperimental base_t;
+    typedef std::forward_list<pipeline::MemoryChunk> list_t;
+
+    list_t chunks;
     // 'it' represents one step past current chunk
-    std::forward_list<pipeline::MemoryChunk>::iterator it;
+    list_t::iterator it;
 
     void allocate()
     {
@@ -87,6 +98,15 @@ public:
 
         m_chunk = &(*it++);
     }
+
+#ifdef FEATURE_CPP_MOVESEMANTIC
+    NetBufDynamicExperimental(NetBufDynamicExperimental&& move_from) :
+        base_t(move_from),
+        chunks(std::forward<list_t>(move_from.chunks)),
+        it(std::forward<list_t::iterator>(move_from.it))
+    {
+    }
+#endif
 
 
     NetBufDynamicExperimental()

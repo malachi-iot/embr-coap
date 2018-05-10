@@ -157,7 +157,7 @@ class IReferencedReadPipeline
     virtual const PipelineMessage& read() = 0;
 };
 
-#ifdef FEATURE_MCCOAP_REWRITABLE_MEMCHUNK
+#ifdef FEATURE_MC_MEM_REWRITABLE_MEMCHUNK
 class QueuedReferencePipeline : public IReferencedReadPipeline
 {
 protected:
