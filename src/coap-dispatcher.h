@@ -246,13 +246,6 @@ protected:
     }
 
 public:
-    // FIX: Kludgey way of skipping some steps.  Strongly consider
-    // dumping this if we can
-    void set_context(IncomingContext& context)
-    {
-        this->m_context = &context;
-    }
-
     virtual InterestedEnum interested() const OVERRIDE
     {
         return IsInterestedBase::interested();
@@ -620,6 +613,7 @@ class ContextDispatcherHandler : public DispatcherHandlerBase
 {
     typedef IsInterestedBase::InterestedEnum interested_t;
     typedef moducom::coap::layer2::Token token_t;
+    typedef DispatcherHandlerBase base_t;
 
     // NOTE: We aren't using a ref or ptr here as token_pool_t
     // is a relatively inexpensive object, all const, AND
@@ -640,12 +634,10 @@ public:
 #else
     ContextDispatcherHandler(IncomingContext& context,
                              const token_pool_t& token_pool
-    ) : context(context),
-        token_pool(token_pool)
+    ) : token_pool(token_pool)
 #endif
     {
-        // FIX: architecture cleanup, only keep one of these context ptrs
-        set_context(context);
+        base_t::context(context);
     }
 
     virtual void on_header(Header header) OVERRIDE;

@@ -188,7 +188,7 @@ experimental::IDecoderObserver* uri_plus_observer_dispatcher(experimental::Facto
     // FIX: kludgey, and though SFINAE would be helpful, would probably
     // not alleviate the kludginess enough.  reserved-dispatcher likely
     // a better solution so that we can push context thru via constructor
-    observer.set_context(ctx.incoming_context);
+    observer.context(ctx.incoming_context);
 
     return new (ctx) SingleUriPathObserver(uri_path, observer);
 }

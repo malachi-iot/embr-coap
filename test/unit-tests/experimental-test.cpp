@@ -36,7 +36,7 @@ class TestBarnyObsever : public DispatcherHandlerBase
 public:
     TestBarnyObsever(IncomingContext& context)
     {
-        set_context(context);
+        this->context(context);
     }
 
     void on_option(number_t number,

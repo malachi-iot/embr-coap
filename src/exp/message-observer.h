@@ -20,6 +20,14 @@ public:
     context_t& context() { return *m_context; }
 
     const context_t& context() const { return *m_context; }
+
+    // FIX: Kludgey way of skipping some steps.  Strongly consider
+    // dumping this if we can
+    void context(TRequestContext& context)
+    {
+        this->m_context = &context;
+    }
+
 };
 
 }}}
