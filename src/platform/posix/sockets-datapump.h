@@ -6,7 +6,7 @@
 
 namespace moducom { namespace coap {
 
-typedef moducom::coap::experimental::DataPump<moducom::coap::NetBufDynamicExperimental, sockaddr_in> sockets_datapump_t;
+typedef moducom::coap::DataPump<moducom::coap::NetBufDynamicExperimental, sockaddr_in> sockets_datapump_t;
 
 extern sockets_datapump_t sockets_datapump;
 

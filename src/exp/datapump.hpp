@@ -1,6 +1,6 @@
 #include "datapump.h"
 
-namespace moducom { namespace coap { namespace experimental {
+namespace moducom { namespace coap {
 
 template <class TNetBuf, class TAddr, template <class> class TAllocator>
 #ifdef FEATURE_MCCOAP_DATAPUMP_INLINE
@@ -17,4 +17,4 @@ void DataPump<TNetBuf, TAddr, TAllocator>::transport_in(TNetBuf& in, const addr_
 }
 #endif
 
-}}}
+}}

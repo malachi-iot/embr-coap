@@ -7,7 +7,7 @@
 #include "coap-header.h"
 #include "coap-token.h"
 
-namespace moducom { namespace coap { namespace experimental {
+namespace moducom { namespace coap {
 
 #ifdef FEATURE_MCCOAP_DATAPUMP_INLINE
 #ifndef FEATURE_CPP_MOVESEMANTIC
@@ -110,9 +110,6 @@ public:
         // but I am not convinced that's the best approach
         //std::find(addr_mapping.begin(), addr_mapping.end(), find_mapper_by_addr);
 
-        // FIX: repair this nasty const/nonconst stuff, specifically
-        // f.netbuf() returns a pointer to an Item.netbuf sometimes, which is
-        // intrinsically non-const
         Item& f = outgoing.front();
 
         *addr_out = f.addr();
@@ -159,4 +156,4 @@ public:
     }
 };
 
-}}}
+}}
