@@ -1,5 +1,5 @@
 #include <catch.hpp>
-#include "../coap/decoder-subject.hpp"
+#include "coap/decoder-subject.hpp"
 #include "test-data.h"
 
 using namespace moducom::coap;
