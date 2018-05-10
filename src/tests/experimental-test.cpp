@@ -267,7 +267,7 @@ TEST_CASE("experimental tests", "[experimental]")
 
         datapump.enqueue_out(writer.netbuf(), addr);
 
-        netbuf_t* to_transport = datapump.transport_out(&addr);
+        netbuf_t* to_transport = datapump.transport_front(&addr);
 
         REQUIRE(to_transport != NULLPTR);
 

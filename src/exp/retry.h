@@ -46,7 +46,7 @@ public:
         // needed for unallocated portions of vector
         Item() {}
 
-        Item(const addr_t& a, const TNetBuf* netBuf) :
+        Item(const addr_t& a, TNetBuf* netbuf) :
                 retry_count(0),
                 netbuf(netbuf)
         {
@@ -55,6 +55,8 @@ public:
     };
 
 private:
+    //Using raw linked list pool for now until we get a better sorted
+    // solution in place
     typedef moducom::mem::LinkedListPool<int, 10> llpool_t;
     //typedef moducom::mem::LinkedListPoolNodeTraits<int, 10> node_traits_t;
 
@@ -71,13 +73,16 @@ private:
 public:
     Retry() {}
 
-    bool enqueue(const addr_t& addr, const TNetBuf& netbuf)
+    bool enqueue(const addr_t& addr, TNetBuf& netbuf)
     {
         // TODO: ensure it's sorted by 'due'
         // for now just brute force things
         Item item(addr, &netbuf);
 
+        // TODO: revamp the push_back code to return success or fail
         retry_list.push_back(item);
+
+        return true;
     }
 
     // call this to get next item for transport to send, or NULLPTR if nothing

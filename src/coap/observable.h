@@ -92,9 +92,11 @@ class ObservableOptionObserverBase : public experimental::MessageObserverBase
     // or at least have it as a default template parameter for ObservableOptionObserverBase itself
     typedef estd::forward_list<
             ObservableSession,
-            estd::inlinevalue_node_traits<
-                    estd::experimental::forward_node_base,
-                    estd::experimental_std_allocator > >
+                estd::experimental::ValueNode<
+                    ObservableSession,
+                    estd::experimental::forward_node_base
+                >
+            >
             enumeration_t;
 
     typedef ObservableRegistrar<enumeration_t> registrar_t;
