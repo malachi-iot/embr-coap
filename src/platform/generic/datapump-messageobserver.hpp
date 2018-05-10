@@ -17,7 +17,7 @@ void process_messageobserver_netbuf(DecoderSubjectBase<TMessageObserver>& ds, TN
     // to that context *OR* to initiate it/control it explicitly from these helper functions
     // until this happens, we can't actually queue any output messages.  Note also we probably
     // want a pointer to datapump itself in the context
-    ds.get_observer().get_context();
+    ds.get_observer().context();
 
     // FIX: Need to revise end/next to be more tristate because
     // dispatch() wants to know if this is the last chunk, but

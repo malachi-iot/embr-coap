@@ -9,6 +9,7 @@
 #include "mc/linkedlist.h"
 #include "mc/array-helper.h"
 #include "coap/context.h"
+#include "exp/message-observer.h"
 
 #include "mc/memory-pool.h"
 
@@ -222,13 +223,10 @@ public:
 // Convenience class for building dispatcher handlers
 class DispatcherHandlerBase :
         public IDecoderObserver,
-        public IsInterestedBase
+        public IsInterestedBase,
+        public experimental::RequestContextContainer<IncomingContext>
 {
 protected:
-    // NOTE: Semi-kludgey, would prefer this always come in via constructor
-    // but we need to lock down memory management before that's viable
-    IncomingContext* context;
-
 #ifndef FEATURE_IISINTERESTED
     inline bool is_always_interested() const
     {
@@ -252,12 +250,7 @@ public:
     // dumping this if we can
     void set_context(IncomingContext& context)
     {
-        this->context = &context;
-    }
-
-    IncomingContext& get_context()
-    {
-        return *this->context;
+        this->m_context = &context;
     }
 
     virtual InterestedEnum interested() const OVERRIDE
@@ -633,8 +626,6 @@ class ContextDispatcherHandler : public DispatcherHandlerBase
     // could be a wrapper around a regular fixed-array pool
     typedef dynamic::OutOfBandPool<token_t> token_pool_t;
 
-    IncomingContext& context;
-
 #ifndef FEATURE_MCCOAP_INLINE_TOKEN
     // TODO: Need a special "PoolToken" to wrap around layer2::Token
     // to provide timestamp and pool-handling alloc/dealloc (though
@@ -645,7 +636,7 @@ class ContextDispatcherHandler : public DispatcherHandlerBase
 
 public:
 #ifdef FEATURE_MCCOAP_INLINE_TOKEN
-    ContextDispatcherHandler(IncomingContext& context) : context(context)
+    ContextDispatcherHandler(IncomingContext& context)
 #else
     ContextDispatcherHandler(IncomingContext& context,
                              const token_pool_t& token_pool
@@ -664,21 +655,23 @@ public:
 
     virtual interested_t interested() const OVERRIDE
     {
+        const IncomingContext& c = this->context();
+
         // If we haven't received a header yet, we're still interested
-        if(!context.have_header()) return Currently;
+        if(!c.have_header()) return Currently;
 
         // If we have a header, are we looking for a token?
-        if(context.header().token_length() > 0)
+        if(c.header().token_length() > 0)
         {
             // FIX: Not compatible with FEATURE_MCCOAP_INLINE_TOKEN
             // since when that feature is enabled, context.token()
             // is ALWAYS not null when tkl > 0
 #ifdef FEATURE_MCCOAP_INLINE_TOKEN
-            return context.token_present() ? Never : Currently;
+            return c.token_present() ? Never : Currently;
 #else
             // If we are looking for but dont' have a token,
             // we are still interested.  Otherwise, done
-            return context.token() ? Never : Currently;
+            return c.token() ? Never : Currently;
 #endif
         }
 

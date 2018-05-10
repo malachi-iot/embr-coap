@@ -46,6 +46,7 @@ set(SOURCE_FILES
         coap-features.h
 
         exp/datapump.h exp/datapump.hpp
+        exp/message-observer.h
         exp/retry.h
 
         platform/arduino/datapump.cpp
