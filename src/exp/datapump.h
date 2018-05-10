@@ -13,7 +13,7 @@ namespace moducom { namespace coap { namespace experimental {
 // Not quite happy because NetBufDynamicExperimental gets its pointers copied around and
 // I think freed multiple times
 // NOTE: pointer is useful to avoid construction/destruction on non-active Items in the queue
-//#define FEATURE_MCCOAP_DATAPUMP_INLINE
+#define FEATURE_MCCOAP_DATAPUMP_INLINE
 
 #ifdef FEATURE_MCCOAP_DATAPUMP_INLINE
 #ifndef FEATURE_CPP_MOVESEMANTIC
@@ -98,7 +98,13 @@ private:
 
 public:
     // process data coming in from transport into coap queue
-    void transport_in(TNetBuf& in, const addr_t& addr);
+    void transport_in(
+#ifdef FEATURE_MCCOAP_DATAPUMP_INLINE
+            TNetBuf&& in,
+#else
+            TNetBuf& in,
+#endif
+            const addr_t& addr);
 
     // provide a netbuf containing data to be sent out over transport, or NULLPTR
     // if no data is ready
@@ -128,16 +134,19 @@ public:
         outgoing.pop();
     }
 
+#ifdef FEATURE_MCCOAP_DATAPUMP_INLINE
     // enqueue complete netbuf for outgoing transport to pick up
-    void enqueue_out(TNetBuf& out, const addr_t& addr_out)
+    void enqueue_out(TNetBuf&& out, const addr_t& addr_out)
     {
-#if FEATURE_MCCOAP_DATAPUMP_INLINE
-        outgoing.emplace(out, addr_out);
-#else
-        outgoing.push(Item(out, addr_out));
-#endif
+        outgoing.emplace(std::forward<TNetBuf>(out), addr_out);
     }
-
+#else
+    // enqueue complete netbuf for outgoing transport to pick up
+    void enqueue_out(const TNetBuf& out, const addr_t& addr_out)
+    {
+        outgoing.push(Item(out, addr_out));
+    }
+#endif
     // dequeue complete netbuf which was queued from transport in
     TNetBuf* dequeue_in(addr_t* addr_in)
     {

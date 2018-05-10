@@ -121,7 +121,13 @@ void nonblocking_datapump_loop(int sockfd, sockets_datapump_t& sockets_datapump)
 
         netbuf_in->advance(n);
 
-        sockets_datapump.transport_in(*netbuf_in, cli_addr);
+        sockets_datapump.transport_in(
+#ifdef FEATURE_MCCOAP_DATAPUMP_INLINE
+                    std::forward<netbuf_t>(temporary),
+#else
+                    *netbuf_in,
+#endif
+                    cli_addr);
 
         // FIX: Need to find a way to gracefully deallocate netbuf in, since it's now queued
         // and needs to hang around for a bit
