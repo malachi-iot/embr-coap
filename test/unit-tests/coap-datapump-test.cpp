@@ -51,11 +51,15 @@ TEST_CASE("Data pump tests", "[datapump]")
         typedef moducom::io::experimental::NetBufDynamicMemory<> netbuf_t;
         typedef uint32_t addr_t;
 
+#ifdef FEATURE_MCCOAP_DATAPUMP_INLINE
+        moducom::io::experimental::NetBufWriter<netbuf_t> writer;
+#else
         // FIX: doing this because of floating 'delete' within process_messageobserver
         // clearly not ideal
         netbuf_t* netbuf = new netbuf_t;
 
         moducom::io::experimental::NetBufWriter<netbuf_t&> writer(*netbuf);
+#endif
         DataPump<netbuf_t, addr_t> datapump;
 
         // push synthetic incoming coap request data into netbuf via writer

@@ -40,20 +40,11 @@ void process_messageobserver(TDataPump& datapump, TDecoderSubject& ds)
 
     netbuf = datapump.dequeue_in(&ipaddr);
 
-    // echo back out a raw ACK, with no trickery just raw decoding/encoding
     if(netbuf != NULLPTR)
     {
         //cout << " ip=" << ipaddr.sin_addr.s_addr << endl;
 
         process_messageobserver_netbuf(ds, *netbuf);
-        /*
-        NetBufDecoder<netbuf_t&> decoder(*netbuf);
-        layer2::Token token;
-
-        Header header_in = decoder.process_header_experimental();
-
-        // populate token, if present.  Expects decoder to be at HeaderDone phase
-        decoder.process_token_experimental(&token); */
 
 #ifdef FEATURE_MCCOAP_DATAPUMP_INLINE
         netbuf_t temporary;
