@@ -6,11 +6,14 @@
 #ifdef FEATURE_CPP_VARIADIC
 // If we have variadic, then we assume we also have type traits
 #include <type_traits>
+#include <estd/type_traits.h> // for estd::enable_if_t, otherwise it's only present in c++14
 #endif
 
 namespace moducom { namespace coap { namespace experimental {
 
 #ifdef FEATURE_CPP_VARIADIC
+
+
 // templatized aggregation of messages using parameter pack
 template <class TIncomingContext = ObserverContext, class ...TMessageObservers>
 class AggregateMessageObserver : public MessageObserverBase<TIncomingContext>
@@ -49,12 +52,39 @@ class AggregateMessageObserver : public MessageObserverBase<TIncomingContext>
 
     } */
 
+    // for message observers with constructors
+    // thanks to https://stackoverflow.com/questions/32167213/select-constructor-through-sfinae-in-template-arguments
+    template <class TMessageObserver,
+              estd::enable_if_t<
+                  std::is_constructible<TMessageObserver, context_t&>::value
+                  >* = nullptr
+              >
+    TMessageObserver* ctor_selector()
+    {
+        context_t& context = base_t::context();
+        return new (context) TMessageObserver(context);
+    }
+
+    // for message observers without constructors
+    template <class TMessageObserver,
+              estd::enable_if_t<
+                  !std::is_constructible<TMessageObserver, context_t&>::value
+                  >* = nullptr
+              >
+    TMessageObserver* ctor_selector()
+    {
+        context_t& context = base_t::context();
+        TMessageObserver* mo = new (context) TMessageObserver;
+        mo->context(context);
+        return mo;
+    }
+
     template <class TMessageObserver>
     void _on_header_invoker(const Header& header)
     {
         context_t& context = base_t::context();
 
-        TMessageObserver* mo;// = _on_header_invoker_helper_1<TMessageObserver>();
+        TMessageObserver* mo = ctor_selector<TMessageObserver>();// = _on_header_invoker_helper_1<TMessageObserver>();
 
         mo->on_header(header);
 
