@@ -38,7 +38,7 @@ TEST_CASE("CoAP decoder subject tests", "[coap-decoder-subject]")
     }
     SECTION("16 bit detla: Buffer16BitDeltaObserver&")
     {
-        Buffer16BitDeltaObserver observer;
+        Buffer16BitDeltaObserver<ObserverContext> observer;
         DecoderSubjectBase<IMessageObserver&> test2(observer);
         MemoryChunk::readonly_t chunk(buffer_16bit_delta);
         test2.dispatch(chunk);

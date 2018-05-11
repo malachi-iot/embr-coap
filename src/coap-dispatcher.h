@@ -353,7 +353,9 @@ public:
 };
 #endif
 
-struct FactoryDispatcherHandlerContext
+typedef ObserverContext FactoryDispatcherHandlerContext;
+
+struct FactoryDispatcherHandlerContextOld
 {
     ObserverContext& incoming_context;
 
@@ -376,7 +378,7 @@ public:
     size_t reserve_bytes;
 #endif
 
-    FactoryDispatcherHandlerContext(ObserverContext& ic
+    FactoryDispatcherHandlerContextOld(ObserverContext& ic
 #ifdef FEATURE_MCCOAP_LEGACY_PREOBJSTACK
             , const pipeline::MemoryChunk& hm
 #endif
@@ -392,7 +394,7 @@ public:
 #endif
     {}
 
-    FactoryDispatcherHandlerContext(const FactoryDispatcherHandlerContext& copy_from) :
+    FactoryDispatcherHandlerContextOld(const FactoryDispatcherHandlerContextOld& copy_from) :
         incoming_context(copy_from.incoming_context)
     {
 
@@ -724,7 +726,7 @@ public:
 
 inline void* operator new(size_t sz, moducom::coap::experimental::FactoryDispatcherHandlerContext& ctx)
 {
-    return ctx.incoming_context.objstack.alloc(sz);
+    return ctx.objstack.alloc(sz);
 }
 
 

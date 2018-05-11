@@ -170,11 +170,11 @@ experimental::IDecoderObserver<experimental::FactoryDispatcherHandlerContext>*
 #else
     // FIX: Clumsy, but should be effective for now; ensures order of allocation is correct
     //      so that later deallocation for objstack doesn't botch
-    void* buffer1 = ctx.incoming_context.objstack.alloc(sizeof(SingleUriPathObserver<experimental::FactoryDispatcherHandlerContext>));
+    void* buffer1 = ctx.objstack.alloc(sizeof(SingleUriPathObserver<experimental::FactoryDispatcherHandlerContext>));
 
     experimental::FactoryDispatcherHandler* fdh =
             new (ctx) experimental::FactoryDispatcherHandler(
-                    ctx.incoming_context,
+                    ctx,
                     factories, count);
 
     return new (buffer1) SingleUriPathObserver<experimental::FactoryDispatcherHandlerContext> (uri_path, *fdh);
@@ -191,7 +191,7 @@ experimental::IDecoderObserver<experimental::FactoryDispatcherHandlerContext>* u
     // FIX: kludgey, and though SFINAE would be helpful, would probably
     // not alleviate the kludginess enough.  reserved-dispatcher likely
     // a better solution so that we can push context thru via constructor
-    observer.context(ctx.incoming_context);
+    observer.context(ctx);
 
     return new (ctx) SingleUriPathObserver<experimental::FactoryDispatcherHandlerContext>(uri_path, observer);
 }

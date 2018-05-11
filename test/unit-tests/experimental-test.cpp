@@ -28,14 +28,18 @@ int test_wilma(experimental::FnFactoryContext context)
     return 77;
 }
 
-typedef IncomingContext request_context_t;
 
 
 const moducom::pipeline::MemoryChunk::readonly_t* test_value_1 = NULLPTR;
 
-class TestBarnyObsever : public DispatcherHandlerBase
+template <class TRequestContext>
+class TestBarnyObsever : public DispatcherHandlerBase<TRequestContext>
 {
 public:
+    typedef DispatcherHandlerBase<TRequestContext> base_t;
+    typedef typename base_t::context_t request_context_t;
+    typedef typename base_t::number_t number_t;
+
     TestBarnyObsever(request_context_t& context)
     {
         this->context(context);
@@ -49,9 +53,9 @@ public:
     }
 };
 
-IDecoderObserver* test_barny(AggregateUriPathObserver::Context& ctx)
+IDecoderObserver<ObserverContext>* test_barny(AggregateUriPathObserver::Context& ctx)
 {
-    return new (ctx.context.objstack) TestBarnyObsever(ctx.context);
+    return new (ctx.context.objstack) TestBarnyObsever<ObserverContext>(ctx.context);
 }
 
 

@@ -22,12 +22,11 @@ extern dispatcher_handler_factory_fn test_sub_factories[];
 
 IDecoderObserver<f_request_context_t>* context_handler_factory(f_request_context_t& ctx)
 {
-    request_context_t& context = ctx.incoming_context;
 #ifdef FEATURE_MCCOAP_INLINE_TOKEN
-    return new (ctx) ContextDispatcherHandler<f_request_context_t>(context);
+    return new (ctx) ContextDispatcherHandler<f_request_context_t>(ctx);
 #else
     static moducom::dynamic::PoolBase<moducom::coap::layer2::Token, 8> token_pool;
-    return new (ctx.handler_memory.data()) ContextDispatcherHandler(context, token_pool);
+    return new (ctx.handler_memory.data()) ContextDispatcherHandler(ctx, token_pool);
 #endif
 }
 
@@ -102,10 +101,10 @@ IDecoderObserver<f_request_context_t>* test_factory2(FactoryDispatcherHandlerCon
 #else
     // FIX: Clumsy, but should be effective for now; ensures order of allocation is correct
     //      so that later deallocation for objstack doesn't botch
-    void* buffer1 = ctx.incoming_context.objstack.alloc(sizeof(SingleUriPathObserver<request_context_t>));
+    void* buffer1 = ctx.objstack.alloc(sizeof(SingleUriPathObserver<request_context_t>));
 
     FactoryDispatcherHandler* fdh = new (ctx) FactoryDispatcherHandler(
-            ctx.incoming_context,
+            ctx,
             test_sub_factories, 1);
 
     return new (buffer1) SingleUriPathObserver<f_request_context_t>("v1", *fdh);
@@ -156,7 +155,8 @@ dispatcher_handler_factory_fn test_factories[] =
 };
 
 
-class TestDispatcherHandler2 : public DispatcherHandlerBase<>
+template <class TRequestContext = ObserverContext>
+class TestDispatcherHandler2 : public DispatcherHandlerBase<TRequestContext>
 {
 public:
     void on_payload(const MemoryChunk::readonly_t& payload_part,
@@ -172,13 +172,13 @@ public:
 
 extern CONSTEXPR char POS_HANDLER_URI[] = "POS";
 
-extern TestDispatcherHandler2 pos_handler;
-TestDispatcherHandler2 pos_handler;
+extern TestDispatcherHandler2<> pos_handler;
+TestDispatcherHandler2<> pos_handler;
 
 
 dispatcher_handler_factory_fn test_sub_factories[] =
 {
-    uri_plus_observer_dispatcher<POS_HANDLER_URI, TestDispatcherHandler2>
+    uri_plus_observer_dispatcher<POS_HANDLER_URI, TestDispatcherHandler2<> >
 };
 
 TEST_CASE("CoAP dispatcher tests", "[coap-dispatcher]")
