@@ -297,7 +297,7 @@ FnFactory<typename TItem::key_t, typename TItem::value_t> factory_helper(TItem (
 
 
 // FIX: Move this and the item_experimental out of here
-template <class TRequestContext>
+template <class TRequestContext, class TRequestContextTraits>
 class IDecoderObserver;
 
 template <class TTraits>
@@ -318,7 +318,7 @@ struct FnFactoryHelper
         return factory_item_helper(key, factory_fn);
     };
 
-#if defined(__CPP11__) || __cplusplus >= 201103L
+#ifdef FEATURE_CPP_LAMBDA
     // We would rather this be somewhere more like AggregateUriPathObserver
     // it's too specific to be living here
     template <class TObserver>

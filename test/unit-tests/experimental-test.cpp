@@ -32,7 +32,7 @@ int test_wilma(experimental::FnFactoryContext context)
 
 const moducom::pipeline::MemoryChunk::readonly_t* test_value_1 = NULLPTR;
 
-template <class TRequestContext>
+template <class TRequestContext = ObserverContext>
 class TestBarnyObsever : public DispatcherHandlerBase<TRequestContext>
 {
 public:
@@ -53,9 +53,10 @@ public:
     }
 };
 
-IDecoderObserver<ObserverContext>* test_barny(AggregateUriPathObserver::Context& ctx)
+template <class TRequestContext>
+IDecoderObserver<TRequestContext>* test_barny(typename AggregateUriPathObserver<TRequestContext>::Context& ctx)
 {
-    return new (ctx.context.objstack) TestBarnyObsever<ObserverContext>(ctx.context);
+    return new (ctx.context) TestBarnyObsever<TRequestContext>(ctx.context);
 }
 
 
@@ -198,8 +199,9 @@ TEST_CASE("experimental tests", "[experimental]")
     }
     SECTION("experimental new uri dispatcher")
     {
-        typedef AggregateUriPathObserver::fn_t fn_t;
-        typedef AggregateUriPathObserver::item_t item_t;
+        typedef AggregateUriPathObserver<ObserverContext> apo_t;
+        typedef apo_t::fn_t fn_t;
+        typedef apo_t::item_t item_t;
         moducom::pipeline::layer1::MemoryChunk<512> buffer;
         moducom::pipeline::MemoryChunk::readonly_t
             fake_uri = moducom::pipeline::MemoryChunk::readonly_t::str_ptr("barny");
@@ -207,10 +209,10 @@ TEST_CASE("experimental tests", "[experimental]")
 
         item_t items[] =
         {
-            fn_t::item("barny", test_barny)
+            fn_t::item("barny", test_barny<ObserverContext>)
         };
 
-        AggregateUriPathObserver dh(incomingContext, items);
+        apo_t dh(incomingContext, items);
 
         dh.on_option(Option::UriPath, fake_uri, true);
         dh.on_complete();

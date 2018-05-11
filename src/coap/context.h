@@ -147,18 +147,25 @@ public:
 #endif
 };
 
-
-// FIX: Seems more appropriate that ObserverContext and IncomingContext
-// would be one and the same, but for now in a semi-experimental fashion
-// keep them separate
-struct ObserverContext : public IncomingContext
+struct ObjStackContext
 {
     // NOTE: Facing a small cunundrum: objstack doesn't know during a free operation
     // how many bytes to free, and generic dispatch handlers such as FactoryDispatcherHandler
     // and AggregateUriPathObserver don't know how many bytes their children are using
     dynamic::ObjStack objstack;
 
-    ObserverContext(const pipeline::MemoryChunk& chunk) : objstack(chunk) {}
+    ObjStackContext(const pipeline::MemoryChunk& chunk) : objstack(chunk) {}
+};
+
+
+// FIX: Seems more appropriate that ObserverContext and IncomingContext
+// would be one and the same, but for now in a semi-experimental fashion
+// keep them separate
+struct ObserverContext :
+        public IncomingContext,
+        public ObjStackContext
+{
+    ObserverContext(const pipeline::MemoryChunk& chunk) : ObjStackContext(chunk) {}
 };
 
 }}

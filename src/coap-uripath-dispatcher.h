@@ -32,7 +32,8 @@ inline bool starts_with(pipeline::MemoryChunk::readonly_t chunk, const char* pre
 // though in theory this adds another chain to the vtable list, I guess it being
 // so templatized it doesn't actually register as such
 template <bool allow_response = false>
-class UriPathDispatcherHandlerBaseBase : public experimental::DispatcherHandlerBase<experimental::FactoryDispatcherHandlerContext>
+class UriPathDispatcherHandlerBaseBase :
+        public experimental::DispatcherHandlerBase<ObserverContext>
 {
 protected:
     const char* prefix;
@@ -184,7 +185,7 @@ experimental::IDecoderObserver<ObserverContext>*
 
 // Creates a unique static TMessageObserver associated with this uri_path
 template <const char* uri_path, class TMessageObserver>
-experimental::IDecoderObserver<experimental::FactoryDispatcherHandlerContext>* uri_plus_observer_dispatcher(experimental::FactoryDispatcherHandlerContext& ctx)
+experimental::IDecoderObserver<ObserverContext>* uri_plus_observer_dispatcher(ObserverContext& ctx)
 {
     static TMessageObserver observer;
 
@@ -193,7 +194,7 @@ experimental::IDecoderObserver<experimental::FactoryDispatcherHandlerContext>* u
     // a better solution so that we can push context thru via constructor
     observer.context(ctx);
 
-    return new (ctx) SingleUriPathObserver<experimental::FactoryDispatcherHandlerContext>(uri_path, observer);
+    return new (ctx) SingleUriPathObserver<ObserverContext>(uri_path, observer);
 }
 
 
@@ -207,10 +208,11 @@ namespace experimental {
 // here anyway as a proving grounds of its usefulness
 //
 // an aggregate of single-uri-path-element to IDispatcherHandler* mappings
-class AggregateUriPathObserver : public experimental::DispatcherHandlerBase<ObserverContext>
+template <class TRequestContext = ObserverContext>
+class AggregateUriPathObserver : public experimental::DispatcherHandlerBase<TRequestContext>
 {
-    typedef experimental::DispatcherHandlerBase<ObserverContext> base_t;
-    typedef base_t::context_t request_context_t;
+    typedef typename experimental::DispatcherHandlerBase<TRequestContext> base_t;
+    typedef typename base_t::context_t request_context_t;
 
 public:
     struct Context
@@ -225,10 +227,12 @@ public:
             context(copy_from.context) {}
     };
 
-    typedef FnFactoryTraits<const char*, IDecoderObserver<request_context_t>*, Context&> traits_t;
+    typedef IDecoderObserver<request_context_t> decoder_observer_t;
+    typedef FnFactoryTraits<const char*, decoder_observer_t*, Context&> traits_t;
     typedef FnFactoryHelper<traits_t> fn_t;
-    typedef fn_t::factory_t factory_t;
-    typedef fn_t::item_t item_t;
+    typedef typename fn_t::factory_t factory_t;
+    typedef typename fn_t::item_t item_t;
+    typedef typename base_t::number_t number_t;
 
 protected:
 
@@ -236,7 +240,7 @@ protected:
 
     Context context;
 
-    IDecoderObserver* handler;
+    decoder_observer_t* handler;
 
 public:
 
@@ -244,7 +248,7 @@ public:
     // would probably be fine, factory itself dissects all that
     template <const size_t N>
     AggregateUriPathObserver(request_context_t& incoming_context,
-                         fn_t::item_t (&items) [N]) :
+                         item_t (&items) [N]) :
         factory(items),
         context(incoming_context),
         handler(NULLPTR)
@@ -252,7 +256,7 @@ public:
     }
 
     AggregateUriPathObserver(ObserverContext& incoming_context,
-                         fn_t::item_t* items, size_t item_count) :
+                         item_t* items, size_t item_count) :
             factory(items, item_count),
             context(incoming_context),
             handler(NULLPTR)
@@ -262,7 +266,7 @@ public:
 
     template <const size_t N>
     AggregateUriPathObserver(Context& context,
-                         fn_t::item_t (&items) [N]) :
+                         item_t (&items) [N]) :
         factory(items),
         context(context),
         handler(NULLPTR)
@@ -290,7 +294,10 @@ public:
 }}
 
 
+/*
 inline void* operator new(size_t sz, moducom::coap::experimental::AggregateUriPathObserver::Context& ctx)
 {
     return ctx.context.objstack.alloc(sz);
-}
+} */
+
+#include "coap-uripath-dispatcher.hpp"

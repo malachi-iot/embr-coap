@@ -8,7 +8,8 @@ namespace moducom { namespace coap {
 
 namespace experimental {
 
-void AggregateUriPathObserver::on_option(number_t number,
+template <class TRequestContext>
+void AggregateUriPathObserver<TRequestContext>::on_option(number_t number,
                                      const pipeline::MemoryChunk::readonly_t& option_value_part,
                                      bool last_chunk)
 {
@@ -45,7 +46,8 @@ void AggregateUriPathObserver::on_option(number_t number,
 }
 
 
-void AggregateUriPathObserver::on_payload(
+template <class TRequestContext>
+void AggregateUriPathObserver<TRequestContext>::on_payload(
     const pipeline::MemoryChunk::readonly_t& payload_part,
     bool last_chunk)
 {
@@ -58,7 +60,8 @@ void AggregateUriPathObserver::on_payload(
 
 
 #ifdef FEATURE_MCCOAP_COMPLETE_OBSERVER
-void AggregateUriPathObserver::on_complete()
+template <class TRequestContext>
+void AggregateUriPathObserver<TRequestContext>::on_complete()
 {
     // NOTE: Shouldn't need to do NULLPTR check, should only come here when set
     // 'interested'

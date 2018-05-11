@@ -48,6 +48,7 @@ set(SOURCE_FILES
         coap-generator.h coap-generator.cpp coap-encoder.cpp
         coap-features.h
         coap-token.h coap-token.cpp
+        coap-uripath-dispatcher.hpp coap-uripath-dispatcher.h
 
         exp/datapump.h exp/datapump.hpp
         exp/message-observer.h
@@ -73,7 +74,6 @@ set(SOURCE_FILES
         coap/experimental.cpp coap/experimental-observer.h
 
         mc/experimental.cpp
-        coap-uripath-dispatcher.cpp coap-uripath-dispatcher.h
         mc/experimental-factory.h
 
         )

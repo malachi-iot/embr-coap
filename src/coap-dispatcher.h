@@ -189,7 +189,8 @@ struct IIsInterested
 // incoming CoAP message
 
 // FIX: Change name to IDecoderObserver to mate to DecoderSubject, and get rid of forward_node
-template <class TRequestContext = IncomingContext>
+template <class TRequestContext = IncomingContext,
+          class TRequestContextTraits = experimental::request_context_traits<TRequestContext> >
 class IDecoderObserver :
     public IMessageObserver
 #ifdef FEATURE_IISINTERESTED
@@ -226,11 +227,12 @@ public:
 
 
 // Convenience class for building dispatcher handlers
-template <class TRequestContext = IncomingContext>
+template <class TRequestContext = IncomingContext,
+          class TRequestContextTraits = experimental::request_context_traits<TRequestContext> >
 class DispatcherHandlerBase :
-        public IDecoderObserver<TRequestContext>,
+        public IDecoderObserver<TRequestContext, TRequestContextTraits>,
         public IsInterestedBase,
-        public experimental::RequestContextContainer<TRequestContext>
+        public experimental::RequestContextContainer<TRequestContext, TRequestContextTraits>
 {
 protected:
     typedef IDecoderObserver<TRequestContext> base_t;
@@ -353,57 +355,11 @@ public:
 };
 #endif
 
-typedef ObserverContext FactoryDispatcherHandlerContext;
 
-struct FactoryDispatcherHandlerContextOld
-{
-    ObserverContext& incoming_context;
-
-//private:
-    // this one may change through the stack walk
-    // FIX: BROKEN - expect code that uses this to not function properly, phase out
-    // in favor of incoming_context.objstack
-#ifdef FEATURE_MCCOAP_LEGACY_PREOBJSTACK
-    pipeline::MemoryChunk handler_memory;
-#endif
-
-public:
-
-#ifdef FEATURE_MCCOAP_RESERVED_DISPATCHER
-    // EXPERIMENTAL:  Number of bytes from handler_memory we wish to permenantly
-    // retain.  This facilitates more objstack-style behavior, without specifically
-    // resorting to "chosen" pointer.  Semi-active
-    // When non-zero, reserve flag shall be set and construction/destruction will
-    // cease, as if it was "chosen"
-    size_t reserve_bytes;
-#endif
-
-    FactoryDispatcherHandlerContextOld(ObserverContext& ic
-#ifdef FEATURE_MCCOAP_LEGACY_PREOBJSTACK
-            , const pipeline::MemoryChunk& hm
-#endif
-        )
-            :
-#ifdef FEATURE_MCCOAP_RESERVED_DISPATCHER
-              reserve_bytes(0),
-#endif
-              incoming_context(ic)
-#ifdef FEATURE_MCCOAP_LEGACY_PREOBJSTACK
-            ,
-              handler_memory(hm)
-#endif
-    {}
-
-    FactoryDispatcherHandlerContextOld(const FactoryDispatcherHandlerContextOld& copy_from) :
-        incoming_context(copy_from.incoming_context)
-    {
-
-    }
-};
 
 
 // An in-place new is expected
-typedef IDecoderObserver<FactoryDispatcherHandlerContext>* (*dispatcher_handler_factory_fn)(FactoryDispatcherHandlerContext&);
+typedef IDecoderObserver<ObserverContext>* (*dispatcher_handler_factory_fn)(ObserverContext&);
 
 
 /*
@@ -649,8 +605,8 @@ public:
 
 
 // Looks for header and saves it in IncomingContext
-// Looks for a token and if it finds one, registers it with a token pool and saves it in IncomingContext
-template <class TRequestContext>
+// Looks for a token and if it finds one, registers it with a token pool and saves it in TRequestContext
+template <class TRequestContext = ObserverContext>
 class ContextDispatcherHandler : public DispatcherHandlerBase<TRequestContext>
 {
     typedef IsInterestedBase::InterestedEnum interested_t;
@@ -659,6 +615,7 @@ class ContextDispatcherHandler : public DispatcherHandlerBase<TRequestContext>
 
 public:
     typedef typename base_t::context_t context_t;
+    typedef typename base_t::context_traits_t request_context_traits;
 
 private:
 
@@ -725,7 +682,7 @@ public:
 
 }}
 
-inline void* operator new(size_t sz, moducom::coap::experimental::FactoryDispatcherHandlerContext& ctx)
+inline void* operator new(size_t sz, moducom::coap::ObjStackContext& ctx)
 {
     return ctx.objstack.alloc(sz);
 }
