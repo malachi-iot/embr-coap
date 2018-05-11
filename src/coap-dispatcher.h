@@ -156,6 +156,8 @@ private:
 
     // Context local to FactoryDispatcherHandler::on_xxx calls, carries around
     // local state for convenience
+    // FIX: copying request_context_t likely not desirable - probably now
+    // we want a reference to it
     struct Context : public request_context_t
     {
         State* state;
@@ -232,25 +234,14 @@ private:
 
 public:
     FactoryDispatcherHandler(
-#ifdef FEATURE_MCCOAP_LEGACY_PREOBJSTACK
-            const pipeline::MemoryChunk& handler_memory,
-#endif
-            ObserverContext& incoming_context,
+            request_context_t& incoming_context,
             dispatcher_handler_factory_fn* handler_factories,
             int handler_factory_count)
 
             :
-#ifdef FEATURE_MCCOAP_LEGACY_PREOBJSTACK
-             _handler_memory(handler_memory),
-#endif
              handler_factories(handler_factories),
              handler_factory_count(handler_factory_count),
-             //incoming_context(incoming_context),
-             m_context(incoming_context
-#ifdef FEATURE_MCCOAP_LEGACY_PREOBJSTACK
-                     , handler_memory
-#endif
-             ),
+             m_context(incoming_context),
              chosen(NULLPTR)
     {
         init_states();
@@ -259,24 +250,13 @@ public:
 
     template<size_t n>
     FactoryDispatcherHandler(
-#ifdef FEATURE_MCCOAP_LEGACY_PREOBJSTACK
-                             const pipeline::MemoryChunk& handler_memory,
-#endif
-                             ObserverContext& incoming_context,
+                             request_context_t& incoming_context,
                              dispatcher_handler_factory_fn (&handler_factories)[n]
     )
             :
-#ifdef FEATURE_MCCOAP_LEGACY_PREOBJSTACK
-             _handler_memory(handler_memory),
-#endif
              handler_factories(handler_factories),
              handler_factory_count(n),
-             //incoming_context(incoming_context),
-#ifdef FEATURE_MCCOAP_LEGACY_PREOBJSTACK
-             context(incoming_context, handler_memory),
-#else
              m_context(incoming_context),
-#endif
              chosen(NULLPTR)
 
     {

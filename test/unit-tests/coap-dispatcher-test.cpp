@@ -191,25 +191,11 @@ TEST_CASE("CoAP dispatcher tests", "[coap-dispatcher]")
         layer3::MemoryChunk<512> dispatcherBuffer;
         ObserverContext context(dispatcherBuffer);
 
-#ifdef FEATURE_MCCOAP_LEGACY_PREOBJSTACK
-        FactoryDispatcherHandler fdh(dispatcherBuffer, context, test_factories);
-#else
         FactoryDispatcherHandler<ObserverContext> fdh(context, test_factories);
-#endif
 
-#ifdef FEATURE_MCCOAP_LEGACY_DISPATCHER
-        Dispatcher dispatcher;
-
-        // doesn't fully test new UriPath handler because Buffer16BitDeltaObserver
-        // is not stateless (and shouldn't be expected to be) but because of that
-        // setting it to "Currently" makes it unable to test its own options properly
-        dispatcher.head(&fdh);
-        dispatcher.dispatch(chunk);
-#else
         DecoderSubjectBase<IDecoderObserver<ObserverContext> & > decoder_subject(fdh);
 
         decoder_subject.dispatch(chunk);
-#endif
     }
     SECTION("Array experimentation")
     {

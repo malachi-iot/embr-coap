@@ -407,6 +407,9 @@ public:
 
 // length = total buffer size
 // processed = "valid" buffer size, size of buffer actually used
+// NOTE: These seem clumsy.  They are supposed to expose more of a 'memorychunk'
+// interface in conjunction with a processed memory chunk, but instead it just
+// seems confusing
 class ProcessedMemoryChunk :
     public pipeline::MemoryChunk,
     public ProcessedMemoryChunkBase<>
