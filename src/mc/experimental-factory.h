@@ -297,6 +297,7 @@ FnFactory<typename TItem::key_t, typename TItem::value_t> factory_helper(TItem (
 
 
 // FIX: Move this and the item_experimental out of here
+template <class TRequestContext>
 class IDecoderObserver;
 
 template <class TTraits>

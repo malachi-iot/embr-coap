@@ -19,11 +19,11 @@ typedef IncomingContext request_context_t;
 
 extern dispatcher_handler_factory_fn test_sub_factories[];
 
-IDecoderObserver* context_handler_factory(FactoryDispatcherHandlerContext& ctx)
+IDecoderObserver<experimental::FactoryDispatcherHandlerContext>* context_handler_factory(FactoryDispatcherHandlerContext& ctx)
 {
     request_context_t& context = ctx.incoming_context;
 #ifdef FEATURE_MCCOAP_INLINE_TOKEN
-    return new (ctx) ContextDispatcherHandler(context);
+    return new (ctx) ContextDispatcherHandler<experimental::FactoryDispatcherHandlerContext>(context);
 #else
     static moducom::dynamic::PoolBase<moducom::coap::layer2::Token, 8> token_pool;
     return new (ctx.handler_memory.data()) ContextDispatcherHandler(context, token_pool);
@@ -31,9 +31,9 @@ IDecoderObserver* context_handler_factory(FactoryDispatcherHandlerContext& ctx)
 }
 
 
-IDecoderObserver* test_factory1(FactoryDispatcherHandlerContext& ctx)
+IDecoderObserver<experimental::FactoryDispatcherHandlerContext>* test_factory1(FactoryDispatcherHandlerContext& ctx)
 {
-    return new (ctx) Buffer16BitDeltaObserver(IsInterestedBase::Never);
+    return new (ctx) Buffer16BitDeltaObserver<experimental::FactoryDispatcherHandlerContext>(IsInterestedBase::Never);
 }
 
 
@@ -84,7 +84,7 @@ IDispatcherHandler* uri_plus_factory_dispatcher(MemoryChunk chunk)
 
 } */
 
-IDecoderObserver* test_factory2(FactoryDispatcherHandlerContext& ctx)
+IDecoderObserver<experimental::FactoryDispatcherHandlerContext>* test_factory2(FactoryDispatcherHandlerContext& ctx)
 {
 #ifdef FEATURE_MCCOAP_LEGACY_PREOBJSTACK
     MemoryChunk& uri_handler_chunk = ctx.handler_memory;
@@ -101,13 +101,13 @@ IDecoderObserver* test_factory2(FactoryDispatcherHandlerContext& ctx)
 #else
     // FIX: Clumsy, but should be effective for now; ensures order of allocation is correct
     //      so that later deallocation for objstack doesn't botch
-    void* buffer1 = ctx.incoming_context.objstack.alloc(sizeof(SingleUriPathObserver));
+    void* buffer1 = ctx.incoming_context.objstack.alloc(sizeof(SingleUriPathObserver<request_context_t>));
 
     FactoryDispatcherHandler* fdh = new (ctx) FactoryDispatcherHandler(
             ctx.incoming_context,
             test_sub_factories, 1);
 
-    return new (buffer1) SingleUriPathObserver("v1", *fdh);
+    return new (buffer1) SingleUriPathObserver<experimental::FactoryDispatcherHandlerContext>("v1", *fdh);
 #endif
 }
 
@@ -155,7 +155,7 @@ dispatcher_handler_factory_fn test_factories[] =
 };
 
 
-class TestDispatcherHandler2 : public DispatcherHandlerBase
+class TestDispatcherHandler2 : public DispatcherHandlerBase<>
 {
 public:
     void on_payload(const MemoryChunk::readonly_t& payload_part,
@@ -204,7 +204,7 @@ TEST_CASE("CoAP dispatcher tests", "[coap-dispatcher]")
         dispatcher.head(&fdh);
         dispatcher.dispatch(chunk);
 #else
-        DecoderSubjectBase<IDecoderObserver&> decoder_subject(fdh);
+        DecoderSubjectBase<IDecoderObserver<experimental::FactoryDispatcherHandlerContext> & > decoder_subject(fdh);
 
         decoder_subject.dispatch(chunk);
 #endif
@@ -224,10 +224,10 @@ TEST_CASE("CoAP dispatcher tests", "[coap-dispatcher]")
         int size2 = sizeof(IOptionAndPayloadObserver);
         int size3 = sizeof(IOptionObserver);
 #endif
-        int size4 = sizeof(IDecoderObserver);
+        int size4 = sizeof(IDecoderObserver<>);
         int size5 = sizeof(IIsInterested);
-        int size6 = sizeof(DispatcherHandlerBase);
-        int size7 = sizeof(SingleUriPathObserver);
+        int size6 = sizeof(DispatcherHandlerBase<>);
+        int size7 = sizeof(SingleUriPathObserver<request_context_t>);
         int size8 = sizeof(FactoryDispatcherHandler);
     }
 }

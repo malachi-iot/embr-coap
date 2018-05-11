@@ -32,7 +32,7 @@ inline bool starts_with(pipeline::MemoryChunk::readonly_t chunk, const char* pre
 // though in theory this adds another chain to the vtable list, I guess it being
 // so templatized it doesn't actually register as such
 template <bool allow_response = false>
-class UriPathDispatcherHandlerBaseBase : public experimental::DispatcherHandlerBase
+class UriPathDispatcherHandlerBaseBase : public experimental::DispatcherHandlerBase<experimental::FactoryDispatcherHandlerContext>
 {
 protected:
     const char* prefix;
@@ -130,12 +130,14 @@ public:
 
 
 // links a single observer to a particular uri prefix
+
+template <class TRequestContext>
 class SingleUriPathObserver :
-        public UriPathDispatcherHandlerBase<experimental::IDecoderObserver>
+        public UriPathDispatcherHandlerBase<experimental::IDecoderObserver<TRequestContext> >
 {
-    typedef UriPathDispatcherHandlerBase<experimental::IDecoderObserver> base_t;
+    typedef UriPathDispatcherHandlerBase<experimental::IDecoderObserver<TRequestContext> > base_t;
 public:
-    SingleUriPathObserver(const char* prefix, experimental::IDecoderObserver& observer)
+    SingleUriPathObserver(const char* prefix, experimental::IDecoderObserver<TRequestContext>& observer)
             : base_t(prefix, observer)
     {
 
@@ -144,7 +146,8 @@ public:
 
 
 template <const char* uri_path, experimental::dispatcher_handler_factory_fn* factories, int count>
-experimental::IDecoderObserver* uri_plus_factory_dispatcher(experimental::FactoryDispatcherHandlerContext& ctx)
+experimental::IDecoderObserver<experimental::FactoryDispatcherHandlerContext>*
+        uri_plus_factory_dispatcher(experimental::FactoryDispatcherHandlerContext& ctx)
 {
 #ifdef FEATURE_MCCOAP_LEGACY_PREOBJSTACK
     pipeline::MemoryChunk& chunk = ctx.handler_memory;
@@ -167,21 +170,21 @@ experimental::IDecoderObserver* uri_plus_factory_dispatcher(experimental::Factor
 #else
     // FIX: Clumsy, but should be effective for now; ensures order of allocation is correct
     //      so that later deallocation for objstack doesn't botch
-    void* buffer1 = ctx.incoming_context.objstack.alloc(sizeof(SingleUriPathObserver));
+    void* buffer1 = ctx.incoming_context.objstack.alloc(sizeof(SingleUriPathObserver<experimental::FactoryDispatcherHandlerContext>));
 
     experimental::FactoryDispatcherHandler* fdh =
             new (ctx) experimental::FactoryDispatcherHandler(
                     ctx.incoming_context,
                     factories, count);
 
-    return new (buffer1) SingleUriPathObserver(uri_path, *fdh);
+    return new (buffer1) SingleUriPathObserver<experimental::FactoryDispatcherHandlerContext> (uri_path, *fdh);
 #endif
 }
 
 
 // Creates a unique static TMessageObserver associated with this uri_path
 template <const char* uri_path, class TMessageObserver>
-experimental::IDecoderObserver* uri_plus_observer_dispatcher(experimental::FactoryDispatcherHandlerContext& ctx)
+experimental::IDecoderObserver<experimental::FactoryDispatcherHandlerContext>* uri_plus_observer_dispatcher(experimental::FactoryDispatcherHandlerContext& ctx)
 {
     static TMessageObserver observer;
 
@@ -190,7 +193,7 @@ experimental::IDecoderObserver* uri_plus_observer_dispatcher(experimental::Facto
     // a better solution so that we can push context thru via constructor
     observer.context(ctx.incoming_context);
 
-    return new (ctx) SingleUriPathObserver(uri_path, observer);
+    return new (ctx) SingleUriPathObserver<experimental::FactoryDispatcherHandlerContext>(uri_path, observer);
 }
 
 
@@ -204,24 +207,25 @@ namespace experimental {
 // here anyway as a proving grounds of its usefulness
 //
 // an aggregate of single-uri-path-element to IDispatcherHandler* mappings
-class AggregateUriPathObserver : public experimental::DispatcherHandlerBase
+class AggregateUriPathObserver : public experimental::DispatcherHandlerBase<ObserverContext>
 {
-    typedef experimental::DispatcherHandlerBase base_t;
+    typedef experimental::DispatcherHandlerBase<ObserverContext> base_t;
+    typedef base_t::context_t request_context_t;
 
 public:
     struct Context
     {
     public:
-        ObserverContext& context;
+        request_context_t& context;
 
-        Context(ObserverContext& context) :
+        Context(request_context_t& context) :
             context(context) {}
 
         Context(const Context& copy_from) :
             context(copy_from.context) {}
     };
 
-    typedef FnFactoryTraits<const char*, IDecoderObserver*, Context&> traits_t;
+    typedef FnFactoryTraits<const char*, IDecoderObserver<request_context_t>*, Context&> traits_t;
     typedef FnFactoryHelper<traits_t> fn_t;
     typedef fn_t::factory_t factory_t;
     typedef fn_t::item_t item_t;
@@ -239,7 +243,7 @@ public:
     // NOTE: fanciness not really necessary just a generic class T
     // would probably be fine, factory itself dissects all that
     template <const size_t N>
-    AggregateUriPathObserver(ObserverContext& incoming_context,
+    AggregateUriPathObserver(request_context_t& incoming_context,
                          fn_t::item_t (&items) [N]) :
         factory(items),
         context(incoming_context),

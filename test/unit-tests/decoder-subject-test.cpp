@@ -9,7 +9,7 @@ typedef IncomingContext request_context_t;
 // +++ just to test compilation, eliminate once decent unit tests for
 // DecoderSubjectBase is in place
 static request_context_t test_ctx;
-static DecoderSubjectBase<experimental::ContextDispatcherHandler> test(test_ctx);
+static DecoderSubjectBase<experimental::ContextDispatcherHandler<request_context_t> > test(test_ctx);
 // ---
 
 // FIX: putting this above causes compilation issues, clean that up
@@ -30,7 +30,7 @@ TEST_CASE("CoAP decoder subject tests", "[coap-decoder-subject]")
     SECTION("16 bit detla: Buffer16BitDeltaObserver")
     {
         request_context_t test_ctx2;
-        DecoderSubjectBase<Buffer16BitDeltaObserver> test2(test_ctx2);
+        DecoderSubjectBase<Buffer16BitDeltaObserver<request_context_t> > test2(test_ctx2);
         // FIX: on_payload not evaluating for these tests, not surprising
         // since subject-decoder is revamping how payload processing works
         MemoryChunk::readonly_t chunk(buffer_16bit_delta);

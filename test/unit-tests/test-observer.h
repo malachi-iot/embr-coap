@@ -8,20 +8,24 @@ using namespace moducom::coap;
 using namespace moducom::coap::experimental;
 using namespace moducom::pipeline;
 
-typedef IncomingContext request_context_t;
-
 // designed specifically to test against "buffer_16bit_delta" buffer
-class Buffer16BitDeltaObserver : public DispatcherHandlerBase
+template <class TRequestContext>
+class Buffer16BitDeltaObserver : public DispatcherHandlerBase<TRequestContext>
 {
     int option_test_number;
 
+    typedef DispatcherHandlerBase<TRequestContext> base_t;
+
 public:
+    typedef TRequestContext request_context_t;
+    typedef typename base_t::number_t number_t;
+
     Buffer16BitDeltaObserver(request_context_t& dummy) :
-        DispatcherHandlerBase(Always),
+        base_t(base_t::Always),
         option_test_number(0) {}
 
-    Buffer16BitDeltaObserver(InterestedEnum i = Always) :
-        DispatcherHandlerBase(i),
+    Buffer16BitDeltaObserver(base_t::InterestedEnum i = base_t::Always) :
+        base_t(i),
         option_test_number(0) {}
 
     virtual void on_header(Header header) OVERRIDE

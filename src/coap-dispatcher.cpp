@@ -286,7 +286,7 @@ void Dispatcher::dispatch_token()
 
 #endif
 
-inline IDecoderObserver* FactoryDispatcherHandler::observer_helper_begin(context_t& context, int i)
+inline FactoryDispatcherHandler::decoder_observer_t* FactoryDispatcherHandler::observer_helper_begin(context_t& context, int i)
 {
     State& state = handler_state(i);
     context.state = &state;
@@ -303,7 +303,7 @@ inline IDecoderObserver* FactoryDispatcherHandler::observer_helper_begin(context
 }
 
 
-inline void FactoryDispatcherHandler::observer_helper_end(context_t& context, IDecoderObserver* handler)
+inline void FactoryDispatcherHandler::observer_helper_end(context_t& context, FactoryDispatcherHandler::decoder_observer_t* handler)
 {
     State& state = *context.state;
 
@@ -374,7 +374,7 @@ void FactoryDispatcherHandler::on_header(Header header)
 #ifdef FEATURE_MCCOAP_LEGACY_PREOBJSTACK
         context_t ctx(context, handler_memory());
 #else
-        context_t ctx(context);
+        context_t ctx(m_context);
 #endif
 
         IDecoderObserver* handler = observer_helper_begin(ctx, i);
@@ -410,7 +410,7 @@ void FactoryDispatcherHandler::on_token(const pipeline::MemoryChunk::readonly_t&
 #ifdef FEATURE_MCCOAP_LEGACY_PREOBJSTACK
         context_t ctx(context, handler_memory());
 #else
-        context_t ctx(context);
+        context_t ctx(m_context);
 #endif
 
         IDecoderObserver* handler = observer_helper_begin(ctx, i);
@@ -448,7 +448,7 @@ void FactoryDispatcherHandler::on_option(number_t number,
 #ifdef FEATURE_MCCOAP_LEGACY_PREOBJSTACK
         context_t ctx(context, handler_memory());
 #else
-        context_t ctx(context);
+        context_t ctx(m_context);
 #endif
 
         IDecoderObserver* handler = observer_helper_begin(ctx, i);
@@ -488,10 +488,10 @@ void FactoryDispatcherHandler::on_payload(const pipeline::MemoryChunk::readonly_
 #ifdef FEATURE_MCCOAP_LEGACY_PREOBJSTACK
         context_t ctx(context, handler_memory());
 #else
-        context_t ctx(context);
+        context_t ctx(m_context);
 #endif
 
-        IDecoderObserver* handler = observer_helper_begin(ctx, i);
+        decoder_observer_t* handler = observer_helper_begin(ctx, i);
 
         if(handler == NULLPTR) continue;
 
@@ -513,10 +513,10 @@ void FactoryDispatcherHandler::on_complete()
 #ifdef FEATURE_MCCOAP_LEGACY_PREOBJSTACK
         context_t ctx(context, handler_memory());
 #else
-        context_t ctx(context);
+        context_t ctx(m_context);
 #endif
 
-        IDecoderObserver* handler = observer_helper_begin(ctx, i);
+        decoder_observer_t* handler = observer_helper_begin(ctx, i);
 
         if(handler == NULLPTR) continue;
 
@@ -545,16 +545,19 @@ void FactoryDispatcherHandler::free_reserved()
 }
 #endif
 
-void ContextDispatcherHandler::on_header(Header header)
+template <class TRequestContext>
+void ContextDispatcherHandler<TRequestContext>::on_header(Header header)
 {
-    context().header(header);
+    this->context().header(header);
 }
 
-void ContextDispatcherHandler::on_token(const pipeline::MemoryChunk::readonly_t& token_part, bool last_chunk)
+
+template <class TRequestContext>
+void ContextDispatcherHandler<TRequestContext>::on_token(const pipeline::MemoryChunk::readonly_t& token_part, bool last_chunk)
 {
 #ifdef FEATURE_MCCOAP_INLINE_TOKEN
     // NOTE: this won't yet work with chunked
-    context().token(&token_part);
+    this->context().token(&token_part);
 #else
     // FIX: access already-allocated token manager (aka token pool) and allocate a new
     // token or link to already-allocated token.
