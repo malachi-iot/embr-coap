@@ -29,6 +29,8 @@ public:
 };
 
 
+// TODO: Split this into InlineTokenContext and (name?)
+// or perhaps use layering nomenclature
 class TokenContext
 {
 #ifdef FEATURE_MCCOAP_INLINE_TOKEN
@@ -101,6 +103,8 @@ public:
 
 
 
+namespace experimental {
+
 // NOTE: Just an interesting idea at this time
 class DecoderContext
 {
@@ -116,8 +120,43 @@ class EncoderContext
     TEncoder* _encoder;
 
 public:
-    TEncoder* encoder() const { return _encoder; }
+    TEncoder& encoder() const { return *_encoder; }
+
+    // TODO: signal that encoding is done (probably to datapump, but
+    // not necessarily)
+    void encoding_complete() {}
 };
+
+
+class OutputContext
+{
+public:
+    template <class TNetBuf>
+    void send(TNetBuf& to_send) {}
+};
+
+
+template <class DataPump, DataPump* global_datapump>
+class GlobalDatapumpOutputContext
+{
+    typedef typename DataPump::netbuf_t netbuf_t;
+    typedef typename DataPump::addr_t addr_t;
+
+public:
+#ifdef FEATURE_MCCOAP_DATAPUMP_INLINE
+    void send(netbuf_t&& out, const addr_t& addr_out)
+    {
+        global_datapump->enqueue_out(std::forward<netbuf_t>(out), addr_out);
+    }
+#else
+    void send(netbuf_t& out, const addr_t& addr_out)
+    {
+        global_datapump->enqueue_out(out, addr_out);
+    }
+#endif
+};
+
+}
 
 
 // for scenarios when we definitely don't care about chunking
@@ -137,6 +176,8 @@ public:
         void* h = (void*)chunk.data();
         return * new (h) Header();
     }
+
+    bool have_header() const { return header().version() > 0; }
 
     inline ro_chunk_t token() const
     {

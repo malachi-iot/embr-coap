@@ -188,7 +188,6 @@ struct IIsInterested
 // one particular dispatcher handler will become the main handler for the remainder of the
 // incoming CoAP message
 
-// FIX: Change name to IDecoderObserver to mate to DecoderSubject, and get rid of forward_node
 template <class TRequestContext = ObserverContext,
           class TRequestContextTraits = experimental::request_context_traits<TRequestContext> >
 class IDecoderObserver :
