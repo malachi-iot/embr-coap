@@ -13,20 +13,6 @@
 
 #include "mc/memory-pool.h"
 
-// Doesn't really work, but will let us compile
-// Expect memory corruption errors while using this -
-// Specifically we get a problem during "CoAP dispatcher tests"::"Dispatcher Factory"
-//#define FEATURE_MCCOAP_LEGACY_PREOBJSTACK
-
-// This adds 8 bytes to IDispatcherHandler class when enabled
-//#define FEATURE_IISINTERESTED
-
-// This adds quite a few bytes for an IMessageObserver since each IObserver variant has its own
-// vtable pointer
-//#define FEATURE_DISCRETE_OBSERVERS
-
-//#define FEATURE_MCCOAP_RESERVED_DISPATCHER
-
 namespace moducom { namespace coap {
 
 #ifdef FEATURE_DISCRETE_OBSERVERS

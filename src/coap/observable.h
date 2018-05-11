@@ -11,6 +11,8 @@ namespace moducom { namespace  coap {
 template <class TAddr>
 struct ObservableSession
 {
+    typedef TAddr addr_t;
+
     // increases with each observe notification.  Technically only needs to be 24 bits
     // so if we do need flags, we can make this into a bit field.  Also, as suggested
     // in RFC7641, we might do without a sequence# altogether and instead use a mangled
