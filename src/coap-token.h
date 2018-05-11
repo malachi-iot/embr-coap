@@ -7,7 +7,7 @@
 
 #include <stdint.h>
 #include <string.h>
-#include <coap/platform.h>
+#include "coap/platform.h"
 #include "mc/memory-chunk.h"
 
 #ifdef FEATURE_CPP_INITIALIZER_LIST

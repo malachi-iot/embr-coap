@@ -6,7 +6,7 @@
 //#define DEBUG2
 
 
-#include <coap/platform.h>
+#include "coap/platform.h"
 #include "mc/pipeline.h"
 #include <stdint.h>
 #include <stdlib.h>

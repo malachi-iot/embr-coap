@@ -11,7 +11,7 @@
 //#endif
 
 // TODO: phase this into mc/coap-opts.h
-#include <coap-features.h>
+#include "../coap-features.h"
 
 // Do not enable features/options here, they are presented only for reference
 

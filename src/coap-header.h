@@ -6,7 +6,7 @@
 #define MC_COAP_TEST_COAP_HEADER_H
 
 #include <stdint.h>
-#include <coap/platform.h>
+#include "coap/platform.h"
 
 namespace moducom { namespace coap {
 
