@@ -9,7 +9,7 @@
 #include "test-data.h"
 #include "test-observer.h"
 
-#include "coap/decoder-subject.hpp"
+#include "coap/decoder/subject.hpp"
 
 using namespace moducom::coap;
 using namespace moducom::coap::experimental;

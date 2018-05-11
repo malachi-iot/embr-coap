@@ -9,7 +9,7 @@
 #include "mc/linkedlist.h"
 #include "mc/array-helper.h"
 #include "coap/context.h"
-#include "coap/decoder-observer.h"
+#include "coap/decoder/observer.h"
 
 namespace moducom { namespace coap {
 

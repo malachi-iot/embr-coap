@@ -3,7 +3,7 @@
 //
 #pragma once
 
-#include "coap/decoder-observer.h"
+#include "coap/decoder/observer.h"
 
 namespace moducom { namespace coap {
 

@@ -1,7 +1,7 @@
 #include <exp/datapump.h>
 #include <coap/encoder.h>
 #include <coap/decoder.h>
-#include <coap/decoder-subject.h>
+#include <coap/decoder/subject.h>
 
 namespace moducom { namespace coap {
 

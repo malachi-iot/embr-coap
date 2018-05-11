@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../coap-dispatcher.h"
+#include "../../coap-dispatcher.h"
 
 namespace moducom { namespace coap {
 

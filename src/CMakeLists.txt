@@ -35,9 +35,13 @@ set(SOURCE_FILES
         coap_daemon.h
 
         coap/context.h
+
+        coap/decoder/observer.h
+        coap/decoder/observer-aggregate.h
+        coap/decoder/subject.h
+        coap/decoder/subject.hpp
+
         coap/decoder.h
-        coap/decoder-observer.h
-        coap/decoder-subject.h coap/decoder-subject.hpp
         coap/encoder.h coap/encoder.hpp
         coap/observable.h coap/observable.hpp
         coap/platform.h

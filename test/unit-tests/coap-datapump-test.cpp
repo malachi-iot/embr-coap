@@ -2,7 +2,7 @@
 
 #include <platform/generic/datapump-messageobserver.hpp>
 #include <exp/datapump.hpp>
-#include "coap/decoder-subject.hpp"
+#include "coap/decoder/subject.hpp"
 #include "test-data.h"
 
 using namespace moducom::coap;

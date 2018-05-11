@@ -1,6 +1,6 @@
 #pragma once
 
-#include "decoder-subject.h"
+#include "decoder/subject.h"
 #include "experimental-observer.h"
 
 namespace moducom { namespace  coap {
