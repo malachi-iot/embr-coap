@@ -3,6 +3,7 @@
 #include <catch.hpp>
 
 #include "coap-dispatcher.h"
+#include "test-data.h"
 
 using namespace moducom::coap;
 using namespace moducom::coap::experimental;

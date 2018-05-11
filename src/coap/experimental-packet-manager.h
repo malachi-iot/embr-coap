@@ -58,7 +58,12 @@ public:
 
     item_t add(TNetBuf* netbuf)
     {
+        // FIX: account for discrepency within mcmem lib
+#ifdef __CPP11__
+        return &pool.allocate(netbuf);
+#else
         return pool.allocate(netbuf);
+#endif
     }
 };
 

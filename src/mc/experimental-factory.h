@@ -3,12 +3,9 @@
 //
 #pragma once
 
+#include "coap/decoder-observer.h"
+
 namespace moducom { namespace coap {
-
-// FIX: Move this and the item_experimental out of here
-template <class TRequestContext, class TRequestContextTraits>
-class IDecoderObserver;
-
 
 namespace experimental {
 
@@ -327,7 +324,9 @@ struct FnFactoryHelper
     template <class TObserver>
     static item_t item_experimental(key_t key)
     {
-        return item(key, [](context_t& c) -> IDecoderObserver*
+        typedef typename TObserver::context_t input_context_t;
+
+        return item(key, [](context_t& c) -> IDecoderObserver<input_context_t>*
         {
             auto observer = new (c.context.objstack) TObserver;
 
