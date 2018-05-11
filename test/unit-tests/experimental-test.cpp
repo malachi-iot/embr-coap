@@ -33,10 +33,10 @@ int test_wilma(experimental::FnFactoryContext context)
 const moducom::pipeline::MemoryChunk::readonly_t* test_value_1 = NULLPTR;
 
 template <class TRequestContext = ObserverContext>
-class TestBarnyObsever : public DispatcherHandlerBase<TRequestContext>
+class TestBarnyObsever : public DecoderObserverBase<TRequestContext>
 {
 public:
-    typedef DispatcherHandlerBase<TRequestContext> base_t;
+    typedef DecoderObserverBase<TRequestContext> base_t;
     typedef typename base_t::context_t request_context_t;
     typedef typename base_t::number_t number_t;
 

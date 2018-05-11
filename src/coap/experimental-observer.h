@@ -8,7 +8,7 @@ namespace moducom { namespace coap { namespace experimental {
 // TODO: Do further testing to see how optimal that really is (maybe
 // compiler optimizations make unused virtual tables less costly?  If
 // so, may not be worth the effort to make a non-virtualized flavor)
-template <class TRequestContext = IncomingContext>
+template <class TRequestContext = ObserverContext>
 class MessageObserverBase :
         public IsInterestedBase,
         public experimental::RequestContextContainer<TRequestContext>

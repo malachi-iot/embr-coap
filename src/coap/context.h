@@ -12,10 +12,9 @@
 // TODO:
 // a) add decoder state accessor/decoder* to context itself for convenient query as to
 //    present state of decode
+// b) utilize c++17 (I think) 'concepts' to enforce context signature
 namespace moducom { namespace coap {
 
-
-namespace experimental {
 
 template <class TAddr>
 class AddressContext
@@ -29,7 +28,6 @@ public:
     const TAddr& address() const { return addr; }
 };
 
-}
 
 class TokenContext
 {
@@ -121,19 +119,36 @@ public:
     TEncoder* encoder() const { return _encoder; }
 };
 
-// New-generation request context, replacement for premature coap_transmission one
-// Incoming request handlers/dispatchers may extend this context, but this is a good
-// foundational base class
-// Called Incoming context because remember some incoming messages are RESPONSES, even
-// when we are the server (ACKs, etc)
-class IncomingContext :
-        public TokenContext,
-        public HeaderContext,
-        // Really dislike this AddressContext, but we do need some way to pass
-        // down source-address information so that Observable can look at it
-        public experimental::AddressContext<uint8_t[4]>
+
+// for scenarios when we definitely don't care about chunking
+// and memory scope and still want header/token in the context.
+// be mindful to validate this data before tossing it in here
+class SimpleBufferContext
 {
+    typedef pipeline::MemoryChunk::readonly_t ro_chunk_t;
+
+    ro_chunk_t chunk;
+
 public:
+    const Header& header() const
+    {
+        // FIX: This is viable but see if there's a better way to
+        // initialize a const-new scenario
+        void* h = (void*)chunk.data();
+        return * new (h) Header();
+    }
+
+    inline ro_chunk_t token() const
+    {
+        return ro_chunk_t(chunk.data(4), header().token_length());
+    }
+};
+
+// these two really like to go together
+struct InlineTokenAndHeaderContext :
+        public TokenContext,
+        public HeaderContext
+{
 #ifdef FEATURE_MCCOAP_INLINE_TOKEN
     inline const layer2::Token token() const
     {
@@ -145,6 +160,19 @@ public:
         TokenContext::token(t);
     }
 #endif
+};
+
+// New-generation request context, replacement for premature coap_transmission one
+// Incoming request handlers/dispatchers may extend this context, but this is a good
+// foundational base class
+// Called Incoming context because remember some incoming messages are RESPONSES, even
+// when we are the server (ACKs, etc)
+template <class TAddr>
+class IncomingContext :
+        public InlineTokenAndHeaderContext,
+        public AddressContext<TAddr>
+{
+public:
 };
 
 struct ObjStackContext
@@ -162,7 +190,7 @@ struct ObjStackContext
 // would be one and the same, but for now in a semi-experimental fashion
 // keep them separate
 struct ObserverContext :
-        public IncomingContext,
+        public IncomingContext<uint8_t[4]>,
         public ObjStackContext
 {
     ObserverContext(const pipeline::MemoryChunk& chunk) : ObjStackContext(chunk) {}

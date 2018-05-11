@@ -189,7 +189,7 @@ struct IIsInterested
 // incoming CoAP message
 
 // FIX: Change name to IDecoderObserver to mate to DecoderSubject, and get rid of forward_node
-template <class TRequestContext = IncomingContext,
+template <class TRequestContext = ObserverContext,
           class TRequestContextTraits = experimental::request_context_traits<TRequestContext> >
 class IDecoderObserver :
     public IMessageObserver
@@ -227,9 +227,9 @@ public:
 
 
 // Convenience class for building dispatcher handlers
-template <class TRequestContext = IncomingContext,
+template <class TRequestContext = ObserverContext,
           class TRequestContextTraits = experimental::request_context_traits<TRequestContext> >
-class DispatcherHandlerBase :
+class DecoderObserverBase :
         public IDecoderObserver<TRequestContext, TRequestContextTraits>,
         public IsInterestedBase,
         public experimental::RequestContextContainer<TRequestContext, TRequestContextTraits>
@@ -253,7 +253,7 @@ protected:
         IsInterestedBase::interested(_interested);
     }
 
-    DispatcherHandlerBase(InterestedEnum _interested = Currently)
+    DecoderObserverBase(InterestedEnum _interested = Currently)
     {
         interested(_interested);
     }
@@ -388,7 +388,7 @@ struct ShimDispatcherHandlerTraits
 // clearly this isn't a system-wide desirable behavior, so be warned.  We do this
 // because the memory management scheme only supports one truly active IDispatcherHandler
 template <class TRequestContext = ObserverContext>
-class FactoryDispatcherHandler : public IDecoderObserver<ObserverContext>
+class FactoryDispatcherHandler : public IDecoderObserver<TRequestContext>
 {
 #ifdef FEATURE_MCCOAP_LEGACY_PREOBJSTACK
     pipeline::MemoryChunk _handler_memory;
@@ -401,6 +401,8 @@ public:
     typedef IDecoderObserver<TRequestContext> base_t;
     typedef base_t decoder_observer_t;
     typedef TRequestContext request_context_t;
+    typedef typename base_t::number_t number_t;
+    typedef typename base_t::interested_t interested_t;
 
 private:
 
@@ -418,7 +420,7 @@ private:
         // utilize this for reserved_bytes objstack-allocated
         // (or perhaps other allocation method) permanent item
 #ifdef FEATURE_MCCOAP_RESERVED_DISPATCHER
-        IDispatcherHandler* reserved;
+        decoder_observer_t* reserved;
 #endif
 
         bool initialized() const { return state_initialized; }
@@ -607,11 +609,14 @@ public:
 // Looks for header and saves it in IncomingContext
 // Looks for a token and if it finds one, registers it with a token pool and saves it in TRequestContext
 template <class TRequestContext = ObserverContext>
-class ContextDispatcherHandler : public DispatcherHandlerBase<TRequestContext>
+class ContextDispatcherHandler : public DecoderObserverBase<TRequestContext>
 {
     typedef IsInterestedBase::InterestedEnum interested_t;
     typedef moducom::coap::layer2::Token token_t;
-    typedef DispatcherHandlerBase<TRequestContext> base_t;
+    typedef DecoderObserverBase<TRequestContext> base_t;
+
+protected:
+    typedef pipeline::MemoryChunk::readonly_t ro_chunk_t;
 
 public:
     typedef typename base_t::context_t context_t;
@@ -646,7 +651,7 @@ public:
 
     virtual void on_header(Header header) OVERRIDE;
 
-    virtual void on_token(const pipeline::MemoryChunk::readonly_t& token_part,
+    virtual void on_token(const ro_chunk_t& token_part,
                           bool last_chunk) OVERRIDE;
 
     virtual interested_t interested() const OVERRIDE
@@ -677,6 +682,28 @@ public:
     }
 };
 
+
+
+// experimental and probably not so useful.  Rather, we'd toss a TMessageObserver
+// in the chain which actually picks up the token straight out of TRequestContext
+template <class TTokenObserver, class TRequestContext = ObserverContext>
+class TokenSubjectRelayObserver : public ContextDispatcherHandler<TRequestContext>
+{
+    TTokenObserver& token_observer;
+    typedef ContextDispatcherHandler<TRequestContext> base_t;
+    typedef typename base_t::ro_chunk_t ro_chunk_t;
+
+public:
+    TokenSubjectRelayObserver(TRequestContext& c) : base_t(c) {}
+
+    virtual void on_token(const ro_chunk_t& token, bool last_chunk) OVERRIDE
+    {
+        base_t::on_token(token, last_chunk);
+
+        // FIX: accomodate for chunking
+        token_observer.on_token(token);
+    }
+};
 
 }
 

@@ -2,11 +2,10 @@
 
 #include <platform/generic/datapump-messageobserver.hpp>
 #include <exp/datapump.hpp>
+#include "coap/decoder-subject.hpp"
 #include "test-data.h"
 
 using namespace moducom::coap;
-
-typedef IncomingContext request_context_t;
 
 TEST_CASE("Data pump tests", "[datapump]")
 {
@@ -43,7 +42,7 @@ TEST_CASE("Data pump tests", "[datapump]")
         REQUIRE(p[0] == 'h');
 
     }
-    SECTION("A")
+    SECTION("full synthetic request")
     {
         // FIX: Need to resolve end() behavior.  It's more efficient for end() to represent
         // that we are *ON* the end marker, but it's smoother code to have end() represent
@@ -72,8 +71,8 @@ TEST_CASE("Data pump tests", "[datapump]")
         datapump.transport_in(writer.netbuf(), 0);
 
         // set up message subject+observer
-        request_context_t test_ctx;
-        DecoderSubjectBase<experimental::ContextDispatcherHandler<request_context_t> > test(test_ctx);
+        IncomingContext<addr_t> test_ctx;
+        DecoderSubjectBase<experimental::ContextDispatcherHandler<IncomingContext<addr_t> > > test(test_ctx);
 
         REQUIRE(!test_ctx.have_header());
 

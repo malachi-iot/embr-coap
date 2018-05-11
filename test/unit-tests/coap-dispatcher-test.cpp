@@ -157,7 +157,7 @@ dispatcher_handler_factory_fn test_factories[] =
 
 
 template <class TRequestContext = ObserverContext>
-class TestDispatcherHandler2 : public DispatcherHandlerBase<TRequestContext>
+class TestDispatcherHandler2 : public DecoderObserverBase<TRequestContext>
 {
 public:
     void on_payload(const MemoryChunk::readonly_t& payload_part,
@@ -228,8 +228,8 @@ TEST_CASE("CoAP dispatcher tests", "[coap-dispatcher]")
 #endif
         int size4 = sizeof(IDecoderObserver<>);
         int size5 = sizeof(IIsInterested);
-        int size6 = sizeof(DispatcherHandlerBase<>);
-        int size7 = sizeof(SingleUriPathObserver<IncomingContext>);
+        int size6 = sizeof(DecoderObserverBase<>);
+        int size7 = sizeof(SingleUriPathObserver<IncomingContext<uint32_t> >);
         int size8 = sizeof(FactoryDispatcherHandler<>);
     }
 }

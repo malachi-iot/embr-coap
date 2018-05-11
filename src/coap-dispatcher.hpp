@@ -99,7 +99,7 @@ void FactoryDispatcherHandler<TRequestContext>::on_header(Header header)
         context_t ctx(m_context);
 #endif
 
-        IDecoderObserver* handler = observer_helper_begin(ctx, i);
+        decoder_observer_t* handler = observer_helper_begin(ctx, i);
 
         if(handler == NULLPTR) continue;
 
@@ -135,7 +135,7 @@ void FactoryDispatcherHandler<TRequestContext>::on_token(const pipeline::MemoryC
         context_t ctx(m_context);
 #endif
 
-        IDecoderObserver* handler = observer_helper_begin(ctx, i);
+        decoder_observer_t* handler = observer_helper_begin(ctx, i);
 
         if(handler == NULLPTR) continue;
 
@@ -175,7 +175,7 @@ void FactoryDispatcherHandler<TRequestContext>::on_option(number_t number,
         context_t ctx(m_context);
 #endif
 
-        IDecoderObserver* handler = observer_helper_begin(ctx, i);
+        decoder_observer_t* handler = observer_helper_begin(ctx, i);
 
         if(handler == NULLPTR) continue;
 

@@ -31,7 +31,9 @@ struct ObservableSession
 // A registrar represents ONE subject's list of listeners.  By subject
 // we generally mean one subscribable URI path
 template <class TCollection,
-          class TRequestContext = IncomingContext,
+          class TRequestContext = AddressContext<
+              typename TCollection::value_type::addr_t
+              >,
           class TRequestContextTraits = experimental::request_context_traits<TRequestContext> >
 class ObservableRegistrar
 {

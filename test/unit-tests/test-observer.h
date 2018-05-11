@@ -10,11 +10,11 @@ using namespace moducom::pipeline;
 
 // designed specifically to test against "buffer_16bit_delta" buffer
 template <class TRequestContext>
-class Buffer16BitDeltaObserver : public DispatcherHandlerBase<TRequestContext>
+class Buffer16BitDeltaObserver : public DecoderObserverBase<TRequestContext>
 {
     int option_test_number;
 
-    typedef DispatcherHandlerBase<TRequestContext> base_t;
+    typedef DecoderObserverBase<TRequestContext> base_t;
 
 public:
     typedef TRequestContext request_context_t;

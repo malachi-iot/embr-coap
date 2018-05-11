@@ -33,7 +33,7 @@ inline bool starts_with(pipeline::MemoryChunk::readonly_t chunk, const char* pre
 // so templatized it doesn't actually register as such
 template <bool allow_response = false>
 class UriPathDispatcherHandlerBaseBase :
-        public experimental::DispatcherHandlerBase<ObserverContext>
+        public experimental::DecoderObserverBase<ObserverContext>
 {
 protected:
     const char* prefix;
@@ -209,9 +209,9 @@ namespace experimental {
 //
 // an aggregate of single-uri-path-element to IDispatcherHandler* mappings
 template <class TRequestContext = ObserverContext>
-class AggregateUriPathObserver : public experimental::DispatcherHandlerBase<TRequestContext>
+class AggregateUriPathObserver : public experimental::DecoderObserverBase<TRequestContext>
 {
-    typedef typename experimental::DispatcherHandlerBase<TRequestContext> base_t;
+    typedef typename experimental::DecoderObserverBase<TRequestContext> base_t;
     typedef typename base_t::context_t request_context_t;
 
 public:
