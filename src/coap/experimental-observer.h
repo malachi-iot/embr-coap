@@ -8,15 +8,16 @@ namespace moducom { namespace coap { namespace experimental {
 // TODO: Do further testing to see how optimal that really is (maybe
 // compiler optimizations make unused virtual tables less costly?  If
 // so, may not be worth the effort to make a non-virtualized flavor)
+template <class TRequestContext = IncomingContext>
 class MessageObserverBase :
         public IsInterestedBase,
-        public experimental::RequestContextContainer<IncomingContext>
+        public experimental::RequestContextContainer<TRequestContext>
 {
 protected:
     typedef experimental::option_number_t option_number_t;
     typedef pipeline::MemoryChunk::readonly_t ro_chunk_t;
 
-    MessageObserverBase(IncomingContext& context)
+    MessageObserverBase(TRequestContext& context)
     {
         this->context(context);
     }

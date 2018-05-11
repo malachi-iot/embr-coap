@@ -88,9 +88,9 @@ public:
     }
 };
 
-class ObservableOptionObserverBase : public experimental::MessageObserverBase
+class ObservableOptionObserverBase : public experimental::MessageObserverBase<>
 {
-    typedef experimental::MessageObserverBase base_t;
+    typedef experimental::MessageObserverBase<> base_t;
     typedef typename base_t::context_t request_context_t;
     typedef typename base_t::context_t::addr_t addr_t;
     typedef ObservableSession<addr_t> observable_session_t;

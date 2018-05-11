@@ -42,8 +42,12 @@ set(SOURCE_FILES
         coap/platform.h
         coap/option-decoder.cpp
 
+        coap-blockwise.h coap-blockwise.cpp
+        coap-dispatcher.cpp coap-dispatcher.hpp coap-dispatcher.h
         coap-encoder.h coap-decoder.cpp coap-decoder.h
+        coap-generator.h coap-generator.cpp coap-encoder.cpp
         coap-features.h
+        coap-token.h coap-token.cpp
 
         exp/datapump.h exp/datapump.hpp
         exp/message-observer.h
@@ -61,11 +65,10 @@ set(SOURCE_FILES
         mc/opts.h
         mc/opts-internal.h
         mc/pipeline.h
-        mc/pipeline.cpp coap-generator.h coap-generator.cpp coap-encoder.cpp
+        mc/pipeline.cpp
         mc/pipeline-encoder.h mc/pipeline-writer.h
         mc/pipeline-reader.h
-        mc/pipeline-decoder.h coap-dispatcher.cpp coap-dispatcher.h
-        coap-blockwise.h coap-blockwise.cpp coap-token.h coap-token.cpp
+        mc/pipeline-decoder.h
         coap-uint.h mc/experimental.h coap-header.h coap-observable.h
         coap/experimental.cpp coap/experimental-observer.h
 

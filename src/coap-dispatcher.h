@@ -729,5 +729,6 @@ inline void* operator new(size_t sz, moducom::coap::experimental::FactoryDispatc
     return ctx.objstack.alloc(sz);
 }
 
+#include "coap-dispatcher.hpp"
 
 #endif //MC_COAP_TEST_COAP_DISPATCHER_H
