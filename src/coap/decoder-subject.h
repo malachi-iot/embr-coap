@@ -68,8 +68,8 @@ public:
 
     DecoderSubjectBase(TMessageObserver observer) : observer(observer) {}
 
-    template <class TRequestContext>
-    DecoderSubjectBase(TRequestContext& context) : observer(context) {}
+    template <class TIncomingContext>
+    DecoderSubjectBase(TIncomingContext& context) : observer(context) {}
 
     // returns number of bytes processed from chunk
     /**

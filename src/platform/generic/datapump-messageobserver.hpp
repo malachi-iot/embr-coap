@@ -42,10 +42,10 @@ void process_messageobserver_helper(DecoderSubjectBase<TMessageObserver>& ds, TN
 template <class TMessageObserver, class TNetBuf, class TAddr>
 void process_messageobserver_netbuf(DecoderSubjectBase<TMessageObserver>& ds, TNetBuf& netbuf, TAddr& addr_incoming)
 {
-    typedef typename TMessageObserver::context_t request_context_t;
+    typedef typename TMessageObserver::context_t incoming_context_t;
     typedef typename TMessageObserver::context_traits_t request_context_traits;
 
-    request_context_t request_context;
+    incoming_context_t request_context;
 
     request_context_traits::set_address(request_context, addr_incoming);
 

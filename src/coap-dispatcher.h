@@ -188,8 +188,8 @@ struct IIsInterested
 // one particular dispatcher handler will become the main handler for the remainder of the
 // incoming CoAP message
 
-template <class TRequestContext = ObserverContext,
-          class TRequestContextTraits = experimental::request_context_traits<TRequestContext> >
+template <class TIncomingContext = ObserverContext,
+          class TRequestContextTraits = experimental::incoming_context_traits<TIncomingContext> >
 class IDecoderObserver :
     public IMessageObserver
 #ifdef FEATURE_IISINTERESTED
@@ -198,7 +198,7 @@ class IDecoderObserver :
 #endif
 {
 public:
-    typedef TRequestContext context_t;
+    typedef TIncomingContext context_t;
 
     virtual ~IDecoderObserver() {}
 
@@ -227,15 +227,15 @@ public:
 
 // Convenience class for building dispatcher handlers
 template <class TRequestContext = ObserverContext,
-          class TRequestContextTraits = experimental::request_context_traits<TRequestContext> >
+          class TRequestContextTraits = experimental::incoming_context_traits<TRequestContext> >
 class DecoderObserverBase :
         public IDecoderObserver<TRequestContext, TRequestContextTraits>,
         public IsInterestedBase,
-        public experimental::RequestContextContainer<TRequestContext, TRequestContextTraits>
+        public experimental::IncomingContextContainer<TRequestContext, TRequestContextTraits>
 {
 protected:
     typedef IDecoderObserver<TRequestContext> base_t;
-    typedef experimental::RequestContextContainer<TRequestContext> ccontainer_t;
+    typedef experimental::IncomingContextContainer<TRequestContext> ccontainer_t;
     typedef typename ccontainer_t::context_t context_t;
     typedef typename base_t::number_t number_t;
 

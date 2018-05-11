@@ -4,9 +4,9 @@ namespace moducom { namespace coap {
 
 namespace experimental {
 
-template <class TRequestContext>
-inline typename FactoryDispatcherHandler<TRequestContext>::decoder_observer_t*
-    FactoryDispatcherHandler<TRequestContext>::observer_helper_begin(context_t& context, int i)
+template <class TIncomingContext>
+inline typename FactoryDispatcherHandler<TIncomingContext>::decoder_observer_t*
+    FactoryDispatcherHandler<TIncomingContext>::observer_helper_begin(context_t& context, int i)
 {
     State& state = handler_state(i);
     context.state = &state;
@@ -18,13 +18,13 @@ inline typename FactoryDispatcherHandler<TRequestContext>::decoder_observer_t*
     if(state.reserved) return state.reserved;
 #endif
 
-    IDecoderObserver<TRequestContext>* handler = handler_factories[i](context);
+    IDecoderObserver<TIncomingContext>* handler = handler_factories[i](context);
     return handler;
 }
 
 
-template <class TRequestContext>
-inline void FactoryDispatcherHandler<TRequestContext>::observer_helper_end(context_t& context, FactoryDispatcherHandler::decoder_observer_t* handler)
+template <class TIncomingContext>
+inline void FactoryDispatcherHandler<TIncomingContext>::observer_helper_end(context_t& context, FactoryDispatcherHandler::decoder_observer_t* handler)
 {
     State& state = *context.state;
 
@@ -83,8 +83,8 @@ inline void FactoryDispatcherHandler<TRequestContext>::observer_helper_end(conte
 }
 
 
-template <class TRequestContext>
-void FactoryDispatcherHandler<TRequestContext>::on_header(Header header)
+template <class TIncomingContext>
+void FactoryDispatcherHandler<TIncomingContext>::on_header(Header header)
 {
 #ifdef ESP_DEBUG
     printf("\r\nFactoryDispatcherHandler::on_header type=%d, mid=%X",
@@ -110,8 +110,8 @@ void FactoryDispatcherHandler<TRequestContext>::on_header(Header header)
 }
 
 
-template <class TRequestContext>
-void FactoryDispatcherHandler<TRequestContext>::on_token(const pipeline::MemoryChunk::readonly_t& token_part, bool last_chunk)
+template <class TIncomingContext>
+void FactoryDispatcherHandler<TIncomingContext>::on_token(const pipeline::MemoryChunk::readonly_t& token_part, bool last_chunk)
 {
 #ifdef ESP_DEBUG
     printf("\r\nFactoryDispatcherHandler::on_token: len=%d", token_part.length());
@@ -146,8 +146,8 @@ void FactoryDispatcherHandler<TRequestContext>::on_token(const pipeline::MemoryC
 }
 
 
-template <class TRequestContext>
-void FactoryDispatcherHandler<TRequestContext>::on_option(number_t number, uint16_t length)
+template <class TIncomingContext>
+void FactoryDispatcherHandler<TIncomingContext>::on_option(number_t number, uint16_t length)
 {
     if(chosen != NULLPTR)
     {
@@ -156,8 +156,8 @@ void FactoryDispatcherHandler<TRequestContext>::on_option(number_t number, uint1
     }
 }
 
-template <class TRequestContext>
-void FactoryDispatcherHandler<TRequestContext>::on_option(number_t number,
+template <class TIncomingContext>
+void FactoryDispatcherHandler<TIncomingContext>::on_option(number_t number,
                                       const pipeline::MemoryChunk::readonly_t& option_value_part,
                                       bool last_chunk)
 {

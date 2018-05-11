@@ -5,7 +5,7 @@ namespace moducom { namespace coap { namespace experimental {
 // revamped message observer support code
 
 template <class TContext>
-struct request_context_traits
+struct incoming_context_traits
 {
     typedef typename TContext::addr_t addr_t;
 
@@ -16,14 +16,14 @@ struct request_context_traits
     }
 };
 
-template <class TRequestContext, class TRequestContextTraits = request_context_traits<TRequestContext> >
-class RequestContextContainer
+template <class TIncomingContext, class TRequestContextTraits = incoming_context_traits<TIncomingContext> >
+class IncomingContextContainer
 {
 protected:
-    TRequestContext* m_context;
+    TIncomingContext* m_context;
 
 public:
-    typedef TRequestContext context_t;
+    typedef TIncomingContext context_t;
     typedef TRequestContextTraits context_traits_t;
 
     context_t& context() { return *m_context; }
@@ -32,7 +32,7 @@ public:
 
     // FIX: Kludgey way of skipping some steps.  Strongly consider
     // dumping this if we can
-    void context(TRequestContext& context)
+    void context(context_t& context)
     {
         this->m_context = &context;
     }
