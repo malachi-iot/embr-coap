@@ -2,9 +2,8 @@ cmake_minimum_required(VERSION 3.6)
 
 project(mc-coap-test)
 
-# temporarily enabling C++11 while I build some features
-set(CMAKE_CXX_STANDARD 11)
-#set(CMAKE_CXX_STANDARD 98)
+#set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 98)
 
 set(ROOT_DIR ../..)
 set(MC_MEM_DIR ${ROOT_DIR}/ext/moducom-memory/src)

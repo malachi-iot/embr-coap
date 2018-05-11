@@ -15,6 +15,12 @@ namespace moducom { namespace coap { namespace experimental {
 
 
 // templatized aggregation of messages using parameter pack
+// keeping with experimental naming because we haven't resolved naming for
+// virtualized-capable vs template-only.  Right now it's implicitly
+// 'DecoderObserver' vs 'MessageObserver' but that's inconsistent and unclear
+// IDEA: Consider naming the template-only stuff the same, but stuffing it into 'layer1'
+// note that since this is embedded-oriented, hiding the best-candidate stuff in layer1
+// might not be our best choice.
 template <class TIncomingContext = ObserverContext, class ...TMessageObservers>
 class AggregateMessageObserver : public MessageObserverBase<TIncomingContext>
 {

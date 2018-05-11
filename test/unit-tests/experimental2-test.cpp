@@ -22,6 +22,7 @@ TEST_CASE("experimental 2 tests")
         // Not yet, need newer estdlib first with cleaned up iterators
         Retry<int>::Item* test = retry.front();
     }
+#ifdef FEATURE_CPP_VARIADIC
     SECTION("AggregateMessageObserver")
     {
         moducom::pipeline::layer1::MemoryChunk<256> chunk;
@@ -43,4 +44,5 @@ TEST_CASE("experimental 2 tests")
         //amo.on_token(raw_token); // not doing this only because Buffer16BitDeltaObserver hates it
         amo.on_option((moducom::coap::Option::Numbers) 270, 1);
     }
+#endif
 }
