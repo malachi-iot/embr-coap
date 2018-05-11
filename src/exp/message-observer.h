@@ -7,6 +7,8 @@ namespace moducom { namespace coap { namespace experimental {
 template <class TContext>
 struct request_context_traits
 {
+    typedef typename TContext::addr_t addr_t;
+
     template <class TAddr>
     static void set_address(TContext& c, const TAddr& addr)
     {

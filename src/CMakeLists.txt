@@ -38,7 +38,7 @@ set(SOURCE_FILES
         coap/decoder.h
         coap/decoder-subject.h coap/decoder-subject.hpp
         coap/encoder.h coap/encoder.hpp
-        coap/observable.cpp coap/observable.h
+        coap/observable.h coap/observable.hpp
         coap/platform.h
         coap/option-decoder.cpp
 

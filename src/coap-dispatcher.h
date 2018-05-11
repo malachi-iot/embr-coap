@@ -431,7 +431,8 @@ struct ShimDispatcherHandlerTraits
 // an "Always" interested as the one and only one to further process the message
 // clearly this isn't a system-wide desirable behavior, so be warned.  We do this
 // because the memory management scheme only supports one truly active IDispatcherHandler
-class FactoryDispatcherHandler : public IDecoderObserver<FactoryDispatcherHandlerContext>
+template <class TRequestContext = ObserverContext>
+class FactoryDispatcherHandler : public IDecoderObserver<ObserverContext>
 {
 #ifdef FEATURE_MCCOAP_LEGACY_PREOBJSTACK
     pipeline::MemoryChunk _handler_memory;
@@ -441,9 +442,9 @@ class FactoryDispatcherHandler : public IDecoderObserver<FactoryDispatcherHandle
     const int handler_factory_count;
 
 public:
-    typedef IDecoderObserver<FactoryDispatcherHandlerContext> base_t;
+    typedef IDecoderObserver<TRequestContext> base_t;
     typedef base_t decoder_observer_t;
-    typedef FactoryDispatcherHandlerContext request_context_t;
+    typedef TRequestContext request_context_t;
 
 private:
 

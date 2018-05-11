@@ -146,8 +146,8 @@ public:
 
 
 template <const char* uri_path, experimental::dispatcher_handler_factory_fn* factories, int count>
-experimental::IDecoderObserver<experimental::FactoryDispatcherHandlerContext>*
-        uri_plus_factory_dispatcher(experimental::FactoryDispatcherHandlerContext& ctx)
+experimental::IDecoderObserver<ObserverContext>*
+        uri_plus_factory_dispatcher(ObserverContext& ctx)
 {
 #ifdef FEATURE_MCCOAP_LEGACY_PREOBJSTACK
     pipeline::MemoryChunk& chunk = ctx.handler_memory;
@@ -170,14 +170,14 @@ experimental::IDecoderObserver<experimental::FactoryDispatcherHandlerContext>*
 #else
     // FIX: Clumsy, but should be effective for now; ensures order of allocation is correct
     //      so that later deallocation for objstack doesn't botch
-    void* buffer1 = ctx.objstack.alloc(sizeof(SingleUriPathObserver<experimental::FactoryDispatcherHandlerContext>));
+    void* buffer1 = ctx.objstack.alloc(sizeof(SingleUriPathObserver<ObserverContext>));
 
-    experimental::FactoryDispatcherHandler* fdh =
-            new (ctx) experimental::FactoryDispatcherHandler(
+    experimental::FactoryDispatcherHandler<ObserverContext>* fdh =
+            new (ctx) experimental::FactoryDispatcherHandler<ObserverContext>(
                     ctx,
                     factories, count);
 
-    return new (buffer1) SingleUriPathObserver<experimental::FactoryDispatcherHandlerContext> (uri_path, *fdh);
+    return new (buffer1) SingleUriPathObserver<ObserverContext> (uri_path, *fdh);
 #endif
 }
 

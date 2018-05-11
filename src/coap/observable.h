@@ -30,7 +30,9 @@ struct ObservableSession
 
 // A registrar represents ONE subject's list of listeners.  By subject
 // we generally mean one subscribable URI path
-template <class TCollection, class TRequestContext = IncomingContext>
+template <class TCollection,
+          class TRequestContext = IncomingContext,
+          class TRequestContextTraits = experimental::request_context_traits<TRequestContext> >
 class ObservableRegistrar
 {
     typedef pipeline::MemoryChunk::readonly_t ro_chunk_t;
@@ -88,12 +90,17 @@ public:
     }
 };
 
-class ObservableOptionObserverBase : public experimental::MessageObserverBase<>
+template <class TRequestContext = ObserverContext>
+class ObservableOptionObserverBase : public experimental::MessageObserverBase<TRequestContext>
 {
-    typedef experimental::MessageObserverBase<> base_t;
+    typedef experimental::MessageObserverBase<TRequestContext> base_t;
     typedef typename base_t::context_t request_context_t;
+    typedef typename base_t::context_traits_t request_context_traits;
     typedef typename base_t::context_t::addr_t addr_t;
     typedef ObservableSession<addr_t> observable_session_t;
+
+    typedef typename base_t::option_number_t option_number_t;
+    typedef typename base_t::ro_chunk_t ro_chunk_t;
 
     // FIX: Once LinkedListPool is operational use that for our allocator
     // or at least have it as a default template parameter for ObservableOptionObserverBase itself
@@ -129,3 +136,6 @@ public:
 };
 
 }}
+
+
+#include "observable.hpp"

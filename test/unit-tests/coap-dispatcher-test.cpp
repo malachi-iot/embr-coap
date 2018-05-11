@@ -15,15 +15,13 @@ using namespace moducom::coap;
 using namespace moducom::coap::experimental;
 using namespace moducom::pipeline;
 
-typedef IncomingContext request_context_t;
-typedef moducom::coap::experimental::FactoryDispatcherHandlerContext f_request_context_t;
-
 extern dispatcher_handler_factory_fn test_sub_factories[];
 
-IDecoderObserver<f_request_context_t>* context_handler_factory(f_request_context_t& ctx)
+template <class TRequestContext>
+IDecoderObserver<TRequestContext>* context_handler_factory(TRequestContext& ctx)
 {
 #ifdef FEATURE_MCCOAP_INLINE_TOKEN
-    return new (ctx) ContextDispatcherHandler<f_request_context_t>(ctx);
+    return new (ctx) ContextDispatcherHandler<TRequestContext>(ctx);
 #else
     static moducom::dynamic::PoolBase<moducom::coap::layer2::Token, 8> token_pool;
     return new (ctx.handler_memory.data()) ContextDispatcherHandler(ctx, token_pool);
@@ -31,9 +29,10 @@ IDecoderObserver<f_request_context_t>* context_handler_factory(f_request_context
 }
 
 
-IDecoderObserver<f_request_context_t>* test_factory1(FactoryDispatcherHandlerContext& ctx)
+template <class TRequestContext>
+IDecoderObserver<TRequestContext>* test_factory1(TRequestContext& ctx)
 {
-    return new (ctx) Buffer16BitDeltaObserver<f_request_context_t>(IsInterestedBase::Never);
+    return new (ctx) Buffer16BitDeltaObserver<TRequestContext>(IsInterestedBase::Never);
 }
 
 
@@ -84,7 +83,8 @@ IDispatcherHandler* uri_plus_factory_dispatcher(MemoryChunk chunk)
 
 } */
 
-IDecoderObserver<f_request_context_t>* test_factory2(FactoryDispatcherHandlerContext& ctx)
+template <class TRequestContext>
+IDecoderObserver<TRequestContext>* test_factory2(TRequestContext& ctx)
 {
 #ifdef FEATURE_MCCOAP_LEGACY_PREOBJSTACK
     MemoryChunk& uri_handler_chunk = ctx.handler_memory;
@@ -101,13 +101,14 @@ IDecoderObserver<f_request_context_t>* test_factory2(FactoryDispatcherHandlerCon
 #else
     // FIX: Clumsy, but should be effective for now; ensures order of allocation is correct
     //      so that later deallocation for objstack doesn't botch
-    void* buffer1 = ctx.objstack.alloc(sizeof(SingleUriPathObserver<request_context_t>));
+    void* buffer1 = ctx.objstack.alloc(sizeof(SingleUriPathObserver<TRequestContext>));
 
-    FactoryDispatcherHandler* fdh = new (ctx) FactoryDispatcherHandler(
+    FactoryDispatcherHandler<TRequestContext>* fdh =
+            new (ctx) FactoryDispatcherHandler<TRequestContext>(
             ctx,
             test_sub_factories, 1);
 
-    return new (buffer1) SingleUriPathObserver<f_request_context_t>("v1", *fdh);
+    return new (buffer1) SingleUriPathObserver<TRequestContext>("v1", *fdh);
 #endif
 }
 
@@ -193,7 +194,7 @@ TEST_CASE("CoAP dispatcher tests", "[coap-dispatcher]")
 #ifdef FEATURE_MCCOAP_LEGACY_PREOBJSTACK
         FactoryDispatcherHandler fdh(dispatcherBuffer, context, test_factories);
 #else
-        FactoryDispatcherHandler fdh(context, test_factories);
+        FactoryDispatcherHandler<ObserverContext> fdh(context, test_factories);
 #endif
 
 #ifdef FEATURE_MCCOAP_LEGACY_DISPATCHER
@@ -205,7 +206,7 @@ TEST_CASE("CoAP dispatcher tests", "[coap-dispatcher]")
         dispatcher.head(&fdh);
         dispatcher.dispatch(chunk);
 #else
-        DecoderSubjectBase<IDecoderObserver<f_request_context_t> & > decoder_subject(fdh);
+        DecoderSubjectBase<IDecoderObserver<ObserverContext> & > decoder_subject(fdh);
 
         decoder_subject.dispatch(chunk);
 #endif
@@ -228,7 +229,7 @@ TEST_CASE("CoAP dispatcher tests", "[coap-dispatcher]")
         int size4 = sizeof(IDecoderObserver<>);
         int size5 = sizeof(IIsInterested);
         int size6 = sizeof(DispatcherHandlerBase<>);
-        int size7 = sizeof(SingleUriPathObserver<request_context_t>);
-        int size8 = sizeof(FactoryDispatcherHandler);
+        int size7 = sizeof(SingleUriPathObserver<IncomingContext>);
+        int size8 = sizeof(FactoryDispatcherHandler<>);
     }
 }

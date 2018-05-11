@@ -1,9 +1,12 @@
+#pragma once
+
 #include "observable.h"
 
 
 namespace moducom { namespace coap {
 
-void ObservableOptionObserverBase::on_option(option_number_t number,
+template <class TRequestContext>
+void ObservableOptionObserverBase<TRequestContext>::on_option(option_number_t number,
                                              const ro_chunk_t& chunk,
                                              bool last_chunk)
 {
@@ -11,7 +14,7 @@ void ObservableOptionObserverBase::on_option(option_number_t number,
     {
         case Option::Observe:
             ASSERT_ERROR(1, chunk.length(), "Chunk must be only 1 long here");
-            ASSERT_ERROR(Header::Code::Get, context().header().code(), "Must be a get request");
+            ASSERT_ERROR(Header::Code::Get, base_t::context().header().code(), "Must be a get request");
             ASSERT_ERROR(true, last_chunk, "Should always be last chunk");
 
             switch(chunk[0])
@@ -19,26 +22,26 @@ void ObservableOptionObserverBase::on_option(option_number_t number,
                 case 0: // register
                     // denote as always-interested so we can do add URI to list
                     // while remembering we want to register
-                    interested(Always);
+                    interested(base_t::Always);
                     break;
 
                 case 1: // deregister
                     // denote as always-interested so we can remove URI from list
                     // while remembering we want to deregister
-                    interested(Always);
+                    interested(base_t::Always);
                     break;
 
                 default:
                     // error
-                    interested(Never);
+                    interested(base_t::Never);
                     break;
             }
             break;
 
         case Option::UriPath:
-            if(is_always_interested())
+            if(base_t::is_always_interested())
             {
-                registrar_t::Context context(this->context(), is_registering);
+                typename registrar_t::Context context(this->context(), is_registering);
 
                 // pass on uri path for registrar to evaluate.  It may or may not end
                 // up being a valid registrable path
@@ -57,7 +60,7 @@ void ObservableOptionObserverBase::on_option(option_number_t number,
             }
             else
                 // if we haven't determined we are always interested by now, we are never interested
-                interested(Never);
+                interested(base_t::Never);
 
             break;
 
@@ -66,11 +69,12 @@ void ObservableOptionObserverBase::on_option(option_number_t number,
 }
 
 
-void ObservableOptionObserverBase::on_complete()
+template <class TRequestContext>
+void ObservableOptionObserverBase<TRequestContext>::on_complete()
 {
-    if(is_always_interested())
+    if(base_t::is_always_interested())
     {
-        registrar_t::Context context(this->context(), is_registering);
+        typename registrar_t::Context context(this->context(), is_registering);
 
         // uri path gathering is complete.  Now registrar will
         // either act on the valid uri path or ignore the invalid uri path
