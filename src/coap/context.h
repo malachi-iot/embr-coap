@@ -237,4 +237,42 @@ struct ObserverContext :
     ObserverContext(const pipeline::MemoryChunk& chunk) : ObjStackContext(chunk) {}
 };
 
+
+template <class TContext>
+struct incoming_context_traits
+{
+    typedef typename TContext::addr_t addr_t;
+
+    template <class TAddr>
+    static void set_address(TContext& c, const TAddr& addr)
+    {
+        //c.address(addr);
+    }
+};
+
+// message observer support code
+template <class Context, class TContextTraits >
+class ContextContainer
+{
+protected:
+    Context* m_context;
+
+public:
+    typedef Context context_t;
+    typedef TContextTraits context_traits_t;
+
+    context_t& context() { return *m_context; }
+
+    const context_t& context() const { return *m_context; }
+
+    // FIX: Kludgey way of skipping some steps.  Strongly consider
+    // dumping this if we can
+    void context(context_t& context)
+    {
+        this->m_context = &context;
+    }
+
+};
+
+
 }}

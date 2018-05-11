@@ -5,7 +5,7 @@ namespace moducom { namespace coap {
 
 
 template <class TIncomingContext = ObserverContext,
-          class TRequestContextTraits = experimental::incoming_context_traits<TIncomingContext> >
+          class TRequestContextTraits = incoming_context_traits<TIncomingContext> >
 class IDecoderObserver :
     public IMessageObserver
 #ifdef FEATURE_IISINTERESTED
@@ -42,16 +42,16 @@ public:
 
 
 // Convenience class for building dispatcher handlers
-template <class TRequestContext = ObserverContext,
-          class TRequestContextTraits = experimental::incoming_context_traits<TRequestContext> >
+template <class TIncomingContext = ObserverContext,
+          class TIncomingContextTraits = incoming_context_traits<TIncomingContext> >
 class DecoderObserverBase :
-        public IDecoderObserver<TRequestContext, TRequestContextTraits>,
+        public IDecoderObserver<TIncomingContext, TIncomingContextTraits>,
         public IsInterestedBase,
-        public experimental::IncomingContextContainer<TRequestContext, TRequestContextTraits>
+        public ContextContainer<TIncomingContext, TIncomingContextTraits>
 {
 protected:
-    typedef IDecoderObserver<TRequestContext> base_t;
-    typedef experimental::IncomingContextContainer<TRequestContext> ccontainer_t;
+    typedef IDecoderObserver<TIncomingContext> base_t;
+    typedef ContextContainer<TIncomingContext, TIncomingContextTraits> ccontainer_t;
     typedef typename ccontainer_t::context_t context_t;
     typedef typename base_t::number_t number_t;
 

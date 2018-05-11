@@ -34,7 +34,7 @@ template <class TCollection,
           class TIncomingContext = AddressContext<
               typename TCollection::value_type::addr_t
               >,
-          class TRequestContextTraits = experimental::incoming_context_traits<TIncomingContext> >
+          class TRequestContextTraits = incoming_context_traits<TIncomingContext> >
 class ObservableRegistrar
 {
     typedef pipeline::MemoryChunk::readonly_t ro_chunk_t;
