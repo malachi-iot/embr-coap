@@ -73,7 +73,7 @@ TEST_CASE("Data pump tests", "[datapump]")
 
         // set up message subject+observer
         request_context_t test_ctx;
-        DecoderSubjectBase<experimental::ContextDispatcherHandler<request_context_t>> test(test_ctx);
+        DecoderSubjectBase<experimental::ContextDispatcherHandler<request_context_t> > test(test_ctx);
 
         REQUIRE(!test_ctx.have_header());
 

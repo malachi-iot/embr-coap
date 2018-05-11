@@ -19,12 +19,13 @@ class Buffer16BitDeltaObserver : public DispatcherHandlerBase<TRequestContext>
 public:
     typedef TRequestContext request_context_t;
     typedef typename base_t::number_t number_t;
+    typedef typename base_t::InterestedEnum interested_t;
 
     Buffer16BitDeltaObserver(request_context_t& dummy) :
         base_t(base_t::Always),
         option_test_number(0) {}
 
-    Buffer16BitDeltaObserver(base_t::InterestedEnum i = base_t::Always) :
+    Buffer16BitDeltaObserver(interested_t i = base_t::Always) :
         base_t(i),
         option_test_number(0) {}
 

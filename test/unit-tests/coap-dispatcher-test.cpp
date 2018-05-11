@@ -16,14 +16,15 @@ using namespace moducom::coap::experimental;
 using namespace moducom::pipeline;
 
 typedef IncomingContext request_context_t;
+typedef moducom::coap::experimental::FactoryDispatcherHandlerContext f_request_context_t;
 
 extern dispatcher_handler_factory_fn test_sub_factories[];
 
-IDecoderObserver<experimental::FactoryDispatcherHandlerContext>* context_handler_factory(FactoryDispatcherHandlerContext& ctx)
+IDecoderObserver<f_request_context_t>* context_handler_factory(f_request_context_t& ctx)
 {
     request_context_t& context = ctx.incoming_context;
 #ifdef FEATURE_MCCOAP_INLINE_TOKEN
-    return new (ctx) ContextDispatcherHandler<experimental::FactoryDispatcherHandlerContext>(context);
+    return new (ctx) ContextDispatcherHandler<f_request_context_t>(context);
 #else
     static moducom::dynamic::PoolBase<moducom::coap::layer2::Token, 8> token_pool;
     return new (ctx.handler_memory.data()) ContextDispatcherHandler(context, token_pool);
@@ -31,9 +32,9 @@ IDecoderObserver<experimental::FactoryDispatcherHandlerContext>* context_handler
 }
 
 
-IDecoderObserver<experimental::FactoryDispatcherHandlerContext>* test_factory1(FactoryDispatcherHandlerContext& ctx)
+IDecoderObserver<f_request_context_t>* test_factory1(FactoryDispatcherHandlerContext& ctx)
 {
-    return new (ctx) Buffer16BitDeltaObserver<experimental::FactoryDispatcherHandlerContext>(IsInterestedBase::Never);
+    return new (ctx) Buffer16BitDeltaObserver<f_request_context_t>(IsInterestedBase::Never);
 }
 
 
@@ -84,7 +85,7 @@ IDispatcherHandler* uri_plus_factory_dispatcher(MemoryChunk chunk)
 
 } */
 
-IDecoderObserver<experimental::FactoryDispatcherHandlerContext>* test_factory2(FactoryDispatcherHandlerContext& ctx)
+IDecoderObserver<f_request_context_t>* test_factory2(FactoryDispatcherHandlerContext& ctx)
 {
 #ifdef FEATURE_MCCOAP_LEGACY_PREOBJSTACK
     MemoryChunk& uri_handler_chunk = ctx.handler_memory;
@@ -107,7 +108,7 @@ IDecoderObserver<experimental::FactoryDispatcherHandlerContext>* test_factory2(F
             ctx.incoming_context,
             test_sub_factories, 1);
 
-    return new (buffer1) SingleUriPathObserver<experimental::FactoryDispatcherHandlerContext>("v1", *fdh);
+    return new (buffer1) SingleUriPathObserver<f_request_context_t>("v1", *fdh);
 #endif
 }
 
@@ -204,7 +205,7 @@ TEST_CASE("CoAP dispatcher tests", "[coap-dispatcher]")
         dispatcher.head(&fdh);
         dispatcher.dispatch(chunk);
 #else
-        DecoderSubjectBase<IDecoderObserver<experimental::FactoryDispatcherHandlerContext> & > decoder_subject(fdh);
+        DecoderSubjectBase<IDecoderObserver<f_request_context_t> & > decoder_subject(fdh);
 
         decoder_subject.dispatch(chunk);
 #endif
