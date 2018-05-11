@@ -1,6 +1,9 @@
 #include <catch.hpp>
 #include "coap/decoder/subject.hpp"
+#include "coap/decoder/observer-aggregate.hpp"
 #include "test-data.h"
+
+#include <estd/vector.h>
 
 using namespace moducom::coap;
 
@@ -60,5 +63,12 @@ TEST_CASE("CoAP decoder subject tests", "[coap-decoder-subject]")
 
         test.reset();
         test.dispatch(chunk);
+    }
+    SECTION("Aggregate observer (runtime-ish version)")
+    {
+        IDecoderObserver<ObserverContext>* preset[10] = { NULLPTR };
+        //IDecoderObserver<ObserverContext>** helper = preset;
+        //AggregateDecoderObserver<ObserverContext, estd::layer2::vector<IDecoderObserver<ObserverContext>*, 10> >
+          //      ado = preset;
     }
 }

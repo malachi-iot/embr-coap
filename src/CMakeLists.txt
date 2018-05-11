@@ -38,6 +38,7 @@ set(SOURCE_FILES
 
         coap/decoder/observer.h
         coap/decoder/observer-aggregate.h
+        coap/decoder/observer-aggregate.hpp
         coap/decoder/subject.h
         coap/decoder/subject.hpp
 
