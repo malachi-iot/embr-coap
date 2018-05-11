@@ -24,7 +24,7 @@ struct LwipPortAndAddress
     }
 };
 
-typedef moducom::coap::experimental::DataPump<moducom::coap::LwipNetbuf, LwipPortAndAddress> lwip_datapump_t;
+typedef moducom::coap::DataPump<moducom::coap::LwipNetbuf, LwipPortAndAddress> lwip_datapump_t;
 
 extern void nonblocking_datapump_loop(lwip::Netconn netconn, lwip_datapump_t& datapump);
 

@@ -12,6 +12,7 @@
 
 #ifdef FEATURE_CPP_INITIALIZER_LIST
 #include <initializer_list>
+#include <algorithm> // for std::copy
 #endif
 
 namespace moducom { namespace coap {
