@@ -28,13 +28,15 @@ TEST_CASE("experimental 2 tests")
 
         ObserverContext ctx(chunk);
         AggregateMessageObserver<ObserverContext,
-                Buffer16BitDeltaObserver<ObserverContext> > amo(ctx);
+                Buffer16BitDeltaObserver<ObserverContext>,
+                EmptyObserver<ObserverContext>
+                > amo(ctx);
 
         Header test_header(Header::Confirmable);
 
         test_header.message_id(0x0123);
 
         // FIX: almost there but not quite yet
-        //amo.on_header(test_header);
+        amo.on_header(test_header);
     }
 }

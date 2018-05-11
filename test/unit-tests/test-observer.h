@@ -80,3 +80,10 @@ public:
         REQUIRE(payload_part[payload_part.length()] == buffer_16bit_delta[12 + payload_part.length()]);
     }
 };
+
+
+template <class TIncomingContext>
+class EmptyObserver : public DecoderObserverBase<TIncomingContext>
+{
+public:
+};
