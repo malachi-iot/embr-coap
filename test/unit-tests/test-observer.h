@@ -3,6 +3,7 @@
 #include <catch.hpp>
 
 #include "coap-dispatcher.h"
+#include "coap/experimental-observer.h"
 #include "test-data.h"
 
 using namespace moducom::coap;
@@ -83,7 +84,7 @@ public:
 
 
 template <class TIncomingContext>
-class EmptyObserver : public DecoderObserverBase<TIncomingContext>
+class EmptyObserver : public MessageObserverBase <TIncomingContext>
 {
 public:
 };

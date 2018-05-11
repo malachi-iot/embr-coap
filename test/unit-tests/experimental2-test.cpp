@@ -33,10 +33,14 @@ TEST_CASE("experimental 2 tests")
                 > amo(ctx);
 
         Header test_header(Header::Confirmable);
+        //moducom::coap::layer1::Token token = ;
+        uint8_t raw_token[] = { 0x45, 0x67 };
 
+        test_header.token_length(sizeof(raw_token));
         test_header.message_id(0x0123);
 
-        // FIX: almost there but not quite yet
         amo.on_header(test_header);
+        //amo.on_token(raw_token); // not doing this only because Buffer16BitDeltaObserver hates it
+        amo.on_option((moducom::coap::Option::Numbers) 270, 1);
     }
 }

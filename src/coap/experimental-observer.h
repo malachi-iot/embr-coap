@@ -18,12 +18,18 @@ protected:
     typedef experimental::option_number_t option_number_t;
     typedef pipeline::MemoryChunk::readonly_t ro_chunk_t;
 
+    //FIX:
+    // a) undecided if we'll ONLY do this->context(context) version
+    // b) SFINAE for is_constructor picks this up even when procected, then gets irritated
+    //    that we can't actually call it
     MessageObserverBase(TIncomingContext& context)
     {
         this->context(context);
     }
-
 public:
+    MessageObserverBase() {}
+
+
     void on_header(const Header& header) {}
 
     void on_token(const ro_chunk_t& token, bool last_chunk) {}

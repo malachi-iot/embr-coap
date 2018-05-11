@@ -10,6 +10,10 @@
 #include <coap/platform.h>
 #include "mc/memory-chunk.h"
 
+#ifdef FEATURE_CPP_INITIALIZER_LIST
+#include <initializer_list>
+#endif
+
 namespace moducom { namespace coap {
 
 namespace layer1 {
@@ -18,6 +22,19 @@ namespace layer1 {
 // semi-duplicate of one in coap_transmission
 class Token : public moducom::pipeline::layer1::MemoryChunk<8>
 {
+    typedef moducom::pipeline::layer1::MemoryChunk<8> base_t;
+
+public:
+#ifdef FEATURE_CPP_INITIALIZER_LIST
+    Token(std::initializer_list<uint8_t> l)
+    {
+        // TODO: Move this actually into memorychunk itself, and make
+        // this constructor just pass it along (if defaults don't handle it)
+        std::copy(l.begin(), l.end(), base_t::buffer);
+    }
+
+    Token() {}
+#endif
 };
 
 }

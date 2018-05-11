@@ -50,15 +50,12 @@ class AggregateMessageObserver : public MessageObserverBase<TIncomingContext>
         return mo;
     }
 
+
     template <class TMessageObserver>
-    void _on_header_invoker(const Header& header)
+    void dtor_helper(TMessageObserver* mo)
     {
-        context_t& context = base_t::context();
-
-        TMessageObserver* mo = ctor_selector<TMessageObserver>();// = _on_header_invoker_helper_1<TMessageObserver>();
-
-        mo->on_header(header);
-
+        // TODO: Use this because sometimes we won't be calling dtor or deallocating
+        // (for 'reserved' class observers)
         mo->~TMessageObserver();
     }
 
@@ -78,17 +75,77 @@ class AggregateMessageObserver : public MessageObserverBase<TIncomingContext>
     }
 
     // ala https://stackoverflow.com/questions/7124969/recursive-variadic-template-to-print-out-the-contents-of-a-parameter-pack
-    template <class TLast>
+    template <class TMessageObserver> // TMessageObserver aka TLast
     void on_header_invoker(const Header& header)
     {
-        _on_header_invoker<TLast>(header);
+        TMessageObserver* mo = ctor_selector<TMessageObserver>();// = _on_header_invoker_helper_1<TMessageObserver>();
+
+        mo->on_header(header);
+
+        dtor_helper(mo);
+    }
+
+    template <class TMessageObserver>
+    void on_token_invoker(const ro_chunk_t& token, bool last_chunk)
+    {
+        TMessageObserver* mo = ctor_selector<TMessageObserver>();// = _on_header_invoker_helper_1<TMessageObserver>();
+
+        mo->on_token(token, last_chunk);
+
+        dtor_helper(mo);
+    }
+
+    template <class TMessageObserver>
+    void on_option_invoker(option_number_t number,
+                   const ro_chunk_t& option_value_part,
+                   bool last_chunk)
+    {
+        TMessageObserver* mo = ctor_selector<TMessageObserver>();// = _on_header_invoker_helper_1<TMessageObserver>();
+
+        mo->on_option(number, option_value_part, last_chunk);
+
+        dtor_helper(mo);
+    }
+
+    template <class TMessageObserver>
+    void on_option_invoker(option_number_t number, uint16_t length)
+    {
+        TMessageObserver* mo = ctor_selector<TMessageObserver>();
+
+        mo->on_option(number, length);
+
+        dtor_helper(mo);
     }
 
     template <class TFirst, class TSecond, class... TArgs>
     void on_header_invoker(const Header& header)
     {
-        _on_header_invoker<TFirst>(header);
+        on_header_invoker<TFirst>(header);
         on_header_invoker<TSecond, TArgs...>(header);
+    }
+
+    template <class TFirst, class TSecond, class... TArgs>
+    void on_token_invoker(const ro_chunk_t& token, bool last_chunk)
+    {
+        on_token_invoker<TFirst>(token, last_chunk);
+        on_token_invoker<TSecond, TArgs...>(token, last_chunk);
+    }
+
+
+    template <class TFirst, class TSecond, class... TArgs>
+    void on_option_invoker(option_number_t number,
+                   const ro_chunk_t& option_value_part,
+                   bool last_chunk)
+    {
+        on_option_invoker<TFirst>(number, option_value_part, last_chunk);
+        on_option_invoker<TSecond, TArgs...>(number, option_value_part, last_chunk);
+    }
+
+    template <class TFirst, class TSecond, class... TArgs>
+    void on_option_invoker(option_number_t number, uint16_t length)
+    {
+        on_option_invoker<TFirst>(number, length);
+        on_option_invoker<TSecond, TArgs...>(number, length);
     }
 
 public:
@@ -99,6 +156,20 @@ public:
         on_header_invoker<TMessageObservers...>(header);
     }
 
+    void on_token(const ro_chunk_t& token, bool last_chunk = true)
+    {
+        on_token_invoker<TMessageObservers...>(token, last_chunk);
+    }
+
+    void on_option(option_number_t number, uint16_t length)
+    {
+        on_option_invoker<TMessageObservers...>(number, length);
+    }
+
+    void on_option(option_number_t number, const ro_chunk_t &chunk, bool last_chunk = true)
+    {
+        on_option_invoker<TMessageObservers...>(number, chunk, last_chunk);
+    }
 };
 #endif
 
