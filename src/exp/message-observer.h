@@ -23,35 +23,6 @@ class AggregateMessageObserver : public MessageObserverBase<TIncomingContext>
     typedef pipeline::MemoryChunk::readonly_t ro_chunk_t;
     typedef typename base_t::context_t context_t;
 
-    /*
-    template <class TMessageObserver, bool has_constructor>
-    TMessageObserver* _on_header_invoker_helper_1;
-
-    template <class TMessageObserver>
-              //typename = typename std::enable_if<std::is_constructible<TMessageObserver, context_t&>::value>::type>
-    TMessageObserver* _on_header_invoker_helper_1<TMessageObserver, true>()
-    {
-        context_t& context = base_t::context();
-        TMessageObserver* mo = new (context) TMessageObserver(context);
-        return mo;
-    }
-
-    template <class TMessageObserver>
-              //typename = typename std::enable_if<!std::is_constructible<TMessageObserver, context_t&>::value>::type>
-    TMessageObserver* _on_header_invoker_helper_1()
-    {
-        context_t& context = base_t::context();
-        TMessageObserver* mo = new (context) TMessageObserver;
-        mo->context(context);
-        return mo;
-    }
-
-    template <class TMessageObserver>
-    TMessageObserver* _on_header_invoker_helper_2()
-    {
-
-    } */
-
     // for message observers with constructors
     // thanks to https://stackoverflow.com/questions/32167213/select-constructor-through-sfinae-in-template-arguments
     template <class TMessageObserver,
@@ -89,6 +60,21 @@ class AggregateMessageObserver : public MessageObserverBase<TIncomingContext>
         mo->on_header(header);
 
         mo->~TMessageObserver();
+    }
+
+    // TODO: Move this to PGGCC-10
+    // TParam a little cheezy, but because multiple variadics are tricky, we'll do it for now
+    template <template <class> class TFunc, class TParam, class TLast, class... TArgs>
+    void pack_function_helper(TFunc<TLast> func, TParam param1)
+    {
+        func(param1);
+    }
+
+    template <template <class> class TFunc, class TParam, class TFirst, class TSecond, class... TArgs>
+    void pack_function_helper(TFunc<TFirst> func, TParam param1)
+    {
+        func(param1);
+        pack_function_helper<TFunc, TParam, TSecond, TArgs...>(func, param1);
     }
 
     // ala https://stackoverflow.com/questions/7124969/recursive-variadic-template-to-print-out-the-contents-of-a-parameter-pack
