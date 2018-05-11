@@ -3,7 +3,14 @@
 //
 #pragma once
 
-namespace moducom { namespace coap { namespace experimental {
+namespace moducom { namespace coap {
+
+// FIX: Move this and the item_experimental out of here
+template <class TRequestContext, class TRequestContextTraits>
+class IDecoderObserver;
+
+
+namespace experimental {
 
 struct FnFactoryContext
 {
@@ -295,10 +302,6 @@ FnFactory<typename TItem::key_t, typename TItem::value_t> factory_helper(TItem (
     return factory;
 }
 
-
-// FIX: Move this and the item_experimental out of here
-template <class TRequestContext, class TRequestContextTraits>
-class IDecoderObserver;
 
 template <class TTraits>
 struct FnFactoryHelper

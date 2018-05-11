@@ -36,6 +36,7 @@ set(SOURCE_FILES
 
         coap/context.h
         coap/decoder.h
+        coap/decoder-observer.h
         coap/decoder-subject.h coap/decoder-subject.hpp
         coap/encoder.h coap/encoder.hpp
         coap/observable.h coap/observable.hpp

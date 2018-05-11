@@ -33,7 +33,7 @@ inline bool starts_with(pipeline::MemoryChunk::readonly_t chunk, const char* pre
 // so templatized it doesn't actually register as such
 template <bool allow_response = false>
 class UriPathDispatcherHandlerBaseBase :
-        public experimental::DecoderObserverBase<ObserverContext>
+        public DecoderObserverBase<ObserverContext>
 {
 protected:
     const char* prefix;
@@ -134,11 +134,11 @@ public:
 
 template <class TRequestContext>
 class SingleUriPathObserver :
-        public UriPathDispatcherHandlerBase<experimental::IDecoderObserver<TRequestContext> >
+        public UriPathDispatcherHandlerBase<IDecoderObserver<TRequestContext> >
 {
-    typedef UriPathDispatcherHandlerBase<experimental::IDecoderObserver<TRequestContext> > base_t;
+    typedef UriPathDispatcherHandlerBase<IDecoderObserver<TRequestContext> > base_t;
 public:
-    SingleUriPathObserver(const char* prefix, experimental::IDecoderObserver<TRequestContext>& observer)
+    SingleUriPathObserver(const char* prefix, IDecoderObserver<TRequestContext>& observer)
             : base_t(prefix, observer)
     {
 
@@ -147,7 +147,7 @@ public:
 
 
 template <const char* uri_path, experimental::dispatcher_handler_factory_fn* factories, int count>
-experimental::IDecoderObserver<ObserverContext>*
+IDecoderObserver<ObserverContext>*
         uri_plus_factory_dispatcher(ObserverContext& ctx)
 {
 #ifdef FEATURE_MCCOAP_LEGACY_PREOBJSTACK
@@ -185,7 +185,7 @@ experimental::IDecoderObserver<ObserverContext>*
 
 // Creates a unique static TMessageObserver associated with this uri_path
 template <const char* uri_path, class TMessageObserver>
-experimental::IDecoderObserver<ObserverContext>* uri_plus_observer_dispatcher(ObserverContext& ctx)
+IDecoderObserver<ObserverContext>* uri_plus_observer_dispatcher(ObserverContext& ctx)
 {
     static TMessageObserver observer;
 
@@ -209,9 +209,9 @@ namespace experimental {
 //
 // an aggregate of single-uri-path-element to IDispatcherHandler* mappings
 template <class TRequestContext = ObserverContext>
-class AggregateUriPathObserver : public experimental::DecoderObserverBase<TRequestContext>
+class AggregateUriPathObserver : public DecoderObserverBase<TRequestContext>
 {
-    typedef typename experimental::DecoderObserverBase<TRequestContext> base_t;
+    typedef DecoderObserverBase<TRequestContext> base_t;
     typedef typename base_t::context_t request_context_t;
 
 public:
@@ -289,15 +289,6 @@ public:
 
 }
 
-
-
 }}
-
-
-/*
-inline void* operator new(size_t sz, moducom::coap::experimental::AggregateUriPathObserver::Context& ctx)
-{
-    return ctx.context.objstack.alloc(sz);
-} */
 
 #include "coap-uripath-dispatcher.hpp"
