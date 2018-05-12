@@ -150,25 +150,6 @@ template <const char* uri_path, experimental::dispatcher_handler_factory_fn* fac
 IDecoderObserver<ObserverContext>*
         uri_plus_factory_dispatcher(ObserverContext& ctx)
 {
-#ifdef FEATURE_MCCOAP_LEGACY_PREOBJSTACK
-    pipeline::MemoryChunk& chunk = ctx.handler_memory;
-    pipeline::MemoryChunk& uri_handler_chunk = chunk;
-    // semi-objstack behavior
-    CONSTEXPR size_t sizeUriPathDispatcher = sizeof(SingleUriPathObserver);
-    CONSTEXPR size_t sizeFactoryDispatcher = sizeof(experimental::FactoryDispatcherHandler);
-
-    pipeline::MemoryChunk sub_handler_chunk = chunk.remainder(sizeUriPathDispatcher);
-    pipeline::MemoryChunk sub_handler_inner_chunk =
-            sub_handler_chunk.remainder(sizeFactoryDispatcher);
-
-    experimental::FactoryDispatcherHandler* fdh =
-            new (sub_handler_chunk.data()) experimental::FactoryDispatcherHandler(
-            sub_handler_inner_chunk,
-            ctx.incoming_context,
-            factories, count);
-
-    return new (uri_handler_chunk.data()) SingleUriPathObserver(uri_path, *fdh);
-#else
     // FIX: Clumsy, but should be effective for now; ensures order of allocation is correct
     //      so that later deallocation for objstack doesn't botch
     void* buffer1 = ctx.objstack.alloc(sizeof(SingleUriPathObserver<ObserverContext>));
@@ -179,7 +160,6 @@ IDecoderObserver<ObserverContext>*
                     factories, count);
 
     return new (buffer1) SingleUriPathObserver<ObserverContext> (uri_path, *fdh);
-#endif
 }
 
 
@@ -227,6 +207,7 @@ public:
             context(copy_from.context) {}
     };
 
+    // TODO: This is where revamped estd::map version will live
     typedef IDecoderObserver<request_context_t> decoder_observer_t;
     typedef FnFactoryTraits<const char*, decoder_observer_t*, Context&> traits_t;
     typedef FnFactoryHelper<traits_t> fn_t;

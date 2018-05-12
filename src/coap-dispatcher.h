@@ -13,59 +13,6 @@
 
 namespace moducom { namespace coap {
 
-#ifdef FEATURE_MCCOAP_LEGACY_DISPATCHER
-// Dispatches one CoAP message at a time based on externally provided input
-// TODO: Break this out into Decoder base class, right now dispatching and decoding
-// are just a little bit too fused together, at least better than IMessageHandler and IMessageObserver
-// (IMessageObserver's interest should always be determined externally and IMessageHandler is just
-// to generic to say either way)
-// TODO: Consider renaming to DecoderSubject, DecodeSubject, MessageDecoderSubject or similar ala
-// Observer-Observable design patterns https://en.wikipedia.org/wiki/Observer_pattern.  Do more R&D
-// for exact good naming practices in this regard
-class Dispatcher :
-    public Decoder,
-    public moducom::experimental::forward_list<IDispatcherHandler>
-{
-
-
-    // returns false while chunk/context has not been exhausted
-    // returns true once it has
-    bool dispatch_iterate(Context& context);
-
-    void dispatch_header();
-    void dispatch_token();
-
-    // optionChunk is a subset/processed version of dispatch(chunk)
-    size_t dispatch_option(const pipeline::MemoryChunk::readonly_t& optionChunk);
-    void dispatch_payload(const pipeline::MemoryChunk::readonly_t& payloadChunk, bool last_chunk);
-
-public:
-    typedef IDispatcherHandler handler_t;
-
-private:
-    void reset()
-    {
-    }
-
-public:
-    // returns number of bytes processed from chunk
-    size_t dispatch(const pipeline::MemoryChunk::readonly_t& chunk, bool last_chunk = true)
-    {
-        Context context(chunk, last_chunk);
-
-        while(!dispatch_iterate(context) && state() != Done);
-
-        return context.pos;
-    }
-
-    Dispatcher()
-    {
-        reset();
-    }
-};
-#endif
-
-
 
 
 // At this point, only experimental because I keep futzing with the names - don't like IDispatcherHandler

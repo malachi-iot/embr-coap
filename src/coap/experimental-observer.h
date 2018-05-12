@@ -47,17 +47,19 @@ namespace layer5 {
 // (perhaps named either layer2 or layer3) into the virtual domain
 // Or, similarly, all observers might start life as non-virtual and only become virtual
 // when wrapped with this guy
-template <class TMessageObserver>
-class IMessageObserverWrapper : public IMessageObserver
+template <class TMessageObserver, class TBase = IMessageObserver>
+class IMessageObserverWrapper : public TBase
 {
     TMessageObserver message_observer;
     typedef pipeline::MemoryChunk::readonly_t ro_chunk_t;
+    typedef TBase base_t;
+    typedef typename base_t::number_t number_t;
 
 public:
     //IMessageObserverWrapper(const TMessageObserver& message_observer) :
     //    message_observer(message_observer) {}
 
-#ifdef __CPP11__
+#ifdef FEATURE_CPP_VARIADIC
     template <typename ... TArgs>
     IMessageObserverWrapper(TArgs...args) :
         message_observer(args...)

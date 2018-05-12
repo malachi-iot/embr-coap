@@ -30,7 +30,7 @@ IDecoderObserver<TRequestContext>* context_handler_factory(TRequestContext& ctx)
 
 
 template <class TRequestContext>
-IDecoderObserver<TRequestContext>* test_factory1(TRequestContext& ctx)
+IDecoderObserver<TRequestContext>* test_buffer16bitdelta_observer(TRequestContext& ctx)
 {
     return new (ctx) Buffer16BitDeltaObserver<TRequestContext>(IsInterestedBase::Never);
 }
@@ -77,45 +77,6 @@ CONSTEXPR T* _array_helper_contents(T (&t) [size]) { return t; }
 
 
 /*
-template <dispatcher_handler_factory_fn factories[N], int N>
-IDispatcherHandler* uri_plus_factory_dispatcher(MemoryChunk chunk)
-{
-
-} */
-
-template <class TRequestContext>
-IDecoderObserver<TRequestContext>* test_factory2(TRequestContext& ctx)
-{
-#ifdef FEATURE_MCCOAP_LEGACY_PREOBJSTACK
-    MemoryChunk& uri_handler_chunk = ctx.handler_memory;
-    MemoryChunk v1_handler_chunk = ctx.handler_memory.remainder(sizeof(SingleUriPathObserver));
-    MemoryChunk v1_handler_inner_chunk = v1_handler_chunk.remainder(sizeof(FactoryDispatcherHandler));
-
-    FactoryDispatcherHandler* fdh = new (v1_handler_chunk.data()) FactoryDispatcherHandler(
-            v1_handler_inner_chunk,
-            ctx.incoming_context,
-            test_sub_factories, 1);
-
-    // TODO: will need some way to invoke fdh destructor
-    return new (uri_handler_chunk.data()) SingleUriPathObserver("v1", *fdh);
-#else
-    // FIX: Clumsy, but should be effective for now; ensures order of allocation is correct
-    //      so that later deallocation for objstack doesn't botch
-    void* buffer1 = ctx.objstack.alloc(sizeof(SingleUriPathObserver<TRequestContext>));
-
-    FactoryDispatcherHandler<TRequestContext>* fdh =
-            new (ctx) FactoryDispatcherHandler<TRequestContext>(
-            ctx,
-            test_sub_factories, 1);
-
-    return new (buffer1) SingleUriPathObserver<TRequestContext>("v1", *fdh);
-#endif
-}
-
-extern CONSTEXPR char STR_TEST[] = "TEST";
-
-
-/*
 template <typename T, int size>
 CONSTEXPR dispatcher_handler_factory_fn uri_helper_helper(T a [size], const char* name)
 {
@@ -144,19 +105,46 @@ dispatcher_handler_factory_fn uri_helper2(const TArray& array)
             array, count);
 
     return new (uri_handler_chunk.data()) UriPathDispatcherHandler(uri_path, *fdh); */
-};
+}
+
+
+/*
+template <dispatcher_handler_factory_fn factories[N], int N>
+IDispatcherHandler* uri_plus_factory_dispatcher(MemoryChunk chunk)
+{
+
+} */
+
+template <class TRequestContext>
+IDecoderObserver<TRequestContext>* test_single_uri_observer(TRequestContext& ctx)
+{
+    // FIX: Clumsy, but should be effective for now; ensures order of allocation is correct
+    //      so that later deallocation for objstack doesn't botch
+    void* buffer1 = ctx.objstack.alloc(sizeof(SingleUriPathObserver<TRequestContext>));
+
+    FactoryDispatcherHandler<TRequestContext>* fdh =
+            new (ctx) FactoryDispatcherHandler<TRequestContext>(
+            ctx,
+            test_sub_factories, 1);
+
+    return new (buffer1) SingleUriPathObserver<TRequestContext>("v1", *fdh);
+}
+
+extern CONSTEXPR char STR_TEST[] = "TEST";
+
+
 
 
 dispatcher_handler_factory_fn test_factories[] =
 {
     context_handler_factory,
-    test_factory1,
-    test_factory2,
+    test_buffer16bitdelta_observer,
+    test_single_uri_observer,
     uri_plus_factory_dispatcher<STR_TEST, test_sub_factories, 1>
 };
 
 
-template <class TRequestContext = ObserverContext>
+template <class TRequestContext>
 class TestDispatcherHandler2 : public DecoderObserverBase<TRequestContext>
 {
 public:
@@ -173,13 +161,13 @@ public:
 
 extern CONSTEXPR char POS_HANDLER_URI[] = "POS";
 
-extern TestDispatcherHandler2<> pos_handler;
-TestDispatcherHandler2<> pos_handler;
+//extern TestDispatcherHandler2<> pos_handler;
+//TestDispatcherHandler2<> pos_handler;
 
 
 dispatcher_handler_factory_fn test_sub_factories[] =
 {
-    uri_plus_observer_dispatcher<POS_HANDLER_URI, TestDispatcherHandler2<> >
+    uri_plus_observer_dispatcher<POS_HANDLER_URI, TestDispatcherHandler2<ObserverContext> >
 };
 
 TEST_CASE("CoAP dispatcher tests", "[coap-dispatcher]")
