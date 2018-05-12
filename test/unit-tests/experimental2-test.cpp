@@ -6,6 +6,8 @@
 #include <exp/message-observer.h>
 #include "test-observer.h"
 
+#include "exp/prototype/observer-idea1.h"
+
 using namespace moducom::coap::experimental;
 
 TEST_CASE("experimental 2 tests")
@@ -45,4 +47,10 @@ TEST_CASE("experimental 2 tests")
         amo.on_option((moducom::coap::Option::Numbers) 270, 1);
     }
 #endif
+    SECTION("prototype observer idea1")
+    {
+        using namespace ::experimental::prototype;
+
+        DecoderObserver d;
+    }
 }

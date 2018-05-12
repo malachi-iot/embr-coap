@@ -60,6 +60,8 @@ set(SOURCE_FILES
         exp/message-observer.h
         exp/retry.h
 
+        exp/prototype/observer-idea1.h
+
         platform/arduino/datapump.cpp
 
         platform/generic/datapump-messageobserver.hpp
