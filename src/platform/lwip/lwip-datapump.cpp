@@ -18,7 +18,11 @@ void nonblocking_datapump_loop(lwip::Netconn netconn, lwip_datapump_t& datapump)
 
     if(netbuf_out != NULLPTR)
     {
-        err = netconn.sendTo(NULLPTR, &addr.addr, addr.port);
+        printf("nonblocking_datapump_loop: send to port: %d\n", addr.port);
+
+        err = netconn.sendTo(netbuf_out->native(), &addr.addr, addr.port);
+
+        printf("err=%d\n", err);
 
         datapump.transport_pop();
     }

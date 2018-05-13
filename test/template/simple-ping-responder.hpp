@@ -1,6 +1,6 @@
 #include <coap/encoder.h>
 #include <coap/decoder.h>
-#include <coap/decoder-subject.h>
+#include <coap/decoder/subject.h>
 #include <mc/memory-chunk.h>
 #include <exp/datapump.h>
 
