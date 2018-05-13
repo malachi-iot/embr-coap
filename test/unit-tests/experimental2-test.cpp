@@ -71,14 +71,14 @@ TEST_CASE("experimental 2 tests")
 #if defined(FEATURE_CPP_MOVESEMANTIC) && defined(FEATURE_CPP_LAMBDA)
             URI("v1",
             {
-                URI("target1", test_target1),
+                URI("target1", test_target1, true),
                 URI("target2", [](IncomingContext<int>& ctx)
                 {
                     // eventually activated when v2/target2 get is issued
                 })
             }),
 #endif
-            URI("v2", 2)
+            URI("v2", 0, 2)
         };
 
         IncomingContext<int> ctx;
