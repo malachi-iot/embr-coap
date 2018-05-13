@@ -51,6 +51,15 @@ TEST_CASE("experimental 2 tests")
     {
         using namespace ::experimental::prototype;
 
-        DecoderObserver d;
+        DecoderObserver test_target1(0);
+        DecoderObserver test_target2(0);
+
+        URI uri[] =
+        {
+            URI("target1", test_target1),
+            URI("target2", test_target2)
+        };
+
+        DecoderObserver d(uri);
     }
 }
