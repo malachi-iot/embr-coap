@@ -8,7 +8,15 @@
 
 #include "exp/prototype/observer-idea1.h"
 
+#include "coap/decoder/subject.hpp"
+
+#include "test-data.h"
+
+using namespace moducom::coap;
 using namespace moducom::coap::experimental;
+
+typedef moducom::pipeline::MemoryChunk::readonly_t ro_chunk_t;
+typedef moducom::pipeline::MemoryChunk chunk_t;
 
 TEST_CASE("experimental 2 tests")
 {
@@ -49,17 +57,32 @@ TEST_CASE("experimental 2 tests")
 #endif
     SECTION("prototype observer idea1")
     {
-        using namespace ::experimental::prototype;
+        using namespace ::experimental::prototype::idea1;
 
-        DecoderObserver test_target1(0);
-        DecoderObserver test_target2(0);
+#ifdef FEATURE_CPP_LAMBDA
+        DecoderObserver test_target1([]()
+        {
+            // eventually activated when v1/target1 get is issued
+        });
+#endif
 
         URI uri[] =
         {
-            URI("target1", test_target1),
-            URI("target2", test_target2)
+#if defined(FEATURE_CPP_MOVESEMANTIC) && defined(FEATURE_CPP_LAMBDA)
+            URI("v1",
+            {
+                URI("target1", test_target1),
+                URI("target2", [](IncomingContext<int>& ctx)
+                {
+                    // eventually activated when v2/target2 get is issued
+                })
+            }),
+#endif
+            URI("v2", 2)
         };
 
-        DecoderObserver d(uri);
+        IncomingContext<int> ctx;
+
+        decoder_observer(DecoderObserver(uri), ctx, buffer_16bit_delta);
     }
 }

@@ -39,6 +39,9 @@ public:
     void on_option(option_number_t number, const ro_chunk_t& chunk, bool last_chunk) {}
 
     void on_payload(const ro_chunk_t& chunk, bool last_chunk) {}
+
+    // Unlike IDecoderObserver, no penalty in having this one here so have it enabled always
+    void on_complete() {}
 };
 
 namespace layer5 {
