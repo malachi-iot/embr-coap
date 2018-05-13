@@ -65,6 +65,8 @@ public:
     }
 
 
+    // TODO: Ensure this is a non-blocking call and return true or false denoting
+    // whether we've reached a blocking point, not whether we got a nonzero tkl
     bool process_token_experimental(layer2::Token* token)
     {
         ASSERT_WARN(Decoder::HeaderDone, state(), "Expected to be at end of header processing");
@@ -80,6 +82,18 @@ public:
             return true;
         }
         else return false;
+    }
+
+    layer3::Token process_token_experimental()
+    {
+        ASSERT_WARN(Decoder::HeaderDone, state(), "Expected to be at end of header processing");
+
+        int tkl = header_decoder().token_length();
+
+        // NOTE: Can't 100% remember if TokenDone is triggered on a 0-length token
+        process_until_experimental(Decoder::TokenDone);
+
+        return layer3::Token(token_decoder().data(), tkl);
     }
 };
 

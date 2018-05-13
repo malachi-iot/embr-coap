@@ -23,8 +23,8 @@ TEST_CASE("CoAP encoder tests", "[coap-encoder]")
 
     SECTION("1")
     {
-        layer3::MemoryChunk<128> chunk;
-        layer3::SimpleBufferedPipelineWriter writer(chunk);
+        moducom::pipeline::layer3::MemoryChunk<128> chunk;
+        moducom::pipeline::layer3::SimpleBufferedPipelineWriter writer(chunk);
         moducom::coap::experimental::BlockingEncoder encoder(writer);
 
         encoder.header(Header::Get);
@@ -42,8 +42,8 @@ TEST_CASE("CoAP encoder tests", "[coap-encoder]")
     }
     SECTION("Experimental encoder")
     {
-        layer3::MemoryChunk<128> chunk;
-        layer3::SimpleBufferedPipelineWriter writer(chunk);
+        moducom::pipeline::layer3::MemoryChunk<128> chunk;
+        moducom::pipeline::layer3::SimpleBufferedPipelineWriter writer(chunk);
         moducom::coap::experimental::BufferedEncoder encoder(writer);
         Header& header = *encoder.header();
         moducom::coap::layer1::Token& token = *encoder.token();

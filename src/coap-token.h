@@ -75,6 +75,20 @@ public:
 
 }
 
+
+namespace layer3 {
+
+class Token :
+        public moducom::pipeline::experimental::ReadOnlyMemoryChunk<uint8_t>
+{
+    typedef moducom::pipeline::experimental::ReadOnlyMemoryChunk<uint8_t> base_t;
+
+public:
+    Token(const uint8_t* data, size_t tkl) : base_t(data, tkl) {}
+};
+
+}
+
 class SimpleTokenGenerator
 {
     uint32_t current;

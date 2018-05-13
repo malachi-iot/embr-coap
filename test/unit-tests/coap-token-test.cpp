@@ -73,4 +73,18 @@ TEST_CASE("CoAP token tests", "[coap-token]")
 
         REQUIRE(token[0] == '3');
     }
+    SECTION("layer3 token")
+    {
+        moducom::coap::layer2::Token token;
+
+        token.set(0);
+
+        token[0] = '3';
+
+        REQUIRE(token[0] == '3');
+
+        moducom::coap::layer3::Token token2(token.data(), 4);
+
+        REQUIRE(token2.data() == token.data());
+    }
 }

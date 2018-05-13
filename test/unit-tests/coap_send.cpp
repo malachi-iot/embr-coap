@@ -114,7 +114,7 @@ TEST_CASE("CoAP message construction tests", "[coap-send]")
     }
     SECTION("OptionEncoderHelper")
     {
-        layer3::MemoryChunk<128> chunk;
+        moducom::pipeline::layer3::MemoryChunk<128> chunk;
         SimpleBufferedPipeline output(chunk);
         CoAPGenerator encoder(output);
         TestOptionEncoderHelper oeh;

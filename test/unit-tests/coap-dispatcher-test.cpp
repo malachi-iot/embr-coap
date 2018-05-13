@@ -176,7 +176,7 @@ TEST_CASE("CoAP dispatcher tests", "[coap-dispatcher]")
     {
         MemoryChunk chunk(buffer_plausible, sizeof(buffer_plausible));
 
-        layer3::MemoryChunk<512> dispatcherBuffer;
+        moducom::pipeline::layer3::MemoryChunk<512> dispatcherBuffer;
         ObserverContext context(dispatcherBuffer);
 
         FactoryDispatcherHandler<ObserverContext> fdh(context, test_factories);
