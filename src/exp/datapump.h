@@ -162,6 +162,7 @@ public:
         return netbuf;
     }
 
+    // call this after servicing input queued from transport in
     void dequeue_pop()
     {
         incoming.pop();

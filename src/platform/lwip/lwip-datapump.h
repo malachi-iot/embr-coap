@@ -69,16 +69,23 @@ public:
         nonblocking_datapump_loop(conn, datapump);
     }
 
+    bool empty(lwip_datapump_t& datapump)
+    {
+        return datapump.dequeue_empty();
+    }
+
+    // grab any data incoming from transport
     netbuf_t* front(addr_t* addr_out, lwip_datapump_t& datapump)
     {
-        return datapump.transport_front(addr_out);
+        return datapump.dequeue_in(addr_out);
     }
 
     void pop(lwip_datapump_t& datapump)
     {
-        datapump.transport_pop();
+        datapump.dequeue_pop();
     }
 
+    // queue up data to be sent over transport
     bool enqueue(netbuf_t& netbuf_out, const addr_t& addr, lwip_datapump_t& datapump)
     {
         return datapump.enqueue_out(netbuf_out, addr);

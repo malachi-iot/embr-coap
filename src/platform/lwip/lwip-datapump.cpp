@@ -1,4 +1,5 @@
 #include "lwip-datapump.h"
+#include "exp/datapump.hpp"
 
 #ifdef FEATURE_MC_MEM_LWIP
 
@@ -83,12 +84,11 @@ void nonblocking_datapump_loop(lwip::Netconn netconn, lwip_datapump_t& datapump)
     // NOTE: Shall be expected to be explicitly deleted by
     // whatever user responder is out there when it finally
     // services the queue.  Not ideal
-    LwipNetbuf* allocated = new LwipNetbuf(native_netbuf, true);
-    LwipNetbuf& netbuf_in = *allocated;
+    LwipNetbuf& netbuf_in =  * new LwipNetbuf(native_netbuf, true);
 #endif
 
     // 'in' netbufs always have length_processed == chunk.length
-    datapump.enqueue_out(netbuf_in, addr);
+    datapump.transport_in(netbuf_in, addr);
 }
 
 }}

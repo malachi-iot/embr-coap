@@ -14,19 +14,21 @@ class NetBufDecoder : public Decoder
     typedef Decoder base_t;
 
 protected:
-    netbuf_t netbuf;
+    netbuf_t m_netbuf;
     // FIX: intermediate chunk until context has a value instead of a ref for its chunk
     moducom::pipeline::MemoryChunk::readonly_t chunk;
     Context context;
 
 public:
     NetBufDecoder(const netbuf_t& netbuf) :
-        netbuf(netbuf),
+        m_netbuf(netbuf),
         chunk(netbuf.processed(), netbuf.length_processed()),
         // NOTE: Be advised that netbuf.end() differs from traditional iterator end
         // in that it is a bool indicating that we are ON the last chunk, not PAST it
         context(chunk, netbuf.end())
     {}
+
+    netbuf_t& netbuf() { return m_netbuf; }
 
     bool process_iterate()
     {

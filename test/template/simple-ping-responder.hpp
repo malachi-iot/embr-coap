@@ -14,7 +14,7 @@ void simple_ping_responder(TDataPumpHelper& sdh, typename TDataPumpHelper::datap
     typedef typename TDataPumpHelper::addr_t addr_t;
 
     // echo back out a raw ACK, with no trickery just raw decoding/encoding
-    if(!sdh.empty())
+    if(!sdh.empty(datapump))
     {
         addr_t ipaddr;
 
@@ -34,7 +34,7 @@ void simple_ping_responder(TDataPumpHelper& sdh, typename TDataPumpHelper::datap
         // FIX: Need a much more cohesive way of doing this
         delete &decoder.netbuf();
 
-        NetBufEncoder<netbuf_t&> encoder(new netbuf_t);
+        NetBufEncoder<netbuf_t&> encoder(* new netbuf_t);
 #endif
 
         sdh.pop(datapump);
