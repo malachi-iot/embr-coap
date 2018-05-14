@@ -9,6 +9,24 @@ namespace moducom { namespace coap {
 typedef lwip_datapump_t::netbuf_t netbuf_t;
 typedef lwip_datapump_t::addr_t addr_t;
 
+// although concerning that we can't pass in a context, should be a non issue
+// since we can only have one netconn listening on one port 5683.  Things will
+// get tricky if we want to listen on two ports at once though (ala DTLS)
+// we may very well have to refactor all the code to use RAW/PBUF to accomplish
+// that in a proper non-blocking way
+// http://www.ecoscentric.com/ecospro/doc/html/ref/lwip-api-sequential-netconn-new-with-callback.html
+void netconn_callback(netconn* conn, netconn_evt evt, uint16_t len)
+{
+    switch(evt)
+    {
+        case NETCONN_EVT_RCVPLUS:
+            // if len > 0, then basically we want to trigger a semaphore indicating
+            // data's available for this connection.  Ultimately we can hopefully
+            // get rid of our timeout/blocking code that way
+            break;
+    }
+}
+
 void nonblocking_datapump_loop(lwip::Netconn netconn, lwip_datapump_t& datapump)
 {
     addr_t addr;

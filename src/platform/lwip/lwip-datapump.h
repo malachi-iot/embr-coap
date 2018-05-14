@@ -27,6 +27,7 @@ struct LwipPortAndAddress
 typedef moducom::coap::DataPump<moducom::mem::LwipNetbuf, LwipPortAndAddress> lwip_datapump_t;
 
 extern void nonblocking_datapump_loop(lwip::Netconn netconn, lwip_datapump_t& datapump);
+extern void netconn_callback(netconn* conn, netconn_evt evt, uint16_t len);
 
 template <class TDataPump>
 class DatapumpHelperBase
@@ -46,15 +47,21 @@ public:
     typedef lwip_datapump_t::addr_t addr_t;
     typedef lwip_datapump_t datapump_t;
 
-    LwipDatapumpHelper() : conn(NETCONN_UDP)
+    LwipDatapumpHelper(int port = COAP_UDP_PORT) : 
+        conn(NETCONN_UDP, 0, netconn_callback)
     {
-        conn.bind(nullptr, COAP_UDP_PORT);
+        conn.bind(nullptr, port);
 
         // TODO: improve this by using callbacks/nonblocking functions
         // utilizing technique as described here https://stackoverflow.com/questions/10848851/lwip-rtos-how-to-avoid-netconn-block-the-thread-forever
         // but we are not using accept, so hopefully same approach applies to a direct
         // recv call
-        conn.set_recvtimeout(10);
+        conn.set_recvtimeout(2);
+    }
+
+    ~LwipDatapumpHelper()
+    {
+        conn.del();
     }
 
     void loop(lwip_datapump_t& datapump)
