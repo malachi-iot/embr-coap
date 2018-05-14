@@ -21,6 +21,7 @@ add_subdirectory(${MC_COAP_DIR} coap)
 
 add_executable(${PROJECT_NAME}
     "main.cpp"
+    simple-uri-responder.hpp
     mc/opts.h
     )
 

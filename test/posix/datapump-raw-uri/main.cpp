@@ -9,6 +9,8 @@
 using namespace std;
 using namespace moducom::coap;
 
+#include "simple-uri-responder.hpp"
+
 typedef NetBufDynamicExperimental netbuf_t;
 
 int main()
@@ -20,6 +22,8 @@ int main()
     for(;;)
     {
         sdh.loop();
+
+        simple_uri_responder(sdh, sockets_datapump);
     }
 
     return 0;
