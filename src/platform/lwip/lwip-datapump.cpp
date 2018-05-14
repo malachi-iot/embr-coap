@@ -2,6 +2,8 @@
 
 #ifdef FEATURE_MC_MEM_LWIP
 
+using namespace moducom::mem;
+
 namespace moducom { namespace coap {
 
 typedef lwip_datapump_t::netbuf_t netbuf_t;

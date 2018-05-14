@@ -87,7 +87,7 @@ private:
 
     static bool find_mapper_by_addr(const AddrMapper& mapper)
     {
-
+        return false;
     }
 
 public:
@@ -127,15 +127,16 @@ public:
 
 #ifdef FEATURE_MCCOAP_DATAPUMP_INLINE
     // enqueue complete netbuf for outgoing transport to pick up
-    void enqueue_out(TNetBuf&& out, const addr_t& addr_out)
+    bool enqueue_out(TNetBuf&& out, const addr_t& addr_out)
     {
         outgoing.emplace(std::forward<TNetBuf>(out), addr_out);
+        return true;
     }
 #else
     // enqueue complete netbuf for outgoing transport to pick up
-    void enqueue_out(TNetBuf& out, const addr_t& addr_out)
+    bool enqueue_out(TNetBuf& out, const addr_t& addr_out)
     {
-        outgoing.push(Item(out, addr_out));
+        return outgoing.push(Item(out, addr_out));
     }
 #endif
     // dequeue complete netbuf which was queued from transport in

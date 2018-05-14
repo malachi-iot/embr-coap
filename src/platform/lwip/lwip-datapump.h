@@ -24,7 +24,7 @@ struct LwipPortAndAddress
     }
 };
 
-typedef moducom::coap::DataPump<moducom::coap::LwipNetbuf, LwipPortAndAddress> lwip_datapump_t;
+typedef moducom::coap::DataPump<moducom::mem::LwipNetbuf, LwipPortAndAddress> lwip_datapump_t;
 
 extern void nonblocking_datapump_loop(lwip::Netconn netconn, lwip_datapump_t& datapump);
 
@@ -64,7 +64,7 @@ public:
 
     netbuf_t* dequeue(addr_t* addr_out, lwip_datapump_t& datapump)
     {
-        datapump.transport_front(addr_out);
+        return datapump.transport_front(addr_out);
     }
 
     void pop(lwip_datapump_t& datapump)
@@ -74,7 +74,7 @@ public:
 
     bool enqueue(netbuf_t& netbuf_out, const addr_t& addr, lwip_datapump_t& datapump)
     {
-        datapump.enqueue_out(netbuf_out, addr);
+        return datapump.enqueue_out(netbuf_out, addr);
     }
 
     lwip::Netconn& netconn() { return conn; } 

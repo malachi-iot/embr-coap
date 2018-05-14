@@ -132,15 +132,16 @@ class BufferedEncoder : public StateHelper<experimental::root_state_t>
     typedef StateHelper<state_t> base_t;
 
 
+    // TODO: We could union-ize buffer and optionEncoder, since buffer
+    // primarily serves header and token
+    pipeline::MemoryChunk buffer;
+
 #ifdef USE_EXP_V2
     v2::IManagedBuffer<>& mb;
 #else
     pipeline::IBufferedPipelineWriter& writer;
 #endif
 
-    // TODO: We could union-ize buffer and optionEncoder, since buffer
-    // primarily serves header and token
-    pipeline::MemoryChunk buffer;
     ExperimentalPrototypeBlockingOptionEncoder1 optionEncoder;
 
     // ensure header and token are advanced past
