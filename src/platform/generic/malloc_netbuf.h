@@ -109,6 +109,9 @@ public:
 #endif
 
 
+    // FIX: Careful because array allocation for inline alloc
+    // results in all these buffers all preallocating right away
+    // shouldn't stop our testing but not acceptable for production
     NetBufDynamicExperimental()
     {
         _first();

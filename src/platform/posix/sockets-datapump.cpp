@@ -94,10 +94,14 @@ void nonblocking_datapump_loop(int sockfd, sockets_datapump_t& sockets_datapump)
 
     int poll_result = poll(&fd, 1, 50); // wait for 50 ms for input
 
-    // TODO: display error if we get one
-    if(poll_result <= 0) return;
+    // This is a poll timeout, we expect this
+    if(poll_result == 0) return;
 
-    //if(newsockfd < 1) error("ERROR on accept");
+    if(poll_result == -1)
+        error("ERROR on poll");
+
+    if(poll_result != 1)
+        std::clog << "Warning: got unexpected poll_result: " << poll_result;
 
 #ifdef FEATURE_MCCOAP_DATAPUMP_INLINE
     netbuf_t temporary;
@@ -131,6 +135,10 @@ void nonblocking_datapump_loop(int sockfd, sockets_datapump_t& sockets_datapump)
 
         // FIX: Need to find a way to gracefully deallocate netbuf in, since it's now queued
         // and needs to hang around for a bit
+    }
+    else
+    {
+        error("ERROR on recvfrom");
     }
 }
 

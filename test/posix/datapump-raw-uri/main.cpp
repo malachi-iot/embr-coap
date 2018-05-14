@@ -21,6 +21,9 @@ int main()
 
     for(;;)
     {
+        // FIX: Strangely, the ping responder works OK btu this seemingly identical code
+        // blasts through poll() with no data and gets a 'Bad file descriptor' on the recvfrom call
+        // Thinking it might be related to how we do our netbuf allocations? Not sure
         sdh.loop();
 
         simple_uri_responder(sdh, sockets_datapump);
