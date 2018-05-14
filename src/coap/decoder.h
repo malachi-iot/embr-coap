@@ -23,6 +23,8 @@ public:
     NetBufDecoder(const netbuf_t& netbuf) :
         netbuf(netbuf),
         chunk(netbuf.processed(), netbuf.length_processed()),
+        // NOTE: Be advised that netbuf.end() differs from traditional iterator end
+        // in that it is a bool indicating that we are ON the last chunk, not PAST it
         context(chunk, netbuf.end())
     {}
 

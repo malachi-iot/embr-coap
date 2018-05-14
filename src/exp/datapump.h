@@ -20,6 +20,8 @@ namespace moducom { namespace coap {
 
 // passive push pull code to bridge transport level to application level
 // kind of a 2nd crack at 'experimental-packet-manager'
+// If this continues to be coap-inspecific, it would be reasonable to move this
+// datapump code out to mc-mem
 template <class TNetBuf, class TAddr, template <class> class TAllocator = ::std::allocator>
 class DataPump
 {
@@ -119,9 +121,14 @@ public:
     }
 
     // manually pop Item away, the above transport_out needs to be followed up
-    // by this call
-    void transport_pop()
+    // by this call.  Adding experimental retry hint as a way of transport-specific
+    // code indicating an ACK should be expected.
+    // Note that this entire datapump code
+    // has naturally unfolded as largely coap-inspecific, these ACK/CON interactions
+    // may be the first actual coap specificity
+    void transport_pop(bool experimental_retry_hint = false)
     {
+        // TODO: This is so far the ideal spot to kick off retry queuing
         outgoing.pop();
     }
 
