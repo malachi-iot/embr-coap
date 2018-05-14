@@ -145,6 +145,8 @@ void nonblocking_datapump_loop(int sockfd, sockets_datapump_t& sockets_datapump)
 
 int nonblocking_datapump_shutdown(int sockfd)
 {
+    std::clog << "Closing socket: " << sockfd;
+
     close(sockfd);
 
     return 0;

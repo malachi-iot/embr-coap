@@ -1,7 +1,7 @@
 #pragma once
 
 template <class TDataPumpHelper>
-void simple_uri_responder(TDataPumpHelper dh, typename TDataPumpHelper::datapump_t& datapump)
+void simple_uri_responder(TDataPumpHelper& dh, typename TDataPumpHelper::datapump_t& datapump)
 {
     typedef typename TDataPumpHelper::netbuf_t netbuf_t;
     typedef typename TDataPumpHelper::addr_t addr_t;
@@ -35,5 +35,18 @@ void simple_uri_responder(TDataPumpHelper dh, typename TDataPumpHelper::datapump
 #endif
 
         dh.pop(datapump);
+
+        encoder.header(create_response(header_in, Header::Code::Content));
+        encoder.token(token);
+        // optional and experimental.  Really I think we can do away with encoder.complete()
+        // because coap messages are indicated complete mainly by reaching the transport packet
+        // size - a mechanism which is fully outside the scope of the encoder
+        encoder.complete();
+
+#ifdef FEATURE_MCCOAP_DATAPUMP_INLINE
+        dh.enqueue(std::forward<netbuf_t>(encoder.netbuf()), ipaddr, datapump);
+#else
+        dh.enqueue(encoder.netbuf(), ipaddr, datapump);
+#endif
     }
 }

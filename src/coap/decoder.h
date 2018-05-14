@@ -117,6 +117,9 @@ public:
     bool process_option_experimental(Option::Numbers* number, uint16_t* length)
     {
         ASSERT_WARN(Decoder::Options, state(), "Must be in options processing mode");
+
+        process_iterate();
+
         ASSERT_WARN(OptionDecoder::ValueStart, option_decoder().state(), "Must be at OptionValueStart");
 
         *number = (Option::Numbers) option_decoder().option_delta();
