@@ -1,10 +1,13 @@
 #pragma once
 
+#include <estd/string.h>
+
 template <class TDataPumpHelper>
 void simple_uri_responder(TDataPumpHelper& dh, typename TDataPumpHelper::datapump_t& datapump)
 {
     typedef typename TDataPumpHelper::netbuf_t netbuf_t;
     typedef typename TDataPumpHelper::addr_t addr_t;
+    typedef typename moducom::pipeline::MemoryChunk::readonly_t ro_chunk_t;
 
     addr_t ipaddr;
 
@@ -24,6 +27,20 @@ void simple_uri_responder(TDataPumpHelper& dh, typename TDataPumpHelper::datapum
         uint16_t length;
 
         decoder.process_option_experimental(&number, &length);
+
+        ro_chunk_t option_value = decoder.get_process_option_experimental();
+
+        // estd non-null terminated strings *not quite* ready for primetime
+        //estd::layer3::string s((char*)option_value.data(), option_value.length());
+
+        char buf[128];
+
+        //buf[s.copy(buf, sizeof(buf))] = 0;
+        //std::clog << "Got URI: " << s;
+
+        buf[option_value.copy_to(buf, sizeof(buf))] = 0;
+
+        std::clog << "Got URI: " << buf << std::endl;
 
 #ifdef FEATURE_MCCOAP_DATAPUMP_INLINE
         NetBufEncoder<netbuf_t> encoder;

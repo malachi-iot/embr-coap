@@ -12,11 +12,12 @@ class NetBufDecoder : public Decoder
 {
     typedef TNetBuf netbuf_t;
     typedef Decoder base_t;
+    typedef moducom::pipeline::MemoryChunk::readonly_t ro_chunk_t;
 
 protected:
     netbuf_t m_netbuf;
     // FIX: intermediate chunk until context has a value instead of a ref for its chunk
-    moducom::pipeline::MemoryChunk::readonly_t chunk;
+    ro_chunk_t chunk;
     Context context;
 
 public:
@@ -126,6 +127,21 @@ public:
         *length = option_decoder().option_length();
 
         return true;
+    }
+
+
+    ro_chunk_t get_process_option_experimental()
+    {
+        int value_length = option_decoder().option_length();
+        const uint8_t* raw = context.chunk.data(context.pos);
+        int actual_remaining_length = context.chunk.length() - context.pos;
+
+        // it's implied there's another chunk coming if value_length
+        // exceeds actual_remaining_length
+        if(value_length > actual_remaining_length)
+            return ro_chunk_t(raw, actual_remaining_length);
+        else
+            return ro_chunk_t(raw, value_length);
     }
 };
 
