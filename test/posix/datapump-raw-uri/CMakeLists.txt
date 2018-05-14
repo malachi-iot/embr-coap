@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.8)
 
-project(datapump)
+project(datapump-raw-uri)
 
 set(CMAKE_CXX_STANDARD 11)
 
@@ -22,7 +22,6 @@ add_subdirectory(${MC_COAP_DIR} coap)
 add_executable(${PROJECT_NAME}
     "main.cpp"
     mc/opts.h
-    simple-ping-responder.hpp
     )
 
 target_link_libraries(${PROJECT_NAME} moducom-coap-lib moducom_memory_lib)
