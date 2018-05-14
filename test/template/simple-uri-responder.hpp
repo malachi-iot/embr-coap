@@ -18,6 +18,13 @@ void simple_uri_responder(TDataPumpHelper dh, typename TDataPumpHelper::datapump
         // populate token, if present.  Expects decoder to be at HeaderDone phase
         decoder.process_token_experimental(&token);
 
+        decoder.process_option_experimental();
+
+        Option::Numbers number;
+        uint16_t length;
+
+        decoder.process_option_experimental(&number, &length);
+
 #ifdef FEATURE_MCCOAP_DATAPUMP_INLINE
         NetBufEncoder<netbuf_t> encoder;
 #else

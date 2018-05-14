@@ -99,6 +99,31 @@ public:
 
         return layer3::Token(token_decoder().data(), tkl);
     }
+
+    // kicks off option processing
+    bool process_option_experimental()
+    {
+        ASSERT_WARN(Decoder::TokenDone, state(), "Must be at end of token processing");
+
+        // should move us into OptionsStart
+        process_iterate();
+        // should move us into Options or OptionsDone
+        process_iterate();
+
+        return true;
+    }
+
+
+    bool process_option_experimental(Option::Numbers* number, uint16_t* length)
+    {
+        ASSERT_WARN(Decoder::Options, state(), "Must be in options processing mode");
+        ASSERT_WARN(OptionDecoder::ValueStart, option_decoder().state(), "Must be at OptionValueStart");
+
+        *number = (Option::Numbers) option_decoder().option_delta();
+        *length = option_decoder().option_length();
+
+        return true;
+    }
 };
 
 }}
