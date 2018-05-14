@@ -58,6 +58,11 @@ public:
         datapump.dequeue_pop();
     }
 
+    bool empty(sockets_datapump_t& datapump = sockets_datapump)
+    {
+        return datapump.dequeue_empty();
+    }
+
 // queue up to send out over transport
 #ifdef FEATURE_MCCOAP_DATAPUMP_INLINE
     void enqueue(

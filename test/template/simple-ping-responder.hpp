@@ -13,18 +13,15 @@ void simple_ping_responder(TDataPumpHelper& sdh, typename TDataPumpHelper::datap
     typedef typename TDataPumpHelper::netbuf_t netbuf_t;
     typedef typename TDataPumpHelper::addr_t addr_t;
 
-    addr_t ipaddr;
-    netbuf_t* netbuf;
-
-    netbuf = sdh.front(&ipaddr, datapump);
-
     // echo back out a raw ACK, with no trickery just raw decoding/encoding
-    if(netbuf != NULLPTR)
+    if(!sdh.empty())
     {
-        //cout << " ip=" << ipaddr.sin_addr.s_addr << endl;
+        addr_t ipaddr;
 
-        NetBufDecoder<netbuf_t&> decoder(*netbuf);
+        NetBufDecoder<netbuf_t&> decoder(*sdh.front(&ipaddr, datapump));
         layer2::Token token;
+
+        //clog << " ip=" << ipaddr.sin_addr.s_addr << endl;
 
         Header header_in = decoder.process_header_experimental();
 
@@ -32,24 +29,17 @@ void simple_ping_responder(TDataPumpHelper& sdh, typename TDataPumpHelper::datap
         decoder.process_token_experimental(&token);
 
 #ifdef FEATURE_MCCOAP_DATAPUMP_INLINE
-        netbuf_t temporary;
-
-        // in this scenario, netbuf gets copied around.  Ideally we'd actually do an emplace
-        // but code isn't quite there yet
-        netbuf = &temporary;
+        NetBufEncoder<netbuf_t> encoder;
 #else
         // FIX: Need a much more cohesive way of doing this
-        delete netbuf;
-        netbuf = new netbuf_t;
+        delete &decoder.netbuf();
+
+        NetBufEncoder<netbuf_t&> encoder(new netbuf_t);
 #endif
 
         sdh.pop(datapump);
 
-        // TODO: Do away with explicit 'temporary' netbuf and make
-        // it a NetBufEncoder<netbuf_t>
-        NetBufEncoder<netbuf_t&> encoder(*netbuf);
-
-        //cout << "mid out=" << header.message_id() << endl;
+        //clog << "mid out=" << header.message_id() << endl;
 
         encoder.header(create_response(header_in, Header::Code::Content));
         encoder.token(token);
@@ -59,9 +49,9 @@ void simple_ping_responder(TDataPumpHelper& sdh, typename TDataPumpHelper::datap
         encoder.complete();
 
 #ifdef FEATURE_MCCOAP_DATAPUMP_INLINE
-        sdh.enqueue(std::forward<netbuf_t>(temporary), ipaddr, datapump);
+        sdh.enqueue(std::forward<netbuf_t>(encoder.netbuf()), ipaddr, datapump);
 #else
-        sdh.enqueue(*netbuf, ipaddr, datapump);
+        sdh.enqueue(encoder.netbuf(), ipaddr, datapump);
 #endif
     }
 }
