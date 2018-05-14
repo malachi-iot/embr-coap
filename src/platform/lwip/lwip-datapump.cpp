@@ -20,7 +20,15 @@ void nonblocking_datapump_loop(lwip::Netconn netconn, lwip_datapump_t& datapump)
     {
         printf("nonblocking_datapump_loop: send to port: %d\n", addr.port);
 
-        err = netconn.sendTo(netbuf_out->native(), &addr.addr, addr.port);
+        native_netbuf = netbuf_out->native();
+
+        // FIX: netconn+netbuf setup such that proper size is tricky to send.
+        // netbuf requires pre-allocation, nearly demanding you don't fill the
+        // entire buf, but then when it comes time to send there's no specifier
+        // for sending less than the full buffer.  Furthermore, this creates
+        // a firm problem since CoAP uses UDP packet size to determine payload
+        // size
+        err = netconn.sendTo(native_netbuf, &addr.addr, addr.port);
 
         printf("err=%d\n", err);
 
