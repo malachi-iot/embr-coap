@@ -24,6 +24,13 @@ void nonblocking_datapump_loop(lwip::Netconn netconn, lwip_datapump_t& datapump)
 
         native_netbuf = netbuf_out->native();
 
+        // Two things to note:
+        // a) pbuf_realloc(native_netbuf->p) is *slightly* out of spec,
+        //    but it's the only way I know to shrink-to-fit the netbuf to the right size for sending
+        // b) netbuf_out.length_processed is *not* total length, only the encoded length
+        //    of the last chunk.  This is a FIX because it WILL break soon 
+        pbuf_realloc(native_netbuf->p, netbuf_out->length_processed());
+
         // FIX: netconn+netbuf setup such that proper size is tricky to send.
         // netbuf requires pre-allocation, nearly demanding you don't fill the
         // entire buf, but then when it comes time to send there's no specifier
@@ -47,14 +54,24 @@ void nonblocking_datapump_loop(lwip::Netconn netconn, lwip_datapump_t& datapump)
     // is too unweildy (wants to be a pointer) could make a wrapper for it
     // in that instance
 
+#ifdef FEATURE_MCCOAP_DATAPUMP_INLINE
     LwipNetbuf netbuf_in(native_netbuf, true);
+#else
+    delete netbuf_out;
 
+    LwipNetbuf* allocated = new LwipNetbuf(native_netbuf, true);
+    LwipNetbuf& netbuf_in = *allocated;
+#endif
+
+    // initialize address with the address from incoming netbuf
     new (&addr) addr_t(native_netbuf);
 
     // TODO: Make a specialized "in netbuf" whose length_processed always matches
     // the provided underlying netbuf length.
     // FIX: above will solve also the issue of 'next()' not populating length_processed
     // as needed
+    // NOTE: This is affected possibly by lwip netbuf semi-inflexibility on precise
+    // buf length (plan is to peer into underlying PBUF and reduce tot_len)
     netbuf_in.advance(netbuf_in.length_processed());
 
     datapump.enqueue_out(netbuf_in, addr);
