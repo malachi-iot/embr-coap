@@ -2,6 +2,8 @@
 #include <platform/lwip/lwip-datapump.h>
 #include <lwip/api.hpp>
 
+#include <lwipopts.h>
+
 // FIX: temporarily conflating datapump and ping responder
 #include <simple-ping-responder.hpp>
 
