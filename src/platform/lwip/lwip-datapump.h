@@ -69,7 +69,7 @@ public:
         nonblocking_datapump_loop(conn, datapump);
     }
 
-    netbuf_t* dequeue(addr_t* addr_out, lwip_datapump_t& datapump)
+    netbuf_t* front(addr_t* addr_out, lwip_datapump_t& datapump)
     {
         return datapump.transport_front(addr_out);
     }

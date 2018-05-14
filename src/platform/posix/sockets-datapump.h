@@ -48,7 +48,7 @@ public:
 
     // dequeue input that was previously queued up from transport
     // returns NULL if no item queued
-    netbuf_t* dequeue(addr_t* addr_in, sockets_datapump_t& datapump = sockets_datapump)
+    netbuf_t* front(addr_t* addr_in, sockets_datapump_t& datapump = sockets_datapump)
     {
         return datapump.dequeue_in(addr_in);
     }

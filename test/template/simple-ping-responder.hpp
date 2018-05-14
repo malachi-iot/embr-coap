@@ -16,7 +16,7 @@ void simple_ping_responder(TDataPumpHelper& sdh, typename TDataPumpHelper::datap
     addr_t ipaddr;
     netbuf_t* netbuf;
 
-    netbuf = sdh.dequeue(&ipaddr, datapump);
+    netbuf = sdh.front(&ipaddr, datapump);
 
     // echo back out a raw ACK, with no trickery just raw decoding/encoding
     if(netbuf != NULLPTR)
@@ -45,6 +45,8 @@ void simple_ping_responder(TDataPumpHelper& sdh, typename TDataPumpHelper::datap
 
         sdh.pop(datapump);
 
+        // TODO: Do away with explicit 'temporary' netbuf and make
+        // it a NetBufEncoder<netbuf_t>
         NetBufEncoder<netbuf_t&> encoder(*netbuf);
 
         //cout << "mid out=" << header.message_id() << endl;
