@@ -159,11 +159,13 @@ public:
 
 
     // to get options which are 0 length on the value (have no value)
-    void option_experimental(Option::Numbers* number)
+    void option_experimental(Option::Numbers* number, uint16_t* l = NULLPTR)
     {
         uint16_t length;
 
         process_option_header_experimental(number, &length);
+
+        if(l) *l = length;
 
         //ASSERT_WARN(0, length, "Expected no value for this option");
 

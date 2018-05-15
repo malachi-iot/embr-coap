@@ -18,6 +18,92 @@ void encode_header_and_token(moducom::coap::NetBufEncoder<TNetBuf>& encoder,
     encoder.token(context.token());
 }
 
+
+namespace moducom { namespace coap {
+
+template <class TNetBuf>
+class experimental_option_iterator
+{
+    typedef NetBufDecoder<TNetBuf> decoder_t;
+    typedef Option::Numbers value_type;
+
+    decoder_t& decoder;
+    Option::Numbers number;
+
+    void partial_advance_and_get_number()
+    {
+        using namespace moducom::coap;
+        using namespace std;
+
+        decoder.option_experimental(&number);
+#ifdef FEATURE_ESTD_IOSTREAM_NATIVE
+        std::clog << "Option: " << number;
+#endif
+    }
+
+public:
+    experimental_option_iterator(decoder_t& decoder, bool begin_option = false) :
+        decoder(decoder)
+    {
+        number = Option::Zeroed;
+        // NOT repeatable
+        if(begin_option)
+            decoder.begin_option_experimental();
+
+        partial_advance_and_get_number();
+    }
+
+    experimental_option_iterator& operator ++()
+    {
+        decoder.option_next_experimental();
+        if(decoder.state() == Decoder::Options)
+        {
+#ifdef FEATURE_ESTD_IOSTREAM_NATIVE
+            std::clog << std::endl;
+#endif
+            partial_advance_and_get_number();
+        }
+        else
+        {
+#ifdef FEATURE_ESTD_IOSTREAM_NATIVE
+            std::clog << std::endl;
+#endif
+        }
+
+        return *this;
+    }
+
+    experimental_option_iterator operator ++(int)
+    {
+        experimental_option_iterator temp(decoder, number);
+        operator ++();
+        return temp;
+    }
+
+    operator const value_type&()
+    {
+        return number;
+    }
+
+    estd::layer3::basic_string<const char, false> string()
+    {
+        using namespace moducom::coap;
+        using namespace std;
+
+        estd::layer3::basic_string<const char, false> s = decoder.option_string_experimental();
+
+#ifdef FEATURE_ESTD_IOSTREAM_NATIVE
+        std::clog << " (";
+        ::operator <<(std::clog, s);
+        std::clog << ')';
+#endif
+        return s;
+    }
+};
+
+}}
+
+
 template <class TDataPump>
 void simple_uri_responder2(TDataPump& datapump, typename TDataPump::IncomingContext& context)
 {
@@ -30,27 +116,16 @@ void simple_uri_responder2(TDataPump& datapump, typename TDataPump::IncomingCont
 
     estd::layer1::string<128> uri;
     Header::Code::Codes response_code = Header::Code::NotFound;
-
-    // NOTE: Needs to be out here like this, since CoAP presents option numbers
-    // as deltas
-    Option::Numbers number = Option::Zeroed;
+    experimental_option_iterator<netbuf_t&> it(decoder);
 
     while(decoder.state() == Decoder::Options)
     {
-        decoder.option_experimental(&number);
-
-#ifdef FEATURE_ESTD_IOSTREAM_NATIVE
-        std::clog << "Option: " << number;
-#endif
+        Option::Numbers number = it;
 
         if(number == Option::UriPath)
         {
             const estd::layer3::basic_string<const char, false> s =
-                    decoder.option_string_experimental();
-
-#ifdef FEATURE_ESTD_IOSTREAM_NATIVE
-            std::clog << " (" << s << ')';
-#endif
+                    it.string();
 
             if(s == "test") response_code = Header::Code::Content;
 
@@ -58,14 +133,10 @@ void simple_uri_responder2(TDataPump& datapump, typename TDataPump::IncomingCont
             uri += '/';
         }
 
-#ifdef FEATURE_ESTD_IOSTREAM_NATIVE
-        std::clog << std::endl;
-#endif
-
         // FIX: Not accounting for chunking - in that case
         // we would need multiple calls to option_string_experimental()
         // before calling next
-        decoder.option_next_experimental();
+        ++it;
     }
 
 #ifdef FEATURE_MCCOAP_DATAPUMP_INLINE
