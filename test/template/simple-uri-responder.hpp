@@ -19,6 +19,7 @@ void simple_uri_responder(TDataPumpHelper& dh, typename TDataPumpHelper::datapum
         NetBufDecoder<netbuf_t&> decoder(*dh.front(&ipaddr, datapump));
         layer2::Token token;
         bool gotit = false;
+        estd::layer1::string<128> uri;
 
         Header header_in = decoder.process_header_experimental();
 
@@ -49,6 +50,14 @@ void simple_uri_responder(TDataPumpHelper& dh, typename TDataPumpHelper::datapum
 #endif
 
                 gotit = s == "test";
+
+                if(uri.size() == 0)
+                    uri = s;
+                else
+                {
+                    uri += '/';
+                    uri += s;
+                }
             }
 
 #ifdef FEATURE_ESTD_IOSTREAM_NATIVE
