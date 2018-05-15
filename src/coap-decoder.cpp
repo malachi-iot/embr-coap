@@ -74,6 +74,8 @@ bool Decoder::process_iterate(Context& context)
             init_option_decoder();
             optionHolder.number_delta = 0;
             optionHolder.length = 0;
+            // We have to do some level of processing on OptionsStart to know
+            // whether we have any optons at all.  So remember
             pos += optionDecoder.process_iterate(chunk.remainder(pos), &optionHolder);
             if(optionDecoder.state() == OptionDecoder::Payload)
                 state(OptionsDone);

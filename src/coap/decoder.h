@@ -21,6 +21,62 @@ protected:
     ro_chunk_t chunk;
     Context context;
 
+
+    bool process_iterate()
+    {
+        // TODO: Will know how to advance through netbuf
+        return base_t::process_iterate(context);
+    }
+
+    // NOTE: Actually shaping up to be an internal call, because we always want
+    // to move past OptionValueDone when evaluating/processing options and this
+    // call does not do that
+    bool process_option_header_experimental(Option::Numbers* number, uint16_t* length)
+    {
+        ASSERT_WARN(Decoder::Options, state(), "Must be in options processing mode");
+
+        process_iterate();
+
+        ASSERT_WARN(OptionDecoder::ValueStart, option_decoder().state(), "Must be at OptionValueStart");
+
+        (int&)(*number) += option_decoder().option_delta();
+        *length = option_decoder().option_length();
+
+        return true;
+    }
+
+    // internal call , needs to be mated to process_option_header_experimental
+    ro_chunk_t process_option_value_experimental(bool* partial = NULLPTR)
+    {
+        ASSERT_WARN(Decoder::Options, state(), "Must be in options processing mode");
+
+        // assert that we are at ValueStart or OptionValue (latter when chunked)
+        ASSERT_WARN(OptionDecoder::ValueStart, option_decoder().state(), "Must be at ValueStart");
+
+        int value_length = option_decoder().option_length();
+        const uint8_t* raw = context.chunk.data(context.pos);
+        int actual_remaining_length = context.chunk.length() - context.pos;
+        bool _partial = value_length > actual_remaining_length;
+
+        if(partial != NULLPTR) *partial = _partial;
+
+        // move forward past value portion
+        base_t::process_iterate(context);
+
+        ASSERT_WARN(Option::OptionValueDone, option_decoder().state(), "Unexpected state");
+
+        // move past option value done.  NOTE this actually moves into domain of next option,
+        // OR moves right by OptionsDone
+        process_iterate();
+
+        // it's implied there's another chunk coming if value_length
+        // exceeds actual_remaining_length
+        if(_partial)
+            return ro_chunk_t(raw, actual_remaining_length);
+        else
+            return ro_chunk_t(raw, value_length);
+    }
+
 public:
     NetBufDecoder(const netbuf_t& netbuf) :
         m_netbuf(netbuf),
@@ -31,12 +87,6 @@ public:
     {}
 
     netbuf_t& netbuf() { return m_netbuf; }
-
-    bool process_iterate()
-    {
-        // TODO: Will know how to advance through netbuf
-        return base_t::process_iterate(context);
-    }
 
     // keep processing until we encounter state
     // keep processing for max_attempts
@@ -107,62 +157,37 @@ public:
     {
         ASSERT_WARN(Decoder::TokenDone, state(), "Must be at end of token processing");
 
-        // should move us into OptionsStart
+        // move us into OptionsStart
         process_iterate();
-        // should move us into Options or OptionsDone
+        // move us into Options or OptionsDone
         process_iterate();
 
         return true;
     }
 
 
-    bool process_option_experimental(Option::Numbers* number, uint16_t* length)
-    {
-        ASSERT_WARN(Decoder::Options, state(), "Must be in options processing mode");
-
-        process_iterate();
-
-        ASSERT_WARN(OptionDecoder::ValueStart, option_decoder().state(), "Must be at OptionValueStart");
-
-        *number = (Option::Numbers) option_decoder().option_delta();
-        *length = option_decoder().option_length();
-
-        return true;
-    }
-
-
-    ro_chunk_t get_process_option_experimental(bool* partial = NULLPTR)
-    {
-        ASSERT_WARN(Decoder::Options, state(), "Must be in options processing mode");
-
-        // assert that we are at ValueStart or OptionValue
-        //ASSERT_WARN(OptionDecoder::ValueStart, option_decoder().state(), "Must be at OptionValueStart");
-
-        int value_length = option_decoder().option_length();
-        const uint8_t* raw = context.chunk.data(context.pos);
-        int actual_remaining_length = context.chunk.length() - context.pos;
-        bool _partial = value_length > actual_remaining_length;
-
-        if(partial != NULLPTR) *partial = _partial;
-
-        // move forward past value portion
-        base_t::process_iterate(context);
-
-        // it's implied there's another chunk coming if value_length
-        // exceeds actual_remaining_length
-        if(_partial)
-            return ro_chunk_t(raw, actual_remaining_length);
-        else
-            return ro_chunk_t(raw, value_length);
-    }
-
-    const estd::layer3::basic_string<char, false> process_option_string_experimental(Option::Numbers* number, bool* partial = NULLPTR)
+    // to get options which are 0 length on the value (have no value)
+    void option_experimental(Option::Numbers* number)
     {
         uint16_t length;
 
-        process_option_experimental(number, &length);
+        process_option_header_experimental(number, &length);
 
-        ro_chunk_t option_value = get_process_option_experimental(partial);
+        ASSERT_WARN(0, length, "Expected no value for this option");
+
+        // Move past option value start
+        process_iterate();
+        // Move past option value done
+        process_iterate();
+    }
+
+    const estd::layer3::basic_string<char, false> option_string_experimental(Option::Numbers* number, bool* partial = NULLPTR)
+    {
+        uint16_t length;
+
+        process_option_header_experimental(number, &length);
+
+        ro_chunk_t option_value = process_option_value_experimental(partial);
 
         const estd::layer3::basic_string<char, false> s(length,
                                                         (char*) option_value.data(), length);

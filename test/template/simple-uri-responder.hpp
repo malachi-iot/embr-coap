@@ -25,11 +25,14 @@ void simple_uri_responder(TDataPumpHelper& dh, typename TDataPumpHelper::datapum
 
         decoder.begin_option_experimental();
 
+        // NOTE: Needs to be out here like this, since CoAP presents option numbers
+        // as deltas
+        Option::Numbers number = Option::Zeroed;
+
         while(decoder.state() == Decoder::Options)
         {
-            Option::Numbers number;
             const estd::layer3::basic_string<char, false> s =
-                    decoder.process_option_string_experimental(&number);
+                    decoder.option_string_experimental(&number);
 
             if(number == Option::UriPath)
             {

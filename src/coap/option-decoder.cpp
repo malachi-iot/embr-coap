@@ -174,7 +174,7 @@ bool OptionDecoder::process_iterate(uint8_t value)
         case ValueStart:
             // NOTE: Be careful, value_length occupies same space as buffer[4]
             value_length = option_length();
-            state(OptionValue);
+            state(value_length == 0 ? OptionValueDone : OptionValue);
             return false;
 
         case OptionValue:

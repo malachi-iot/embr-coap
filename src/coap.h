@@ -84,6 +84,8 @@ public:
 
     enum Numbers
     {
+        // custom value to initialize to zero for convenience with delta operations
+        Zeroed = 0,
         /// format: opaque
         IfMatch = 1,
         // format: string
