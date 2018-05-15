@@ -1,6 +1,7 @@
 #pragma once
 
 #include <estd/string.h>
+#include <coap/platform.h>
 
 template <class TDataPumpHelper>
 void simple_uri_responder(TDataPumpHelper& dh, typename TDataPumpHelper::datapump_t& datapump)
@@ -24,21 +25,20 @@ void simple_uri_responder(TDataPumpHelper& dh, typename TDataPumpHelper::datapum
 
         decoder.begin_option_experimental();
 
-        if(decoder.state() == Decoder::Options)
+        while(decoder.state() == Decoder::Options)
         {
+            Option::Numbers number;
             const estd::layer3::basic_string<char, false> s =
-                    decoder.process_option_string_experimental();
+                    decoder.process_option_string_experimental(&number);
 
-#ifdef __USE_POSIX
-            char buf[128];
-
-            buf[s.copy(buf, sizeof(buf))] = 0;
-            //std::clog << "Got URI: " << s;
-
-            std::clog << "Got URI: " << buf << std::endl;
+            if(number == Option::UriPath)
+            {
+#ifdef FEATURE_ESTD_IOSTREAM_NATIVE
+                std::clog << "Got URI: " << s << std::endl;
 #endif
 
-            gotit = s == "test";
+                gotit = s == "test";
+            }
         }
 
 #ifdef FEATURE_MCCOAP_DATAPUMP_INLINE

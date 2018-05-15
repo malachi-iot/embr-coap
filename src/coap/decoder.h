@@ -133,12 +133,20 @@ public:
 
     ro_chunk_t get_process_option_experimental(bool* partial = NULLPTR)
     {
+        ASSERT_WARN(Decoder::Options, state(), "Must be in options processing mode");
+
+        // assert that we are at ValueStart or OptionValue
+        //ASSERT_WARN(OptionDecoder::ValueStart, option_decoder().state(), "Must be at OptionValueStart");
+
         int value_length = option_decoder().option_length();
         const uint8_t* raw = context.chunk.data(context.pos);
         int actual_remaining_length = context.chunk.length() - context.pos;
         bool _partial = value_length > actual_remaining_length;
 
         if(partial != NULLPTR) *partial = _partial;
+
+        // move forward past value portion
+        base_t::process_iterate(context);
 
         // it's implied there's another chunk coming if value_length
         // exceeds actual_remaining_length
@@ -148,12 +156,11 @@ public:
             return ro_chunk_t(raw, value_length);
     }
 
-    const estd::layer3::basic_string<char, false> process_option_string_experimental(bool* partial = NULLPTR)
+    const estd::layer3::basic_string<char, false> process_option_string_experimental(Option::Numbers* number, bool* partial = NULLPTR)
     {
-        Option::Numbers number;
         uint16_t length;
 
-        process_option_experimental(&number, &length);
+        process_option_experimental(number, &length);
 
         ro_chunk_t option_value = get_process_option_experimental(partial);
 
