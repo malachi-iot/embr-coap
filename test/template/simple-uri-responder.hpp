@@ -15,32 +15,31 @@ void simple_uri_responder(TDataPumpHelper& dh, typename TDataPumpHelper::datapum
     {
         NetBufDecoder<netbuf_t&> decoder(*dh.front(&ipaddr, datapump));
         layer2::Token token;
+        bool gotit = false;
 
         Header header_in = decoder.process_header_experimental();
 
         // populate token, if present.  Expects decoder to be at HeaderDone phase
         decoder.process_token_experimental(&token);
 
-        decoder.process_option_experimental();
+        decoder.begin_option_experimental();
 
-        Option::Numbers number;
-        uint16_t length;
+        if(decoder.state() == Decoder::Options)
+        {
+            const estd::layer3::basic_string<char, false> s =
+                    decoder.process_option_string_experimental();
 
-        decoder.process_option_experimental(&number, &length);
+#ifdef __USE_POSIX
+            char buf[128];
 
-        ro_chunk_t option_value = decoder.get_process_option_experimental();
+            buf[s.copy(buf, sizeof(buf))] = 0;
+            //std::clog << "Got URI: " << s;
 
-        // estd non-null terminated strings *not quite* ready for primetime
-        //estd::layer3::string s((char*)option_value.data(), option_value.length());
+            std::clog << "Got URI: " << buf << std::endl;
+#endif
 
-        char buf[128];
-
-        //buf[s.copy(buf, sizeof(buf))] = 0;
-        //std::clog << "Got URI: " << s;
-
-        buf[option_value.copy_to(buf, sizeof(buf))] = 0;
-
-        std::clog << "Got URI: " << buf << std::endl;
+            gotit = s == "test";
+        }
 
 #ifdef FEATURE_MCCOAP_DATAPUMP_INLINE
         NetBufEncoder<netbuf_t> encoder;
@@ -53,7 +52,8 @@ void simple_uri_responder(TDataPumpHelper& dh, typename TDataPumpHelper::datapum
 
         dh.pop(datapump);
 
-        encoder.header(create_response(header_in, Header::Code::Content));
+        encoder.header(create_response(header_in,
+                                       gotit ? Header::Code::Content : Header::Code::NotFound));
         encoder.token(token);
         // optional and experimental.  Really I think we can do away with encoder.complete()
         // because coap messages are indicated complete mainly by reaching the transport packet

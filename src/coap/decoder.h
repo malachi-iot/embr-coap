@@ -2,6 +2,7 @@
 
 #include "../coap-decoder.h"
 #include "../coap-token.h"
+#include <estd/string.h>
 
 namespace moducom { namespace coap {
 
@@ -102,7 +103,7 @@ public:
     }
 
     // kicks off option processing
-    bool process_option_experimental()
+    bool begin_option_experimental()
     {
         ASSERT_WARN(Decoder::TokenDone, state(), "Must be at end of token processing");
 
@@ -130,18 +131,36 @@ public:
     }
 
 
-    ro_chunk_t get_process_option_experimental()
+    ro_chunk_t get_process_option_experimental(bool* partial = NULLPTR)
     {
         int value_length = option_decoder().option_length();
         const uint8_t* raw = context.chunk.data(context.pos);
         int actual_remaining_length = context.chunk.length() - context.pos;
+        bool _partial = value_length > actual_remaining_length;
+
+        if(partial != NULLPTR) *partial = _partial;
 
         // it's implied there's another chunk coming if value_length
         // exceeds actual_remaining_length
-        if(value_length > actual_remaining_length)
+        if(_partial)
             return ro_chunk_t(raw, actual_remaining_length);
         else
             return ro_chunk_t(raw, value_length);
+    }
+
+    const estd::layer3::basic_string<char, false> process_option_string_experimental(bool* partial = NULLPTR)
+    {
+        Option::Numbers number;
+        uint16_t length;
+
+        process_option_experimental(&number, &length);
+
+        ro_chunk_t option_value = get_process_option_experimental(partial);
+
+        const estd::layer3::basic_string<char, false> s(length,
+                                                        (char*) option_value.data(), length);
+
+        return s;
     }
 };
 

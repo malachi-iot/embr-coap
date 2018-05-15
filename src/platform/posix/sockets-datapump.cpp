@@ -11,6 +11,7 @@
 #include <poll.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include <signal.h> // for POLL_IN
 
 using namespace moducom::coap;
 
