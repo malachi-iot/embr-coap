@@ -183,14 +183,14 @@ public:
         process_iterate();
     }
 
-    const estd::layer3::basic_string<char, false> option_string_experimental(bool* partial = NULLPTR)
+    const estd::layer3::basic_string<const char, false> option_string_experimental(bool* partial = NULLPTR)
     {
         uint16_t length = option_decoder().option_length();
 
         ro_chunk_t option_value = process_option_value_experimental(partial);
 
-        const estd::layer3::basic_string<char, false> s(length,
-                                                        (char*) option_value.data(), length);
+        const estd::layer3::basic_string<const char, false> s(length,
+                                                        (const char*) option_value.data(), length);
 
         return s;
     }

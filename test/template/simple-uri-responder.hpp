@@ -45,7 +45,7 @@ void simple_uri_responder2(TDataPump& datapump, typename TDataPump::IncomingCont
 
         if(number == Option::UriPath)
         {
-            const estd::layer3::basic_string<char, false> s =
+            const estd::layer3::basic_string<const char, false> s =
                     decoder.option_string_experimental();
 
 #ifdef FEATURE_ESTD_IOSTREAM_NATIVE
