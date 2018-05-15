@@ -30,9 +30,9 @@ int main()
         // Thinking it might be related to how we do our netbuf allocations? Not sure
         sdh.loop(sockets_datapump);
 
-        simple_uri_responder(sdh, sockets_datapump);
+        //simple_uri_responder(sdh, sockets_datapump);
 
-        sockets_datapump.service(_service, true);
+        sockets_datapump.service(simple_uri_responder2, true);
     }
 
     return 0;

@@ -28,12 +28,13 @@ public:
     const TAddr& address() const { return addr; }
 };
 
+template <bool inline_token>
+class TokenContext;
 
-// TODO: Split this into InlineTokenContext and (name?)
-// or perhaps use layering nomenclature
-class TokenContext
+// inline flavor
+template <>
+class TokenContext<true>
 {
-#ifdef FEATURE_MCCOAP_INLINE_TOKEN
 protected:
     typedef layer1::Token token_t;
 
@@ -41,22 +42,12 @@ protected:
 
     // TODO: kludgey and inefficient - improve this
     bool _token_present;
-#else
-    typedef layer2::Token token_t;
-
-    const token_t* _token;
-#endif
 
 public:
     TokenContext()
-#ifdef FEATURE_MCCOAP_INLINE_TOKEN
         : _token_present(false)
-#else
-        : _token(NULLPTR)
-#endif
     {}
 
-#ifdef FEATURE_MCCOAP_INLINE_TOKEN
 public:
     void token(const pipeline::MemoryChunk::readonly_t* t)
     {
@@ -67,18 +58,33 @@ public:
     // TODO: Reconcile naming, either call this have_token() or rename
     // have_header to header_present()
     inline bool token_present() const { return _token_present; }
-#else
-    inline bool token_present() const { return _token; }
+};
+
+
+template <>
+class TokenContext<false>
+{
+    typedef layer2::Token token_t;
+
+protected:
+    token_t _token;
+
+public:
+    TokenContext()
+        : _token(NULLPTR, 0)
+    {}
+
+    inline bool token_present() const { return _token.length() > 0; }
 
     // if a) incoming message has a token and b) we've decoded the token and have it
     // available, then this will be non-null
-    const token_t* token() const { return _token; }
+    const token_t& token() const { return _token; }
 
     // Since tokens arrive piecemeal and oftentimes not at all, we have a non-constructor
     // based setter
-    void token(const token_t* token) { _token = token; }
-#endif
+    void token(const token_t* token) { _token = *token; }
 };
+
 
 
 class HeaderContext
@@ -186,11 +192,14 @@ public:
 };
 
 // these two really like to go together
-struct InlineTokenAndHeaderContext :
-        public TokenContext,
+template <bool inline_token>
+struct TokenAndHeaderContext;
+
+template <>
+struct TokenAndHeaderContext<true> :
+        public TokenContext<true>,
         public HeaderContext
 {
-#ifdef FEATURE_MCCOAP_INLINE_TOKEN
     inline const layer2::Token token() const
     {
         return layer2::Token(_token, header().token_length());
@@ -198,19 +207,26 @@ struct InlineTokenAndHeaderContext :
 
     void token(const pipeline::MemoryChunk::readonly_t* t)
     {
-        TokenContext::token(t);
+        TokenContext<true>::token(t);
     }
-#endif
 };
+
+
+template <>
+struct TokenAndHeaderContext<false> :
+        public TokenContext<false>,
+        public HeaderContext {};
+
+
 
 // New-generation request context, replacement for premature coap_transmission one
 // Incoming request handlers/dispatchers may extend this context, but this is a good
 // foundational base class
 // Called Incoming context because remember some incoming messages are RESPONSES, even
 // when we are the server (ACKs, etc)
-template <class TAddr>
+template <class TAddr, bool inline_token = true>
 class IncomingContext :
-        public InlineTokenAndHeaderContext,
+        public TokenAndHeaderContext<inline_token>,
         public AddressContext<TAddr>
 {
 public:

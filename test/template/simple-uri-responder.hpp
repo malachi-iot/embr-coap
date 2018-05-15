@@ -4,12 +4,93 @@
 #include <coap/platform.h>
 #include <coap/encoder.h>
 #include <coap/decoder.h>
+#include <coap/context.h>
 #include <mc/memory-chunk.h>
 
-template <class TDataPump>
-void _service(TDataPump* datapump, typename TDataPump::IncomingContext& context)
-{
 
+template <class TNetBuf, bool inline_token>
+void encode_header_and_token(moducom::coap::NetBufEncoder<TNetBuf>& encoder,
+                             moducom::coap::TokenAndHeaderContext<inline_token>& context,
+                             moducom::coap::Header::Code::Codes response_code)
+{
+    encoder.header(moducom::coap::create_response(context.header(),
+                                   response_code));
+    encoder.token(context.token());
+}
+
+template <class TDataPump>
+void simple_uri_responder2(TDataPump& datapump, typename TDataPump::IncomingContext& context)
+{
+    using namespace moducom::coap;
+
+    typedef typename TDataPump::IncomingContext::decoder_t decoder_t;
+    typedef typename TDataPump::netbuf_t netbuf_t;
+
+    decoder_t& decoder = context.decoder();
+
+    estd::layer1::string<128> uri;
+    Header::Code::Codes response_code = Header::Code::NotFound;
+
+    // NOTE: Needs to be out here like this, since CoAP presents option numbers
+    // as deltas
+    Option::Numbers number = Option::Zeroed;
+
+    while(decoder.state() == Decoder::Options)
+    {
+        decoder.option_experimental(&number);
+
+#ifdef FEATURE_ESTD_IOSTREAM_NATIVE
+        std::clog << "Option: " << number;
+#endif
+
+        if(number == Option::UriPath)
+        {
+            const estd::layer3::basic_string<char, false> s =
+                    decoder.option_string_experimental();
+
+#ifdef FEATURE_ESTD_IOSTREAM_NATIVE
+            std::clog << " (" << s << ')';
+#endif
+
+            if(s == "test") response_code = Header::Code::Content;
+
+            uri += s;
+            uri += '/';
+        }
+
+#ifdef FEATURE_ESTD_IOSTREAM_NATIVE
+        std::clog << std::endl;
+#endif
+
+        // FIX: Not accounting for chunking - in that case
+        // we would need multiple calls to option_string_experimental()
+        // before calling next
+        decoder.option_next_experimental();
+    }
+
+#ifdef FEATURE_MCCOAP_DATAPUMP_INLINE
+    datapump.dequeue_pop();
+    NetBufEncoder<netbuf_t> encoder;
+#else
+    // FIX: Need a much more cohesive way of doing this
+    delete &decoder.netbuf();
+    datapump.dequeue_pop();
+
+    NetBufEncoder<netbuf_t&> encoder(* new netbuf_t);
+#endif
+
+    encode_header_and_token(encoder, context, response_code);
+
+    // optional and experimental.  Really I think we can do away with encoder.complete()
+    // because coap messages are indicated complete mainly by reaching the transport packet
+    // size - a mechanism which is fully outside the scope of the encoder
+    encoder.complete();
+
+#ifdef FEATURE_MCCOAP_DATAPUMP_INLINE
+    datapump.enqueue_out(std::forward<netbuf_t>(encoder.netbuf()), context.address());
+#else
+    datapump.enqueue_out(encoder.netbuf(), ipaddr);
+#endif
 }
 
 template <class TDataPumpHelper>

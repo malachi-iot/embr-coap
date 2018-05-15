@@ -170,12 +170,14 @@ public:
         incoming.pop();
     }
 
-    struct IncomingContext : coap::IncomingContext<addr_t>
+    // non-inline-token
+    struct IncomingContext :
+            coap::IncomingContext<addr_t, false>
     {
         friend class DataPump;
 
         typedef NetBufDecoder<netbuf_t&> decoder_t;
-        typedef coap::IncomingContext<addr_t> base_t;
+        typedef coap::IncomingContext<addr_t, false> base_t;
 
     private:
         decoder_t m_decoder;
@@ -183,9 +185,7 @@ public:
         void prepopulate()
         {
             base_t::header(m_decoder.process_header_experimental());
-            layer2::Token t;
-            m_decoder.process_token_experimental(&t);
-            base_t::_token.copy_from(t);
+            m_decoder.process_token_experimental(&this->_token);
             m_decoder.begin_option_experimental();
         }
 
@@ -195,7 +195,11 @@ public:
         decoder_t& decoder() { return m_decoder; }
     };
 
-    void service(void (*f)(DataPump*, IncomingContext&), bool prepopulate_context)
+    //!
+    //! \brief service
+    //! \param prepopulate_context gathers header, token and initiates option processing
+    //!
+    void service(void (*f)(DataPump&, IncomingContext&), bool prepopulate_context)
     {
         if(!dequeue_empty())
         {
@@ -208,7 +212,7 @@ public:
 
             if(prepopulate_context) context.prepopulate();
 
-            f(this, context);
+            f(*this, context);
 
         }
     }
