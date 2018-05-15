@@ -15,7 +15,14 @@ typedef NetBufDynamicExperimental netbuf_t;
 
 int main()
 {
+
     cout << "Hello World!" << endl;
+    cout << "Test: " << Option::Numbers::Block2 << endl;
+    cout << "Test2: " << std::is_function<
+            //decltype(moducom::coap::get_description)
+            decltype(moducom::coap::get_description(Option::Numbers::UriPath))
+            //decltype(main)
+          >::value << endl;
 
     SocketsDatapumpHelper sdh;
 

@@ -182,6 +182,8 @@ typedef Root _root_state_t;
 
 }
 
+const char* get_description(Option::Numbers number);
+
 namespace experimental {
 
 
@@ -200,7 +202,7 @@ typedef Root::State root_state_t;
 const char* get_description(Option::State state);
 const char* get_description(root_state_t state);
 
-#ifdef DEBUG2
+#ifdef FEATURE_ESTD_IOSTREAM_NATIVE
 std::ostream& operator <<(std::ostream& out, Option::State state);
 #endif
 
@@ -274,5 +276,42 @@ struct OptionTrait<Option::ETag> : public OptionTraitOpaque<1, 8> {};
 }
 }
 
+#ifdef FEATURE_ESTD_IOSTREAM_NATIVE
+template <class CharT, class Traits>
+std::basic_ostream<CharT, Traits>& operator <<(std::basic_ostream<CharT, Traits>& os, const moducom::coap::Option::Numbers& v)
+{
+    const char* d = moducom::coap::get_description(v);
+
+    if(d)
+        os << d;
+    else
+        os << (int)v;
+
+    return os;
+}
+
+
+// valiant attempt, but doesn't work
+// is_function always evaluates 'false' - something to do with specifying get_description's arguments
+template <class CharT, class Traits, typename THasGetDescription
+          ,
+          typename std::enable_if<
+              std::is_function<
+                    decltype(moducom::coap::get_description(std::declval<THasGetDescription>()))
+                  >::value
+              >::type
+          >
+std::basic_ostream<CharT, Traits>& operator <<(std::basic_ostream<CharT, Traits>& os, const THasGetDescription& t)
+{
+    const char* d = moducom::coap::get_description(t);
+
+    if(d)
+        os << d;
+    else
+        ::operator <<(os, t); // pretty sure this isn't going to work
+
+    return os;
+}
+#endif
 
 #endif //SRC_COAP_H

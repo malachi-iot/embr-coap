@@ -60,15 +60,6 @@ protected:
 
         if(partial != NULLPTR) *partial = _partial;
 
-        // move forward past value portion
-        base_t::process_iterate(context);
-
-        ASSERT_WARN(Option::OptionValueDone, option_decoder().state(), "Unexpected state");
-
-        // move past option value done.  NOTE this actually moves into domain of next option,
-        // OR moves right by OptionsDone
-        process_iterate();
-
         // it's implied there's another chunk coming if value_length
         // exceeds actual_remaining_length
         if(_partial)
@@ -162,6 +153,7 @@ public:
         // move us into Options or OptionsDone
         process_iterate();
 
+        // expected to be at DeltaAndLengthDone here
         return true;
     }
 
@@ -173,19 +165,27 @@ public:
 
         process_option_header_experimental(number, &length);
 
-        ASSERT_WARN(0, length, "Expected no value for this option");
+        //ASSERT_WARN(0, length, "Expected no value for this option");
 
-        // Move past option value start
+    }
+
+
+    void option_next_experimental()
+    {
+        // move forward past value portion / past option value start
         process_iterate();
-        // Move past option value done
+
+        ASSERT_WARN(Option::OptionValueDone, option_decoder().state(), "Unexpected state");
+
+        // move past option value done.  NOTE this actually moves into domain of next option,
+        // OR moves right by OptionsDone
+        // expected to be at DeltaAndLengthDone here
         process_iterate();
     }
 
-    const estd::layer3::basic_string<char, false> option_string_experimental(Option::Numbers* number, bool* partial = NULLPTR)
+    const estd::layer3::basic_string<char, false> option_string_experimental(bool* partial = NULLPTR)
     {
-        uint16_t length;
-
-        process_option_header_experimental(number, &length);
+        uint16_t length = option_decoder().option_length();
 
         ro_chunk_t option_value = process_option_value_experimental(partial);
 

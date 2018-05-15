@@ -4,6 +4,20 @@
 namespace moducom {
 namespace coap {
 
+const char* get_description(Option::Numbers number)
+{
+    switch(number)
+    {
+        case Option::Zeroed:        return "Zeroed";
+        case Option::ETag:          return "ETag";
+        case Option::UriPath:       return "Uri-Path";
+        case Option::UriQuery:      return "Uri-Query";
+        case Option::Block1:        return "Block1";
+        case Option::Block2:        return "Block2";
+        default:                    return NULLPTR;
+    }
+}
+
 namespace experimental {
 
 const char* get_description(Option::State state)
@@ -39,7 +53,7 @@ const char* get_description(Option::State state)
     }
 }
 
-#ifdef DEBUG2
+#ifdef FEATURE_ESTD_IOSTREAM_NATIVE
 std::ostream& operator <<(std::ostream& out, Option::State state)
 {
     const char* description = get_description(state);

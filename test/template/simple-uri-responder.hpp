@@ -6,6 +6,8 @@
 template <class TDataPumpHelper>
 void simple_uri_responder(TDataPumpHelper& dh, typename TDataPumpHelper::datapump_t& datapump)
 {
+    using namespace moducom::coap;
+
     typedef typename TDataPumpHelper::netbuf_t netbuf_t;
     typedef typename TDataPumpHelper::addr_t addr_t;
     typedef typename moducom::pipeline::MemoryChunk::readonly_t ro_chunk_t;
@@ -31,17 +33,32 @@ void simple_uri_responder(TDataPumpHelper& dh, typename TDataPumpHelper::datapum
 
         while(decoder.state() == Decoder::Options)
         {
-            const estd::layer3::basic_string<char, false> s =
-                    decoder.option_string_experimental(&number);
+            decoder.option_experimental(&number);
+
+#ifdef FEATURE_ESTD_IOSTREAM_NATIVE
+            std::clog << "Option: " << number;
+#endif
 
             if(number == Option::UriPath)
             {
+                const estd::layer3::basic_string<char, false> s =
+                        decoder.option_string_experimental();
+
 #ifdef FEATURE_ESTD_IOSTREAM_NATIVE
-                std::clog << "Got URI: " << s << std::endl;
+                std::clog << " (" << s << ')';
 #endif
 
                 gotit = s == "test";
             }
+
+#ifdef FEATURE_ESTD_IOSTREAM_NATIVE
+            std::clog << std::endl;
+#endif
+
+            // FIX: Not accounting for chunking - in that case
+            // we would need multiple calls to option_string_experimental()
+            // before calling next
+            decoder.option_next_experimental();
         }
 
 #ifdef FEATURE_MCCOAP_DATAPUMP_INLINE
