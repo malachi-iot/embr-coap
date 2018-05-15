@@ -3,10 +3,10 @@
 #include <platform/posix/sockets-datapump.h>
 #include <coap/decoder/subject.h>
 
+#include "simple-uri-responder.hpp"
+
 using namespace std;
 using namespace moducom::coap;
-
-#include "simple-uri-responder.hpp"
 
 typedef NetBufDynamicExperimental netbuf_t;
 

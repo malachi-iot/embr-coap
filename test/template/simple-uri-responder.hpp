@@ -21,6 +21,9 @@ void encode_header_and_token(moducom::coap::NetBufEncoder<TNetBuf>& encoder,
 
 namespace moducom { namespace coap {
 
+// Neat, but right way to do this would be to make a 'super' OptionsDecoder which had a bit
+// of the start-stop condition awareness of full Decoder, then actually derive from that class
+// so that we can do things like postfix++
 template <class TNetBuf>
 class experimental_option_iterator
 {
@@ -33,11 +36,11 @@ class experimental_option_iterator
     void partial_advance_and_get_number()
     {
         using namespace moducom::coap;
-        using namespace std;
 
         decoder.option_experimental(&number);
 #ifdef FEATURE_ESTD_IOSTREAM_NATIVE
-        std::clog << "Option: " << number;
+        std::clog << "Option: ";// << number;
+        ::operator <<(std::clog, number); // why do I have to do this??
 #endif
     }
 
@@ -53,10 +56,16 @@ public:
         partial_advance_and_get_number();
     }
 
+
+    bool valid() const
+    {
+        return decoder.state() == Decoder::Options;
+    }
+
     experimental_option_iterator& operator ++()
     {
         decoder.option_next_experimental();
-        if(decoder.state() == Decoder::Options)
+        if(valid())
         {
 #ifdef FEATURE_ESTD_IOSTREAM_NATIVE
             std::clog << std::endl;
@@ -73,12 +82,14 @@ public:
         return *this;
     }
 
+    /* disabling postfix version because things like basic_string would be out of sync.
+     * could also be problematic with chunked netbufs
     experimental_option_iterator operator ++(int)
     {
         experimental_option_iterator temp(decoder, number);
         operator ++();
         return temp;
-    }
+    } */
 
     operator const value_type&()
     {
@@ -88,7 +99,6 @@ public:
     estd::layer3::basic_string<const char, false> string()
     {
         using namespace moducom::coap;
-        using namespace std;
 
         estd::layer3::basic_string<const char, false> s = decoder.option_string_experimental();
 
@@ -99,6 +109,7 @@ public:
 #endif
         return s;
     }
+
 };
 
 }}
@@ -109,28 +120,24 @@ void simple_uri_responder2(TDataPump& datapump, typename TDataPump::IncomingCont
 {
     using namespace moducom::coap;
 
-    typedef typename TDataPump::IncomingContext::decoder_t decoder_t;
     typedef typename TDataPump::netbuf_t netbuf_t;
-
-    decoder_t& decoder = context.decoder();
 
     estd::layer1::string<128> uri;
     Header::Code::Codes response_code = Header::Code::NotFound;
-    experimental_option_iterator<netbuf_t&> it(decoder);
+    experimental_option_iterator<netbuf_t&> it(context.decoder());
 
-    while(decoder.state() == Decoder::Options)
+    while(it.valid())
     {
-        Option::Numbers number = it;
-
-        if(number == Option::UriPath)
+        switch(it)
         {
-            const estd::layer3::basic_string<const char, false> s =
-                    it.string();
+            case  Option::UriPath:
+            {
+                uri += it.string();
+                uri += '/';
+                break;
+            }
 
-            if(s == "test") response_code = Header::Code::Content;
-
-            uri += s;
-            uri += '/';
+            default: break;
         }
 
         // FIX: Not accounting for chunking - in that case
@@ -138,6 +145,8 @@ void simple_uri_responder2(TDataPump& datapump, typename TDataPump::IncomingCont
         // before calling next
         ++it;
     }
+
+    if(uri == "test/") response_code = Header::Code::Valid;
 
 #ifdef FEATURE_MCCOAP_DATAPUMP_INLINE
     datapump.dequeue_pop();
