@@ -22,16 +22,16 @@ namespace moducom { namespace coap {
 // not 100% sure we always want to do that, but seems good so far
 class SocketsDatapumpHelper
 {
-    int sockfd;
+    const int sockfd;
 
 public:
     typedef sockets_datapump_t::addr_t addr_t;
     typedef sockets_datapump_t::netbuf_t netbuf_t;
     typedef sockets_datapump_t datapump_t;
 
-    SocketsDatapumpHelper()
+    SocketsDatapumpHelper() :
+        sockfd(nonblocking_datapump_setup())
     {
-        sockfd = nonblocking_datapump_setup();
     }
 
     ~SocketsDatapumpHelper()
@@ -53,11 +53,13 @@ public:
         return datapump.dequeue_in(addr_in);
     }
 
+    // remove netbuf from transport in queue
     void pop(sockets_datapump_t& datapump = sockets_datapump)
     {
         datapump.dequeue_pop();
     }
 
+    // indicates whether any netbufs have queued up from transport in
     bool empty(sockets_datapump_t& datapump = sockets_datapump)
     {
         return datapump.dequeue_empty();
