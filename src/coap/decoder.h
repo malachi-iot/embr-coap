@@ -198,4 +198,96 @@ public:
     }
 };
 
+
+// Neat, but right way to do this would be to make a 'super' OptionsDecoder which had a bit
+// of the start-stop condition awareness of full Decoder, then actually derive from that class
+// so that we can do things like postfix++
+template <class TNetBuf>
+class experimental_option_iterator
+{
+    typedef NetBufDecoder<TNetBuf> decoder_t;
+    typedef Option::Numbers value_type;
+
+    decoder_t& decoder;
+    Option::Numbers number;
+
+    void partial_advance_and_get_number()
+    {
+        using namespace moducom::coap;
+
+        decoder.option_experimental(&number);
+#ifdef FEATURE_ESTD_IOSTREAM_NATIVE
+        std::clog << "Option: ";// << number;
+        ::operator <<(std::clog, number); // why do I have to do this??
+#endif
+    }
+
+public:
+    experimental_option_iterator(decoder_t& decoder, bool begin_option = false) :
+        decoder(decoder)
+    {
+        number = Option::Zeroed;
+        // NOT repeatable
+        if(begin_option)
+            decoder.begin_option_experimental();
+
+        partial_advance_and_get_number();
+    }
+
+
+    bool valid() const
+    {
+        return decoder.state() == Decoder::Options;
+    }
+
+    experimental_option_iterator& operator ++()
+    {
+        decoder.option_next_experimental();
+        if(valid())
+        {
+#ifdef FEATURE_ESTD_IOSTREAM_NATIVE
+            std::clog << std::endl;
+#endif
+            partial_advance_and_get_number();
+        }
+        else
+        {
+#ifdef FEATURE_ESTD_IOSTREAM_NATIVE
+            std::clog << std::endl;
+#endif
+        }
+
+        return *this;
+    }
+
+    /* disabling postfix version because things like basic_string would be out of sync.
+     * could also be problematic with chunked netbufs
+    experimental_option_iterator operator ++(int)
+    {
+        experimental_option_iterator temp(decoder, number);
+        operator ++();
+        return temp;
+    } */
+
+    operator const value_type&()
+    {
+        return number;
+    }
+
+    estd::layer3::basic_string<const char, false> string()
+    {
+        using namespace moducom::coap;
+
+        estd::layer3::basic_string<const char, false> s = decoder.option_string_experimental();
+
+#ifdef FEATURE_ESTD_IOSTREAM_NATIVE
+        std::clog << " (";
+        ::operator <<(std::clog, s);
+        std::clog << ')';
+#endif
+        return s;
+    }
+
+};
+
 }}
