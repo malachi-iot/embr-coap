@@ -1,10 +1,7 @@
 #include <iostream>
 
 #include <platform/posix/sockets-datapump.h>
-#include <coap/encoder.h>
-#include <coap/decoder.h>
 #include <coap/decoder/subject.h>
-#include <mc/memory-chunk.h>
 
 using namespace std;
 using namespace moducom::coap;
@@ -31,9 +28,11 @@ int main()
         // FIX: Strangely, the ping responder works OK btu this seemingly identical code
         // blasts through poll() with no data and gets a 'Bad file descriptor' on the recvfrom call
         // Thinking it might be related to how we do our netbuf allocations? Not sure
-        sdh.loop();
+        sdh.loop(sockets_datapump);
 
         simple_uri_responder(sdh, sockets_datapump);
+
+        sockets_datapump.service(_service, true);
     }
 
     return 0;

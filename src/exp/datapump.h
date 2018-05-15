@@ -6,6 +6,8 @@
 
 #include "coap-header.h"
 #include "coap-token.h"
+#include "coap/context.h"
+#include "coap/decoder.h"
 
 namespace moducom { namespace coap {
 
@@ -166,6 +168,49 @@ public:
     void dequeue_pop()
     {
         incoming.pop();
+    }
+
+    struct IncomingContext : coap::IncomingContext<addr_t>
+    {
+        friend class DataPump;
+
+        typedef NetBufDecoder<netbuf_t&> decoder_t;
+        typedef coap::IncomingContext<addr_t> base_t;
+
+    private:
+        decoder_t m_decoder;
+
+        void prepopulate()
+        {
+            base_t::header(m_decoder.process_header_experimental());
+            layer2::Token t;
+            m_decoder.process_token_experimental(&t);
+            base_t::_token.copy_from(t);
+            m_decoder.begin_option_experimental();
+        }
+
+    public:
+        IncomingContext(netbuf_t& netbuf) : m_decoder(netbuf) {}
+
+        decoder_t& decoder() { return m_decoder; }
+    };
+
+    void service(void (*f)(DataPump*, IncomingContext&), bool prepopulate_context)
+    {
+        if(!dequeue_empty())
+        {
+            // TODO: optimize this so that we can avoid copying addr around
+            addr_t addr;
+
+            IncomingContext context(*dequeue_in(&addr));
+
+            context.addr = addr;
+
+            if(prepopulate_context) context.prepopulate();
+
+            f(this, context);
+
+        }
     }
 };
 

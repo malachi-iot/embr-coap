@@ -2,6 +2,15 @@
 
 #include <estd/string.h>
 #include <coap/platform.h>
+#include <coap/encoder.h>
+#include <coap/decoder.h>
+#include <mc/memory-chunk.h>
+
+template <class TDataPump>
+void _service(TDataPump* datapump, typename TDataPump::IncomingContext& context)
+{
+
+}
 
 template <class TDataPumpHelper>
 void simple_uri_responder(TDataPumpHelper& dh, typename TDataPumpHelper::datapump_t& datapump)

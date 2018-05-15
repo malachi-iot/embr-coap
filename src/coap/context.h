@@ -83,22 +83,22 @@ public:
 
 class HeaderContext
 {
-    Header _header;
+    Header m_header;
 
 public:
     HeaderContext()
     {
         // always zero out, signifying UNINITIALIZED so that querying
         // parties don't mistakenly think we have a header
-        _header.raw = 0;
+        m_header.raw = 0;
     }
 
     // if incoming message has had its header decoded, then this is valid
-    const Header& header() const { return _header; }
+    const Header& header() const { return m_header; }
 
-    void header(const Header& header) { _header.raw = header.raw; }
+    void header(const Header& header) { m_header.raw = header.raw; }
 
-    bool have_header() const { return _header.version() > 0; }
+    bool have_header() const { return m_header.version() > 0; }
 };
 
 
