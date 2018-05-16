@@ -22,6 +22,14 @@ public:
     {
 
     }
+
+    // FIX: hard wiring this to a read-oriented NetBuf
+    // there's some mild indication this isn't ideal since conjunctive decoder
+    // still needs to maintain a pos to read through this
+    size_t length_processed() const
+    {
+        return base_t::_chunk.length();
+    }
 };
 
 
@@ -43,5 +51,17 @@ TEST_CASE("netbuf+coap tests", "[netbuf-coap]")
     SECTION("netbuf decoder")
     {
         NetBufDecoder<NetBufMemory> decoder(buffer_16bit_delta);
+
+        Header header = decoder.process_header_experimental();
+
+        REQUIRE(header.message_id() == 0x0123);
+
+        // FIX: this has a problem because actually TokenDone isn't evaluated if
+        // no token is present.  We're going to change that, because of this wording
+        // from RFC7252
+        // "(Note that every message carries a token, even if it is of zero length.)"
+        //moducom::coap::layer3::Token token = decoder.process_token_experimental();
+
+        //REQUIRE(token.length() == 0);
     }
 }
