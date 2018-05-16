@@ -162,6 +162,7 @@ OptionEncoder::output_t OptionEncoder::generate_iterate()
     return -1;
 }
 
+#ifdef UNUSED
 bool OptionEncoder::process_iterate(pipeline::IBufferedPipelineWriter& writer)
 {
     pipeline::PipelineMessage output = writer.peek_write();
@@ -179,6 +180,7 @@ bool OptionEncoder::process_iterate(pipeline::IBufferedPipelineWriter& writer)
 
     return state() == _state_t::OptionValueDone;
 }
+#endif
 
 
 #ifdef UNUSED

@@ -7,7 +7,7 @@
 #define MC_COAP_TEST_COAP_ENCODER_H
 
 #include "coap_transmission.h"
-#include "mc/pipeline-writer.h"
+//#include "mc/pipeline-writer.h"
 #include "coap-token.h"
 #include "coap/decoder.h"
 
@@ -123,8 +123,10 @@ public:
         state(OptionDone);
     }
 
+#ifdef UNUSED
     // deprectated
     bool process_iterate(pipeline::IBufferedPipelineWriter& writer);
+#endif
 };
 
 namespace experimental {

@@ -7,7 +7,8 @@
 
 
 #include "coap/platform.h"
-#include "mc/pipeline.h"
+#include "mc/memory-chunk.h"
+//#include "mc/pipeline.h"
 #include <stdint.h>
 #include <stdlib.h>
 #include <new>

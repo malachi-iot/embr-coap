@@ -8,7 +8,7 @@
 
 #include <platform.h>
 #include "../coap-encoder.h"
-#include "pipeline-writer.h"
+//#include "pipeline-writer.h"
 
 // To activate ManagedBuffer for BufferedEncoder
 //#define USE_EXP_V2

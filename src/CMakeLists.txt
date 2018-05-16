@@ -80,12 +80,14 @@ set(SOURCE_FILES
 
         mc/opts.h
         mc/opts-internal.h
-        mc/pipeline.h
-        mc/pipeline.cpp
-        mc/pipeline-encoder.h mc/pipeline-writer.h
-        mc/pipeline-reader.h
-        mc/pipeline-decoder.h
-        coap-uint.h mc/experimental.h coap-header.h coap-observable.h
+        #mc/pipeline.h
+        #mc/pipeline.cpp
+        #mc/pipeline-encoder.h mc/pipeline-writer.h
+        #mc/pipeline-reader.h
+        #mc/pipeline-decoder.h
+        coap-uint.h
+        mc/experimental.h
+        coap-header.h coap-observable.h
 
         mc/experimental.cpp
         mc/experimental-factory.h

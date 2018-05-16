@@ -15,7 +15,7 @@ TEST_CASE("CoAP decoder tests", "[coap-decoder]")
     MemoryChunk::readonly_t buffer_in(buffer_16bit_delta);
 
 
-    layer3::SimpleBufferedPipeline net_in(buffer_in);
+    //layer3::SimpleBufferedPipeline net_in(buffer_in);
 
     SECTION("Basic test 1")
     {
