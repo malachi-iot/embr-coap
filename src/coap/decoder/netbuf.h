@@ -72,6 +72,7 @@ protected:
     }
 
     // internal call , needs to be mated to process_option_header_experimental
+public:
     ro_chunk_t process_option_value_experimental(bool* partial = NULLPTR)
     {
         ASSERT_WARN(Decoder::Options, state(), "Must be in options processing mode");
@@ -229,6 +230,7 @@ class experimental_option_iterator
 {
     typedef NetBufDecoder<TNetBuf> decoder_t;
     typedef Option::Numbers value_type;
+    typedef moducom::pipeline::MemoryChunk::readonly_t ro_chunk_t;
 
     decoder_t& decoder;
 
@@ -295,6 +297,13 @@ public:
     operator value_type()
     {
         return (value_type) decoder.option_number();
+    }
+
+    // this signature is EXPERIMENTAL.  implied by title of this class (experimental_option_iterator)
+    // but this one is extra so (naming wise) than the other methods here
+    ro_chunk_t value()
+    {
+        return decoder.process_option_value_experimental();
     }
 
     estd::layer3::basic_string<const char, false> string()

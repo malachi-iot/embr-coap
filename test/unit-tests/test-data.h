@@ -37,3 +37,10 @@ const static uint8_t buffer_payload_only[] =
     0xFF,
     0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16
 };
+
+
+const static uint8_t buffer_oversimplified_observe[] =
+{
+    0x40, 0x00, 0x01, 0x23, // 4: fully blank header
+    0x60    // the most minimal registration possible. a 0-length uint == 0.  clever
+};
