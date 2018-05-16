@@ -44,6 +44,8 @@ bool OptionDecoder::process_iterate(uint8_t value, bool eof)
 
         case FirstByte:
         {
+            ASSERT_WARN(false, eof, "eof not valid for this state");
+
             // NOTE: Not yet activated by current Dispatcher as it aborts before we reach here
             if(value == 0xFF)
             {
@@ -106,6 +108,8 @@ bool OptionDecoder::process_iterate(uint8_t value, bool eof)
         }
 
         case OptionDelta:
+            ASSERT_WARN(false, eof, "eof not valid for this state");
+
             buffer[pos] = value;
 
             // NOTE: processOptionSize uses pos, so can't increment it above
@@ -142,6 +146,8 @@ bool OptionDecoder::process_iterate(uint8_t value, bool eof)
         }
 
         case OptionLength:
+            ASSERT_WARN(false, eof, "eof not valid for this state");
+
             buffer[pos] = value;
 
             // NOTE: processOptionSize uses pos, so can't increment it above
@@ -180,6 +186,8 @@ bool OptionDecoder::process_iterate(uint8_t value, bool eof)
             return false;
 
         case OptionValue:
+            ASSERT_WARN(false, eof, "eof not valid for this state");
+
             // we've completed processing this option when option_size from
             // option length has finally gone to zero
             if (--value_length == 0)
