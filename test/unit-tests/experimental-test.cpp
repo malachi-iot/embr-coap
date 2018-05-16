@@ -1,6 +1,6 @@
 #include <catch.hpp>
 
-#include "coap-decoder.h"
+#include "coap/decoder.h"
 #include "test-data.h"
 #include "mc/experimental.h"
 //#include "../mc/pipeline.h"

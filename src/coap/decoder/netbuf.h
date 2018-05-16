@@ -1,6 +1,6 @@
 #pragma once
 
-#include "coap-decoder.h"
+#include "coap/decoder.h"
 #include "coap-token.h"
 #include <estd/string.h>
 

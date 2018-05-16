@@ -2,7 +2,7 @@
 // Created by Malachi Burke on 11/25/17.
 //
 
-#include "coap-decoder.h"
+#include "decoder.h"
 #include "coap_transmission.h"
 
 namespace moducom { namespace coap {

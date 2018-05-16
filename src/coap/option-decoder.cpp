@@ -1,4 +1,4 @@
-#include "../coap-decoder.h"
+#include "decoder.h"
 #include "../coap_transmission.h"
 
 namespace moducom { namespace coap {

@@ -34,6 +34,9 @@ set(SOURCE_FILES
 
         coap/context.h
 
+        coap/decoder.cpp
+        coap/decoder.h
+
         coap/decoder/netbuf.h
         coap/decoder/observer.h
         coap/decoder/observer-aggregate.h
@@ -53,7 +56,7 @@ set(SOURCE_FILES
         coap-blockwise.h
 #        coap-blockwise.cpp
         coap-dispatcher.cpp coap-dispatcher.hpp coap-dispatcher.h
-        coap-encoder.h coap-decoder.cpp coap-decoder.h
+        coap-encoder.h
         coap-encoder.cpp
         coap-features.h
         coap-token.h coap-token.cpp

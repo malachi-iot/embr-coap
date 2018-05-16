@@ -8,7 +8,7 @@
 // TODO: Change naming and decouple UInt helpers from coap
 #include "coap-uint.h"
 // TODO: Liberate state helper from coap-decoder so that we aren't dependent on it
-#include "coap-decoder.h"
+#include "coap/decoder.h"
 
 #ifdef CBOR_FEATURE_64_BIT
 #ifndef CBOR_FEATURE_32_BIT
