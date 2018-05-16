@@ -51,6 +51,7 @@ set(SOURCE_FILES
         experimental-test.cpp
         decoder-subject-test.cpp
         mc/opts.h
+        netbuf-test.cpp
         test-observer.h experimental2-test.cpp
         )
 

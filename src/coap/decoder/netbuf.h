@@ -58,6 +58,19 @@ protected:
         return true;
     }
 
+    // simulate processed memory chunk behavior here (like unprocessed,
+    // but in this case const applies)
+    const uint8_t* unevaluated() const
+    {
+        return context.chunk.data(context.pos);
+    }
+
+    // see above
+    size_t length_unevaluated() const
+    {
+        return context.chunk.length() - context.pos;
+    }
+
     // internal call , needs to be mated to process_option_header_experimental
     ro_chunk_t process_option_value_experimental(bool* partial = NULLPTR)
     {
@@ -66,6 +79,7 @@ protected:
         // assert that we are at ValueStart or OptionValue (latter when chunked)
         ASSERT_WARN(OptionDecoder::ValueStart, option_decoder().state(), "Must be at ValueStart");
 
+        // NOTE: Safe to grab this, option_decoder().option_length() doesn't get clobbered for a while still
         int value_length = option_decoder().option_length();
         const uint8_t* raw = context.chunk.data(context.pos);
         int actual_remaining_length = context.chunk.length() - context.pos;
@@ -171,20 +185,6 @@ public:
     }
 
 
-    // to get options which are 0 length on the value (have no value)
-    void option_experimental(Option::Numbers* number, uint16_t* l = NULLPTR)
-    {
-        uint16_t length;
-
-        process_option_header_experimental(number, &length);
-
-        if(l) *l = length;
-
-        //ASSERT_WARN(0, length, "Expected no value for this option");
-
-    }
-
-
     void option_next_experimental()
     {
         // move forward past value portion / past option value start
@@ -283,7 +283,7 @@ public:
         return temp;
     } */
 
-    operator const value_type&()
+    operator value_type()
     {
         return (value_type) decoder.option_number();
     }
