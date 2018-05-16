@@ -10,6 +10,7 @@
 #include "coap/experimental-packet-manager.h"
 
 #include "exp/datapump.hpp"
+#include "exp/option-trait.h"
 
 #include <string>
 #include <estd/string.h>

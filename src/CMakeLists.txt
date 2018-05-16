@@ -60,6 +60,7 @@ set(SOURCE_FILES
 
         exp/datapump.h exp/datapump.hpp
         exp/message-observer.h
+        exp/option-trait.h
         exp/retry.h
 
         exp/prototype/observer-idea1.h
