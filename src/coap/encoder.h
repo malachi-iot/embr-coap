@@ -37,13 +37,6 @@ public:
     }
 
 protected:
-    // TODO: next should return a tri-state, success, fail, or pending
-    bool next() { return netbuf().next(); }
-
-    // TODO: make a netbuf-native version of this call, and/or do
-    // some extra trickery to ensure chunk() is always efficient
-    size_type max_size() { return netbuf().chunk().size; }
-
     size_type write(const pipeline::MemoryChunk::readonly_t& chunk)
     {
         return base_t::write(chunk.data(), chunk.length());
@@ -61,24 +54,6 @@ protected:
     size_type write(const TString (&s))
     {
         return base_t::write(s);
-    }
-
-    template <int N>
-    size_type write(uint8_t (&d) [N])
-    {
-        return base_t::write(d, N);
-    }
-
-    template <int N>
-    size_type write(const uint8_t (&d) [N])
-    {
-        return base_t::write(d, N);
-    }
-
-    bool putchar(uint8_t byte)
-    {
-        netbuf().unprocessed()[0] = byte;
-        return this->advance(1);
     }
 
     // process all NON-value portion of option
@@ -125,6 +100,8 @@ protected:
 #endif
     }
 
+public:
+    // public so that zero copy operations can kick off payloads properly
     bool payload_header()
     {
         assert_not_state(_state_t::Header);
@@ -149,6 +126,7 @@ protected:
         return true;
     }
 
+protected:
     // represents how many bytes were written during last public/high level encode operation
     // only available if encode operation comes back as false.  Undefined when operation
     // succeeds
