@@ -21,6 +21,7 @@ TEST_CASE("CoAP encoder tests", "[coap-encoder]")
 {
     typedef Option number_t;
 
+#ifdef UNUSED
     SECTION("1")
     {
         moducom::pipeline::layer3::MemoryChunk<128> chunk;
@@ -78,6 +79,7 @@ TEST_CASE("CoAP encoder tests", "[coap-encoder]")
         REQUIRE(chunk[option_pos + 6] == 0xFF);
 //#endif
     }
+#endif
     // TODO: Move this to more proper test file location
     SECTION("Read Only Memory Buffer")
     {

@@ -7,7 +7,7 @@
 #include "coap-header.h"
 #include "coap-token.h"
 #include "coap/context.h"
-#include "coap/decoder.h"
+#include "coap/decoder/netbuf.h"
 
 namespace moducom { namespace coap {
 

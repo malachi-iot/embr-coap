@@ -1,7 +1,7 @@
 #pragma once
 
-#include "../coap-decoder.h"
-#include "../coap-token.h"
+#include "coap-decoder.h"
+#include "coap-token.h"
 #include <estd/string.h>
 
 namespace moducom { namespace coap {

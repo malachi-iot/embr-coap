@@ -29,13 +29,12 @@ include_directories(${ESTDLIB_DIR})
 
 set(SOURCE_FILES
         coap.cpp coap.h
-        coap_transmission.cpp coap_transmission.h coap_subscription.cpp
-        coap_subscription.h
-        cbor.cpp cbor/features.h cbor/encoder.h
-        coap_daemon.h
+        coap_transmission.cpp coap_transmission.h
+        cbor/cbor.cpp cbor/features.h cbor/encoder.h
 
         coap/context.h
 
+        coap/decoder/netbuf.h
         coap/decoder/observer.h
         coap/decoder/observer-aggregate.h
         coap/decoder/observer-aggregate.hpp
@@ -44,16 +43,18 @@ set(SOURCE_FILES
         coap/decoder/subject.h
         coap/decoder/subject.hpp
 
-        coap/decoder.h
         coap/encoder.h coap/encoder.hpp
+#        coap/experimental.cpp
+        coap/experimental-observer.h
         coap/observable.h coap/observable.hpp
         coap/platform.h
         coap/option-decoder.cpp
 
-        coap-blockwise.h coap-blockwise.cpp
+        coap-blockwise.h
+#        coap-blockwise.cpp
         coap-dispatcher.cpp coap-dispatcher.hpp coap-dispatcher.h
         coap-encoder.h coap-decoder.cpp coap-decoder.h
-        coap-generator.h coap-generator.cpp coap-encoder.cpp
+        coap-encoder.cpp
         coap-features.h
         coap-token.h coap-token.cpp
         coap-uripath-dispatcher.hpp coap-uripath-dispatcher.h
@@ -82,7 +83,6 @@ set(SOURCE_FILES
         mc/pipeline-reader.h
         mc/pipeline-decoder.h
         coap-uint.h mc/experimental.h coap-header.h coap-observable.h
-        coap/experimental.cpp coap/experimental-observer.h
 
         mc/experimental.cpp
         mc/experimental-factory.h

@@ -129,6 +129,7 @@ public:
 
 namespace experimental {
 
+#ifdef UNUSED
 class ExperimentalSessionContext
 {
     moducom::coap::layer2::Token token;
@@ -209,8 +210,7 @@ public:
 
     void payload(pipeline::IPipelineWriter& writer, const pipeline::MemoryChunk& chunk);
 };
-
-
+#endif
 
 class EncoderBase
 {
@@ -243,7 +243,7 @@ protected:
 #endif
 
 };
-
+#ifdef UNUSED
 class BlockingEncoder : public EncoderBase
 {
 protected:
@@ -331,6 +331,7 @@ public:
         payload(pipeline::MemoryChunk((uint8_t*)str, strlen(str)));
     }
 };
+#endif
 
 
 }

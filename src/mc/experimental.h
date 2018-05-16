@@ -118,6 +118,7 @@ protected:
     state_t state;
 };
 
+#ifdef UNUSED
 // NOTE: very experimental.  Seems to burn up more memory and cycles than it saves
 // this attempts to buffer right within IBufferedPipelineWriter itself
 // TODO: Use StateHelper for this
@@ -391,7 +392,7 @@ public:
     }
 
 };
-
+#endif
 
 template <typename custom_size_t = size_t>
 class ProcessedMemoryChunkBase

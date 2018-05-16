@@ -42,7 +42,6 @@ set(SOURCE_FILES
         main_test.cpp coap.cpp
         coap_lowlevel.cpp
         cbor-test.cpp
-        coap_send.cpp
         coap_daemon.cpp pipeline_test.cpp
         coap-datapump-test.cpp
         coap-decoder-test.cpp

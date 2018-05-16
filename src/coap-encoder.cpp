@@ -181,6 +181,7 @@ bool OptionEncoder::process_iterate(pipeline::IBufferedPipelineWriter& writer)
 }
 
 
+#ifdef UNUSED
 namespace experimental {
 
 uint8_t ExperimentalPrototypeOptionEncoder1::_option(uint8_t* output_data, internal::option_number_t number, uint16_t length)
@@ -259,7 +260,7 @@ void ExperimentalPrototypeBlockingPayloadEncoder1::payload(pipeline::IPipelineWr
 
     writer.write(chunk);
 }
-
 }
+#endif
 
 }}

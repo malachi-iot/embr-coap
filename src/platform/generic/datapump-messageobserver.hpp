@@ -1,6 +1,6 @@
 #include <exp/datapump.h>
 #include <coap/encoder.h>
-#include <coap/decoder.h>
+#include <coap/decoder/netbuf.h>
 #include <coap/decoder/subject.h>
 
 namespace moducom { namespace coap {
