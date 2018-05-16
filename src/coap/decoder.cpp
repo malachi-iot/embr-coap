@@ -47,7 +47,11 @@ bool Decoder::process_iterate(Context& context)
                 init_token_decoder();
             }
             else
-                state(OptionsStart);
+                // We used to skip this and go direct to OptionsStart, which is not a terrible idea
+                // but debatable.  However, due to this quote from RFC7252:
+                // "(Note that every message carries a token, even if it is of zero length.)"
+                // we are definitely going to indicate TokenDone even with an empty token
+                state(TokenDone);
             break;
 
         case Token:

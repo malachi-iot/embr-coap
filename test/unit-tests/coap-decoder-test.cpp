@@ -36,6 +36,8 @@ TEST_CASE("CoAP decoder tests", "[coap-decoder]")
         REQUIRE(decoder.process_iterate(context) == false);
         REQUIRE(decoder.state() == Decoder::HeaderDone);
         REQUIRE(decoder.process_iterate(context) == false);
+        REQUIRE(decoder.state() == Decoder::TokenDone);
+        REQUIRE(decoder.process_iterate(context) == false);
         REQUIRE(decoder.state() == Decoder::OptionsStart);
         REQUIRE(decoder.process_iterate(context) == false);
         // FIX: Really shouldn't have an Options stage with an overall
@@ -59,6 +61,8 @@ TEST_CASE("CoAP decoder tests", "[coap-decoder]")
         REQUIRE(decoder.state() == Decoder::Header);
         REQUIRE(decoder.process_iterate(context) == false);
         REQUIRE(decoder.state() == Decoder::HeaderDone);
+        REQUIRE(decoder.process_iterate(context) == false);
+        REQUIRE(decoder.state() == Decoder::TokenDone);
         REQUIRE(decoder.process_iterate(context) == false);
         REQUIRE(decoder.state() == Decoder::OptionsStart);
         // kicks off option decoding itself, first stops after

@@ -99,6 +99,11 @@ void DecoderSubjectBase<TMessageObserver>::dispatch_option(Decoder::Context& con
 template <class TMessageObserver>
 void DecoderSubjectBase<TMessageObserver>::dispatch_token()
 {
+    // Though we like to observe TokenDone messages, we don't pass that on
+    // as an empty token observation.  This is already indicated during header
+    // of tkl==0
+    if(decoder.header_decoder().token_length() == 0) return;
+
     const TokenDecoder& token_decoder = decoder.token_decoder();
     // NOTE: 90% sure it's safe to intermingle header decoder + token decoder (pretty
     // sure we retain header all the way thru) but doublecheck and document

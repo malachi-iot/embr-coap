@@ -60,8 +60,8 @@ TEST_CASE("netbuf+coap tests", "[netbuf-coap]")
         // no token is present.  We're going to change that, because of this wording
         // from RFC7252
         // "(Note that every message carries a token, even if it is of zero length.)"
-        //moducom::coap::layer3::Token token = decoder.process_token_experimental();
+        moducom::coap::layer3::Token token = decoder.process_token_experimental();
 
-        //REQUIRE(token.length() == 0);
+        REQUIRE(token.length() == 0);
     }
 }
