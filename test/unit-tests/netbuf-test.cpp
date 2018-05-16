@@ -5,8 +5,10 @@
 #include "test-data.h"
 
 using namespace moducom::io::experimental;
+using namespace moducom::coap;
 
-/*
+
+// simplistic memorychunk-mapped NetBuf.  Eventually put this into mcmem itself
 class NetBufMemory :
         public NetBufMemoryTemplate<moducom::pipeline::MemoryChunk >
 {
@@ -20,13 +22,26 @@ public:
     {
 
     }
-}; */
+};
 
 
 TEST_CASE("netbuf+coap tests", "[netbuf-coap]")
 {
-    SECTION("decoder")
+    SECTION("writer")
     {
-        //NetBufWriter<NetBufMemory> writer(buffer_16bit_delta);
+        // FIX: This is a bad test, writer shouldn't be prepopulated!
+        NetBufWriter<NetBufMemory> writer(buffer_16bit_delta);
+
+        REQUIRE(writer.size() == sizeof(buffer_16bit_delta));
+    }
+    SECTION("reader")
+    {
+        NetBufReader<NetBufMemory> reader(buffer_16bit_delta);
+
+        REQUIRE(reader.netbuf().length_unprocessed() == sizeof(buffer_16bit_delta));
+    }
+    SECTION("netbuf decoder")
+    {
+        NetBufDecoder<NetBufMemory> decoder(buffer_16bit_delta);
     }
 }

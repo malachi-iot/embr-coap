@@ -6,7 +6,7 @@
 #define MC_COAP_TEST_COAP_DISPATCHER_H
 
 #include "coap/decoder.h"
-#include "mc/linkedlist.h"
+//#include "mc/linkedlist.h"
 #include "mc/array-helper.h"
 #include "coap/context.h"
 #include "coap/decoder/observer.h"
