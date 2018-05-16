@@ -184,7 +184,7 @@ public:
 
         void prepopulate()
         {
-            base_t::header(m_decoder.process_header_experimental());
+            base_t::header(m_decoder.header());
             m_decoder.process_token_experimental(&this->_token);
             m_decoder.begin_option_experimental();
         }

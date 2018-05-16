@@ -52,7 +52,7 @@ TEST_CASE("netbuf+coap tests", "[netbuf-coap]")
     {
         NetBufDecoder<NetBufMemory> decoder(buffer_16bit_delta);
 
-        Header header = decoder.process_header_experimental();
+        Header header = decoder.header();
 
         REQUIRE(header.message_id() == 0x0123);
 

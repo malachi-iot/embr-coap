@@ -125,7 +125,11 @@ public:
         }
 
         // TODO: Reveal error that we couldn't find state s
+#ifdef FEATURE_MCCOAP_CLOG
+        ASSERT_ERROR(false, true, "Unable to find requested state: " << s);
+#else
         ASSERT_ERROR(false, true, "Unable to find requested state");
+#endif
         return false;
     }
 
@@ -136,6 +140,11 @@ public:
         process_until_experimental(Decoder::HeaderDone);
 
         return header_decoder();
+    }
+
+    coap::Header header()
+    {
+        return process_header_experimental();
     }
 
 
