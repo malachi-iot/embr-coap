@@ -147,7 +147,7 @@ public:
         }
     }
 
-    bool process_iterate(uint8_t value);
+    bool process_iterate(uint8_t value, bool eof);
 
 #ifdef UNUSED
     // only processes until the beginning of value (if present) and depends on caller to read in
@@ -166,7 +166,15 @@ public:
     // OptionLengthDone, OptionDeltaAndLengthDone and OptionValueDone boundaries.  Eventually
     // we will also stop on OptionValue occasionally if option-value size is larger than the
     // input chunk
-    size_t process_iterate(const pipeline::MemoryChunk::readonly_t& input, OptionExperimental* built_option);
+    //
+    // last_chunk important because not infrequently coap message ends with options, which
+    // means we won't have another character to stoke process_iterate into running.  In that case
+    // we want to force a bit more process_iterate operation to move through the states
+    // consistently.  This might gently conflict the notion of state machines, but is 100%
+    // congruent with coap operation which explicitly depends on a known message length
+    size_t process_iterate(const pipeline::MemoryChunk::readonly_t& input,
+                           OptionExperimental* built_option,
+                           bool last_chunk);
 };
 
 }}

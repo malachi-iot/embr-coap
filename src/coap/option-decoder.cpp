@@ -26,7 +26,9 @@ inline bool OptionDecoder::processOptionSize(uint8_t size_root)
 }
 
 
-bool OptionDecoder::process_iterate(uint8_t value)
+// eof == true means value is invalid, we are 'past the end' but still
+// want to do some state processing
+bool OptionDecoder::process_iterate(uint8_t value, bool eof)
 {
     // We have to determine right here if we have extended Delta and/or
     // extended Lengths
@@ -245,7 +247,9 @@ bool OptionDecoder::process_iterate(pipeline::IBufferedPipelineReader& reader, O
 }
 #endif
 
-size_t OptionDecoder::process_iterate(const pipeline::MemoryChunk::readonly_t& chunk, OptionExperimental* built_option)
+size_t OptionDecoder::process_iterate(const pipeline::MemoryChunk::readonly_t& chunk,
+                                      OptionExperimental* built_option,
+                                      bool last_chunk)
 {
     size_t length = chunk.length(); // represents remaining length to be processed
     size_t value_processed = 0;
@@ -258,7 +262,8 @@ size_t OptionDecoder::process_iterate(const pipeline::MemoryChunk::readonly_t& c
         // processed represents specifically whether byte was consumed,
         // but not whether it was evaluated (bytes are always assumed to
         // be evaluated)
-        bool processed = process_iterate(*data);
+        // FIX: pass proper eof flag in here
+        bool processed = process_iterate(*data, false);
 
         if(processed)
         {
@@ -301,6 +306,12 @@ size_t OptionDecoder::process_iterate(const pipeline::MemoryChunk::readonly_t& c
             // does move forward and is ultimately recorded
             default: break;
         }
+    }
+
+    if(last_chunk)
+    {
+        // special processing for length == 0 and last_chunk
+        //process_iterate(0, true);
     }
 
     return data - chunk.data();

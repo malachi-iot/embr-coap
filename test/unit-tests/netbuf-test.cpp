@@ -9,15 +9,17 @@ using namespace moducom::coap;
 
 
 // simplistic memorychunk-mapped NetBuf.  Eventually put this into mcmem itself
+// FIX: this one is hardwired to read operations - not a crime, but needs more
+// architectual planning to actually be used elsewhere
 class NetBufMemory :
-        public NetBufMemoryTemplate<moducom::pipeline::MemoryChunk >
+        public NetBufMemoryTemplate<moducom::pipeline::MemoryChunk::readonly_t >
 {
-    typedef moducom::pipeline::MemoryChunk chunk_t;
+    typedef moducom::pipeline::MemoryChunk::readonly_t chunk_t;
     typedef NetBufMemoryTemplate<chunk_t> base_t;
 
 public:
     template <size_t N>
-    NetBufMemory(uint8_t (&a) [N]) :
+    NetBufMemory(const uint8_t (&a) [N]) :
         base_t(chunk_t(a, N))
     {
 
@@ -63,5 +65,22 @@ TEST_CASE("netbuf+coap tests", "[netbuf-coap]")
         moducom::coap::layer3::Token token = decoder.process_token_experimental();
 
         REQUIRE(token.length() == 0);
+    }
+    SECTION("0-length value option")
+    {
+        typedef moducom::pipeline::MemoryChunk::readonly_t chunk_t;
+        NetBufDecoder<NetBufMemory> decoder(buffer_oversimplified_observe);
+
+        Header header = decoder.header();
+
+        decoder.process_token_experimental();
+
+        decoder.begin_option_experimental();
+
+        REQUIRE(decoder.state() == Decoder::Options);
+
+        chunk_t value = decoder.process_option_value_experimental();
+
+        //decoder.option_decoder().state()
     }
 }

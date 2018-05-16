@@ -80,7 +80,7 @@ bool Decoder::process_iterate(Context& context)
             optionHolder.length = 0;
             // We have to do some level of processing on OptionsStart to know
             // whether we have any optons at all.  So remember
-            pos += optionDecoder.process_iterate(chunk.remainder(pos), &optionHolder);
+            pos += optionDecoder.process_iterate(chunk.remainder(pos), &optionHolder, last_chunk);
             if(optionDecoder.state() == OptionDecoder::Payload)
                 state(OptionsDone);
             else
@@ -107,7 +107,7 @@ bool Decoder::process_iterate(Context& context)
 
         case Options:
         {
-            pos += optionDecoder.process_iterate(chunk.remainder(pos), &optionHolder);
+            pos += optionDecoder.process_iterate(chunk.remainder(pos), &optionHolder, last_chunk);
 
             // FIX: Payload now discovered and heeded in optionDecoder, do so out here
             // as well
