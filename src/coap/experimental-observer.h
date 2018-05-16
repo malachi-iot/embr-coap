@@ -15,7 +15,7 @@ class MessageObserverBase :
         public ContextContainer<TIncomingContext, TIncomingContextTraits>
 {
 protected:
-    typedef experimental::option_number_t option_number_t;
+    typedef internal::option_number_t option_number_t;
     typedef pipeline::MemoryChunk::readonly_t ro_chunk_t;
 
     //FIX:

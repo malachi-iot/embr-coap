@@ -60,7 +60,7 @@ struct IMessageObserver :   public IHeaderObserver,
 #else
 struct IMessageObserver
 {
-    typedef experimental::option_number_t number_t;
+    typedef internal::option_number_t number_t;
 
     virtual void on_header(Header header) = 0;
     virtual void on_token(const pipeline::MemoryChunk::readonly_t& token_part, bool last_chunk) = 0;

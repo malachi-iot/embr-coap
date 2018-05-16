@@ -165,7 +165,7 @@ protected:
     generator_t generator;
 
     // option helper, fills output with non-value portion of option
-    uint8_t _option(uint8_t* output, option_number_t number, uint16_t length);
+    uint8_t _option(uint8_t* output, internal::option_number_t number, uint16_t length);
 
     ExperimentalPrototypeOptionEncoder1() : generator(0) {}
 };
@@ -176,7 +176,8 @@ class ExperimentalPrototypeNonBlockingOptionEncoder1 : public ExperimentalProtot
     uint8_t buffer[8];
 
 protected:
-    bool option(pipeline::IBufferedPipelineWriter& writer, option_number_t number, const pipeline::MemoryChunk& value);
+    bool option(pipeline::IBufferedPipelineWriter& writer,
+                internal::option_number_t number, const pipeline::MemoryChunk& value);
 };
 
 
@@ -187,12 +188,12 @@ public:
     // FIX: Only public so that experimental BufferedEncoder can use it
     // option helper.  Either completely writes a 0 length value option, or
     // prepares for a write of a > 0 length value option
-    void option(pipeline::IPipelineWriter& writer, option_number_t number, uint16_t length);
+    void option(pipeline::IPipelineWriter& writer, internal::option_number_t number, uint16_t length);
 
 public:
 
-    void option(pipeline::IPipelineWriter& writer, option_number_t number, const pipeline::MemoryChunk& value);
-    void option(pipeline::IPipelineWriter& writer, option_number_t number)
+    void option(pipeline::IPipelineWriter& writer, internal::option_number_t number, const pipeline::MemoryChunk& value);
+    void option(pipeline::IPipelineWriter& writer, internal::option_number_t number)
     {
         option(writer, number, 0);
     }
@@ -214,8 +215,8 @@ public:
 class EncoderBase
 {
 protected:
-    typedef experimental::root_state_t state_t;
-    typedef experimental::_root_state_t _state_t;
+    typedef internal::root_state_t state_t;
+    typedef internal::_root_state_t _state_t;
 
 #ifdef DEBUG
     state_t consistency;
@@ -245,8 +246,9 @@ protected:
 
 class BlockingEncoder : public EncoderBase
 {
-
 protected:
+    typedef internal::option_number_t option_number_t;
+
     ExperimentalPrototypeBlockingOptionEncoder1 optionEncoder;
     ExperimentalPrototypeBlockingPayloadEncoder1 payloadEncoder;
 

@@ -14,10 +14,10 @@ namespace moducom { namespace coap {
 
 // TODO: As an optimization, make version of TokenDecoder which is zerocopy
 class Decoder :
-    public experimental::Root,
-    public StateHelper<experimental::root_state_t>
+    public internal::Root,
+    public StateHelper<internal::root_state_t>
 {
-    typedef experimental::_root_state_t _state_t;
+    typedef internal::_root_state_t _state_t;
 
 protected:
     // TODO: Union-ize this  Not doing so now because of C++03 trickiness
@@ -70,10 +70,10 @@ public:
         // flag which indicates this is the last chunk to be processed for this message
         // does NOT indicate if a boundary demarkates the end of the coap message BEFORE
         // the chunk itself end
-        bool last_chunk;
+        const bool last_chunk;
 
         // Unused helper function
-        const uint8_t* data() const { return chunk.data() + pos; }
+        //const uint8_t* data() const { return chunk.data() + pos; }
 
         chunk_t remainder() const { return chunk.remainder(pos); }
 
@@ -87,7 +87,7 @@ public:
 
     // FIX: Repair this, nobody should be peering in and changing state
     // made the name extra ugly just to draw attention to it
-    void state_for_decoder_subject_unused(experimental::root_state_t s)
+    void state_for_decoder_subject_unused(internal::root_state_t s)
     {
         state(s);
     }

@@ -7,7 +7,7 @@
 
 using namespace moducom::coap;
 
-typedef InlineTokenAndHeaderContext request_context_t;
+typedef TokenAndHeaderContext<true> request_context_t;
 
 // +++ just to test compilation, eliminate once decent unit tests for
 // DecoderSubjectBase is in place

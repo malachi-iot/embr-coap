@@ -43,7 +43,7 @@ TEST_CASE("CoAP low level tests", "[coap-lowlevel]")
         };
 
         parser_t parser;
-        typedef experimental::_root_state_t _state_t;
+        typedef internal::_root_state_t _state_t;
 
         for (int i = 0; i < sizeof(buffer); i++)
         {
@@ -95,8 +95,8 @@ TEST_CASE("CoAP low level tests", "[coap-lowlevel]")
     {
         typedef Decoder parser_t;
         typedef OptionDecoder option_parser_t;
-        typedef experimental::_root_state_t _state_t;
-        typedef experimental::root_state_t state_t;
+        typedef internal::_root_state_t _state_t;
+        typedef internal::root_state_t state_t;
 
         const uint8_t* buffer = buffer_16bit_delta;
 

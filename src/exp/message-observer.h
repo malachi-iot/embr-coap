@@ -25,7 +25,7 @@ template <class TIncomingContext = ObserverContext, class ...TMessageObservers>
 class AggregateMessageObserver : public MessageObserverBase<TIncomingContext>
 {
     typedef MessageObserverBase<TIncomingContext> base_t;
-    typedef experimental::option_number_t option_number_t;
+    typedef internal::option_number_t option_number_t;
     typedef pipeline::MemoryChunk::readonly_t ro_chunk_t;
     typedef typename base_t::context_t context_t;
 

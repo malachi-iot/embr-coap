@@ -144,7 +144,7 @@ public:
     };
 };
 
-namespace experimental {
+namespace internal {
 
 // FIX: Need a better name.  Root class of helpers for message-level
 // Encoder/Decoder operations
@@ -179,15 +179,16 @@ public:
 
 typedef Root::State root_state_t;
 typedef Root _root_state_t;
+typedef Option::Numbers option_number_t;
 
 }
 
 const char* get_description(Option::Numbers number);
+const char* get_description(internal::root_state_t state);
 
 namespace experimental {
 
 
-typedef Option::Numbers option_number_t;
 //typedef CoAP::OptionExperimentalDeprecated::ValueFormats option_value_format_t;
 typedef Option::ContentFormats option_content_format_t;
 
@@ -197,10 +198,8 @@ typedef Header::RequestMethodEnum header_request_code_t;
 
 typedef Option::ExtendedMode extended_mode_t;
 typedef Option _extended_mode_t;
-typedef Root::State root_state_t;
 
 const char* get_description(Option::State state);
-const char* get_description(root_state_t state);
 
 #ifdef FEATURE_ESTD_IOSTREAM_NATIVE
 std::ostream& operator <<(std::ostream& out, Option::State state);

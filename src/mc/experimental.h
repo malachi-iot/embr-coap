@@ -112,8 +112,8 @@ class BufferedEncoderBase
 protected:
     //typedef CoAP::ParserDeprecated::State state_t;
     //typedef CoAP::ParserDeprecated _state_t;
-    typedef experimental::root_state_t state_t;
-    typedef experimental::_root_state_t _state_t;
+    typedef internal::root_state_t state_t;
+    typedef internal::_root_state_t _state_t;
 
     state_t state;
 };
@@ -121,14 +121,14 @@ protected:
 // NOTE: very experimental.  Seems to burn up more memory and cycles than it saves
 // this attempts to buffer right within IBufferedPipelineWriter itself
 // TODO: Use StateHelper for this
-class BufferedEncoder : public StateHelper<experimental::root_state_t>
+class BufferedEncoder : public StateHelper<internal::root_state_t>
 {
     //typedef CoAP::OptionExperimentalDeprecated::Numbers number_t;
     //typedef CoAP::ParserDeprecated::State state_t;
     //typedef CoAP::ParserDeprecated _state_t;
-    typedef experimental::option_number_t number_t;
-    typedef experimental::root_state_t state_t;
-    typedef experimental::_root_state_t _state_t;
+    typedef internal::option_number_t number_t;
+    typedef internal::root_state_t state_t;
+    typedef internal::_root_state_t _state_t;
     typedef StateHelper<state_t> base_t;
 
 
@@ -154,7 +154,7 @@ class BufferedEncoder : public StateHelper<experimental::root_state_t>
             mb.boundary(Root::boundary_segment, pos);
             mb.next();
 #else
-            writer.advance_write(pos, Root::boundary_segment);
+            writer.advance_write(pos, internal::Root::boundary_segment);
 #endif
         }
 
@@ -313,7 +313,7 @@ public:
 #ifdef USE_EXP_V2
         mb.boundary(Root::boundary_message, 0);
 #else
-        writer.advance_write(0, Root::boundary_message);
+        writer.advance_write(0, internal::Root::boundary_message);
 #endif
     }
 };

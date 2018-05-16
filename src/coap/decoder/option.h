@@ -12,7 +12,7 @@ class OptionDecoder :
 {
 public:
     typedef Option _number_t;
-    typedef experimental::option_number_t number_t;
+    typedef internal::option_number_t number_t;
 
     // Need this because all other Option classes I've made are const'd out,
     // but we do need a data entity we can build slowly/iteratively, so that's

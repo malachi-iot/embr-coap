@@ -11,7 +11,7 @@ class DecoderSubjectBase
 {
     Decoder decoder;
     TMessageObserver observer;
-    typedef experimental::option_number_t option_number_t;
+    typedef internal::option_number_t option_number_t;
     typedef pipeline::MemoryChunk::readonly_t ro_chunk_t;
 
     // do these observer_xxx versions so that compile errors are easier to track

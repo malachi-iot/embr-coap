@@ -38,13 +38,13 @@ class CoAPGenerator
 
 public:
     typedef experimental::layer2::OptionBase option_t;
-    typedef experimental::option_number_t option_number_t;
+    typedef internal::option_number_t option_number_t;
 
 #ifdef __CPP11__
-    typedef experimental::_root_state_t::State state_t;
+    typedef internal::_root_state_t::State state_t;
     typedef Option::State substate_t;
 #else
-    typedef experimental::_root_state_t state_t;
+    typedef internal::_root_state_t state_t;
     typedef Option substate_t;
 #endif
 
