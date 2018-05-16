@@ -6,6 +6,9 @@
 
 namespace moducom { namespace coap {
 
+template <class TNetBuf>
+class experimental_option_iterator;
+
 // standalone Decoder works well enough, so this is largely just a netbuf-capable
 // wrapper around it
 template <class TNetBuf>
@@ -15,32 +18,42 @@ class NetBufDecoder : public Decoder
     typedef Decoder base_t;
     typedef moducom::pipeline::MemoryChunk::readonly_t ro_chunk_t;
 
+    friend class experimental_option_iterator<TNetBuf>;
+
 protected:
     netbuf_t m_netbuf;
     // FIX: intermediate chunk until context has a value instead of a ref for its chunk
     ro_chunk_t chunk;
     Context context;
 
-
+public:
     bool process_iterate()
     {
         // TODO: Will know how to advance through netbuf
         return base_t::process_iterate(context);
     }
 
-    // NOTE: Actually shaping up to be an internal call, because we always want
-    // to move past OptionValueDone when evaluating/processing options and this
-    // call does not do that
-    bool process_option_header_experimental(Option::Numbers* number, uint16_t* length)
+protected:
+    void process_option_header_experimental()
     {
         ASSERT_WARN(Decoder::Options, state(), "Must be in options processing mode");
 
         process_iterate();
 
         ASSERT_WARN(OptionDecoder::ValueStart, option_decoder().state(), "Must be at OptionValueStart");
+    }
 
-        (int&)(*number) += option_decoder().option_delta();
-        *length = option_decoder().option_length();
+    // NOTE: Actually shaping up to be an internal call, because we always want
+    // to move past OptionValueDone when evaluating/processing options and this
+    // call does not do that
+    // NOTE: May not be so useful or interesting after all, since option_number
+    // and option_length are so readily available
+    bool process_option_header_experimental(Option::Numbers* number, uint16_t* length)
+    {
+        process_option_header_experimental();
+
+        (int&)(*number) += option_number();
+        *length = option_length();
 
         return true;
     }
@@ -209,13 +222,15 @@ class experimental_option_iterator
     typedef Option::Numbers value_type;
 
     decoder_t& decoder;
-    Option::Numbers number;
 
     void partial_advance_and_get_number()
     {
         using namespace moducom::coap;
 
-        decoder.option_experimental(&number);
+        decoder.process_option_header_experimental();
+
+        value_type number = (value_type) decoder.option_number();
+
 #ifdef FEATURE_ESTD_IOSTREAM_NATIVE
         std::clog << "Option: ";// << number;
         ::operator <<(std::clog, number); // why do I have to do this??
@@ -226,7 +241,6 @@ public:
     experimental_option_iterator(decoder_t& decoder, bool begin_option = false) :
         decoder(decoder)
     {
-        number = Option::Zeroed;
         // NOT repeatable
         if(begin_option)
             decoder.begin_option_experimental();
@@ -271,7 +285,7 @@ public:
 
     operator const value_type&()
     {
-        return number;
+        return (value_type) decoder.option_number();
     }
 
     estd::layer3::basic_string<const char, false> string()

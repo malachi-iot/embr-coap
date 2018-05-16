@@ -92,12 +92,18 @@ public:
         state(s);
     }
 
-public:
-    Decoder() : StateHelper(_state_t::Uninitialized) {}
-
-    // TODO: exposing this is not proper, get some accessor methods going
+    // NOTE: This is necessary to use because OptionDecoder in due course of its
+    // operation *might* clobber its option_number() before it fully evaluates option_length()
+    // the 'length' field in optionHolder isn't *technically* necessary, as that doesn't
+    // get clobbered for a while.  Leave that for an optimization.
+    // Also this has the bonus of 'undeltaizing' the option number so that the consumer
+    // doesn't need to track and add option deltas
     // TODO: Also be sure to union-ize this, if appropriate
     OptionDecoder::OptionExperimental optionHolder;
+
+
+public:
+    Decoder() : StateHelper(_state_t::Uninitialized) {}
 
     // Available only during select times during Options state
     uint16_t option_number() const { return optionHolder.number_delta; }
