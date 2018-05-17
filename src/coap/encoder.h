@@ -126,6 +126,11 @@ public:
         return true;
     }
 
+    size_type write(const void* d, int len)
+    {
+        return base_t::write(d, len);
+    }
+
 protected:
     // represents how many bytes were written during last public/high level encode operation
     // only available if encode operation comes back as false.  Undefined when operation
