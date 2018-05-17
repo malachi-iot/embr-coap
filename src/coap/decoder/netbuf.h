@@ -3,6 +3,7 @@
 #include "coap/decoder.h"
 #include "coap-token.h"
 #include <estd/string.h>
+#include "coap-uint.h"
 
 namespace moducom { namespace coap {
 
@@ -304,9 +305,23 @@ public:
 
     // this signature is EXPERIMENTAL.  implied by title of this class (experimental_option_iterator)
     // but this one is extra so (naming wise) than the other methods here
-    ro_chunk_t value()
+    ro_chunk_t opaque()
     {
         return decoder.process_option_value_experimental();
+    }
+
+    template <typename TUInt>
+    TUInt uint()
+    {
+        ro_chunk_t v = opaque();
+
+        TUInt retval = UInt::get<TUInt>(v.data(), v.length());
+
+#ifdef FEATURE_ESTD_IOSTREAM_NATIVE
+        std::clog << " (" << retval << ')';
+#endif
+
+        return retval;
     }
 
     estd::layer3::basic_string<const char, false> string()

@@ -10,6 +10,7 @@ const char* get_description(Option::Numbers number)
     {
         case Option::Zeroed:        return "Zeroed";
         case Option::ETag:          return "ETag";
+        case Option::Observe:       return "Observe";
         case Option::UriPath:       return "Uri-Path";
         case Option::UriQuery:      return "Uri-Query";
         case Option::Block1:        return "Block1";

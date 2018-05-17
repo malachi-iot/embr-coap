@@ -44,12 +44,7 @@ void simple_observable_responder(TDataPump& datapump, typename TDataPump::Incomi
 
             case Option::Observe:
             {
-                ro_chunk_t value = it.value();
-                uint16_t v = UInt::get<uint16_t>(value.data(), value.length());
-
-#ifdef FEATURE_MCCOAP_CLOG
-                std::clog << "Got value: " << v << std::endl;
-#endif
+                uint16_t v = it.template uint<uint16_t>();
 
                 break;
             }
