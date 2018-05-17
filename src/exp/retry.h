@@ -41,7 +41,7 @@ public:
         // TODO: Make a layer3::Token which can lean on netbuf contents,
         // as right now netbuf has a requirement which it must at least support
         // the first 12 bytes (head + token) without fragementation
-        layer2::Token token() const { }
+        coap::layer2::Token token() const { }
 
         // needed for unallocated portions of vector
         Item() {}
@@ -114,7 +114,7 @@ public:
 
     // called when ACK is received to determine if we should remove anything from the
     // retry_queue
-    void ack_received(const addr_t& from_addr, uint16_t mid, const layer2::Token& token)
+    void ack_received(const addr_t& from_addr, uint16_t mid, const coap::layer2::Token& token)
     {
 
     }

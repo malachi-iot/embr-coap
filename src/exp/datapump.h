@@ -68,7 +68,7 @@ private:
 
         }
 
-#ifdef FEATURE_CPP_MOVESEMANTIC
+#if defined(FEATURE_CPP_MOVESEMANTIC) && defined(FEATURE_MCCOAP_DATAPUMP_INLINE)
         Item(Item&& move_from) :
             m_netbuf(std::forward<netbuf_t>(move_from.m_netbuf)),
             m_addr(std::forward<addr_t>(move_from.m_addr))
