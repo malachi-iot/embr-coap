@@ -4,6 +4,7 @@
 #include <coap/platform.h>
 #include <coap/encoder.hpp>
 #include <coap/decoder.h>
+#include <coap/decoder/netbuf.h>
 #include <coap/context.h>
 #include "coap-uint.h"
 #include <mc/memory-chunk.h>
@@ -105,7 +106,7 @@ void simple_observable_responder(TDataPump& datapump, typename TDataPump::Incomi
 
     estd::layer1::string<128> uri;
     Header::Code::Codes response_code = Header::Code::NotFound;
-    experimental_option_iterator<netbuf_t&> it(context.decoder());
+    option_iterator<netbuf_t> it(context);
 
     last_header = context.header();
     last_token = context.token();
@@ -122,10 +123,7 @@ void simple_observable_responder(TDataPump& datapump, typename TDataPump::Incomi
             }
 
             case Option::Observe:
-            {
-                uint16_t v = it.template uint<uint16_t>();
-
-                if(v == 0)
+                if(it.uint8() == 0)
                 {
                     subscribed = true;
                     // NOTE: coap-cli doesn't appear to reflect this in observe mode
@@ -133,7 +131,6 @@ void simple_observable_responder(TDataPump& datapump, typename TDataPump::Incomi
                 }
 
                 break;
-            }
 
             default: break;
         }
@@ -144,14 +141,11 @@ void simple_observable_responder(TDataPump& datapump, typename TDataPump::Incomi
         ++it;
     }
 
+    context.deallocate_input();
+
 #ifdef FEATURE_MCCOAP_DATAPUMP_INLINE
-    datapump.dequeue_pop();
     NetBufEncoder<netbuf_t> encoder;
 #else
-    // FIX: Need a much more cohesive way of doing this
-    delete &context.decoder().netbuf();
-    datapump.dequeue_pop();
-
     NetBufEncoder<netbuf_t&> encoder(* new netbuf_t);
 #endif
 
@@ -159,17 +153,5 @@ void simple_observable_responder(TDataPump& datapump, typename TDataPump::Incomi
 
     encoder.payload(uri);
 
-    // optional and experimental.  Really I think we can do away with encoder.complete()
-    // because coap messages are indicated complete mainly by reaching the transport packet
-    // size - a mechanism which is fully outside the scope of the encoder
-    // That said, lwip netbuf does have a kind of 'shrink to fit' behavior which is best applied
-    // sooner than later - the complete is perfectly suited to that.
-    // Technically the enqueue_out could call the complete() function
-    encoder.complete();
-
-#ifdef FEATURE_MCCOAP_DATAPUMP_INLINE
-    datapump.enqueue_out(std::forward<netbuf_t>(encoder.netbuf()), context.address());
-#else
-    datapump.enqueue_out(encoder.netbuf(), context.address());
-#endif
+    context.respond(encoder);
 }

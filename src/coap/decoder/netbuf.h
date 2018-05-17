@@ -4,11 +4,12 @@
 #include "coap-token.h"
 #include <estd/string.h>
 #include "coap-uint.h"
+#include "coap/context.h"
 
 namespace moducom { namespace coap {
 
 template <class TNetBuf>
-class experimental_option_iterator;
+class option_iterator;
 
 // standalone Decoder works well enough, so this is largely just a netbuf-capable
 // wrapper around it
@@ -19,7 +20,7 @@ class NetBufDecoder : public Decoder
     typedef Decoder base_t;
     typedef moducom::pipeline::MemoryChunk::readonly_t ro_chunk_t;
 
-    friend class experimental_option_iterator<TNetBuf>;
+    friend class option_iterator<TNetBuf>;
 
 protected:
     netbuf_t m_netbuf;
@@ -90,7 +91,12 @@ public:
         int actual_remaining_length = context.chunk.length() - context.pos;
         bool _partial = value_length > actual_remaining_length;
 
-        if(partial != NULLPTR) *partial = _partial;
+        if(partial != NULLPTR)
+            *partial = _partial;
+        else
+        {
+            ASSERT_WARN(false, _partial, "Partial data encountered but potentially ignored");
+        }
 
         // it's implied there's another chunk coming if value_length
         // exceeds actual_remaining_length
@@ -230,9 +236,9 @@ public:
 // of the start-stop condition awareness of full Decoder, then actually derive from that class
 // so that we can do things like postfix++
 template <class TNetBuf>
-class experimental_option_iterator
+class option_iterator
 {
-    typedef NetBufDecoder<TNetBuf> decoder_t;
+    typedef NetBufDecoder<TNetBuf&> decoder_t;
     typedef Option::Numbers value_type;
     typedef moducom::pipeline::MemoryChunk::readonly_t ro_chunk_t;
 
@@ -258,8 +264,18 @@ class experimental_option_iterator
     }
 
 public:
-    experimental_option_iterator(decoder_t& decoder, bool begin_option = false) :
+    option_iterator(decoder_t& decoder, bool begin_option = false) :
         decoder(decoder)
+    {
+        // NOT repeatable
+        if(begin_option)
+            decoder.begin_option_experimental();
+
+        partial_advance_and_get_number();
+    }
+
+    option_iterator(DecoderContext<TNetBuf>& context, bool begin_option = false) :
+        decoder(context.decoder())
     {
         // NOT repeatable
         if(begin_option)
@@ -274,7 +290,7 @@ public:
         return decoder.state() == Decoder::Options;
     }
 
-    experimental_option_iterator& operator ++()
+    option_iterator& operator ++()
     {
         decoder.option_next_experimental();
         if(valid())
@@ -318,6 +334,8 @@ public:
     template <typename TUInt>
     TUInt uint()
     {
+        // opaque will read in the entire value, no matter if the
+        // int is big enough to hold it
         ro_chunk_t v = opaque();
 
         TUInt retval = UInt::get<TUInt>(v.data(), v.length());
@@ -328,6 +346,24 @@ public:
 
         return retval;
     }
+
+    uint8_t uint8()
+    {
+        ro_chunk_t v = opaque();
+
+        uint8_t retval = v.length() == 0 ? 0 : *v.data();
+
+        ASSERT_WARN(true, v.length() == 1, "uint8 call expects a value of exactly 1 byte");
+
+#ifdef FEATURE_ESTD_IOSTREAM_NATIVE
+        std::clog << " (" << (int)retval << ')';
+#endif
+
+        return retval;
+    }
+
+    uint16_t uint16() { return uint<uint16_t>(); }
+    uint32_t uint32() { return uint<uint32_t>(); }
 
     estd::layer3::basic_string<const char, false> string()
     {

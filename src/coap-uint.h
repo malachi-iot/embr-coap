@@ -18,6 +18,7 @@ class UInt
 {
 public:
     // lightly tested (16-bit values pushed through)
+    // uint8_t does not, it doesn't like v <<= 8
     template <typename TReturn>
     static TReturn get(const uint8_t* value, const size_t len = sizeof(TReturn))
     {

@@ -232,6 +232,27 @@ class IncomingContext :
 public:
 };
 
+
+template <class TNetBuf>
+class NetBufDecoder;
+
+
+template <class TNetBuf>
+struct DecoderContext
+{
+    typedef NetBufDecoder<TNetBuf&> decoder_t;
+
+private:
+    decoder_t m_decoder;
+
+protected:
+    DecoderContext(TNetBuf& netbuf) : m_decoder(netbuf) {}
+
+public:
+    decoder_t& decoder() { return m_decoder; }
+};
+
+
 struct ObjStackContext
 {
     // NOTE: Facing a small cunundrum: objstack doesn't know during a free operation

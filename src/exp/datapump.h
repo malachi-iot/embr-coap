@@ -8,6 +8,7 @@
 #include "coap-token.h"
 #include "coap/context.h"
 #include "coap/decoder/netbuf.h"
+#include "coap/encoder.h"
 
 namespace moducom { namespace coap {
 
@@ -190,7 +191,8 @@ public:
 
     // non-inline-token
     struct IncomingContext :
-            coap::IncomingContext<addr_t, false>
+            coap::IncomingContext<addr_t, false>,
+            DecoderContext<netbuf_t>
     {
         friend class DataPump;
 
@@ -198,19 +200,47 @@ public:
         typedef coap::IncomingContext<addr_t, false> base_t;
 
     private:
-        decoder_t m_decoder;
+        DataPump& datapump;
 
         void prepopulate()
         {
-            base_t::header(m_decoder.header());
-            m_decoder.process_token_experimental(&this->_token);
-            m_decoder.begin_option_experimental();
+            decoder_t& d = this->decoder();
+            base_t::header(d.header());
+            d.process_token_experimental(&this->_token);
+            d.begin_option_experimental();
         }
 
     public:
-        IncomingContext(netbuf_t& netbuf) : m_decoder(netbuf) {}
+        IncomingContext(DataPump& datapump, netbuf_t& netbuf) :
+            DecoderContext<netbuf_t>(netbuf),
+            datapump(datapump)
+        {}
 
-        decoder_t& decoder() { return m_decoder; }
+        // marks end of input processing
+        void deallocate_input()
+        {
+#ifndef FEATURE_MCCOAP_DATAPUMP_INLINE
+            // FIX: Need a much more cohesive way of doing this
+            delete &this->decoder().netbuf();
+#endif
+            datapump.dequeue_pop();
+        }
+
+#ifdef FEATURE_MCCOAP_DATAPUMP_INLINE
+        void respond(NetBufEncoder<netbuf_t>& encoder)
+        {
+            // lwip netbuf has a kind of 'shrink to fit' behavior which is best applied
+            // sooner than later - the complete is perfectly suited to that.
+            encoder.complete();
+            datapump.enqueue_out(std::forward<netbuf_t>(encoder.netbuf()), base_t::address());
+        }
+#else
+        void respond(const NetBufEncoder<netbuf_t&>& encoder)
+        {
+            encoder.complete();
+            datapump.enqueue_out(encoder.netbuf(), base_t::address());
+        }
+#endif
     };
 
     //!
@@ -224,7 +254,7 @@ public:
             // TODO: optimize this so that we can avoid copying addr around
             addr_t addr;
 
-            IncomingContext context(*dequeue_in(&addr));
+            IncomingContext context(*this, *dequeue_in(&addr));
 
             context.addr = addr;
 
