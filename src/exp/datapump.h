@@ -9,6 +9,7 @@
 #include "coap/context.h"
 #include "coap/decoder/netbuf.h"
 #include "coap/encoder.h"
+#include "coap/observable.h"
 
 #ifdef FEATURE_CPP_MOVESEMANTIC
 #include <utility> // for std::forward
@@ -266,6 +267,31 @@ public:
             if(prepopulate_context) context.prepopulate();
 
             f(context);
+
+        }
+    }
+
+    //!
+    //! \brief service
+    //! \param prepopulate_context gathers header, token and initiates option processing
+    //!
+    template <class TObservableCollection>
+    void service(void (*f)(IncomingContext&, ObservableRegistrar<TObservableCollection>&),
+                 ObservableRegistrar<TObservableCollection>& observable_registrar,
+                 bool prepopulate_context)
+    {
+        if(!dequeue_empty())
+        {
+            // TODO: optimize this so that we can avoid copying addr around
+            addr_t addr;
+
+            IncomingContext context(*this, *dequeue_in(&addr));
+
+            context.addr = addr;
+
+            if(prepopulate_context) context.prepopulate();
+
+            f(context, observable_registrar);
 
         }
     }

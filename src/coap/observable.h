@@ -45,10 +45,51 @@ class ObservableRegistrar
     TCollection registrations;
 
     typedef typename TCollection::value_type observable_session_t;
+    typedef typename TCollection::iterator iterator;
 
 public:
     typedef TIncomingContext request_context_t;
     typedef typename request_context_t::addr_t addr_t;
+
+    void do_register(const layer3::Token& token, const addr_t& addr)
+    {
+        observable_session_t os;
+
+        os.sequence = 0;
+        os.token = token;
+        os.addr = addr;
+
+        registrations.push_back(os);
+    }
+
+    void do_register(const layer2::Token& token, const addr_t& addr)
+    {
+        observable_session_t os;
+
+        os.sequence = 0;
+        os.token = token;
+        os.addr = addr;
+
+        registrations.push_back(os);
+    }
+
+
+
+    void do_deregister()
+    {
+
+    }
+
+    iterator begin()
+    {
+        return registrations.begin();
+    }
+
+    iterator end()
+    {
+        return registrations.end();
+    }
+
 
     // When evaluating a registration or deregistration, utilize this context
     class Context

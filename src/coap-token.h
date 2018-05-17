@@ -85,6 +85,8 @@ class Token :
 
 public:
     Token(const uint8_t* data, size_t tkl) : base_t(data, tkl) {}
+
+    Token(const layer2::Token& token) : base_t(token.data(), token.length()) {}
 };
 
 }
