@@ -3,6 +3,7 @@
 #include "../coap-encoder.h"
 #include "mc/netbuf.h"
 #include "../coap-uint.h"
+#include "context.h"
 
 #include <utility>
 
@@ -253,13 +254,29 @@ public:
 
     bool payload(ro_chunk_t option_value, bool last_chunk = true);
 
+    // do a most-used case for filling out a response based on a requesting
+    // token and header context
+    template <bool inline_token>
+    bool header_and_token(TokenAndHeaderContext<inline_token>& context,
+                          Header::Code::Codes response_code)
+    {
+        // Not going to check header write, we always assume we have at least 4 bytes
+        // at the start of our netbuf
+        header(moducom::coap::create_response(context.header(),
+                                       response_code));
+        return token(context.token());
+    }
+
     // marks end of encoding - oftentimes, encoder cannot reasonably figure this out due to optional
     // presence of both options and payload.  Only during presence of payload can we
     // indicate a 'last chunk'.  To avoid mixing and matching complete-detection techniques,
     // an explicit call to complete() is always required to signal to underlying netbuf
     // (or perhaps alternate signalling mechanism?) - At time of this writing no formalized
     // signaling mechanism is present
-    void complete() { }
+    void complete()
+    {
+        //netbuf().complete();
+    }
 };
 
 

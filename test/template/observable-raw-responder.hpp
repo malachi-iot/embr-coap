@@ -8,18 +8,9 @@
 #include <coap/context.h>
 #include "coap-uint.h"
 #include <mc/memory-chunk.h>
+#include "exp/datapump.h"
 
 #include <chrono>
-
-template <class TNetBuf, bool inline_token>
-void encode_header_and_token(moducom::coap::NetBufEncoder<TNetBuf>& encoder,
-                             moducom::coap::TokenAndHeaderContext<inline_token>& context,
-                             moducom::coap::Header::Code::Codes response_code)
-{
-    encoder.header(moducom::coap::create_response(context.header(),
-                                   response_code));
-    encoder.token(context.token());
-}
 
 bool subscribed = false;
 moducom::coap::Header last_header;
@@ -96,12 +87,12 @@ void evaluate_emit_observe(TDataPump& datapump,
 }
 
 
-template <class TDataPump>
-void simple_observable_responder(TDataPump& datapump, typename TDataPump::IncomingContext& context)
+template <class TIncomingContext>
+void simple_observable_responder(TIncomingContext& context)
 {
     using namespace moducom::coap;
 
-    typedef typename TDataPump::netbuf_t netbuf_t;
+    typedef typename TIncomingContext::netbuf_t netbuf_t;
     typedef moducom::pipeline::MemoryChunk::readonly_t ro_chunk_t;
 
     estd::layer1::string<128> uri;
@@ -149,8 +140,7 @@ void simple_observable_responder(TDataPump& datapump, typename TDataPump::Incomi
     NetBufEncoder<netbuf_t&> encoder(* new netbuf_t);
 #endif
 
-    encode_header_and_token(encoder, context, response_code);
-
+    encoder.header_and_token(context, response_code);
     encoder.payload(uri);
 
     context.respond(encoder);

@@ -353,7 +353,7 @@ public:
 
         uint8_t retval = v.length() == 0 ? 0 : *v.data();
 
-        ASSERT_WARN(true, v.length() == 1, "uint8 call expects a value of exactly 1 byte");
+        ASSERT_WARN(true, v.length() <= 1, "uint8 call expects a length of <= 1 byte");
 
 #ifdef FEATURE_ESTD_IOSTREAM_NATIVE
         std::clog << " (" << (int)retval << ')';

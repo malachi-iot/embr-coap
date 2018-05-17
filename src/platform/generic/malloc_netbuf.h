@@ -99,6 +99,11 @@ public:
         m_chunk = &(*it++);
     }
 
+    void written()
+    {
+        // indicates we are finished with our writing to fill up the netbuf
+    }
+
 #ifdef FEATURE_CPP_MOVESEMANTIC
     NetBufDynamicExperimental(NetBufDynamicExperimental&& move_from) :
         base_t(move_from),
