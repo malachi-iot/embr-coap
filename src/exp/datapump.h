@@ -10,6 +10,10 @@
 #include "coap/decoder/netbuf.h"
 #include "coap/encoder.h"
 
+#ifdef FEATURE_CPP_MOVESEMANTIC
+#include <utility> // for std::forward
+#endif
+
 namespace moducom { namespace coap {
 
 #ifdef FEATURE_MCCOAP_DATAPUMP_INLINE

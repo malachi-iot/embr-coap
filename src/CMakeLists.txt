@@ -1,4 +1,5 @@
 cmake_minimum_required(VERSION 3.6)
+
 project(mc-coap)
 
 #set(CMAKE_CXX_STANDARD 11)
@@ -31,7 +32,10 @@ set(SOURCE_FILES
         coap.cpp coap.h
         coap_transmission.cpp coap_transmission.h
         cbor.h
-        cbor/cbor.cpp cbor/features.h cbor/encoder.h
+        cbor/cbor.cpp cbor/features.h
+        #cbor/decoder.cpp
+        #cbor/decoder.h
+        cbor/encoder.h
 
         coap/context.h
 
@@ -73,6 +77,7 @@ set(SOURCE_FILES
         platform/arduino/datapump.cpp
 
         platform/generic/datapump-messageobserver.hpp
+        platform/generic/malloc_netbuf.h
 
         platform/lwip/lwip-datapump.h
 
