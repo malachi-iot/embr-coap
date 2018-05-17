@@ -200,7 +200,7 @@ public:
     {
         friend class DataPump;
 
-        typedef netbuf_t netbuf_t;
+        typedef TNetBuf netbuf_t;
         typedef NetBufDecoder<netbuf_t&> decoder_t;
         typedef coap::IncomingContext<addr_t, false> base_t;
 
