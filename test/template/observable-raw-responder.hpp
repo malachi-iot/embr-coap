@@ -62,10 +62,6 @@ void evaluate_emit_observe(TDataPump& datapump,
             header.type(Header::NonConfirmable);
 
             encoder.header(header);
-
-            //estd::layer1::string<32> payload;
-            char payload[32];
-
             encoder.token(last_token);
             encoder.option(Option::Observe, (int)header.message_id());
 
@@ -73,10 +69,24 @@ void evaluate_emit_observe(TDataPump& datapump,
             // NOTE: Does not account for chunking, and that would be involved since
             // snprintf doesn't indicate whether things got truncated
             encoder.payload_header();
+
+            char payload[32];
             int advance_by = snprintf(
                     (char*)encoder.data(), encoder.size(),
                     "Observed: %d", header.message_id());
+
             encoder.advance(advance_by);
+
+            /* this way works too!
+             *
+
+            estd::layer3::basic_string<char, false> s(0, (char*)encoder.data(), encoder.size());
+
+            s += "Observed: ";
+            s += estd::to_string(header.message_id());
+
+            encoder.advance(s.size());
+             */
 
             encoder.complete();
 
