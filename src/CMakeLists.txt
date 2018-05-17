@@ -33,8 +33,8 @@ set(SOURCE_FILES
         coap_transmission.cpp coap_transmission.h
         cbor.h
         cbor/cbor.cpp cbor/features.h
-        #cbor/decoder.cpp
-        #cbor/decoder.h
+        cbor/decoder.cpp
+        cbor/decoder.h
         cbor/encoder.h
 
         coap/context.h
