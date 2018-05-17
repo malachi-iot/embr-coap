@@ -43,6 +43,6 @@ TEST_CASE("CoAP observable (RFC-7641) tests", "[coap-observer]")
         uint16_t option_value = UInt::get<uint16_t>(value.data(), value.length());
 
         // TODO: still working on processing this scenario right
-        //REQUIRE(option_value == 0);
+        REQUIRE(option_value == 0);
     }
 }

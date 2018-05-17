@@ -21,6 +21,9 @@ public:
     template <typename TReturn>
     static TReturn get(const uint8_t* value, const size_t len = sizeof(TReturn))
     {
+        // coap cleverly allows 0-length integer buffers, which means value=0
+        if(len == 0) return 0;
+
         TReturn v = *value;
 
         for(int i = 1; i < len; i++)

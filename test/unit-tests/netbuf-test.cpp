@@ -79,8 +79,11 @@ TEST_CASE("netbuf+coap tests", "[netbuf-coap]")
 
         REQUIRE(decoder.state() == Decoder::Options);
 
-        //chunk_t value = decoder.process_option_value_experimental();
+        // FIX: clumsy call - have to make this *after* option header, but but also
+        // after checking decoder.state()
+        decoder.process_option_header_experimental();
 
+        chunk_t value = decoder.process_option_value_experimental();
         //decoder.option_decoder().state()
     }
 }

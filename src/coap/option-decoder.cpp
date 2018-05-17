@@ -260,7 +260,15 @@ size_t OptionDecoder::process_iterate(const pipeline::MemoryChunk::readonly_t& c
                                       bool last_chunk)
 {
     size_t length = chunk.length(); // represents remaining length to be processed
-    size_t value_processed = 0;
+
+    // last chunk + length == 0 means special EOF processing mode
+    if(length == 0 && last_chunk)
+    {
+        process_iterate(0, true);
+        return 0;
+    }
+
+    //size_t value_processed = 0;
     const uint8_t* data = chunk.data();
 
     // NOTE: semi-copy paste of above iterate, for now
@@ -314,12 +322,6 @@ size_t OptionDecoder::process_iterate(const pipeline::MemoryChunk::readonly_t& c
             // does move forward and is ultimately recorded
             default: break;
         }
-    }
-
-    if(last_chunk)
-    {
-        // special processing for length == 0 and last_chunk
-        //process_iterate(0, true);
     }
 
     return data - chunk.data();

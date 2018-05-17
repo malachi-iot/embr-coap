@@ -33,15 +33,18 @@ public:
         return base_t::process_iterate(context);
     }
 
-protected:
     void process_option_header_experimental()
     {
+        // if we're gonna evaluate an option header, ensure we're at least in option
+        // processing mode
         ASSERT_WARN(Decoder::Options, state(), "Must be in options processing mode");
 
+        // move past header
         process_iterate();
 
         ASSERT_WARN(OptionDecoder::ValueStart, option_decoder().state(), "Must be at OptionValueStart");
     }
+protected:
 
     // NOTE: Actually shaping up to be an internal call, because we always want
     // to move past OptionValueDone when evaluating/processing options and this

@@ -120,6 +120,22 @@ bool Decoder::process_iterate(Context& context)
             // we're at the end of the buffer and no payload marker seen
             else if ((pos == chunk.length() && last_chunk))
             {
+                // now that optionDecoder.process_iterate can iterate at EOF with no characters,
+                // this is as simple as waiting until we get OptionValueDone
+                if(optionDecoder.state() == OptionDecoder::OptionValueDone)
+                    state(OptionsDone);
+
+                /*
+                ASSERT_ERROR(true,
+                             (optionDecoder.state() == OptionDecoder::OptionValueDone) ||
+                             (optionDecoder.state() == OptionDecoder::ValueStart),
+                             "Must be either ValueStart or OptionValueDone.  Got: " << optionDecoder.state()); */
+
+                //if(optionDecoder.state() == OptionDecoder::ValueStart)
+                  //  optionDecoder.process_iterate(0, true); // special EOF processing to get us to ValueDone
+
+                //ASSERT_ERROR(OptionDecoder::OptionValueDone, optionDecoder.state(), "Must be @ option value done");
+                /*
                 // OptionsValueDone = processing one option, and reached the end of the entire option
                 // Payload = never even processed an option, but instead hit payload marker immediately
                 //           [this needs work, as Payload marker technically can appear even when actual
@@ -129,9 +145,9 @@ bool Decoder::process_iterate(Context& context)
                 ASSERT_ERROR(true,
                              (optionDecoder.state() == OptionDecoder::OptionValueDone) ||
                              (optionDecoder.state() == OptionDecoder::OptionDeltaAndLengthDone),
-                             "Must be either optionValueDone or optionDeltaAndlengthDone.  Got: " << optionDecoder.state());
+                             "Must be either optionValueDone or optionDeltaAndlengthDone.  Got: " << optionDecoder.state()); */
                 // will check again for 0xFF if necessary
-                state(OptionsDone);
+                //state(OptionsDone);
             }
             // reach here when we are not at last chunk but still in mid-options processing
             else
