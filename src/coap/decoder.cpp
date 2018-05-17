@@ -12,7 +12,8 @@ bool Decoder::process_iterate(Context& context)
     size_t& pos = context.pos;
     bool process_done = false;
     bool last_chunk = context.last_chunk;
-    const pipeline::MemoryChunk::readonly_t& chunk = context.chunk;
+    typedef pipeline::MemoryChunk::readonly_t ro_chunk_t;
+    const ro_chunk_t& chunk = context.chunk;
 
     switch (state())
     {
@@ -75,35 +76,31 @@ bool Decoder::process_iterate(Context& context)
             break;
 
         case OptionsStart:
-            init_option_decoder();
-            optionHolder.number_delta = 0;
-            optionHolder.length = 0;
-            // We have to do some level of processing on OptionsStart to know
-            // whether we have any optons at all.  So remember
-            pos += optionDecoder.process_iterate(chunk.remainder(pos), &optionHolder, last_chunk);
-            if(optionDecoder.state() == OptionDecoder::Payload)
+        {
+            ro_chunk_t remainder = chunk.remainder(pos);
+
+            // if we're at EOF (happens with header+token only messages)
+            if(remainder.length() == 0 && last_chunk)
+            {
+                // then never go through an options processing phase at all
                 state(OptionsDone);
+            }
             else
             {
-                state(Options);
-
-                /*
-                // Dispatcher/DecoderSubject don't like this , but eventually should
-                // To prep, have Dispatcher/DecoderSubject look for 'ValueStart' rather
-                // than "option header" end condition
-
-                // If we *do* have options and we aren't done processing "option header"
-                if(optionDecoder.state() != OptionDecoder::OptionDeltaAndLengthDone)
-                {
-                    // And we have more chunk data available,
-                    // go ahead and proceed to iterate a bit more through the options
-                    if (pos < chunk.length()) return process_iterate(context);
-                }
-                // we don't want to push forward if we're at OptionsDeltaAndLengthDone
-                // since we want to give consumers a chance to react to that
-                */
+                init_option_decoder();
+                optionHolder.number_delta = 0;
+                optionHolder.length = 0;
+                // We have to do some level of processing on OptionsStart to know
+                // whether we have any optons at all.  So remember
+                pos += optionDecoder.process_iterate(remainder, &optionHolder, last_chunk);
+                // hit payload immediately (no options, but followed by payload)
+                if (optionDecoder.state() == OptionDecoder::Payload)
+                    state(OptionsDone);
+                else
+                    state(Options);
             }
             break;
+        }
 
         case Options:
         {

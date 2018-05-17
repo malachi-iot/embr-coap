@@ -46,6 +46,17 @@ bool OptionDecoder::process_iterate(uint8_t value, bool eof)
         {
             ASSERT_WARN(false, eof, "eof not valid for this state");
 
+            /*
+             * Not enabling this capability since we already expect caller
+             * to know if we're eof and to merely not kick off new option
+             * processing if we know we're at that stage
+
+            // a message with just a header and token but no options or payload
+            // is permitted to evaluate EOL state here, though it's encouraged to
+            // avoid entering state processing alotgether in that case
+            if(eof) state(OptionValueDone);
+             */
+
             // NOTE: Not yet activated by current Dispatcher as it aborts before we reach here
             if(value == 0xFF)
             {

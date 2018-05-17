@@ -66,6 +66,16 @@ TEST_CASE("netbuf+coap tests", "[netbuf-coap]")
 
         REQUIRE(token.length() == 0);
     }
+    SECTION("'simplest' (data) incoming decoder")
+    {
+        NetBufDecoder<NetBufMemory>  reader(buffer_simplest_request);
+
+        reader.header();
+        reader.process_token_experimental();
+        reader.begin_option_experimental();
+
+        REQUIRE(reader.netbuf().length_unprocessed() == sizeof(buffer_simplest_request));
+    }
     SECTION("0-length value option")
     {
         typedef moducom::pipeline::MemoryChunk::readonly_t chunk_t;
