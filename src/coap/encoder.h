@@ -107,6 +107,7 @@ public:
         assert_not_state(_state_t::Header);
         assert_not_state(_state_t::Token);
         assert_not_state(_state_t::Payload);
+        assert_state(_state_t::OptionsDone);
 
         if(!payload_marker_written())
         {
@@ -124,6 +125,14 @@ public:
         state(_state_t::Payload);
 
         return true;
+    }
+
+    // ensures payload marker is written and then returns current netbuf unprocessed
+    // chunk ptr
+    uint8_t* payload()
+    {
+        payload_header();
+        return base_t::data();
     }
 
     size_type write(const void* d, int len)

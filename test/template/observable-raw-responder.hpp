@@ -51,28 +51,23 @@ void evaluate_emit_observe(TDataPump& datapump,
             NetBufEncoder<netbuf_t&> encoder(* new netbuf_t);
 #endif
 
-            last_header.message_id(last_header.message_id() + 1);
+            static int mid = 0;
 
-            // copies over mid and tkl
-            Header header = create_response(last_header, Header::Code::Content);
+            // we want a NON or CON since observer messages are not a normal response
+            Header header(Header::NonConfirmable, Header::Code::Content);
 
-            // create_response will make this an ACK but observe is a special case
-            // and not really a response so we'll generate a NON here though CON
-            // is acceptable too
-            header.type(Header::NonConfirmable);
+            header.message_id(mid++);
+            header.token_length(last_token.length());
 
             encoder.header(header);
             encoder.token(last_token);
-            encoder.option(Option::Observe, (int)header.message_id());
+            encoder.option(Option::Observe, mid); // using mid also for observe counter since we aren't doing CON it won't matter
 
             // zero-copy goodness
             // NOTE: Does not account for chunking, and that would be involved since
             // snprintf doesn't indicate whether things got truncated
-            encoder.payload_header();
-
-            char payload[32];
             int advance_by = snprintf(
-                    (char*)encoder.data(), encoder.size(),
+                    (char*)encoder.payload(), encoder.size(),
                     "Observed: %d", header.message_id());
 
             encoder.advance(advance_by);
@@ -167,6 +162,9 @@ void simple_observable_responder(TDataPump& datapump, typename TDataPump::Incomi
     // optional and experimental.  Really I think we can do away with encoder.complete()
     // because coap messages are indicated complete mainly by reaching the transport packet
     // size - a mechanism which is fully outside the scope of the encoder
+    // That said, lwip netbuf does have a kind of 'shrink to fit' behavior which is best applied
+    // sooner than later - the complete is perfectly suited to that.
+    // Technically the enqueue_out could call the complete() function
     encoder.complete();
 
 #ifdef FEATURE_MCCOAP_DATAPUMP_INLINE
