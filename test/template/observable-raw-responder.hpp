@@ -8,6 +8,8 @@
 #include "coap-uint.h"
 #include <mc/memory-chunk.h>
 
+#include <chrono>
+
 template <class TNetBuf, bool inline_token>
 void encode_header_and_token(moducom::coap::NetBufEncoder<TNetBuf>& encoder,
                              moducom::coap::TokenAndHeaderContext<inline_token>& context,
@@ -16,6 +18,23 @@ void encode_header_and_token(moducom::coap::NetBufEncoder<TNetBuf>& encoder,
     encoder.header(moducom::coap::create_response(context.header(),
                                    response_code));
     encoder.token(context.token());
+}
+
+
+template <class TDataPump>
+void evaluate_emit_observe(TDataPump& dataPump, std::chrono::milliseconds total_since_start)
+{
+    static std::chrono::milliseconds last(0);
+
+    std::chrono::milliseconds elapsed = total_since_start;
+
+    elapsed -= last;
+    last = total_since_start;
+
+    if(elapsed.count() > 1000)
+    {
+
+    }
 }
 
 
