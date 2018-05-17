@@ -325,6 +325,15 @@ public:
         mask_or<COAP_HEADER_FIXED_VER_POS>(0, 1);
         mask_or<COAP_HEADER_FIXED_TYPE_POS>(0, type);
     }
+
+
+    Header(TypeEnum type, Code::Codes code)
+    {
+        raw = 0;
+        this->code(code);
+        mask_or<COAP_HEADER_FIXED_VER_POS>(0, 1);
+        mask_or<COAP_HEADER_FIXED_TYPE_POS>(0, type);
+    }
 };
 
 

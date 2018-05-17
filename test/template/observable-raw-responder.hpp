@@ -35,17 +35,14 @@ void evaluate_emit_observe(TDataPump& datapump,
 
     static std::chrono::milliseconds last(0);
 
-    std::chrono::milliseconds elapsed = total_since_start;
+    std::chrono::milliseconds elapsed = total_since_start - last;
 
-    elapsed -= last;
-    long count = elapsed.count();
-
-    if(count > 1000)
+    if(elapsed.count() > 1000)
     {
         if(subscribed)
         {
             //std::clog << "Sending to " << addr << std::endl;
-            std::clog << "Responding";
+            std::clog << "Event fired" << std::endl;
 
             last = total_since_start;
 #ifdef FEATURE_MCCOAP_DATAPUMP_INLINE
@@ -54,29 +51,33 @@ void evaluate_emit_observe(TDataPump& datapump,
             NetBufEncoder<netbuf_t&> encoder(* new netbuf_t);
 #endif
 
-            last_header.message_id(last_header.message_id()+ 1);
+            last_header.message_id(last_header.message_id() + 1);
 
+            // copies over mid and tkl
             Header header = create_response(last_header, Header::Code::Content);
+
+            // create_response will make this an ACK but observe is a special case
+            // and not really a response so we'll generate a NON here though CON
+            // is acceptable too
+            header.type(Header::NonConfirmable);
 
             encoder.header(header);
 
             //estd::layer1::string<32> payload;
             char payload[32];
 
-            ro_chunk_t _token((const uint8_t*)last_token.data(), last_token.length());
-            encoder.token(_token);
+            encoder.token(last_token);
             encoder.option(Option::Observe, (int)header.message_id());
 
-            //payload = "Observed! ";
-            //payload += header.message_id();
-            sprintf(payload, "Observed: %d", header.message_id());
-
-            ro_chunk_t payload_chunk((const uint8_t*)payload, strlen(payload));
-
+            // zero-copy goodness
+            // NOTE: Does not account for chunking, and that would be involved since
+            // snprintf doesn't indicate whether things got truncated
             encoder.payload_header();
-            // FIX: somehow this one is missing
-            //encoder.payload(ro_chunk_t((const uint8_t*)payload, strlen(payload)));
-            encoder.write((const void*)payload, strlen(payload));
+            int advance_by = snprintf(
+                    (char*)encoder.data(), encoder.size(),
+                    "Observed: %d", header.message_id());
+            encoder.advance(advance_by);
+
             encoder.complete();
 
 #ifdef FEATURE_MCCOAP_DATAPUMP_INLINE
@@ -122,7 +123,8 @@ void simple_observable_responder(TDataPump& datapump, typename TDataPump::Incomi
                 if(v == 0)
                 {
                     subscribed = true;
-                    response_code = Header::Code::Content;
+                    // NOTE: coap-cli doesn't appear to reflect this in observe mode
+                    response_code = Header::Code::Valid;
                 }
 
                 break;
