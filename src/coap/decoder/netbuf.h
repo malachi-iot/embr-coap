@@ -242,6 +242,11 @@ class experimental_option_iterator
     {
         using namespace moducom::coap;
 
+        // We presume this means there were no options
+        // NOTE: might prefer that we always demand to come in with this
+        // as OptionsStart and then we iterate forward ourselves
+        if(decoder.state() == Decoder::OptionsDone) return;
+
         decoder.process_option_header_experimental();
 
         value_type number = (value_type) decoder.option_number();
