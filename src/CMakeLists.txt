@@ -30,6 +30,7 @@ include_directories(${ESTDLIB_DIR})
 set(SOURCE_FILES
         coap.cpp coap.h
         coap_transmission.cpp coap_transmission.h
+        cbor.h
         cbor/cbor.cpp cbor/features.h cbor/encoder.h
 
         coap/context.h
