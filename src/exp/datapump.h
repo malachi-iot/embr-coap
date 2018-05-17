@@ -46,14 +46,32 @@ private:
 
         Item() {}
 
-        Item(TNetBuf& netbuf, const addr_t& addr) :
 #ifdef FEATURE_MCCOAP_DATAPUMP_INLINE
+        Item(TNetBuf&& netbuf, const addr_t& addr) :
             m_netbuf(std::forward<netbuf_t>(netbuf)),
 #else
+        Item(TNetBuf& netbuf, const addr_t& addr) :
             m_netbuf(&netbuf),
 #endif
             m_addr(addr)
         {}
+
+        Item(const Item& copy_from) :
+            m_netbuf(copy_from.m_netbuf),
+            m_addr(copy_from.m_addr)
+        {
+
+        }
+
+#ifdef FEATURE_CPP_MOVESEMANTIC
+        Item(Item&& move_from) :
+            m_netbuf(std::forward<netbuf_t>(move_from.m_netbuf)),
+            m_addr(std::forward<addr_t>(move_from.m_addr))
+        {
+
+        }
+
+#endif
 
         const addr_t& addr() const { return m_addr; }
 
