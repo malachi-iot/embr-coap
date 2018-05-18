@@ -3,6 +3,7 @@
 #include <estd/forward_list.h>
 #include <estd/vector.h>
 #include <mc/memory-pool.h>
+#include "coap/decoder/netbuf.h"
 #include <stdint.h> // for uint8_t
 
 namespace moducom { namespace coap { namespace experimental {
@@ -18,37 +19,62 @@ public:
     typedef uint8_t addr_t[4];
     typedef ::time_t time_t;
 
-    // proper MID and Token are buried in netbuf, so don't need to be carried
-    // seperately
-    struct Item
+    struct Metadata
     {
         // number of retries attempted so far
         uint8_t retry_count;
 
-        // where to send retry
-        addr_t addr;
-
         // when to send it by
         time_t due;
 
+        Metadata() :
+            retry_count(0) {}
+    };
+
+    // proper MID and Token are buried in netbuf, so don't need to be carried
+    // seperately
+    // TODO: Utilize ObservableSession as a base once we resolve netbuf-inline behaviors here
+    struct Item : Metadata
+    {
+        // where to send retry
+        addr_t addr;
+
         // what to send
-        TNetBuf* netbuf;
+        // right now hard-wired to non-line netbuf style
+        TNetBuf* m_netbuf;
 
-        // get MID from netbuf, for incoming ACK comparison
-        uint16_t mid() const { return 0; }
+        TNetBuf& netbuf() { return m_netbuf; }
 
-        // get Token from netbuf, for incoming ACK comparison
+        // get MID from sent netbuf, for incoming ACK comparison
+        uint16_t mid() const
+        {
+            // TODO: optimize and use header decoder only and directly
+            NetBufDecoder<TNetBuf&> decoder(netbuf());
+
+            return decoder.header().message_id();
+        }
+
+        // get Token from sent netbuf, for incoming ACK comparison
         // TODO: Make a layer3::Token which can lean on netbuf contents,
         // as right now netbuf has a requirement which it must at least support
         // the first 12 bytes (head + token) without fragementation
-        coap::layer2::Token token() const { }
+        coap::layer2::Token token() const
+        {
+            // TODO: optimize and use header & token decoder only and directly
+            NetBufDecoder<TNetBuf&> decoder(netbuf());
+            coap::layer2::Token token;
+
+            decoder.header();
+            decoder.process_token_experimental(&token);
+
+            return token;
+        }
 
         // needed for unallocated portions of vector
         Item() {}
 
         Item(const addr_t& a, TNetBuf* netbuf) :
-                retry_count(0),
-                netbuf(netbuf)
+                m_netbuf(netbuf)
         {
             // TODO: assign addr
         }

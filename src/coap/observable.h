@@ -2,6 +2,7 @@
 
 #include "decoder/subject.h"
 #include "experimental-observer.h"
+#include <estd/vector.h>
 
 namespace moducom { namespace  coap {
 
