@@ -1,6 +1,7 @@
 #pragma once
 
 #include "decoder/subject.h"
+#include "encoder.h"
 #include "experimental-observer.h"
 #include <estd/vector.h>
 
@@ -88,7 +89,8 @@ public:
 
 
 
-    void do_deregister()
+    template <bool inline_token>
+    void do_deregister(const IncomingContext<addr_t, inline_token>& context)
     {
 
     }
@@ -102,6 +104,45 @@ public:
     {
         return registrations.end();
     }
+
+
+    template <bool inline_token>
+    Header::Code::Codes evaluate_observe_option(const IncomingContext<addr_t, inline_token>& context, uint8_t code)
+    {
+        switch(code)
+        {
+            case 0:
+                do_register(context);
+
+                // NOTE: coap-cli doesn't appear to reflect this in observe mode
+                return Header::Code::Valid;
+
+            case 1:
+                do_deregister(context);
+                return Header::Code::Valid;
+
+            default:
+                return Header::Code::BadOption;
+        }
+    }
+
+
+    // Iterate over each registration in this observer, invoking the emit_observe
+    // function per each.  Note that observable_session also shall contain a resource
+    // key which can be filtered within the fn, though ultimately we'd like to filter
+    // before it gets there
+    template <class TDataPump>
+    void for_each(
+        TDataPump& datapump,
+        void (*emit_observe_fn)(
+#ifdef FEATURE_MCCOAP_DATAPUMP_INLINE
+                            NetBufEncoder<typename TDataPump::netbuf_t>& encoder,
+#else
+                            NetBufEncoder<typename TDataPump::netbuf_t&>& encoder,
+#endif
+                            const observable_session_t& seq),
+            bool autosend_observe_option = true);
+
 
 
     // When evaluating a registration or deregistration, utilize this context

@@ -5,6 +5,72 @@
 
 namespace moducom { namespace coap {
 
+template <class TCollection,
+          class TIncomingContext,
+          class TRequestContextTraits>
+template <class TDataPump>
+void ObservableRegistrar<TCollection, TIncomingContext, TRequestContextTraits>::
+    for_each(
+        TDataPump& datapump,
+        void (*emit_observe_fn)(
+#ifdef FEATURE_MCCOAP_DATAPUMP_INLINE
+            moducom::coap::NetBufEncoder<typename TDataPump::netbuf_t>& encoder,
+#else
+            moducom::coap::NetBufEncoder<typename TDataPump::netbuf_t&>& encoder,
+#endif
+            const observable_session_t& sess),
+        bool autosend_observe_option)
+{
+    typedef typename TDataPump::netbuf_t netbuf_t;
+    typedef typename TDataPump::addr_t addr_t;
+    typedef moducom::pipeline::MemoryChunk::readonly_t ro_chunk_t;
+
+    iterator it = begin();
+
+    while(it != end())
+    {
+        //std::clog << "Sending to " << addr << std::endl;
+        std::clog << "Event fired" << std::endl;
+
+#ifdef FEATURE_MCCOAP_DATAPUMP_INLINE
+        NetBufEncoder<netbuf_t> encoder;
+#else
+        NetBufEncoder<netbuf_t&> encoder(* new netbuf_t);
+#endif
+
+        static int mid = 0;
+
+        // we want a NON or CON since observer messages are not a normal response
+        // but instead classified as 'notifications'
+        Header header(Header::NonConfirmable, Header::Code::Content);
+
+        addr_t addr = (*it).addr;
+        const layer2::Token& token = (*it).token;
+        // NOTE: it appears coap-cli doesn't like a sequence # of 0
+        int sequence = ++(*it).sequence;
+
+        header.message_id(mid++);
+        header.token_length(token.length());
+
+        encoder.header(header);
+        encoder.token(token);
+
+        encoder.option(Option::Observe, sequence); // using mid also for observe counter since we aren't doing CON it won't matter
+
+        emit_observe_fn(encoder, *it);
+
+        ++it;
+
+        encoder.complete();
+
+#ifdef FEATURE_MCCOAP_DATAPUMP_INLINE
+        datapump.enqueue_out(std::forward<netbuf_t>(encoder.netbuf()), addr);
+#else
+        datapump.enqueue_out(encoder.netbuf(), addr);
+#endif
+    }}
+
+
 template <class TRequestContext>
 void ObservableOptionObserverBase<TRequestContext>::on_option(option_number_t number,
                                              const ro_chunk_t& chunk,
