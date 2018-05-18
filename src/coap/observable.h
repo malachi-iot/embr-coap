@@ -135,6 +135,16 @@ public:
     }
 };
 
+namespace layer1 {
+
+template<class TAddr, size_t N>
+class ObservableRegistrar :
+        public moducom::coap::ObservableRegistrar<
+                estd::layer1::vector<ObservableSession<TAddr>, N> >
+{
+};
+}
+
 template <class TRequestContext = ObserverContext>
 class ObservableOptionObserverBase : public experimental::MessageObserverBase<TRequestContext>
 {

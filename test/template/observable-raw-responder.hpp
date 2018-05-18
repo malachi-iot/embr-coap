@@ -13,25 +13,12 @@
 
 #include <chrono>
 
-#define EXP
-#ifdef EXP
-#else
-bool subscribed = false;
-moducom::coap::Header last_header;
-moducom::coap::layer2::Token last_token;
-#endif
 
-#ifdef EXP
+// Basically working, however first enqueued message mysteriously disappears
 template <class TDataPump, class TObservableCollection>
 void evaluate_emit_observe(TDataPump& datapump,
                            moducom::coap::ObservableRegistrar<TObservableCollection>& observable_registrar,
                            std::chrono::milliseconds total_since_start)
-#else
-template <class TDataPump>
-void evaluate_emit_observe(TDataPump& datapump,
-                           typename TDataPump::addr_t addr,
-                           std::chrono::milliseconds total_since_start)
-#endif
 {
     using namespace moducom::coap;
     typedef typename TDataPump::netbuf_t netbuf_t;
@@ -46,13 +33,9 @@ void evaluate_emit_observe(TDataPump& datapump,
     {
         last = total_since_start;
 
-#ifdef EXP
         auto it = observable_registrar.begin();
 
         while(it != observable_registrar.end())
-#else
-        if(subscribed)
-#endif
         {
             //std::clog << "Sending to " << addr << std::endl;
             std::clog << "Event fired" << std::endl;
@@ -69,14 +52,11 @@ void evaluate_emit_observe(TDataPump& datapump,
             Header header(Header::NonConfirmable, Header::Code::Content);
 
             header.message_id(mid++);
-#ifdef EXP
             addr_t addr = (*it).addr;
             const layer2::Token& last_token = (*it).token;
             int sequence = (*it).sequence++;
             ++it;
-#else
-            int sequence = mid;
-#endif
+
             header.token_length(last_token.length());
 
             encoder.header(header);
@@ -115,14 +95,9 @@ void evaluate_emit_observe(TDataPump& datapump,
 }
 
 
-#ifdef EXP
 template <class TIncomingContext, class TObservableCollection>
 void simple_observable_responder(TIncomingContext& context,
                                  moducom::coap::ObservableRegistrar<TObservableCollection>& observable_registrar)
-#else
-template <class TIncomingContext>
-void simple_observable_responder(TIncomingContext& context)
-#endif
 {
     using namespace moducom::coap;
 
@@ -132,12 +107,6 @@ void simple_observable_responder(TIncomingContext& context)
     estd::layer1::string<128> uri;
     Header::Code::Codes response_code = Header::Code::NotFound;
     option_iterator<netbuf_t> it(context);
-
-#ifdef EXP
-#else
-    last_header = context.header();
-    last_token = context.token();
-#endif
 
     while(it.valid())
     {
@@ -153,13 +122,9 @@ void simple_observable_responder(TIncomingContext& context)
             case Option::Observe:
                 if(it.uint8() == 0)
                 {
-#ifdef EXP
-                    //const layer3::Token token = context.token();
                     const layer2::Token& token = context.token();
                     observable_registrar.do_register(token, context.address());
-#else
-                    subscribed = true;
-#endif
+
                     // NOTE: coap-cli doesn't appear to reflect this in observe mode
                     response_code = Header::Code::Valid;
                 }
