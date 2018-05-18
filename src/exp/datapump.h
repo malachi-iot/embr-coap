@@ -11,6 +11,10 @@
 #include "coap/encoder.h"
 #include "coap/observable.h"
 
+#ifdef FEATURE_MCCOAP_RELIABLE
+#include "retry.h"
+#endif
+
 #ifdef FEATURE_CPP_MOVESEMANTIC
 #include <utility> // for std::forward
 #endif
@@ -49,6 +53,10 @@ private:
     {
         pnetbuf_t m_netbuf;
         addr_t m_addr;
+
+#ifdef FEATURE_MCCOAP_RELIABLE
+        typename experimental::Retry<netbuf_t, addr_t>::Metadata m_retry;
+#endif
 
     public:
 

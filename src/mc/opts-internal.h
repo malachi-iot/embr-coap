@@ -13,6 +13,12 @@
 // TODO: phase this into mc/coap-opts.h
 #include "../coap-features.h"
 
+// enables retry/reliable message capabilities.  Generally we want this,
+// but for extremely constrained environments one might eschew this feature
+// NOTE: eventually architecture goal is that datapump and retry code will
+// be isolated enough from one another such that this flag won't be necessary
+#define FEATURE_MCCOAP_RELIABLE
+
 // Do not enable features/options here, they are presented only for reference
 
 // utilize inline TNetBuf instead of pointer

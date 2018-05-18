@@ -13,16 +13,19 @@ namespace moducom { namespace coap { namespace experimental {
 // they are removed from our retry_list when an ACK is received, or when our backoff
 // logic finally expires
 // in support of https://tools.ietf.org/html/rfc7252#section-4.2
-template <class TNetBuf>
+template <class TNetBuf, class TAddr>
 class Retry
 {
 public:
-    typedef uint8_t addr_t[4];
+    typedef TAddr addr_t;
+    // FIX: We're gonna need a proper mapping for platform specific timing, though
+    // merely tracking as milliseconds might be enough
     typedef ::time_t time_t;
 
     struct Metadata
     {
         // number of retries attempted so far
+        // "retransmission counter" as referenced by section 4.2
         uint8_t retry_count;
 
         // when to send it by

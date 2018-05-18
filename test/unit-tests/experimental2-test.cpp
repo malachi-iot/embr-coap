@@ -20,17 +20,19 @@ typedef moducom::pipeline::MemoryChunk chunk_t;
 
 TEST_CASE("experimental 2 tests")
 {
+    typedef uint8_t addr_t[4];
+
     SECTION("A")
     {
         int fakenetbuf = 5;
         uint8_t fakeaddr[4];
 
-        Retry<int> retry;
+        Retry<int, addr_t> retry;
 
         retry.enqueue(fakeaddr, fakenetbuf);
 
         // Not yet, need newer estdlib first with cleaned up iterators
-        Retry<int>::Item* test = retry.front();
+        Retry<int, addr_t>::Item* test = retry.front();
     }
 #ifdef FEATURE_CPP_VARIADIC
     SECTION("AggregateMessageObserver")
