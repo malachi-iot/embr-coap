@@ -10,6 +10,8 @@ set(ROOT_DIR ..)
 set(MC_MEM_DIR ${ROOT_DIR}/ext/moducom-memory/src)
 set(ESTDLIB_DIR ${ROOT_DIR}/ext/estdlib/src)
 
+include_directories(${PROJECT_SOURCE_DIR})
+
 include_directories(${MC_MEM_DIR})
 include_directories(${ESTDLIB_DIR})
 

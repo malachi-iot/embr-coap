@@ -79,6 +79,21 @@ void nonblocking_datapump_loop(int sockfd, sockets_datapump_t& sockets_datapump)
 
         if(n == -1) error("Couldn't send UDP");
 
+#ifdef FEATURE_MCCOAP_RELIABLE
+        // TODO: evaluate Item.m_retry.retransmission_counter and if it's < 4
+        // then don't deallocate netbuf yet.  Instead, move the netbuf to the
+        // retry list via some form of retry.enqueue
+        // Likely will want the architectual changes:
+        // a) return Item& from transport_front
+        // b) because of a), lean more heavily on transport_empty
+        // c) Retry is going to *want* to be embedded in DataPump, but if we can
+        //    resist that, then datapump can probably stay coap and transport agnostic
+        // c.1) it's conceivable to make Retry itself coap and transport agnostic, but
+        //      that would require a fair bit of work.  So, in the short term, see
+        //      if we can merely make it a mechanism who behaviorally (but not data-wise)
+        //      is decoupled from DataPump
+#endif
+
 #ifdef FEATURE_MCCOAP_DATAPUMP_INLINE
 #else
         // FIX: Not a long-term way to handle netbuf deallocation
