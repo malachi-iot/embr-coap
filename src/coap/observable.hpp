@@ -30,7 +30,9 @@ void ObservableRegistrar<TCollection, TIncomingContext, TRequestContextTraits>::
     while(it != end())
     {
         //std::clog << "Sending to " << addr << std::endl;
+#ifdef FEATURE_MCCOAP_IOSTREAM_NATIVE
         std::clog << "Event fired" << std::endl;
+#endif
 
 #ifdef FEATURE_MCCOAP_DATAPUMP_INLINE
         NetBufEncoder<netbuf_t> encoder;
