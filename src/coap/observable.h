@@ -8,10 +8,14 @@ namespace moducom { namespace  coap {
 // Not seeing anything specific in RFC7641 mandating or denying the use of CON or NON
 // messaging for observables, thereby implying we don't need to track what flavor
 // we are in this context either
-template <class TAddr>
+// TODO: Use specialization to make an ObservableSession with a 'void' key
+template <class TAddr, class TResourceKey = int>
 struct ObservableSession
 {
     typedef TAddr addr_t;
+    typedef TResourceKey key_t;
+
+    TResourceKey key; // indicates which resource in particular this observable session subscribed to
 
     // increases with each observe notification.  Technically only needs to be 24 bits
     // so if we do need flags, we can make this into a bit field.  Also, as suggested
@@ -50,6 +54,8 @@ class ObservableRegistrar
 public:
     typedef TIncomingContext request_context_t;
     typedef typename request_context_t::addr_t addr_t;
+    typedef observable_session_t key_t;
+
 
     void do_register(const layer3::Token& token, const addr_t& addr)
     {
@@ -71,6 +77,12 @@ public:
         os.addr = addr;
 
         registrations.push_back(os);
+    }
+
+    template <bool inline_token>
+    void do_register(const IncomingContext<addr_t, inline_token>& context)
+    {
+        do_register(context.token(), context.address());
     }
 
 
@@ -137,12 +149,15 @@ public:
 
 namespace layer1 {
 
-template<class TAddr, size_t N>
+template<class TAddr, size_t N,
+        class TResourceKey = int,
+        class TObservableSession = ObservableSession<TAddr, TResourceKey> >
 class ObservableRegistrar :
         public moducom::coap::ObservableRegistrar<
-                estd::layer1::vector<ObservableSession<TAddr>, N> >
+                estd::layer1::vector<TObservableSession, N> >
 {
 };
+
 }
 
 template <class TRequestContext = ObserverContext>

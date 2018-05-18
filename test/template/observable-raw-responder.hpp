@@ -24,6 +24,7 @@ void evaluate_emit_observe(TDataPump& datapump,
     typedef typename TDataPump::netbuf_t netbuf_t;
     typedef typename TDataPump::addr_t addr_t;
     typedef moducom::pipeline::MemoryChunk::readonly_t ro_chunk_t;
+    typedef typename TObservableCollection::iterator iterator;
 
     static std::chrono::milliseconds last(0);
 
@@ -33,7 +34,7 @@ void evaluate_emit_observe(TDataPump& datapump,
     {
         last = total_since_start;
 
-        auto it = observable_registrar.begin();
+        iterator it = observable_registrar.begin();
 
         while(it != observable_registrar.end())
         {
@@ -49,18 +50,20 @@ void evaluate_emit_observe(TDataPump& datapump,
             static int mid = 0;
 
             // we want a NON or CON since observer messages are not a normal response
+            // but instead classified as 'notifications'
             Header header(Header::NonConfirmable, Header::Code::Content);
 
-            header.message_id(mid++);
             addr_t addr = (*it).addr;
-            const layer2::Token& last_token = (*it).token;
-            int sequence = (*it).sequence++;
+            const layer2::Token& token = (*it).token;
+            // NOTE: it appears coap-cli doesn't like a sequence # of 0
+            int sequence = ++(*it).sequence;
             ++it;
 
-            header.token_length(last_token.length());
+            header.message_id(mid++);
+            header.token_length(token.length());
 
             encoder.header(header);
-            encoder.token(last_token);
+            encoder.token(token);
             encoder.option(Option::Observe, sequence); // using mid also for observe counter since we aren't doing CON it won't matter
 
             // zero-copy goodness
@@ -120,13 +123,23 @@ void simple_observable_responder(TIncomingContext& context,
             }
 
             case Option::Observe:
-                if(it.uint8() == 0)
+                switch(it.uint8())
                 {
-                    const layer2::Token& token = context.token();
-                    observable_registrar.do_register(token, context.address());
+                    case 0:
+                        observable_registrar.do_register(context);
 
-                    // NOTE: coap-cli doesn't appear to reflect this in observe mode
-                    response_code = Header::Code::Valid;
+                        // NOTE: coap-cli doesn't appear to reflect this in observe mode
+                        response_code = Header::Code::Valid;
+                        break;
+
+                    case 1:
+                        observable_registrar.do_deregister();
+                        response_code = Header::Code::Valid;
+                        break;
+
+                    default:
+                        response_code = Header::Code::BadOption;
+                        break;
                 }
 
                 break;
