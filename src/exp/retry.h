@@ -12,6 +12,7 @@ namespace moducom { namespace coap { namespace experimental {
 // only CON messages live here, expected to be shuffled here right out of datapump
 // they are removed from our retry_list when an ACK is received, or when our backoff
 // logic finally expires
+// in support of https://tools.ietf.org/html/rfc7252#section-4.2
 template <class TNetBuf>
 class Retry
 {

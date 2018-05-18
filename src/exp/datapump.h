@@ -26,11 +26,10 @@ namespace moducom { namespace coap {
 #endif
 #endif
 
-// passive push pull code to bridge transport level to application level
-// kind of a 2nd crack at 'experimental-packet-manager'
 // If this continues to be coap-inspecific, it would be reasonable to move this
-// datapump code out to mc-mem
-template <class TNetBuf, class TAddr, template <class> class TAllocator = ::std::allocator>
+// datapump code out to mc-mem.  Until that decision is made, keeping this in
+// experimental area
+template <class TNetBuf, class TAddr, class TAllocator = ::std::allocator<TNetBuf> >
 class DataPump
 {
 public:
@@ -43,6 +42,9 @@ public:
 #endif
 
 private:
+    // TODO: account for https://tools.ietf.org/html/rfc7252#section-4.2
+    // though we have retry.h, some state wants to be tracked here though eventually
+    // I expect we'll do some fancy allocations to have them more directly interact
     class Item
     {
         pnetbuf_t m_netbuf;

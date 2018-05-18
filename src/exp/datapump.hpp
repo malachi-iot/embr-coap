@@ -2,7 +2,7 @@
 
 namespace moducom { namespace coap {
 
-template <class TNetBuf, class TAddr, template <class> class TAllocator>
+template <class TNetBuf, class TAddr, class TAllocator>
 #ifdef FEATURE_MCCOAP_DATAPUMP_INLINE
 void DataPump<TNetBuf, TAddr, TAllocator>::transport_in(TNetBuf&& in, const addr_t& addr)
 {
