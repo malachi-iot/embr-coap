@@ -14,6 +14,47 @@
 #include <chrono>
 
 
+template <class TNetBuf>
+#ifdef FEATURE_MCCOAP_DATAPUMP_INLINE
+void emit_observe(moducom::coap::NetBufEncoder<TNetBuf>& encoder, int sequence)
+#else
+void emit_observe(moducom::coap::NetBufEncoder<TNetBuf&>& encoder, int sequence)
+#endif
+{
+    // breaking this out thinking maybe some day we can actually genericize evaluate_emit_observe
+    // though would be tricky for early-appearing options
+
+    // zero-copy goodness
+    // NOTE: Does not account for chunking, and that would be involved since
+    // snprintf doesn't indicate whether things got truncated
+    int advance_by = snprintf(
+            (char*)encoder.payload(), encoder.size(),
+            "Observed: %d", sequence);
+
+    encoder.advance(advance_by);
+
+    /* this way works too!
+     *
+
+    estd::layer3::basic_string<char, false> s(0, (char*)encoder.data(), encoder.size());
+
+    s += "Observed: ";
+    s += estd::to_string(header.message_id());
+
+    encoder.advance(s.size());
+     */
+}
+
+
+// TODO: pass in emit and emit_pre, pre being a NULLPTR default fn ptr for options which need to happen
+// *before* Observe (6)
+template <class TDataPump, class TObservableCollection>
+void emit_observe_helper(TDataPump& datapump,
+                         moducom::coap::ObservableRegistrar<TObservableCollection>& observable_registrar)
+{
+
+}
+
 // Basically working, however first enqueued message mysteriously disappears
 template <class TDataPump, class TObservableCollection>
 void evaluate_emit_observe(TDataPump& datapump,
@@ -64,27 +105,10 @@ void evaluate_emit_observe(TDataPump& datapump,
 
             encoder.header(header);
             encoder.token(token);
+
             encoder.option(Option::Observe, sequence); // using mid also for observe counter since we aren't doing CON it won't matter
 
-            // zero-copy goodness
-            // NOTE: Does not account for chunking, and that would be involved since
-            // snprintf doesn't indicate whether things got truncated
-            int advance_by = snprintf(
-                    (char*)encoder.payload(), encoder.size(),
-                    "Observed: %d", sequence);
-
-            encoder.advance(advance_by);
-
-            /* this way works too!
-             *
-
-            estd::layer3::basic_string<char, false> s(0, (char*)encoder.data(), encoder.size());
-
-            s += "Observed: ";
-            s += estd::to_string(header.message_id());
-
-            encoder.advance(s.size());
-             */
+            emit_observe(encoder, sequence);
 
             encoder.complete();
 
