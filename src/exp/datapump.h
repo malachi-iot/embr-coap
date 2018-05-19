@@ -30,6 +30,12 @@ namespace moducom { namespace coap {
 #endif
 #endif
 
+
+class IDataPumpObserver
+{
+    virtual void on_message_transmitted();
+};
+
 // If this continues to be coap-inspecific, it would be reasonable to move this
 // datapump code out to mc-mem.  Until that decision is made, keeping this in
 // experimental area
@@ -59,6 +65,7 @@ private:
 #endif
 
     public:
+        IDataPumpObserver* observer;
 
         Item() {}
 
@@ -154,6 +161,11 @@ public:
         TNetBuf* netbuf = f.netbuf();
 
         return netbuf;
+    }
+
+    Item& transport_front2()
+    {
+        return outgoing.front();
     }
 
     // manually pop Item away, the above transport_out needs to be followed up
