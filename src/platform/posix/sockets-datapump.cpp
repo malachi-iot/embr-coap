@@ -60,11 +60,18 @@ void nonblocking_datapump_loop(int sockfd, sockets_datapump_t& sockets_datapump)
     sockaddr_in cli_addr;
     socklen_t clilen = sizeof(cli_addr);
     ssize_t n;
+    typedef sockets_datapump_t::Item item_t;
 
-    const netbuf_t* netbuf_out = sockets_datapump.transport_front(&cli_addr);
-
-    if(netbuf_out != NULLPTR)
+    if(!sockets_datapump.transport_empty())
     {
+        item_t& item = sockets_datapump.transport_front();
+
+        cli_addr = item.addr();
+
+        item.on_message_transmitting();
+
+        netbuf_t* netbuf_out = item.netbuf(); // an item *always* has a valid netbuf at this point
+
         std::clog << "Responding with " << netbuf_out->length_processed() << " bytes";
         //std::clog << " to ip=" << cli_addr.sin_addr.s_addr << ", port=" << cli_addr.sin_port;
         std::clog << std::endl;
@@ -92,6 +99,8 @@ void nonblocking_datapump_loop(int sockfd, sockets_datapump_t& sockets_datapump)
         //      that would require a fair bit of work.  So, in the short term, see
         //      if we can merely make it a mechanism who behaviorally (but not data-wise)
         //      is decoupled from DataPump
+        item.on_message_transmitted();
+
 #endif
 
 #ifdef FEATURE_MCCOAP_DATAPUMP_INLINE

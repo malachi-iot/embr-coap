@@ -19,6 +19,9 @@
 // be isolated enough from one another such that this flag won't be necessary
 #define FEATURE_MCCOAP_RELIABLE
 
+// enables subject/observer pattern for outgoing transmit packets
+#define FEATURE_MCCOAP_DATAPUMP_OBSERVABLE
+
 // Do not enable features/options here, they are presented only for reference
 
 // utilize inline TNetBuf instead of pointer

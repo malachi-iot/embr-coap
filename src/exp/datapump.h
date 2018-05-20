@@ -66,7 +66,7 @@ public:
     typedef TNetBuf* pnetbuf_t;
 #endif
 
-private:
+public:
     // TODO: account for https://tools.ietf.org/html/rfc7252#section-4.2
     // though we have retry.h, some state wants to be tracked here though eventually
     // I expect we'll do some fancy allocations to have them more directly interact
@@ -80,8 +80,6 @@ private:
 #endif
 
     public:
-        IDataPumpObserver* observer;
-
         Item() {}
 
 #ifdef FEATURE_MCCOAP_DATAPUMP_INLINE
@@ -91,12 +89,14 @@ private:
         Item(TNetBuf& netbuf, const addr_t& addr) :
             m_netbuf(&netbuf),
 #endif
-            m_addr(addr)
+            m_addr(addr),
+            observer(NULLPTR)
         {}
 
         Item(const Item& copy_from) :
             m_netbuf(copy_from.m_netbuf),
-            m_addr(copy_from.m_addr)
+            m_addr(copy_from.m_addr),
+            observer(copy_from.observer)
         {
 
         }
@@ -104,7 +104,8 @@ private:
 #if defined(FEATURE_CPP_MOVESEMANTIC) && defined(FEATURE_MCCOAP_DATAPUMP_INLINE)
         Item(Item&& move_from) :
             m_netbuf(std::forward<netbuf_t>(move_from.m_netbuf)),
-            m_addr(std::forward<addr_t>(move_from.m_addr))
+            m_addr(std::forward<addr_t>(move_from.m_addr)),
+            observer(move_from.observer)
         {
 
         }
@@ -121,10 +122,27 @@ private:
             return m_netbuf;
 #endif
         }
+
+#ifdef FEATURE_MCCOAP_DATAPUMP_OBSERVABLE
+    private:
+        IDataPumpObserver* observer;
+
+    public:
+        void on_message_transmitting()
+        {
+            if(observer != NULLPTR) observer->on_message_transmitting();
+        }
+
+
+        void on_message_transmitted()
+        {
+            if(observer != NULLPTR) observer->on_message_transmitted();
+        }
+#endif
     };
 
 
-
+private:
     struct AddrMapper
     {
         addr_t address;
@@ -162,7 +180,7 @@ public:
 
     // provide a netbuf containing data to be sent out over transport, or NULLPTR
     // if no data is ready
-    TNetBuf* transport_front(addr_t* addr_out)
+    TNetBuf* transport_front_old(addr_t* addr_out)
     {
         if(outgoing.empty()) return NULLPTR;
 
@@ -178,7 +196,12 @@ public:
         return netbuf;
     }
 
-    Item& transport_front2()
+    bool transport_empty()
+    {
+        return outgoing.empty();
+    }
+
+    Item& transport_front()
     {
         return outgoing.front();
     }

@@ -65,7 +65,9 @@ public:
     // seperately
     // TODO: Utilize ObservableSession as a base once we resolve netbuf-inline behaviors here
     struct Item :
-            ::moducom::coap::IDataPumpObserver,
+#ifdef FEATURE_MCCOAP_DATAPUMP_OBSERVABLE
+            IDataPumpObserver,
+#endif
             Metadata
     {
         // where to send retry
@@ -111,6 +113,7 @@ public:
             // TODO: assign addr
         }
 
+#ifdef FEATURE_MCCOAP_DATAPUMP_OBSERVABLE
         // IDataPumpObserver interface
     private:
         virtual void on_message_transmitting() OVERRIDE
@@ -123,6 +126,7 @@ public:
         {
 
         }
+#endif
     };
 
 private:

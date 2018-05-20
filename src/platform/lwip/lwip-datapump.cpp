@@ -31,7 +31,7 @@ void netconn_callback(netconn* conn, netconn_evt evt, uint16_t len)
 void nonblocking_datapump_loop(lwip::Netconn netconn, lwip_datapump_t& datapump)
 {
     addr_t addr;
-    const netbuf_t* netbuf_out = datapump.transport_front(&addr);
+    const netbuf_t* netbuf_out = datapump.transport_front_old(&addr);
     netbuf* native_netbuf;
 
     err_t err;
