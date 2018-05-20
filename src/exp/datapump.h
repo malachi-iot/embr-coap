@@ -33,6 +33,9 @@ namespace moducom { namespace coap {
 
 class IDataPumpObserver
 {
+    virtual void on_message_transmitting();
+    // LwIP *might* need this, I've heard reports sometimes that after sending a netbuf it goes invalid.  Need to
+    // doublecheck because this could strongly affect retry techniques.
     virtual void on_message_transmitted();
 };
 

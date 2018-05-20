@@ -32,7 +32,8 @@ TEST_CASE("experimental 2 tests")
         retry.enqueue(fakeaddr, fakenetbuf);
 
         // Not yet, need newer estdlib first with cleaned up iterators
-        Retry<int, addr_t>::Item* test = retry.front();
+        // commented our presently because of transition away from Metadata_Old
+        //Retry<int, addr_t>::Item* test = retry.front();
     }
 #ifdef FEATURE_CPP_VARIADIC
     SECTION("AggregateMessageObserver")
