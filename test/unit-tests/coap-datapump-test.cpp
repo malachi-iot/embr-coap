@@ -33,7 +33,7 @@ TEST_CASE("Data pump tests", "[datapump]")
 
         datapump.enqueue_out(writer.netbuf(), addr);
 
-        netbuf_t* to_transport = datapump.transport_front(&addr);
+        netbuf_t* to_transport = datapump.transport_front_old(&addr);
 
         REQUIRE(to_transport != NULLPTR);
 
