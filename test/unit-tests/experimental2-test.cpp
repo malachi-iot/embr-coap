@@ -9,6 +9,7 @@
 #include "exp/prototype/observer-idea1.h"
 
 #include "coap/decoder/subject.hpp"
+#include "platform/generic/malloc_netbuf.h"
 
 #include "test-data.h"
 
@@ -24,12 +25,12 @@ TEST_CASE("experimental 2 tests")
 
     SECTION("A")
     {
-        int fakenetbuf = 5;
         uint8_t fakeaddr[4];
+        NetBufDynamicExperimental netbuf;
 
-        Retry<int, addr_t> retry;
+        Retry<NetBufDynamicExperimental, addr_t> retry;
 
-        retry.enqueue(fakeaddr, fakenetbuf);
+        retry.enqueue(fakeaddr, netbuf);
 
         // Not yet, need newer estdlib first with cleaned up iterators
         // commented our presently because of transition away from Metadata_Old

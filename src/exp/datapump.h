@@ -48,6 +48,7 @@ public:
 #else
     typedef TNetBuf* pnetbuf_t;
 #endif
+    typedef IDataPumpObserver<TNetBuf, TAddr> datapump_observer_t;
 
 public:
     // TODO: account for https://tools.ietf.org/html/rfc7252#section-4.2
@@ -66,20 +67,25 @@ public:
         Item() {}
 
 #ifdef FEATURE_MCCOAP_DATAPUMP_INLINE
-        Item(TNetBuf&& netbuf, const addr_t& addr) :
+        Item(TNetBuf&& netbuf, const addr_t& addr,
+             datapump_observer_t* observer = NULLPTR) :
             m_netbuf(std::forward<netbuf_t>(netbuf)),
 #else
         Item(TNetBuf& netbuf, const addr_t& addr) :
             m_netbuf(&netbuf),
 #endif
-            m_addr(addr),
-            observer(NULLPTR)
+            m_addr(addr)
+#ifdef FEATURE_MCCOAP_DATAPUMP_OBSERVABLE
+            ,observer(observer)
+#endif
         {}
 
         Item(const Item& copy_from) :
             m_netbuf(copy_from.m_netbuf),
-            m_addr(copy_from.m_addr),
-            observer(copy_from.observer)
+            m_addr(copy_from.m_addr)
+#ifdef FEATURE_MCCOAP_DATAPUMP_OBSERVABLE
+            ,observer(copy_from.observer)
+#endif
         {
 
         }
@@ -87,8 +93,10 @@ public:
 #if defined(FEATURE_CPP_MOVESEMANTIC) && defined(FEATURE_MCCOAP_DATAPUMP_INLINE)
         Item(Item&& move_from) :
             m_netbuf(std::forward<netbuf_t>(move_from.m_netbuf)),
-            m_addr(std::forward<addr_t>(move_from.m_addr)),
-            observer(move_from.observer)
+            m_addr(std::forward<addr_t>(move_from.m_addr))
+#ifdef FEATURE_MCCOAP_DATAPUMP_OBSERVABLE
+            ,observer(move_from.observer)
+#endif
         {
 
         }
@@ -108,7 +116,7 @@ public:
 
 #ifdef FEATURE_MCCOAP_DATAPUMP_OBSERVABLE
     private:
-        IDataPumpObserver<TNetBuf, TAddr>* observer;
+        datapump_observer_t* observer;
 
     public:
         void on_message_transmitting()
@@ -205,14 +213,14 @@ public:
 
 #ifdef FEATURE_MCCOAP_DATAPUMP_INLINE
     // enqueue complete netbuf for outgoing transport to pick up
-    bool enqueue_out(TNetBuf&& out, const addr_t& addr_out)
+    bool enqueue_out(TNetBuf&& out, const addr_t& addr_out, datapump_observer_t* = NULLPTR)
     {
         outgoing.emplace(std::forward<TNetBuf>(out), addr_out);
         return true;
     }
 #else
     // enqueue complete netbuf for outgoing transport to pick up
-    bool enqueue_out(TNetBuf& out, const addr_t& addr_out)
+    bool enqueue_out(TNetBuf& out, const addr_t& addr_out, datapump_observer_t* = NULLPTR)
     {
         return outgoing.push(Item(out, addr_out));
     }

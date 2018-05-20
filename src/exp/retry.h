@@ -83,7 +83,7 @@ public:
         // right now hard-wired to non-inline netbuf style
         TNetBuf* m_netbuf;
 
-        TNetBuf& netbuf() { return m_netbuf; }
+        TNetBuf& netbuf() const { return *m_netbuf; }
 
     protected:
         Header header() const
@@ -120,12 +120,11 @@ public:
         // needed for unallocated portions of vector
         Item() {}
 
-        /*
         Item(const addr_t& a, TNetBuf* netbuf) :
                 m_netbuf(netbuf)
         {
             // TODO: assign addr
-        } */
+        }
 
 #ifdef FEATURE_MCCOAP_DATAPUMP_OBSERVABLE
         // IDataPumpObserver interface
@@ -141,7 +140,7 @@ public:
             // at this point we'll want to evaluate if:
             // CON == true and our retry count is < 4, and if so...
             if(base_t::retransmission_counter < 4 &&
-                    (base_t::is_definitely_con || header().type() == Header::Confirmable))
+                    (base_t::is_definitely_con() || header().type() == Header::Confirmable))
             {
                 base_t::delta();
                 // do proper timeout delta calculations to schedule a resend.  Also take
