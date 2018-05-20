@@ -36,6 +36,10 @@ class IDataPumpObserver
     virtual void on_message_transmitting();
     // LwIP *might* need this, I've heard reports sometimes that after sending a netbuf it goes invalid.  Need to
     // doublecheck because this could strongly affect retry techniques.
+    // reusing netbufs is safe, according to:
+    // http://lwip.100.n7.nabble.com/netconn-freeing-netbufs-after-netconn-recv-td4145.html
+    // For now going to presume we can reuse netbufs for our retry code, but since observer code basically
+    // requires a netbuf-copyer, prep that too
     virtual void on_message_transmitted();
 };
 
