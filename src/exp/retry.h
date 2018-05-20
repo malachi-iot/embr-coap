@@ -5,6 +5,7 @@
 #include <mc/memory-pool.h>
 #include "coap/decoder/netbuf.h"
 #include <stdint.h> // for uint8_t
+#include "datapump.h" // for IDataPumpObserver
 
 namespace moducom { namespace coap { namespace experimental {
 
@@ -63,7 +64,9 @@ public:
     // proper MID and Token are buried in netbuf, so don't need to be carried
     // seperately
     // TODO: Utilize ObservableSession as a base once we resolve netbuf-inline behaviors here
-    struct Item : Metadata
+    struct Item :
+            ::moducom::coap::IDataPumpObserver,
+            Metadata
     {
         // where to send retry
         addr_t addr;
@@ -106,6 +109,19 @@ public:
                 m_netbuf(netbuf)
         {
             // TODO: assign addr
+        }
+
+        // IDataPumpObserver interface
+    private:
+        virtual void on_message_transmitting() OVERRIDE
+        {
+
+        }
+
+
+        virtual void on_message_transmitted() OVERRIDE
+        {
+
         }
     };
 

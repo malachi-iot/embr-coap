@@ -11,6 +11,24 @@
 #include "coap/encoder.h"
 #include "coap/observable.h"
 
+
+// FIX: temporarily putting this here so retry.h doesn't freak out
+namespace moducom { namespace coap {
+
+struct IDataPumpObserver
+{
+    virtual void on_message_transmitting() = 0;
+    // LwIP *might* need this, I've heard reports sometimes that after sending a netbuf it goes invalid.  Need to
+    // doublecheck because this could strongly affect retry techniques.
+    // reusing netbufs is safe, according to:
+    // http://lwip.100.n7.nabble.com/netconn-freeing-netbufs-after-netconn-recv-td4145.html
+    // For now going to presume we can reuse netbufs for our retry code, but since observer code basically
+    // requires a netbuf-copyer, prep that too
+    virtual void on_message_transmitted() = 0;
+};
+
+}}
+
 #ifdef FEATURE_MCCOAP_RELIABLE
 #include "retry.h"
 #endif
@@ -31,17 +49,7 @@ namespace moducom { namespace coap {
 #endif
 
 
-class IDataPumpObserver
-{
-    virtual void on_message_transmitting();
-    // LwIP *might* need this, I've heard reports sometimes that after sending a netbuf it goes invalid.  Need to
-    // doublecheck because this could strongly affect retry techniques.
-    // reusing netbufs is safe, according to:
-    // http://lwip.100.n7.nabble.com/netconn-freeing-netbufs-after-netconn-recv-td4145.html
-    // For now going to presume we can reuse netbufs for our retry code, but since observer code basically
-    // requires a netbuf-copyer, prep that too
-    virtual void on_message_transmitted();
-};
+
 
 // If this continues to be coap-inspecific, it would be reasonable to move this
 // datapump code out to mc-mem.  Until that decision is made, keeping this in
