@@ -3,6 +3,7 @@
 #include "decoder/subject.h"
 #include "encoder.h"
 #include "experimental-observer.h"
+#include "exp/datapump-observer.h"
 #include <estd/vector.h>
 
 namespace moducom { namespace  coap {
@@ -34,6 +35,18 @@ struct ObservableSession
     // token is one presented during initial subscription
     layer2::Token token;
 };
+
+
+namespace experimental {
+
+template<class TNetBuf, class TAddr>
+class ObservableMetaSession :
+        public IDataPumpObserver<TNetBuf, TAddr>
+{
+
+};
+
+}
 
 
 // A registrar represents ONE subject's list of listeners.  By subject

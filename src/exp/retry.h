@@ -5,7 +5,7 @@
 #include <mc/memory-pool.h>
 #include "coap/decoder/netbuf.h"
 #include <stdint.h> // for uint8_t
-#include "datapump.h" // for IDataPumpObserver
+#include "datapump-observer.h" // for IDataPumpObserver
 
 namespace moducom { namespace coap { namespace experimental {
 
@@ -40,6 +40,10 @@ public:
         // value: 0 = maybe a CON message, decode required
         uint16_t con_helper_flag_bit : 1;
 
+        //bool is_definitely_con() { return con_helper_flag_bit; }
+        // TODO: an optimization, and we aren't there quite yet
+        bool is_definitely_con() { return false; }
+
         // TODO: optimize.  Consider making initial_timeout_ms actually at
         // 10-ms resolution, which should be fully adequate for coap timeouts
         uint32_t delta()
@@ -66,26 +70,35 @@ public:
     // TODO: Utilize ObservableSession as a base once we resolve netbuf-inline behaviors here
     struct Item :
 #ifdef FEATURE_MCCOAP_DATAPUMP_OBSERVABLE
-            IDataPumpObserver,
+            IDataPumpObserver<TNetBuf, TAddr>,
 #endif
             Metadata
     {
+        typedef Metadata base_t;
+
         // where to send retry
         addr_t addr;
 
         // what to send
-        // right now hard-wired to non-line netbuf style
+        // right now hard-wired to non-inline netbuf style
         TNetBuf* m_netbuf;
 
         TNetBuf& netbuf() { return m_netbuf; }
 
-        // get MID from sent netbuf, for incoming ACK comparison
-        uint16_t mid() const
+    protected:
+        Header header() const
         {
             // TODO: optimize and use header decoder only and directly
             NetBufDecoder<TNetBuf&> decoder(netbuf());
 
-            return decoder.header().message_id();
+            return decoder.header();
+        }
+
+    public:
+        // get MID from sent netbuf, for incoming ACK comparison
+        uint16_t mid() const
+        {
+            return header().message_id();
         }
 
         // get Token from sent netbuf, for incoming ACK comparison
@@ -107,24 +120,41 @@ public:
         // needed for unallocated portions of vector
         Item() {}
 
+        /*
         Item(const addr_t& a, TNetBuf* netbuf) :
                 m_netbuf(netbuf)
         {
             // TODO: assign addr
-        }
+        } */
 
 #ifdef FEATURE_MCCOAP_DATAPUMP_OBSERVABLE
         // IDataPumpObserver interface
     private:
-        virtual void on_message_transmitting() OVERRIDE
+        virtual void on_message_transmitting(TNetBuf* netbuf, const TAddr& addr) OVERRIDE
         {
 
         }
 
 
-        virtual void on_message_transmitted() OVERRIDE
+        virtual void on_message_transmitted(TNetBuf* netbuf, const TAddr& addr) OVERRIDE
         {
-
+            // at this point we'll want to evaluate if:
+            // CON == true and our retry count is < 4, and if so...
+            if(base_t::retransmission_counter < 4 &&
+                    (base_t::is_definitely_con || header().type() == Header::Confirmable))
+            {
+                base_t::delta();
+                // do proper timeout delta calculations to schedule a resend.  Also take
+                // ownership of netbuf away from incoming datapump, we'll only give it
+                // back once it's time to schedule a retry CON operation
+                // NOTE: that incoming netbuf and addr SHOULD match already tracked
+#ifdef FEATURE_MCCOAP_DATAPUMP_INLINE
+                // we'll need to do a std::forward move operation to hold on to incoming netbuf
+#else
+                // we'll need to assign netbuf and give a clue as to a reference counter/delete indicator
+                // for datapump netbuf cleanup code
+#endif
+            }
         }
 #endif
     };

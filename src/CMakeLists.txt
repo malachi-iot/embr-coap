@@ -70,6 +70,7 @@ set(SOURCE_FILES
         coap-uripath-dispatcher.hpp coap-uripath-dispatcher.h
 
         exp/datapump.h exp/datapump.hpp
+        exp/datapump-observer.h
         exp/message-observer.h
         exp/option-trait.h
         exp/retry.h

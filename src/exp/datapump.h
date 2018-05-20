@@ -10,32 +10,7 @@
 #include "coap/decoder/netbuf.h"
 #include "coap/encoder.h"
 #include "coap/observable.h"
-
-
-// FIX: temporarily putting this here so retry.h doesn't freak out
-namespace moducom { namespace coap {
-
-// can and should be used also to do semi-partial coap netbuf copies, so that we can
-// simulate a header rewrite.  As such, be mindful that default behavior is for this to NOT
-// reset to 'first' but instead to copy as-is from current positions
-// skip represents number of bytes from beginning of source to skip before
-// initiating copy.  NOTE: this skip may obviate reset flag
-template <class TNetBuf, class TNetBuf2>
-void netbuf_copy(TNetBuf& source, TNetBuf2& dest, int skip = 0, bool reset = false);
-
-struct IDataPumpObserver
-{
-    virtual void on_message_transmitting() = 0;
-    // LwIP *might* need this, I've heard reports sometimes that after sending a netbuf it goes invalid.  Need to
-    // doublecheck because this could strongly affect retry techniques.
-    // reusing netbufs is safe, according to:
-    // http://lwip.100.n7.nabble.com/netconn-freeing-netbufs-after-netconn-recv-td4145.html
-    // For now going to presume we can reuse netbufs for our retry code, but since observer code basically
-    // requires a netbuf-copyer, prep that too
-    virtual void on_message_transmitted() = 0;
-};
-
-}}
+#include "datapump-observer.h"
 
 #ifdef FEATURE_MCCOAP_RELIABLE
 #include "retry.h"
@@ -133,18 +108,20 @@ public:
 
 #ifdef FEATURE_MCCOAP_DATAPUMP_OBSERVABLE
     private:
-        IDataPumpObserver* observer;
+        IDataPumpObserver<TNetBuf, TAddr>* observer;
 
     public:
         void on_message_transmitting()
         {
-            if(observer != NULLPTR) observer->on_message_transmitting();
+            if(observer != NULLPTR)
+                observer->on_message_transmitting(netbuf(), addr());
         }
 
 
         void on_message_transmitted()
         {
-            if(observer != NULLPTR) observer->on_message_transmitted();
+            if(observer != NULLPTR)
+                observer->on_message_transmitted(netbuf(), addr());
         }
 #endif
     };
