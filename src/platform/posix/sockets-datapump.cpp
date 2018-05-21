@@ -72,7 +72,7 @@ void nonblocking_datapump_loop(int sockfd, sockets_datapump_t& sockets_datapump)
 
         netbuf_t* netbuf_out = item.netbuf(); // an item *always* has a valid netbuf at this point
 
-        std::clog << "Responding with " << netbuf_out->length_processed() << " bytes";
+        std::clog << "Sending " << netbuf_out->length_processed() << " bytes";
         //std::clog << " to ip=" << cli_addr.sin_addr.s_addr << ", port=" << cli_addr.sin_port;
         std::clog << std::endl;
 
