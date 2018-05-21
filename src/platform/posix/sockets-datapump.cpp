@@ -100,13 +100,15 @@ void nonblocking_datapump_loop(int sockfd, sockets_datapump_t& sockets_datapump)
         //      if we can merely make it a mechanism who behaviorally (but not data-wise)
         //      is decoupled from DataPump
         bool netbuf_ownership_transferred = item.on_message_transmitted();
-
+#else
+        bool netbuf_ownership_transferred = false; // always own netbuf in this scenario
 #endif
 
 #ifdef FEATURE_MCCOAP_DATAPUMP_INLINE
 #else
         // FIX: Not a long-term way to handle netbuf deallocation
-        delete netbuf_out;
+        if(!netbuf_ownership_transferred)
+            delete netbuf_out;
 #endif
 
         sockets_datapump.transport_pop();

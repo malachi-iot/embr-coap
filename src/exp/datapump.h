@@ -71,7 +71,8 @@ public:
              datapump_observer_t* observer = NULLPTR) :
             m_netbuf(std::forward<netbuf_t>(netbuf)),
 #else
-        Item(TNetBuf& netbuf, const addr_t& addr) :
+        Item(TNetBuf& netbuf, const addr_t& addr,
+             datapump_observer_t* observer = NULLPTR) :
             m_netbuf(&netbuf),
 #endif
             m_addr(addr)
@@ -215,16 +216,16 @@ public:
 
 #ifdef FEATURE_MCCOAP_DATAPUMP_INLINE
     // enqueue complete netbuf for outgoing transport to pick up
-    bool enqueue_out(TNetBuf&& out, const addr_t& addr_out, datapump_observer_t* = NULLPTR)
+    bool enqueue_out(TNetBuf&& out, const addr_t& addr_out, datapump_observer_t* observer = NULLPTR)
     {
-        outgoing.emplace(std::forward<TNetBuf>(out), addr_out);
+        outgoing.emplace(std::forward<TNetBuf>(out), addr_out, observer);
         return true;
     }
 #else
     // enqueue complete netbuf for outgoing transport to pick up
-    bool enqueue_out(TNetBuf& out, const addr_t& addr_out, datapump_observer_t* = NULLPTR)
+    bool enqueue_out(TNetBuf& out, const addr_t& addr_out, datapump_observer_t* observer = NULLPTR)
     {
-        return outgoing.push(Item(out, addr_out));
+        return outgoing.push(Item(out, addr_out, observer));
     }
 #endif
 

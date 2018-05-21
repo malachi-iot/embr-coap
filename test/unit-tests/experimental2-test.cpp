@@ -42,6 +42,11 @@ TEST_CASE("experimental 2 tests")
         addr_t fakeaddr;
         netbuf_t netbuf;
 
+        memcpy(netbuf.unprocessed(), buffer_16bit_delta, sizeof(buffer_16bit_delta));
+        Header *header = new (netbuf.unprocessed()) Header(Header::Confirmable);
+
+        netbuf.advance(sizeof(buffer_16bit_delta));
+
         retry_t retry;
 
         SECTION("retransmission low level logic")
@@ -66,21 +71,81 @@ TEST_CASE("experimental 2 tests")
 
             REQUIRE(metadata.delta() == 10000);
         }
-        SECTION("retry.service")
+        SECTION("retry.service - isolated case")
         {
             datapump_t datapump;
 
-            retry_t::Item& item = retry.enqueue(fakeaddr, netbuf);
+            retry_t::Item& item = retry.enqueue(netbuf, fakeaddr);
 
+            // simulate queue to send.  assumes (correctly so, always)
+            // that this is a CON message
             datapump.enqueue_out(netbuf, fakeaddr, &item);
 
+            {
+                datapump_t::Item& datapump_item = datapump.transport_front();
+                REQUIRE(datapump_item.addr() == fakeaddr);
+                bool retain = datapump_item.on_message_transmitted(); // pretend we sent it and invoke observer
+                REQUIRE(retain); // expect we are retaining netbuf
+            }
+            // simulate transport send
+            datapump.transport_pop();
+
+            // first retry should occur at 2000 + 2500 = 4500, so poke it at 4600
+            // we expect this will enqueue things again
             retry.service(4600, datapump);
 
             REQUIRE(!datapump.transport_empty());
-            datapump_t::Item& datapump_item = datapump.transport_front();
-            REQUIRE(datapump_item.addr() == fakeaddr);
-            datapump_item.on_message_transmitted(); // pretend we sent it and invoke observer
+            {
+                datapump_t::Item& datapump_item = datapump.transport_front();
+                REQUIRE(datapump_item.addr() == fakeaddr);
+                bool retain = datapump_item.on_message_transmitted(); // pretend we sent it and invoke observer
+                REQUIRE(retain); // expect we are retaining netbuf
+            }
             datapump.transport_pop(); // make believe we sent it somewhere
+
+            REQUIRE(datapump.transport_empty());
+\
+            // second retry should occur at 2000 + 5000 = 7000, so poke it at 7100
+            retry.service(7100, datapump);
+
+            // simulate transport send
+            datapump.transport_pop();
+            // nothing left in outgoing queue after that send
+            REQUIRE(datapump.transport_empty());
+
+            // third retry should occur at 2000 + 10000 = 12000, so poke it at 12100
+            retry.service(12100, datapump);
+
+            // ensure retry did queue a message
+            REQUIRE(!datapump.transport_empty());
+            {
+                datapump_t::Item& datapump_item = datapump.transport_front();
+                bool retain = datapump_item.on_message_transmitted(); // pretend we sent it and invoke observer
+                REQUIRE(retain); // expect we are retaining netbuf
+            }
+            // simulate transport send
+            datapump.transport_pop();
+            // nothing left in outgoing queue after that send
+            REQUIRE(datapump.transport_empty());
+
+            // fourth and final retry should occur at 2000 + 20000 = 22000, so poke it at 22100
+            retry.service(22100, datapump);
+
+            REQUIRE(!datapump.transport_empty());
+            {
+                datapump_t::Item& datapump_item = datapump.transport_front();
+                bool retain = datapump_item.on_message_transmitted(); // pretend we sent it and invoke observer
+                REQUIRE(!retain); // expect we are NOT retaining netbuf (actually no observer should be here)
+            }
+            // simulate transport send
+            datapump.transport_pop();
+            // nothing left in outgoing queue after that send
+            REQUIRE(datapump.transport_empty());
+
+            // should have nothing left to resend, we ran out of tries
+            retry.service(25000, datapump);
+
+            REQUIRE(datapump.transport_empty());
         }
     }
 #ifdef FEATURE_CPP_VARIADIC

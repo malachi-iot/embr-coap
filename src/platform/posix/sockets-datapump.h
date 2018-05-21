@@ -34,6 +34,7 @@ public:
     typedef sockets_datapump_t::addr_t addr_t;
     typedef sockets_datapump_t::netbuf_t netbuf_t;
     typedef sockets_datapump_t datapump_t;
+    typedef sockets_datapump_t::datapump_observer_t datapump_observer_t;
 
     SocketsDatapumpHelper() :
         sockfd(nonblocking_datapump_setup())
@@ -77,18 +78,28 @@ public:
             netbuf_t&& netbuf,
             const addr_t& addr_out, sockets_datapump_t& datapump = sockets_datapump)
     {
+#ifdef FEATURE_MCCOAP_RELIABLE
         bool is_con = retry.is_con(netbuf);
+        datapump_observer_t* observer = &retry.enqueue(netbuf, addr_out);
+#else
+        datapump_observer_t* observer = NULLPTR;
+#endif
 
-        datapump.enqueue_out(std::forward<netbuf_t>(netbuf), addr_out);
+        datapump.enqueue_out(std::forward<netbuf_t>(netbuf), addr_out, observer);
     }
 #else
     void enqueue(
             netbuf_t& netbuf,
             const addr_t& addr_out, sockets_datapump_t& datapump = sockets_datapump)
     {
+#ifdef FEATURE_MCCOAP_RELIABLE
         bool is_con = retry.is_con(netbuf);
+        datapump_observer_t* observer = &retry.enqueue(netbuf, addr_out);
+#else
+        datapump_observer_t* observer = NULLPTR;
+#endif
 
-        datapump.enqueue_out(netbuf, addr_out);
+        datapump.enqueue_out(netbuf, addr_out, observer);
     }
 #endif
 };

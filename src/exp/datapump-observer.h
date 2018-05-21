@@ -25,6 +25,7 @@ struct IDataPumpObserver
 
     // true = we have taken ownership of netbuf, signal to caller not to deallocate
     // false = we are not interested, caller maintains ownership of netbuf
+    // NOTE: has diminished value when using INLINE/move semantic flavor
     virtual bool on_message_transmitted(TNetBuf* netbuf, const TAddr& addr) = 0;
 };
 

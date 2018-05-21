@@ -51,6 +51,8 @@ public:
     struct Metadata
     {
         // from 0-4 (COAP_MAX_RETRANSMIT)
+        // NOTE: Technically at this time this actually represents *queued for transmit* and may
+        // or may not reflect whether it has actually been transmitted yet
         uint16_t retransmission_counter : 3;
 
         // represents in milliseconds initial timeout as described in section 4.2.
@@ -259,7 +261,7 @@ public:
     }
 
     // allocate a not-yet-sent retry slot
-    Item& enqueue(const addr_t& addr, TNetBuf& netbuf)
+    Item& enqueue(TNetBuf& netbuf, const addr_t& addr)
     {
         // TODO: ensure it's sorted by 'due'
         // for now just brute force things
@@ -318,13 +320,32 @@ public:
     // retry_queue
     void ack_received(const addr_t& from_addr, uint16_t mid, const coap::layer2::Token& token)
     {
+        typename list_t::iterator i = retry_list.begin();
 
+        while(i != retry_list.end())
+        {
+            Item& v = *i;
+
+            // address, token and mid all have to match
+            // FIX: it's quite probable address won't exactly match because our address
+            // for UDP carries the source port, which can actually vary.  Until we iron that
+            // out, only compare against token and mid - this will work in the short term but
+            // will ultimately fail when multiple IPs are involved
+            if(
+                //v.addr == from_addr &&
+                v.token() == token && v.mid() == mid)
+            {
+                dequeue(&v);
+                return;
+            }
+        }
     }
 
     // call this after front() is called and its contained 'due' has passed
     // will:
     //   a) evaluate first (front()) item to see if current_time > due and
-    //      1. if so, requeue for later retry attempt again
+    //      1. if so, requeue for later retry attempt again.  If on MAX_RETRANSMIT, then
+    //         deactivate this particular retry item as it has run its course
     //      2. if not, do nothing
     //   b)
     template <class TDataPump>
@@ -338,7 +359,7 @@ public:
             if(current_time >= f->due)
             {
                 // and if we're still interested in retransmissions
-                if(++f->retransmission_counter < COAP_MAX_RETRANSMIT)
+                if(f->retransmission_counter < COAP_MAX_RETRANSMIT)
                 {
                     // set up new scheduled time for retransmission
                     time_t due = current_time + f->delta();
@@ -355,6 +376,9 @@ public:
 #else
                     datapump.enqueue_out(f->netbuf(), f->addr, f);
 #endif
+                    // NOTE: Just putting this here to keep things consistent - so that
+                    // retransmissio_counter *really does* represent that netbuf is queued
+                    f->retransmission_counter++;
                 }
                 // or if this is our last retransmission, queue without observer and remove
                 // our Item for retry list
