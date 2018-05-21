@@ -1,6 +1,7 @@
 #pragma once
 
 #include "exp/datapump.h"
+#include "exp/retry.h"
 #include <netinet/in.h>
 #include "../generic/malloc_netbuf.h"
 

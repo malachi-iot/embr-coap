@@ -1,11 +1,16 @@
 #pragma once
 
+#include "coap/platform.h"
 #include <estd/forward_list.h>
 #include <estd/vector.h>
 #include <mc/memory-pool.h>
 #include "coap/decoder/netbuf.h"
 #include <stdint.h> // for uint8_t
 #include "datapump-observer.h" // for IDataPumpObserver
+
+#if defined(__POSIX__) || defined(__MACH__)
+#include <sys/time.h>
+#endif
 
 namespace moducom { namespace coap { namespace experimental {
 
@@ -21,7 +26,19 @@ public:
     typedef TAddr addr_t;
     // FIX: We're gonna need a proper mapping for platform specific timing, though
     // merely tracking as milliseconds might be enough
-    typedef ::time_t time_t;
+    typedef uint32_t time_t;
+
+    // FIX: convenience function since there isn't quite a unified cross platform time acqusition fn
+    // specifically this retrieves number of milliseconds since a fixed point in time
+    static time_t now()
+    {
+#if defined(__POSIX__) || defined(__MACH__)
+        timeval curTime;
+        gettimeofday(&curTime, NULL);
+        int milli = curTime.tv_usec / 1000;
+        return milli;
+#endif
+    }
 
     struct Metadata
     {
@@ -48,7 +65,10 @@ public:
         // 10-ms resolution, which should be fully adequate for coap timeouts
         uint32_t delta()
         {
+            // double initial_timeout_ms with each retransmission
+            uint16_t multiplier = 1 << retransmission_counter;
 
+            return initial_timeout_ms * multiplier;
         }
     };
 
@@ -83,6 +103,9 @@ public:
         // right now hard-wired to non-inline netbuf style
         TNetBuf* m_netbuf;
 
+        // when to send it by
+        time_t due;
+
         TNetBuf& netbuf() const { return *m_netbuf; }
 
     protected:
@@ -93,6 +116,8 @@ public:
 
             return decoder.header();
         }
+
+        Retry* parent;
 
     public:
         // get MID from sent netbuf, for incoming ACK comparison
@@ -120,8 +145,9 @@ public:
         // needed for unallocated portions of vector
         Item() {}
 
-        Item(const addr_t& a, TNetBuf* netbuf) :
-                m_netbuf(netbuf)
+        Item(Retry* parent, const addr_t& a, TNetBuf* netbuf) :
+                m_netbuf(netbuf),
+                parent(parent)
         {
             // TODO: assign addr
         }
@@ -135,25 +161,57 @@ public:
         }
 
 
-        virtual void on_message_transmitted(TNetBuf* netbuf, const TAddr& addr) OVERRIDE
+        virtual bool on_message_transmitted(TNetBuf* netbuf, const TAddr& addr) OVERRIDE
         {
+            // This function perhaps only should indicate whether we should be taking ownership
+            // of buffer after send (return true), and let process/rescheduler handle everything
+            // else
+            if(base_t::retransmission_counter < 4)
+            {
+                if(base_t::is_definitely_con()) return true;
+
+                if(header().type() == Header::Confirmable)
+                {
+                    base_t::con_helper_flag_bit = 1;
+                    return true;
+                }
+
+                // TODO: Have an indicator that it is_definitely_not_con
+            }
+
+            return false;
+
+            // at this point we should only be looking at first-try CON message (or candidate CON)
+            // and after we verify it IS CON, then queue up for initial resend.  We do not need
+            // to evaluate retries > 0 here, that should be handled by the process/reschedule area
+
+
             // at this point we'll want to evaluate if:
             // CON == true and our retry count is < 4, and if so...
+            // NOTE: retransmission counter eval not necessary now
             if(base_t::retransmission_counter < 4 &&
                     (base_t::is_definitely_con() || header().type() == Header::Confirmable))
             {
-                base_t::delta();
                 // do proper timeout delta calculations to schedule a resend.  Also take
                 // ownership of netbuf away from incoming datapump, we'll only give it
                 // back once it's time to schedule a retry CON operation
                 // NOTE: that incoming netbuf and addr SHOULD match already tracked
+                time_t due = now() + base_t::delta();
+
+                this->due = due;
+
 #ifdef FEATURE_MCCOAP_DATAPUMP_INLINE
                 // we'll need to do a std::forward move operation to hold on to incoming netbuf
 #else
                 // we'll need to assign netbuf and give a clue as to a reference counter/delete indicator
                 // for datapump netbuf cleanup code
 #endif
+                // true = we have taken ownership of netbuf, signal to caller not to deallocate
+                // false = we are not interested, caller maintains ownership of netbuf
+                return true;
             }
+
+            return false;
         }
 #endif
     };
@@ -181,7 +239,7 @@ public:
     {
         // TODO: ensure it's sorted by 'due'
         // for now just brute force things
-        Item item(addr, &netbuf);
+        Item item(this, addr, &netbuf);
 
         // TODO: revamp the push_back code to return success or fail
         retry_list.push_back(item);
@@ -229,9 +287,26 @@ public:
     //      1. if so, requeue for later retry attempt again
     //      2. if not, do nothing
     //   b)
-    void service(time_t current_time)
+    template <class TDataPump>
+    void service(time_t current_time, TDataPump& datapump)
     {
+        Item* f = front();
 
+        if(f != NULLPTR)
+        {
+            if(f->due >= current_time)
+            {
+                // Will need to maintain some kind of signal / capability
+                // to keep taking ownership of netbuf so that it doesn't
+                // get deleted until we're done with our resends (got ACK
+                // or ==4 retransmission)
+#ifdef FEATURE_MCCOAP_DATAPUMP_INLINE
+                datapump.enqueue_out(std::forward(f->netbuf()), f->addr, f);
+#else
+                datapump.enqueue_out(f->netbuf(), f->addr, f);
+#endif
+            }
+        }
     }
 };
 

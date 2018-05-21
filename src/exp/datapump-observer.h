@@ -22,7 +22,10 @@ struct IDataPumpObserver
     // For now going to presume we can reuse netbufs for our retry code, but since observer code basically
     // requires a netbuf-copyer, prep that too
     virtual void on_message_transmitting(TNetBuf* netbuf, const TAddr& addr) = 0;
-    virtual void on_message_transmitted(TNetBuf* netbuf, const TAddr& addr) = 0;
+
+    // true = we have taken ownership of netbuf, signal to caller not to deallocate
+    // false = we are not interested, caller maintains ownership of netbuf
+    virtual bool on_message_transmitted(TNetBuf* netbuf, const TAddr& addr) = 0;
 };
 
 }}

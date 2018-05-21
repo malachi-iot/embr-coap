@@ -25,16 +25,32 @@ TEST_CASE("experimental 2 tests")
 
     SECTION("A")
     {
+        typedef Retry<NetBufDynamicExperimental, addr_t> retry_t;
         uint8_t fakeaddr[4];
         NetBufDynamicExperimental netbuf;
 
-        Retry<NetBufDynamicExperimental, addr_t> retry;
+        retry_t retry;
 
         retry.enqueue(fakeaddr, netbuf);
 
         // Not yet, need newer estdlib first with cleaned up iterators
         // commented our presently because of transition away from Metadata_Old
         //Retry<int, addr_t>::Item* test = retry.front();
+
+        retry_t::Metadata metadata;
+
+        metadata.initial_timeout_ms = 2500;
+        metadata.retransmission_counter = 0;
+
+        REQUIRE(metadata.delta() == 2500);
+
+        metadata.retransmission_counter++;
+
+        REQUIRE(metadata.delta() == 5000);
+
+        metadata.retransmission_counter++;
+
+        REQUIRE(metadata.delta() == 10000);
     }
 #ifdef FEATURE_CPP_VARIADIC
     SECTION("AggregateMessageObserver")

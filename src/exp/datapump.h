@@ -126,10 +126,12 @@ public:
         }
 
 
-        void on_message_transmitted()
+        bool on_message_transmitted()
         {
             if(observer != NULLPTR)
-                observer->on_message_transmitted(netbuf(), addr());
+                return observer->on_message_transmitted(netbuf(), addr());
+
+            return false;
         }
 #endif
     };

@@ -99,7 +99,7 @@ void nonblocking_datapump_loop(int sockfd, sockets_datapump_t& sockets_datapump)
         //      that would require a fair bit of work.  So, in the short term, see
         //      if we can merely make it a mechanism who behaviorally (but not data-wise)
         //      is decoupled from DataPump
-        item.on_message_transmitted();
+        bool netbuf_ownership_transferred = item.on_message_transmitted();
 
 #endif
 
