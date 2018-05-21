@@ -23,8 +23,12 @@ struct fake_time_traits
 {
     typedef uint16_t time_t;
 
-    static time_t now() { return 2000; }
+    static time_t m_now;
+
+    static time_t now() { return m_now; }
 };
+
+fake_time_traits::time_t fake_time_traits::m_now = 2000;
 
 TEST_CASE("experimental 2 tests")
 {
@@ -32,13 +36,13 @@ TEST_CASE("experimental 2 tests")
 
     SECTION("retry")
     {
-        typedef Retry<NetBufDynamicExperimental, addr_t, fake_time_traits> retry_t;
+        typedef NetBufDynamicExperimental netbuf_t;
+        typedef Retry<netbuf_t, addr_t, fake_time_traits> retry_t;
+        typedef DataPump<netbuf_t, addr_t> datapump_t;
         addr_t fakeaddr;
-        NetBufDynamicExperimental netbuf;
+        netbuf_t netbuf;
 
         retry_t retry;
-
-        retry.enqueue(fakeaddr, netbuf);
 
         SECTION("retransmission low level logic")
         {
@@ -62,9 +66,21 @@ TEST_CASE("experimental 2 tests")
 
             REQUIRE(metadata.delta() == 10000);
         }
-        SECTION("retry.process")
+        SECTION("retry.service")
         {
+            datapump_t datapump;
 
+            retry_t::Item& item = retry.enqueue(fakeaddr, netbuf);
+
+            datapump.enqueue_out(netbuf, fakeaddr, &item);
+
+            retry.service(4600, datapump);
+
+            REQUIRE(!datapump.transport_empty());
+            datapump_t::Item& datapump_item = datapump.transport_front();
+            REQUIRE(datapump_item.addr() == fakeaddr);
+            datapump_item.on_message_transmitted(); // pretend we sent it and invoke observer
+            datapump.transport_pop(); // make believe we sent it somewhere
         }
     }
 #ifdef FEATURE_CPP_VARIADIC

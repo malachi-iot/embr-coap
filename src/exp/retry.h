@@ -259,16 +259,32 @@ public:
     }
 
     // allocate a not-yet-sent retry slot
-    bool enqueue(const addr_t& addr, TNetBuf& netbuf)
+    Item& enqueue(const addr_t& addr, TNetBuf& netbuf)
     {
         // TODO: ensure it's sorted by 'due'
         // for now just brute force things
         Item item(this, addr, &netbuf);
 
+        // FIX: Really need to set due either during service call or on
+        // on_transmitted call.  Setting here is just a stop gap and will
+        // have innacurate side effects for first resend since at this point
+        // outgoing packet isn't even queued in datapump yet
+        item.due = time_traits::now() + item.delta();
+
         // TODO: revamp the push_back code to return success or fail
         retry_list.push_back(item);
 
-        return true;
+        // FIX: Lots of issues.  Lingering lock is bad, and enqueue's returned
+        // reference may actually move - depending on architecture we choose
+        return retry_list.back().lock();
+    }
+
+    void dequeue(Item* item)
+    {
+        // FIX: Can't really 'erase' because it very likely will invalidate pointers
+        // in our cheezy vector-only approach right now.  So continue being cheezy and
+        // use f->due to fake it out and no longer pay attention
+        item->due = -1;
     }
 
     // call this to get next item for transport to send, or NULLPTR if nothing
@@ -318,13 +334,14 @@ public:
 
         if(f != NULLPTR)
         {
-            if(f->due >= current_time)
+            // if it's time for a retransmit
+            if(current_time >= f->due)
             {
-                // if we're still interested in retransmissions
-                if(f->retransmission_counter++ < COAP_MAX_RETRANSMIT)
+                // and if we're still interested in retransmissions
+                if(++f->retransmission_counter < COAP_MAX_RETRANSMIT)
                 {
                     // set up new scheduled time for retransmission
-                    time_t due = time_traits::now() + f->delta();
+                    time_t due = current_time + f->delta();
 
                     // effectively reschedule this item
                     f->due = due;
@@ -339,14 +356,24 @@ public:
                     datapump.enqueue_out(f->netbuf(), f->addr, f);
 #endif
                 }
+                // or if this is our last retransmission, queue without observer and remove
+                // our Item for retry list
+                else if(f->retransmission_counter == COAP_MAX_RETRANSMIT)
+                {
+                    // last retry attempt has no observer, which means datapump fully owns
+                    // netbuf, which means it will be erased normally
+#ifdef FEATURE_MCCOAP_DATAPUMP_INLINE
+                    datapump.enqueue_out(std::forward(f->netbuf()), f->addr);
+#else
+                    datapump.enqueue_out(f->netbuf(), f->addr);
+#endif
+                    dequeue(f);
+                }
                 else
                 {
-                    // we've retransmitte enough times with no response, so remove
-                    // from retry list
-                    // FIX: Can't really 'erase' because it very likely will invalidate pointers
-                    // in our cheezy vector-only approach right now.  So continue being cheezy and
-                    // use f->due to fake it out and no longer pay attention
-                    f->due = -1;
+                    //ERROR: Should never get here
+
+                    dequeue(f);
                 }
             }
         }
