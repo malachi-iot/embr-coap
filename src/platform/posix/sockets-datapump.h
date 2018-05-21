@@ -8,6 +8,7 @@
 namespace moducom { namespace coap {
 
 typedef moducom::coap::DataPump<moducom::coap::NetBufDynamicExperimental, sockaddr_in> sockets_datapump_t;
+typedef moducom::coap::experimental::Retry<moducom::coap::NetBufDynamicExperimental, sockaddr_in> sockets_retry_t;
 
 extern sockets_datapump_t sockets_datapump;
 
@@ -24,6 +25,10 @@ namespace moducom { namespace coap {
 class SocketsDatapumpHelper
 {
     const int sockfd;
+
+#ifdef FEATURE_MCCOAP_RELIABLE
+    sockets_retry_t retry;
+#endif
 
 public:
     typedef sockets_datapump_t::addr_t addr_t;
@@ -72,6 +77,8 @@ public:
             netbuf_t&& netbuf,
             const addr_t& addr_out, sockets_datapump_t& datapump = sockets_datapump)
     {
+        bool is_con = retry.is_con(netbuf);
+
         datapump.enqueue_out(std::forward<netbuf_t>(netbuf), addr_out);
     }
 #else
@@ -79,6 +86,8 @@ public:
             netbuf_t& netbuf,
             const addr_t& addr_out, sockets_datapump_t& datapump = sockets_datapump)
     {
+        bool is_con = retry.is_con(netbuf);
+
         datapump.enqueue_out(netbuf, addr_out);
     }
 #endif

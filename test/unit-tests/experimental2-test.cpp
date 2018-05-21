@@ -19,38 +19,53 @@ using namespace moducom::coap::experimental;
 typedef moducom::pipeline::MemoryChunk::readonly_t ro_chunk_t;
 typedef moducom::pipeline::MemoryChunk chunk_t;
 
+struct fake_time_traits
+{
+    typedef uint16_t time_t;
+
+    static time_t now() { return 2000; }
+};
+
 TEST_CASE("experimental 2 tests")
 {
-    typedef uint8_t addr_t[4];
+    typedef uint32_t addr_t;
 
-    SECTION("A")
+    SECTION("retry")
     {
-        typedef Retry<NetBufDynamicExperimental, addr_t> retry_t;
-        uint8_t fakeaddr[4];
+        typedef Retry<NetBufDynamicExperimental, addr_t, fake_time_traits> retry_t;
+        addr_t fakeaddr;
         NetBufDynamicExperimental netbuf;
 
         retry_t retry;
 
         retry.enqueue(fakeaddr, netbuf);
 
-        // Not yet, need newer estdlib first with cleaned up iterators
-        // commented our presently because of transition away from Metadata_Old
-        //Retry<int, addr_t>::Item* test = retry.front();
+        SECTION("retransmission low level logic")
+        {
 
-        retry_t::Metadata metadata;
+            // Not yet, need newer estdlib first with cleaned up iterators
+            // commented our presently because of transition away from Metadata_Old
+            //Retry<int, addr_t>::Item* test = retry.front();
 
-        metadata.initial_timeout_ms = 2500;
-        metadata.retransmission_counter = 0;
+            retry_t::Metadata metadata;
 
-        REQUIRE(metadata.delta() == 2500);
+            metadata.initial_timeout_ms = 2500;
+            metadata.retransmission_counter = 0;
 
-        metadata.retransmission_counter++;
+            REQUIRE(metadata.delta() == 2500);
 
-        REQUIRE(metadata.delta() == 5000);
+            metadata.retransmission_counter++;
 
-        metadata.retransmission_counter++;
+            REQUIRE(metadata.delta() == 5000);
 
-        REQUIRE(metadata.delta() == 10000);
+            metadata.retransmission_counter++;
+
+            REQUIRE(metadata.delta() == 10000);
+        }
+        SECTION("retry.process")
+        {
+
+        }
     }
 #ifdef FEATURE_CPP_VARIADIC
     SECTION("AggregateMessageObserver")

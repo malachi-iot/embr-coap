@@ -14,16 +14,10 @@
 
 namespace moducom { namespace coap { namespace experimental {
 
-
-// only CON messages live here, expected to be shuffled here right out of datapump
-// they are removed from our retry_list when an ACK is received, or when our backoff
-// logic finally expires
-// in support of https://tools.ietf.org/html/rfc7252#section-4.2
-template <class TNetBuf, class TAddr>
-class Retry
+// FIX: Much more likely FRAB is a place for this, stuffing this in for now
+// so that we can be resilient with our time handling + facilitate unit tests
+struct time_traits
 {
-public:
-    typedef TAddr addr_t;
     // FIX: We're gonna need a proper mapping for platform specific timing, though
     // merely tracking as milliseconds might be enough
     typedef uint32_t time_t;
@@ -39,6 +33,20 @@ public:
         return milli;
 #endif
     }
+};
+
+// only CON messages live here, expected to be shuffled here right out of datapump
+// they are removed from our retry_list when an ACK is received, or when our backoff
+// logic finally expires
+// in support of https://tools.ietf.org/html/rfc7252#section-4.2
+template <class TNetBuf, class TAddr, class TTimeTraits = time_traits>
+class Retry
+{
+public:
+    typedef TAddr addr_t;
+
+    typedef TTimeTraits time_traits;
+    typedef typename time_traits::time_t time_t;
 
     struct Metadata
     {
@@ -147,9 +155,11 @@ public:
 
         Item(Retry* parent, const addr_t& a, TNetBuf* netbuf) :
                 m_netbuf(netbuf),
+                addr(a),
                 parent(parent)
         {
-            // TODO: assign addr
+            this->retransmission_counter = 0;
+            this->initial_timeout_ms = 2500; // FIX: For now, a synthetic - but plausible - value
         }
 
 #ifdef FEATURE_MCCOAP_DATAPUMP_OBSERVABLE
@@ -196,7 +206,7 @@ public:
                 // ownership of netbuf away from incoming datapump, we'll only give it
                 // back once it's time to schedule a retry CON operation
                 // NOTE: that incoming netbuf and addr SHOULD match already tracked
-                time_t due = now() + base_t::delta();
+                time_t due = time_traits::now() + base_t::delta();
 
                 this->due = due;
 
@@ -232,9 +242,23 @@ private:
     // TODO: this should eventually be a priority_queue or similar
     list_t retry_list;
 
+    static Header header(TNetBuf& netbuf)
+    {
+        // TODO: optimize and use header decoder only and directly
+        NetBufDecoder<TNetBuf&> decoder(netbuf);
+
+        return decoder.header();
+    }
+
 public:
     Retry() {}
 
+    static bool is_con(TNetBuf& netbuf)
+    {
+        return header(netbuf).type() == Header::Confirmable;
+    }
+
+    // allocate a not-yet-sent retry slot
     bool enqueue(const addr_t& addr, TNetBuf& netbuf)
     {
         // TODO: ensure it's sorted by 'due'
@@ -296,17 +320,43 @@ public:
         {
             if(f->due >= current_time)
             {
-                // Will need to maintain some kind of signal / capability
-                // to keep taking ownership of netbuf so that it doesn't
-                // get deleted until we're done with our resends (got ACK
-                // or ==4 retransmission)
+                // if we're still interested in retransmissions
+                if(f->retransmission_counter++ < COAP_MAX_RETRANSMIT)
+                {
+                    // set up new scheduled time for retransmission
+                    time_t due = time_traits::now() + f->delta();
+
+                    // effectively reschedule this item
+                    f->due = due;
+
+                    // Will need to maintain some kind of signal / capability
+                    // to keep taking ownership of netbuf so that it doesn't
+                    // get deleted until we're done with our resends (got ACK
+                    // or ==4 retransmission)
 #ifdef FEATURE_MCCOAP_DATAPUMP_INLINE
-                datapump.enqueue_out(std::forward(f->netbuf()), f->addr, f);
+                    datapump.enqueue_out(std::forward(f->netbuf()), f->addr, f);
 #else
-                datapump.enqueue_out(f->netbuf(), f->addr, f);
+                    datapump.enqueue_out(f->netbuf(), f->addr, f);
 #endif
+                }
+                else
+                {
+                    // we've retransmitte enough times with no response, so remove
+                    // from retry list
+                    // FIX: Can't really 'erase' because it very likely will invalidate pointers
+                    // in our cheezy vector-only approach right now.  So continue being cheezy and
+                    // use f->due to fake it out and no longer pay attention
+                    f->due = -1;
+                }
             }
         }
+    }
+
+
+    template <class TDataPump>
+    void service(TDataPump& datapump)
+    {
+        service(time_traits::now(), datapump);
     }
 };
 
