@@ -49,7 +49,10 @@ TEST_CASE("experimental 2 tests")
         netbuf_t netbuf;
 
         memcpy(netbuf.unprocessed(), buffer_16bit_delta, sizeof(buffer_16bit_delta));
-        Header *header = new (netbuf.unprocessed()) Header(Header::Confirmable);
+        Header *header = new (netbuf.unprocessed()) Header;;
+
+        header->type(Header::Confirmable);
+        REQUIRE(header->message_id() == 0x123);
 
         netbuf.advance(sizeof(buffer_16bit_delta));
 
@@ -158,6 +161,8 @@ TEST_CASE("experimental 2 tests")
             datapump_t datapump;
 
             retry_t::Item& item = retry.enqueue(netbuf, fakeaddr);
+
+            REQUIRE(item.mid() == 0x123);
 
             // simulate queue to send.  assumes (correctly so, always)
             // that this is a CON message

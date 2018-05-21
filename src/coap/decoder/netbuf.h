@@ -175,7 +175,10 @@ public:
             new (token) layer2::Token(token_decoder().data(), tkl);
             return true;
         }
-        else return false;
+
+        new (token) layer2::Token(NULLPTR, 0);
+
+        return false;
     }
 
     layer3::Token process_token_experimental()

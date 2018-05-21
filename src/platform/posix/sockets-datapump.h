@@ -51,6 +51,14 @@ public:
         // TODO: make nonblocking_datapump_loop into something that accepts
         // datapump parameter
         nonblocking_datapump_loop(sockfd, datapump);
+#ifdef FEATURE_MCCOAP_RELIABLE
+        // FIX: Problematic because it leaves a lingering question, does this auto-pop
+        // the ACK message *or* shall we leave it for the user to evaluate?  Elegant
+        // solution is with MessageObserver pattern, but there should be an elegant
+        // approach with just raw processing style also.  At present it leaves the ACK
+        // in the queue.
+        retry.service_ack(datapump);
+#endif
     }
 
     // dequeue input that was previously queued up from transport
