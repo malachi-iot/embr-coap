@@ -34,6 +34,12 @@ TEST_CASE("experimental 2 tests")
 {
     typedef uint32_t addr_t;
 
+    SECTION("Ensure ack test data is right")
+    {
+        Header* h = (Header*) buffer_ack;
+
+        REQUIRE(h->type() == Header::Acknowledgement);
+    }
     SECTION("retry")
     {
         typedef NetBufDynamicExperimental netbuf_t;
@@ -92,7 +98,7 @@ TEST_CASE("experimental 2 tests")
 
             // first retry should occur at 2000 + 2500 = 4500, so poke it at 4600
             // we expect this will enqueue things again
-            retry.service(4600, datapump);
+            retry.service_retry(4600, datapump);
 
             REQUIRE(!datapump.transport_empty());
             {
@@ -106,7 +112,7 @@ TEST_CASE("experimental 2 tests")
             REQUIRE(datapump.transport_empty());
 \
             // second retry should occur at 2000 + 5000 = 7000, so poke it at 7100
-            retry.service(7100, datapump);
+            retry.service_retry(7100, datapump);
 
             // simulate transport send
             datapump.transport_pop();
@@ -114,7 +120,7 @@ TEST_CASE("experimental 2 tests")
             REQUIRE(datapump.transport_empty());
 
             // third retry should occur at 2000 + 10000 = 12000, so poke it at 12100
-            retry.service(12100, datapump);
+            retry.service_retry(12100, datapump);
 
             // ensure retry did queue a message
             REQUIRE(!datapump.transport_empty());
@@ -129,7 +135,7 @@ TEST_CASE("experimental 2 tests")
             REQUIRE(datapump.transport_empty());
 
             // fourth and final retry should occur at 2000 + 20000 = 22000, so poke it at 22100
-            retry.service(22100, datapump);
+            retry.service_retry(22100, datapump);
 
             REQUIRE(!datapump.transport_empty());
             {
@@ -143,9 +149,41 @@ TEST_CASE("experimental 2 tests")
             REQUIRE(datapump.transport_empty());
 
             // should have nothing left to resend, we ran out of tries
-            retry.service(25000, datapump);
+            retry.service_retry(25000, datapump);
 
             REQUIRE(datapump.transport_empty());
+        }
+        SECTION("retry.service - ack")
+        {
+            datapump_t datapump;
+
+            retry_t::Item& item = retry.enqueue(netbuf, fakeaddr);
+
+            // simulate queue to send.  assumes (correctly so, always)
+            // that this is a CON message
+            datapump.enqueue_out(netbuf, fakeaddr, &item);
+
+            {
+                datapump_t::Item& datapump_item = datapump.transport_front();
+                REQUIRE(datapump_item.addr() == fakeaddr);
+                bool retain = datapump_item.on_message_transmitted(); // pretend we sent it and invoke observer
+                REQUIRE(retain); // expect we are retaining netbuf
+            }
+            // simulate transport send
+            datapump.transport_pop();
+
+            REQUIRE(datapump.dequeue_empty());
+
+            netbuf_t simulated_ack;
+
+            memcpy(simulated_ack.unprocessed(), buffer_ack, sizeof(buffer_ack));
+            simulated_ack.advance(sizeof(buffer_ack));
+
+            datapump.transport_in(simulated_ack, fakeaddr);
+
+            REQUIRE(!datapump.dequeue_empty());
+
+            retry.service_ack(datapump);
         }
     }
 #ifdef FEATURE_CPP_VARIADIC

@@ -70,6 +70,14 @@ public:
     {
         return moducom::pipeline::MemoryChunk::readonly_t(data(), length());
     }
+
+    // TODO: Move this into underlying MemoryChunk
+    bool operator ==(const Token& compare_to) const
+    {
+        if(compare_to.length() != length()) return false;
+
+        return memcmp(data(), compare_to.data(), length()) == 0;
+    }
 };
 
 

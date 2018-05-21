@@ -232,6 +232,8 @@ public:
     // see if any netbufs were queued from transport in
     bool dequeue_empty() { return incoming.empty(); }
 
+    Item& dequeue_front() { return incoming.front(); }
+
     // dequeue complete netbuf which was queued from transport in
     TNetBuf* dequeue_in(addr_t* addr_in)
     {

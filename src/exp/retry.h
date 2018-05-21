@@ -326,6 +326,10 @@ public:
         {
             Item& v = *i;
 
+            // FIX: at the moment, v_mid isn't coming out right
+            uint16_t v_mid = v.mid();
+            const coap::layer2::Token& v_token = v.token();
+
             // address, token and mid all have to match
             // FIX: it's quite probable address won't exactly match because our address
             // for UDP carries the source port, which can actually vary.  Until we iron that
@@ -333,11 +337,38 @@ public:
             // will ultimately fail when multiple IPs are involved
             if(
                 //v.addr == from_addr &&
-                v.token() == token && v.mid() == mid)
+                v_token == token && v_mid == mid)
             {
                 dequeue(&v);
                 return;
             }
+
+            i++;
+        }
+    }
+
+    // a bit problematic because it's conceivable someone will eat the ack before we get it,
+    // so for now be sure to call service_ack before calling others.  Problematic also because
+    // of redundant header/token decoding
+    template <class TDataPump>
+    void service_ack(TDataPump& datapump)
+    {
+        typedef typename TDataPump::Item item_t;
+
+        item_t& item = datapump.dequeue_front();
+
+        // TODO: optimize and use header decoder only and directly
+        NetBufDecoder<TNetBuf&> decoder(*item.netbuf());
+
+        Header h = decoder.header();
+        coap::layer2::Token token;
+        decoder.process_token_experimental(&token);
+
+        if(h.type() == Header::Acknowledgement)
+        {
+            ack_received(item.addr(),
+                         h.message_id(),
+                         token);
         }
     }
 
@@ -349,7 +380,7 @@ public:
     //      2. if not, do nothing
     //   b)
     template <class TDataPump>
-    void service(time_t current_time, TDataPump& datapump)
+    void service_retry(time_t current_time, TDataPump& datapump)
     {
         Item* f = front();
 
@@ -407,7 +438,7 @@ public:
     template <class TDataPump>
     void service(TDataPump& datapump)
     {
-        service(time_traits::now(), datapump);
+        service_retry(time_traits::now(), datapump);
     }
 };
 

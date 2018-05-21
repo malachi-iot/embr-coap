@@ -159,9 +159,6 @@ void nonblocking_datapump_loop(int sockfd, sockets_datapump_t& sockets_datapump)
                     *netbuf_in,
 #endif
                     cli_addr);
-
-        // FIX: Need to find a way to gracefully deallocate netbuf in, since it's now queued
-        // and needs to hang around for a bit
     }
     else
     {
