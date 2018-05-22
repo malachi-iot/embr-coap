@@ -45,10 +45,11 @@ void nonblocking_datapump_loop(lwip::Netconn netconn, lwip_datapump_t& datapump)
 
     err_t err;
 
-    if(datapump.transport_empty())
+    if(!datapump.transport_empty())
     {
         lwip_datapump_t::Item& item = datapump.transport_front();
         const netbuf_t* netbuf_out = item.netbuf();
+        addr = item.addr();
         uint16_t total_length = netbuf_out->length_total();
 
         printf("nonblocking_datapump_loop: send to port: %d / len = %d\n", 
