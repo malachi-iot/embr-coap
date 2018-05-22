@@ -64,7 +64,7 @@ int main()
             decoder.header();
             decoder.process_token_experimental();
 
-            option_iterator<netbuf_t> it(decoder);
+            option_iterator<netbuf_t> it(decoder, true);
 
             while(it.valid())
             {
