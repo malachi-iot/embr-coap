@@ -138,6 +138,8 @@ public:
         // when to send it by
         time_t due;
 
+        bool ack_received;
+
         TNetBuf& netbuf() const { return *m_netbuf; }
 
     protected:
@@ -250,7 +252,8 @@ public:
 #endif
 
 
-        bool operator > (const Item& compare_to)
+    public:
+        bool operator > (const Item& compare_to) const
         {
             return due > compare_to.due;
         }
@@ -270,10 +273,19 @@ private:
     typedef estd::layer1::vector<Item, 10> list_t;
     typedef estd::priority_queue<Item, list_t, std::greater<Item> > priority_queue_t;
 
-    // TODO: this should eventually be a priority_queue or similar
-    list_t retry_list;
+    // sneak in and peer at container
+    struct RetryQueue : priority_queue_t
+    {
+        typedef priority_queue_t base_t;
+        typedef typename base_t::container_type container_type;
 
-    priority_queue_t retry_queue;
+        container_type& get_container() { return base_t::c; }
+    };
+
+    // TODO: this should eventually be a priority_queue or similar
+    //list_t retry_list;
+
+    RetryQueue retry_queue;
 
     static Header header(TNetBuf& netbuf)
     {
@@ -292,7 +304,7 @@ public:
     }
 
     // allocate a not-yet-sent retry slot
-    Item& enqueue(TNetBuf& netbuf, const addr_t& addr)
+    void enqueue(TNetBuf& netbuf, const addr_t& addr)
     {
         // TODO: ensure it's sorted by 'due'
         // for now just brute force things
@@ -305,11 +317,12 @@ public:
         item.due = time_traits::now() + item.delta();
 
         // TODO: revamp the push_back code to return success or fail
-        retry_list.push_back(item);
+        //retry_list.push_back(item);
+        retry_queue.push(item);
 
         // FIX: Lots of issues.  Lingering lock is bad, and enqueue's returned
         // reference may actually move - depending on architecture we choose
-        return retry_list.back().lock();
+        // return retry_list.back().lock();
     }
 
     void dequeue(Item* item)
@@ -322,43 +335,22 @@ public:
 
     bool empty() const { return retry_queue.empty(); }
 
-    Item& front() { return retry_queue.top(); }
-
-
-    // call this to get next item for transport to send, or NULLPTR if nothing
-    // keep in mind Item shall have 'due' in there to indicate when item should
-    // *actually* be sent, it is up to consumer to heed this
-    //const Item* front() const
-    Item* front_old()
+    Item& front() const
     {
-        // TODO: make this const eventually ... though maybe
-        // we can't since transport ultimately will want to diddle with netbuf
-        Item* best = NULLPTR;
-
-        //for(Item* v : retry_list)
-        typename list_t::iterator i = retry_list.begin();
-
-        while(i != retry_list.end())
-        {
-            Item& v = *i;
-            if(best == NULLPTR)
-                best = &v;
-            else if(v.due < best->due)
-                best = &v;
-
-            i++;
-        }
-
-        return best;
+        // FIX: want accessor to be a little more transparent
+        return retry_queue.top().lock();
     }
+
 
     // called when ACK is received to determine if we should remove anything from the
     // retry_queue
     void ack_received(const addr_t& from_addr, uint16_t mid, const coap::layer2::Token& token)
     {
-        typename list_t::iterator i = retry_list.begin();
+        typename RetryQueue::container_type&
+                c = retry_queue.get_container();
+        typename list_t::iterator i = c.begin();
 
-        while(i != retry_list.end())
+        while(i != c.end())
         {
             Item& v = *i;
 

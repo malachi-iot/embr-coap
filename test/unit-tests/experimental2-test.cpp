@@ -84,11 +84,11 @@ TEST_CASE("experimental 2 tests")
         {
             datapump_t datapump;
 
-            retry_t::Item& item = retry.enqueue(netbuf, fakeaddr);
+            retry.enqueue(netbuf, fakeaddr);
 
             // simulate queue to send.  assumes (correctly so, always)
             // that this is a CON message
-            datapump.enqueue_out(netbuf, fakeaddr, &item);
+            datapump.enqueue_out(netbuf, fakeaddr, &retry.always_consume_netbuf);
 
             {
                 datapump_t::Item& datapump_item = datapump.transport_front();
@@ -160,13 +160,13 @@ TEST_CASE("experimental 2 tests")
         {
             datapump_t datapump;
 
-            retry_t::Item& item = retry.enqueue(netbuf, fakeaddr);
+            retry.enqueue(netbuf, fakeaddr);
 
-            REQUIRE(item.mid() == 0x123);
+            //REQUIRE(item.mid() == 0x123);
 
             // simulate queue to send.  assumes (correctly so, always)
             // that this is a CON message
-            datapump.enqueue_out(netbuf, fakeaddr, &item);
+            datapump.enqueue_out(netbuf, fakeaddr, &retry.always_consume_netbuf);
 
             {
                 datapump_t::Item& datapump_item = datapump.transport_front();
