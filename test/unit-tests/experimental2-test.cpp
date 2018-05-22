@@ -28,6 +28,11 @@ struct fake_time_traits
     static time_t now() { return m_now; }
 };
 
+struct UnitTestRetryRandPolicy
+{
+    static int rand(int lower, int upper) { return 2500; }
+};
+
 fake_time_traits::time_t fake_time_traits::m_now = 2000;
 
 TEST_CASE("experimental 2 tests")
@@ -43,7 +48,7 @@ TEST_CASE("experimental 2 tests")
     SECTION("retry")
     {
         typedef NetBufDynamicExperimental netbuf_t;
-        typedef Retry<netbuf_t, addr_t, fake_time_traits> retry_t;
+        typedef Retry<netbuf_t, addr_t, RetryPolicy<fake_time_traits, UnitTestRetryRandPolicy> > retry_t;
         typedef DataPump<netbuf_t, addr_t> datapump_t;
         addr_t fakeaddr;
         netbuf_t netbuf;
@@ -243,5 +248,12 @@ TEST_CASE("experimental 2 tests")
         IncomingContext<int> ctx;
 
         decoder_observer(DecoderObserver(uri), ctx, buffer_16bit_delta);
+    }
+    SECTION("RandomPolicy test")
+    {
+        RandomPolicy::seed(5);
+        int value = RandomPolicy::rand(100, 200);
+
+        REQUIRE(value == 127);
     }
 }

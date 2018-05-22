@@ -39,17 +39,50 @@ struct time_traits
     }
 };
 
+// eventually use http://en.cppreference.com/w/cpp/numeric/random
+struct RandomPolicy
+{
+    // if !is_stateful, that means random seed is global
+    static CONSTEXPR bool is_stateful() { return false; }
+    static CONSTEXPR int max() { return RAND_MAX; }
+    static int rand() { return std::rand(); }
+    static void seed(unsigned s) { std::srand(s); }
+    // as per http://en.cppreference.com/w/cpp/experimental/randint
+    // even if it's not available, we can make it available
+    template <class IntType>
+    static IntType rand(IntType lower_bound, IntType upper_bound)
+    {
+        // for now just brute force through it, but eventually lean on
+        // either/or experimental/random randint or uniform_int_distribution
+        IntType delta = upper_bound - lower_bound;
+        CONSTEXPR int m = max();
+        long result = rand();
+        result *= delta;
+        result /= m;
+        return result + lower_bound;
+    }
+};
+
+
+template <class TTimePolicy = time_traits, class TRandomPolicy = RandomPolicy>
+struct RetryPolicy
+{
+    typedef TTimePolicy time;
+    typedef TRandomPolicy random;
+};
+
 // only CON messages live here, expected to be shuffled here right out of datapump
 // they are removed from our retry_list when an ACK is received, or when our backoff
 // logic finally expires
 // in support of https://tools.ietf.org/html/rfc7252#section-4.2
-template <class TNetBuf, class TAddr, class TTimeTraits = time_traits>
+template <class TNetBuf, class TAddr, class TPolicy = RetryPolicy<> >
 class Retry
 {
 public:
     typedef TAddr addr_t;
 
-    typedef TTimeTraits time_traits;
+    typedef typename TPolicy::time time_traits;
+    typedef typename TPolicy::random random_policy;
     typedef typename time_traits::time_t time_t;
     typedef TNetBuf netbuf_t;
 
@@ -185,7 +218,10 @@ public:
                 parent(parent)
         {
             this->retransmission_counter = 0;
-            this->initial_timeout_ms = 2500; // FIX: For now, a synthetic - but plausible - value
+            this->initial_timeout_ms =
+                    random_policy::rand(
+                            1000 * COAP_ACK_TIMEOUT,
+                            1000 * COAP_ACK_RANDOM_FACTOR * COAP_ACK_TIMEOUT);
         }
 
 #ifdef FEATURE_MCCOAP_DATAPUMP_OBSERVABLE
