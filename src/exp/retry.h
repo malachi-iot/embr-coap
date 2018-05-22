@@ -280,6 +280,12 @@ private:
         typedef typename base_t::container_type container_type;
 
         container_type& get_container() { return base_t::c; }
+
+        bool remove(typename container_type::iterator it)
+        {
+            base_t::c.erase(it);
+            std::make_heap(base_t::c.begin(), base_t::c.end(), base_t::get_compare());
+        }
     };
 
     // TODO: this should eventually be a priority_queue or similar
