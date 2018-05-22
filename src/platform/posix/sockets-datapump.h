@@ -48,8 +48,6 @@ public:
 
     void loop(sockets_datapump_t& datapump = sockets_datapump)
     {
-        // TODO: make nonblocking_datapump_loop into something that accepts
-        // datapump parameter
         nonblocking_datapump_loop(sockfd, datapump);
 #ifdef FEATURE_MCCOAP_RELIABLE
         // FIX: Problematic because it leaves a lingering question, does this auto-pop
