@@ -3,6 +3,7 @@
 #include "coap/platform.h"
 #include <estd/forward_list.h>
 #include <estd/vector.h>
+#include <estd/queue.h>
 #include <mc/memory-pool.h>
 #include "coap/decoder/netbuf.h"
 #include <stdint.h> // for uint8_t
@@ -51,6 +52,23 @@ public:
     typedef TTimeTraits time_traits;
     typedef typename time_traits::time_t time_t;
     typedef TNetBuf netbuf_t;
+
+    struct AlwaysConsumeNetbuf : IDataPumpObserver<netbuf_t, addr_t>
+    {
+
+
+        // IDataPumpObserver interface
+    public:
+        virtual void on_message_transmitting(netbuf_t *netbuf, const addr_t &addr) OVERRIDE
+        {}
+
+        virtual bool on_message_transmitted(netbuf_t *netbuf, const addr_t &addr) OVERRIDE
+        {
+            return true;
+        }
+    };
+
+    AlwaysConsumeNetbuf always_consume_netbuf;
 
     struct Metadata
     {
@@ -244,6 +262,7 @@ private:
                     mem::LinkedListPool */
 
     typedef estd::layer1::vector<Item, 10> list_t;
+    typedef estd::priority_queue<Item, list_t> priority_queue_t;
 
     // TODO: this should eventually be a priority_queue or similar
     list_t retry_list;
@@ -390,13 +409,16 @@ public:
     {
         Item* f = front();
 
+        // anything in the retry list has already been vetted to be CON
         if(f != NULLPTR)
         {
             // if it's time for a retransmit
             if(current_time >= f->due)
             {
+                int retry_attempt = f->retransmission_counter++;
+
                 // and if we're still interested in retransmissions
-                if(f->retransmission_counter < COAP_MAX_RETRANSMIT)
+                if(retry_attempt < COAP_MAX_RETRANSMIT)
                 {
                     // set up new scheduled time for retransmission
                     time_t due = current_time + f->delta();
@@ -409,17 +431,17 @@ public:
                     // get deleted until we're done with our resends (got ACK
                     // or ==4 retransmission)
 #ifdef FEATURE_MCCOAP_DATAPUMP_INLINE
-                    datapump.enqueue_out(std::forward<netbuf_t>(f->netbuf()), f->addr, f);
+                    datapump.enqueue_out(std::forward<netbuf_t>(f->netbuf()), f->addr, &always_consume_netbuf);
 #else
-                    datapump.enqueue_out(f->netbuf(), f->addr, f);
+                    datapump.enqueue_out(f->netbuf(), f->addr, &always_consume_netbuf);
 #endif
                     // NOTE: Just putting this here to keep things consistent - so that
                     // retransmissio_counter *really does* represent that netbuf is queued
-                    f->retransmission_counter++;
+                    f->retransmission_counter = retry_attempt;
                 }
                 // or if this is our last retransmission, queue without observer and remove
                 // our Item for retry list
-                else if(f->retransmission_counter == COAP_MAX_RETRANSMIT)
+                else if(retry_attempt == COAP_MAX_RETRANSMIT)
                 {
                     // last retry attempt has no observer, which means datapump fully owns
                     // netbuf, which means it will be erased normally
