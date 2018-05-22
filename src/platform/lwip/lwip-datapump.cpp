@@ -1,5 +1,15 @@
 #include "lwip-datapump.h"
+
+#ifdef netbuf_copy
+#define netbuf_copy_saved
+#undef netbuf_copy
+#endif
+
 #include "exp/datapump.hpp"
+
+#ifdef netbuf_copy_saved
+#define netbuf_copy netbuf_copy_saved
+#endif
 
 #ifdef FEATURE_MC_MEM_LWIP
 
@@ -31,13 +41,14 @@ void netconn_callback(netconn* conn, netconn_evt evt, uint16_t len)
 void nonblocking_datapump_loop(lwip::Netconn netconn, lwip_datapump_t& datapump)
 {
     addr_t addr;
-    const netbuf_t* netbuf_out = datapump.transport_front_old(&addr);
     netbuf* native_netbuf;
 
     err_t err;
 
-    if(netbuf_out != NULLPTR)
+    if(datapump.transport_empty())
     {
+        lwip_datapump_t::Item& item = datapump.transport_front();
+        const netbuf_t* netbuf_out = item.netbuf();
         uint16_t total_length = netbuf_out->length_total();
 
         printf("nonblocking_datapump_loop: send to port: %d / len = %d\n", 
@@ -55,7 +66,16 @@ void nonblocking_datapump_loop(lwip::Netconn netconn, lwip_datapump_t& datapump)
 
         if(err != 0) printf("err=%d\n", err);
 
+        // TODO: Put in IDataPumpObserver code
+        
         datapump.transport_pop();
+
+#ifdef FEATURE_MCCOAP_DATAPUMP_INLINE
+#else
+        // NOTE: Obviously not ideal and will have to change when
+        // retry logic enters the picture
+        delete netbuf_out;
+#endif
     }
 
     err = netconn.recv(&native_netbuf);
@@ -73,14 +93,10 @@ void nonblocking_datapump_loop(lwip::Netconn netconn, lwip_datapump_t& datapump)
     // initialize address with the address from incoming netbuf
     new (&addr) addr_t(native_netbuf);
 
-    // allocate a netbuf in our own wrapper
+    // allocate a netbuf in our own wrapper.
 #ifdef FEATURE_MCCOAP_DATAPUMP_INLINE
     LwipNetbuf netbuf_in(native_netbuf, true);
 #else
-    // NOTE: Obviously not ideal and will have to change when
-    // retry logic enters the picture
-    delete netbuf_out;
-
     // NOTE: Shall be expected to be explicitly deleted by
     // whatever user responder is out there when it finally
     // services the queue.  Not ideal
