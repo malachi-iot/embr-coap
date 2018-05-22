@@ -281,15 +281,12 @@ private:
 
         container_type& get_container() { return base_t::c; }
 
-        bool remove(typename container_type::iterator it)
+        bool erase(typename container_type::const_iterator it)
         {
             base_t::c.erase(it);
             std::make_heap(base_t::c.begin(), base_t::c.end(), base_t::get_compare());
         }
     };
-
-    // TODO: this should eventually be a priority_queue or similar
-    //list_t retry_list;
 
     RetryQueue retry_queue;
 
@@ -331,14 +328,6 @@ public:
         // return retry_list.back().lock();
     }
 
-    void dequeue(Item* item)
-    {
-        // FIX: Can't really 'erase' because it very likely will invalidate pointers
-        // in our cheezy vector-only approach right now.  So continue being cheezy and
-        // use f->due to fake it out and no longer pay attention
-        item->due = -1;
-    }
-
     bool empty() const { return retry_queue.empty(); }
 
     Item& front() const
@@ -373,7 +362,7 @@ public:
                 //v.addr == from_addr &&
                 v_token == token && v_mid == mid)
             {
-                dequeue(&v);
+                retry_queue.erase(i);
                 return;
             }
 
@@ -421,34 +410,34 @@ public:
         // anything in the retry list has already been vetted to be CON
         if(!empty())
         {
-            Item* f = &front();
+            Item& f = front();
 
             // if it's time for a retransmit
-            if(current_time >= f->due)
+            if(current_time >= f.due)
             {
-                int retry_attempt = f->retransmission_counter + 1;
+                int retry_attempt = f.retransmission_counter + 1;
 
                 // and if we're still interested in retransmissions
                 if(retry_attempt < COAP_MAX_RETRANSMIT)
                 {
-                    // set up new scheduled time for retransmission
-                    time_t due = current_time + f->delta();
-
                     // effectively reschedule this item
-                    f->due = due;
+                    // FIX: Keep an eye on this, since retransmission counter hasn't been bumped
+                    // here just yet.  Pretty sure this is wrong.  However moving it down below
+                    // causes a segfault
+                    f.due = current_time + f.delta();
 
                     // Will need to maintain some kind of signal / capability
                     // to keep taking ownership of netbuf so that it doesn't
                     // get deleted until we're done with our resends (got ACK
                     // or ==4 retransmission)
 #ifdef FEATURE_MCCOAP_DATAPUMP_INLINE
-                    datapump.enqueue_out(std::forward<netbuf_t>(f->netbuf()), f->addr, &always_consume_netbuf);
+                    datapump.enqueue_out(std::forward<netbuf_t>(f.netbuf()), f.addr, &always_consume_netbuf);
 #else
-                    datapump.enqueue_out(f->netbuf(), f->addr, &always_consume_netbuf);
+                    datapump.enqueue_out(f.netbuf(), f.addr, &always_consume_netbuf);
 #endif
                     // NOTE: Just putting this here to keep things consistent - so that
                     // retransmissio_counter *really does* represent that netbuf is queued
-                    f->retransmission_counter = retry_attempt;
+                    f.retransmission_counter = retry_attempt;
                 }
                 // or if this is our last retransmission, queue without observer and remove
                 // our Item for retry list
@@ -457,17 +446,17 @@ public:
                     // last retry attempt has no observer, which means datapump fully owns
                     // netbuf, which means it will be erased normally
 #ifdef FEATURE_MCCOAP_DATAPUMP_INLINE
-                    datapump.enqueue_out(std::forward<netbuf_t>(f->netbuf()), f->addr);
+                    datapump.enqueue_out(std::forward<netbuf_t>(f.netbuf()), f.addr);
 #else
-                    datapump.enqueue_out(f->netbuf(), f->addr);
+                    datapump.enqueue_out(f.netbuf(), f.addr);
 #endif
-                    dequeue(f);
+                    retry_queue.pop();
                 }
                 else
                 {
                     //ERROR: Should never get here
 
-                    dequeue(f);
+                    retry_queue.pop();
                 }
             }
         }
