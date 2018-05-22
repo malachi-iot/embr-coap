@@ -58,6 +58,7 @@ public:
         // approach with just raw processing style also.  At present it leaves the ACK
         // in the queue.
         retry.service_ack(datapump);
+        retry.service_retry(sockets_retry_t::time_traits::now(), datapump);
 #endif
     }
 

@@ -8,7 +8,7 @@
 #include <stdint.h> // for uint8_t
 #include "datapump-observer.h" // for IDataPumpObserver
 
-#if defined(__POSIX__) || defined(__MACH__)
+#if defined(__unix__) || defined(__POSIX__) || defined(__MACH__)
 #include <sys/time.h>
 #endif
 
@@ -26,11 +26,14 @@ struct time_traits
     // specifically this retrieves number of milliseconds since a fixed point in time
     static time_t now()
     {
-#if defined(__POSIX__) || defined(__MACH__)
+#if defined(__unix__) || defined(__POSIX__) || defined(__MACH__)
+        // NOTE: this doesn't seem to be working right.  milli is returning values like 134, 14, etc.
         timeval curTime;
         gettimeofday(&curTime, NULL);
         int milli = curTime.tv_usec / 1000;
         return milli;
+#else
+#error Needs implementation for this platform
 #endif
     }
 };
@@ -47,6 +50,7 @@ public:
 
     typedef TTimeTraits time_traits;
     typedef typename time_traits::time_t time_t;
+    typedef TNetBuf netbuf_t;
 
     struct Metadata
     {
@@ -353,6 +357,8 @@ public:
     template <class TDataPump>
     void service_ack(TDataPump& datapump)
     {
+        if(datapump.dequeue_empty()) return;
+
         typedef typename TDataPump::Item item_t;
 
         item_t& item = datapump.dequeue_front();
@@ -403,7 +409,7 @@ public:
                     // get deleted until we're done with our resends (got ACK
                     // or ==4 retransmission)
 #ifdef FEATURE_MCCOAP_DATAPUMP_INLINE
-                    datapump.enqueue_out(std::forward(f->netbuf()), f->addr, f);
+                    datapump.enqueue_out(std::forward<netbuf_t>(f->netbuf()), f->addr, f);
 #else
                     datapump.enqueue_out(f->netbuf(), f->addr, f);
 #endif
@@ -418,7 +424,7 @@ public:
                     // last retry attempt has no observer, which means datapump fully owns
                     // netbuf, which means it will be erased normally
 #ifdef FEATURE_MCCOAP_DATAPUMP_INLINE
-                    datapump.enqueue_out(std::forward(f->netbuf()), f->addr);
+                    datapump.enqueue_out(std::forward<netbuf_t>(f->netbuf()), f->addr);
 #else
                     datapump.enqueue_out(f->netbuf(), f->addr);
 #endif
