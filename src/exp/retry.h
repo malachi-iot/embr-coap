@@ -248,6 +248,12 @@ public:
             return false;
         }
 #endif
+
+
+        bool operator > (const Item& compare_to)
+        {
+            return due > compare_to.due;
+        }
     };
 
 private:
@@ -262,10 +268,12 @@ private:
                     mem::LinkedListPool */
 
     typedef estd::layer1::vector<Item, 10> list_t;
-    typedef estd::priority_queue<Item, list_t> priority_queue_t;
+    typedef estd::priority_queue<Item, list_t, std::greater<Item> > priority_queue_t;
 
     // TODO: this should eventually be a priority_queue or similar
     list_t retry_list;
+
+    priority_queue_t retry_queue;
 
     static Header header(TNetBuf& netbuf)
     {
@@ -312,11 +320,16 @@ public:
         item->due = -1;
     }
 
+    bool empty() const { return retry_queue.empty(); }
+
+    Item& front() { return retry_queue.top(); }
+
+
     // call this to get next item for transport to send, or NULLPTR if nothing
     // keep in mind Item shall have 'due' in there to indicate when item should
     // *actually* be sent, it is up to consumer to heed this
     //const Item* front() const
-    Item* front()
+    Item* front_old()
     {
         // TODO: make this const eventually ... though maybe
         // we can't since transport ultimately will want to diddle with netbuf
@@ -407,15 +420,15 @@ public:
     template <class TDataPump>
     void service_retry(time_t current_time, TDataPump& datapump)
     {
-        Item* f = front();
-
         // anything in the retry list has already been vetted to be CON
-        if(f != NULLPTR)
+        if(!empty())
         {
+            Item* f = &front();
+
             // if it's time for a retransmit
             if(current_time >= f->due)
             {
-                int retry_attempt = f->retransmission_counter++;
+                int retry_attempt = f->retransmission_counter + 1;
 
                 // and if we're still interested in retransmissions
                 if(retry_attempt < COAP_MAX_RETRANSMIT)
