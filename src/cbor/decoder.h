@@ -4,6 +4,7 @@
 
 #include <stdint.h> // for uint8_t and friends
 #include <coap-uint.h>
+#include <estd/string.h>
 
 namespace moducom { namespace cbor {
 
@@ -162,7 +163,7 @@ public:
     }
 
     template <class TInt>
-    TInt integer()
+    TInt integer() const
     {
         // TODO: Assert that incoming TInt has the bitness necessary
         if(is_tiny_value())
@@ -226,6 +227,43 @@ public:
     bool process(Context& context);
 
     Root::Types type() const { return item_decoder.type(); }
+
+    void fast_forward(Context& context)
+    {
+        ASSERT_WARN(Root::LongStart, item_decoder.state(), "Should be at start of 'long' item data");
+
+        if(!item_decoder.is_indeterminate_type())
+        {
+            unsigned advance = item_decoder.integer<unsigned>();
+            context.advance(advance);
+        }
+
+        item_decoder.fast_forward();
+        process(context);
+    }
+
+    template <typename TInt>
+    TInt integer() const { return item_decoder.integer<TInt>(); }
+
+    // FIX: crummy state interrogation
+    bool is_long_start() const
+    {
+        return item_decoder.state() == Root::LongStart;
+    }
+
+    estd::layer3::const_string string_experimental(Context& context)
+    {
+        ASSERT_WARN(Root::String, item_decoder.type(), "Expecting string type");
+        ASSERT_WARN(Root::LongStart, item_decoder.state(), "Should be at start of 'long' item data");
+
+        unsigned len = integer<unsigned>();
+        estd::layer3::const_string s((const char*)context.unprocessed(), len);
+
+        context.advance(len);
+        item_decoder.fast_forward();
+        process(context);
+        return s;
+    }
 };
 
 }

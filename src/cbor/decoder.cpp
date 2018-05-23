@@ -85,13 +85,13 @@ bool OverallDecoder::process(Context& context)
                 break;
 
             case Decoder::HeaderDone:
-                return false;
+                break;
 
             case Decoder::LongStart:
                 return false;
 
             case Decoder::ItemDone:
-                break;
+                return false;
 
             default:
                 break;

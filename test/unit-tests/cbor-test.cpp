@@ -322,6 +322,23 @@ TEST_CASE("CBOR decoder tests", "[cbor-decoder]")
 
         decoder.process(context);
 
+        REQUIRE(decoder.is_long_start());
         REQUIRE(decoder.type() == cbor::Root::Map);
+
+        decoder.fast_forward(context);
+
+        REQUIRE(decoder.is_long_start());
+        REQUIRE(decoder.type() == cbor::Root::String);
+
+        //estd::layer3::const_string s((const char*)context.unprocessed(), decoder.integer<int>());
+        //decoder.fast_forward(context);
+
+        estd::layer3::const_string s = decoder.string_experimental(context);
+
+        REQUIRE(s == "val");
+
+        REQUIRE(!decoder.is_long_start());
+        REQUIRE(decoder.type() == cbor::Root::NegativeInteger);
+        REQUIRE(decoder.integer<int>() == -123456789);
     }
 }
