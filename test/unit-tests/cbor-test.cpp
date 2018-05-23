@@ -3,6 +3,7 @@
 #include <string.h>
 #include "cbor/encoder.h"
 #include "cbor/decoder.h"
+#include "platform/generic/malloc_netbuf.h"
 
 using namespace moducom;
 
@@ -258,5 +259,32 @@ TEST_CASE("CBOR decoder tests", "[cbor-decoder]")
         decoder.process_iterate(*data++); // finish with AdditionalDone
         REQUIRE(decoder.state() == cbor::Decoder::AdditionalDone);
         REQUIRE(decoder.integer<int32_t>() == -123456789);
+    }
+    SECTION("revamped netbuf encoder")
+    {
+        using namespace moducom::io::experimental;
+        using namespace moducom::coap;
+        using namespace moducom::cbor;
+
+        NetBufEncoder<NetBufDynamicExperimental> encoder;
+
+        const char* _s = "Hello world";
+        estd::layer2::const_string s = _s;
+
+        encoder.string(s);
+        encoder.integer(-5);
+
+        const uint8_t* d = encoder.netbuf().processed();
+        int len = encoder.netbuf().length_processed();
+
+        REQUIRE(len == 11 + 1 + 1);
+        REQUIRE(*d++ == 0x6B);
+
+        estd::layer3::basic_string<char, false> s2(s.size(), (char*)d, s.size());
+
+        REQUIRE(s2 == _s);
+        d += s.size();
+
+        REQUIRE(*d++ == 0x24);
     }
 }

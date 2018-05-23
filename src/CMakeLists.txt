@@ -89,6 +89,7 @@ set(SOURCE_FILES
 
         mc/opts.h
         mc/opts-internal.h
+        mc/encoder-base.h
         #mc/pipeline.h
         #mc/pipeline.cpp
         #mc/pipeline-encoder.h mc/pipeline-writer.h
