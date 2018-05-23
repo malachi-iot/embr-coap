@@ -141,26 +141,10 @@ public:
         }
     };
 
-    struct Metadata_Old
-    {
-        // number of retries attempted so far
-        // "retransmission counter" as referenced by section 4.2
-        uint8_t retry_count;
-
-        // when to send it by
-        time_t due;
-
-        Metadata_Old() :
-            retry_count(0) {}
-    };
-
     // proper MID and Token are buried in netbuf, so don't need to be carried
     // seperately
     // TODO: Utilize ObservableSession as a base once we resolve netbuf-inline behaviors here
     struct Item :
-#ifdef FEATURE_MCCOAP_DATAPUMP_OBSERVABLE
-            IDataPumpObserver<TNetBuf, TAddr>,
-#endif
             Metadata
     {
         typedef Metadata base_t;
@@ -228,70 +212,6 @@ public:
                             1000 * COAP_ACK_RANDOM_FACTOR * COAP_ACK_TIMEOUT);
         }
 
-#ifdef FEATURE_MCCOAP_DATAPUMP_OBSERVABLE
-        // IDataPumpObserver interface
-    private:
-        virtual void on_message_transmitting(TNetBuf* netbuf, const TAddr& addr) OVERRIDE
-        {
-
-        }
-
-
-        virtual bool on_message_transmitted(TNetBuf* netbuf, const TAddr& addr) OVERRIDE
-        {
-            // This function perhaps only should indicate whether we should be taking ownership
-            // of buffer after send (return true), and let process/rescheduler handle everything
-            // else
-            if(base_t::retransmission_counter < 4)
-            {
-                if(base_t::is_definitely_con()) return true;
-
-                if(header().type() == Header::Confirmable)
-                {
-                    base_t::con_helper_flag_bit = 1;
-                    return true;
-                }
-
-                // TODO: Have an indicator that it is_definitely_not_con
-            }
-
-            return false;
-
-            // at this point we should only be looking at first-try CON message (or candidate CON)
-            // and after we verify it IS CON, then queue up for initial resend.  We do not need
-            // to evaluate retries > 0 here, that should be handled by the process/reschedule area
-
-
-            // at this point we'll want to evaluate if:
-            // CON == true and our retry count is < 4, and if so...
-            // NOTE: retransmission counter eval not necessary now
-            if(base_t::retransmission_counter < 4 &&
-                    (base_t::is_definitely_con() || header().type() == Header::Confirmable))
-            {
-                // do proper timeout delta calculations to schedule a resend.  Also take
-                // ownership of netbuf away from incoming datapump, we'll only give it
-                // back once it's time to schedule a retry CON operation
-                // NOTE: that incoming netbuf and addr SHOULD match already tracked
-                time_t due = time_traits::now() + base_t::delta();
-
-                this->due = due;
-
-#ifdef FEATURE_MCCOAP_DATAPUMP_INLINE
-                // we'll need to do a std::forward move operation to hold on to incoming netbuf
-#else
-                // we'll need to assign netbuf and give a clue as to a reference counter/delete indicator
-                // for datapump netbuf cleanup code
-#endif
-                // true = we have taken ownership of netbuf, signal to caller not to deallocate
-                // false = we are not interested, caller maintains ownership of netbuf
-                return true;
-            }
-
-            return false;
-        }
-#endif
-
-
     public:
         bool operator > (const Item& compare_to) const
         {
@@ -305,12 +225,7 @@ private:
     typedef moducom::mem::LinkedListPool<int, 10> llpool_t;
     //typedef moducom::mem::LinkedListPoolNodeTraits<int, 10> node_traits_t;
 
-    /*
-    typedef estd::forward_list<int,
-            estd::inlinevalue_node_traits<estd::experimental::forward_node_base,
-                    mem::LinkedListPool */
-
-    typedef estd::layer1::vector<Item, 10> list_t;
+   typedef estd::layer1::vector<Item, 10> list_t;
     typedef estd::priority_queue<Item, list_t, std::greater<Item> > priority_queue_t;
 
     // sneak in and peer at container
@@ -360,12 +275,7 @@ public:
         item.due = time_traits::now() + item.delta();
 
         // TODO: revamp the push_back code to return success or fail
-        //retry_list.push_back(item);
         retry_queue.push(item);
-
-        // FIX: Lots of issues.  Lingering lock is bad, and enqueue's returned
-        // reference may actually move - depending on architecture we choose
-        // return retry_list.back().lock();
     }
 
     bool empty() const { return retry_queue.empty(); }
@@ -450,26 +360,21 @@ public:
         // anything in the retry list has already been vetted to be CON
         if(!empty())
         {
-            Item& f = front();
-
             // if it's time for a retransmit
-            if(current_time >= f.due)
+            if(current_time >= front().due)
             {
-                int retry_attempt = f.retransmission_counter + 1;
+                // doing a copy here because we're going to need to pop and push
+                // it back again
+                Item f = front();
 
                 // and if we're still interested in retransmissions
-                if(retry_attempt < COAP_MAX_RETRANSMIT)
+                // (retry #1 and retry #2)
+                if(f.retransmission_counter < COAP_MAX_RETRANSMIT - 2)
                 {
-                    // effectively reschedule this item
-                    // FIX: Keep an eye on this, since retransmission counter hasn't been bumped
-                    // here just yet.  Pretty sure this is wrong.  However moving it down below
-                    // causes a segfault
-                    f.due = current_time + f.delta();
-
                     // Will need to maintain some kind of signal / capability
                     // to keep taking ownership of netbuf so that it doesn't
                     // get deleted until we're done with our resends (got ACK
-                    // or ==4 retransmission)
+                    // or == 3 retransmission)
 #ifdef FEATURE_MCCOAP_DATAPUMP_INLINE
                     datapump.enqueue_out(std::forward<netbuf_t>(f.netbuf()), f.addr, &always_consume_netbuf);
 #else
@@ -477,11 +382,21 @@ public:
 #endif
                     // NOTE: Just putting this here to keep things consistent - so that
                     // retransmissio_counter *really does* represent that netbuf is queued
-                    f.retransmission_counter = retry_attempt;
+                    f.retransmission_counter++;
+
+                    // effectively reschedule this item
+                    f.due = current_time + f.delta();
+
+#ifdef UNUSED_FEATURE_CPP_VARIADIC
+                    retry_queue.emplace(f); // doesn't quite work
+#else
+                    retry_queue.pop();
+                    retry_queue.push(f);
+#endif
                 }
                 // or if this is our last retransmission, queue without observer and remove
                 // our Item for retry list
-                else if(retry_attempt == COAP_MAX_RETRANSMIT)
+                else if(f.retransmission_counter == COAP_MAX_RETRANSMIT - 2)
                 {
                     // last retry attempt has no observer, which means datapump fully owns
                     // netbuf, which means it will be erased normally

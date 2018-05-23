@@ -86,7 +86,8 @@ TEST_CASE("retry logic")
             retry.enqueue(netbuf, fakeaddr);
 
             // simulate queue to send.  assumes (correctly so, always)
-            // that this is a CON message
+            // that this is a CON message.  This is our first (non retry)
+            // send
             datapump.enqueue_out(netbuf, fakeaddr, &retry.always_consume_netbuf);
 
             {
@@ -98,8 +99,11 @@ TEST_CASE("retry logic")
             // simulate transport send
             datapump.transport_pop();
 
+            // Using 2000 because enqueue, for unit tests, is hardwired to that start
+            // time
             // first retry should occur at 2000 + 2500 = 4500, so poke it at 4600
             // we expect this will enqueue things again
+            // this issues retransmit #1
             retry.service_retry(4600, datapump);
 
             REQUIRE(!datapump.transport_empty());
@@ -113,37 +117,25 @@ TEST_CASE("retry logic")
 
             REQUIRE(datapump.transport_empty());
 \
-            // second retry should occur at 2000 + 5000 = 7000, so poke it at 7100
-            retry.service_retry(7100, datapump);
+            // second retry should occur at 4600 + 5000 = 9600
+            // this issues retransmit #2
+            retry.service_retry(9600, datapump);
 
             // simulate transport send
             datapump.transport_pop();
             // nothing left in outgoing queue after that send
             REQUIRE(datapump.transport_empty());
 
-            // third retry should occur at 2000 + 10000 = 12000, so poke it at 12100
-            retry.service_retry(12100, datapump);
+            // third retry should occur at 9600 + 10000 = 19600
+            // this issues retransmit #3, final retransmit
+            retry.service_retry(19600, datapump);
 
             // ensure retry did queue a message
             REQUIRE(!datapump.transport_empty());
             {
                 datapump_t::Item& datapump_item = datapump.transport_front();
                 bool retain = datapump_item.on_message_transmitted(); // pretend we sent it and invoke observer
-                REQUIRE(retain); // expect we are retaining netbuf
-            }
-            // simulate transport send
-            datapump.transport_pop();
-            // nothing left in outgoing queue after that send
-            REQUIRE(datapump.transport_empty());
-
-            // fourth and final retry should occur at 2000 + 20000 = 22000, so poke it at 22100
-            retry.service_retry(22100, datapump);
-
-            REQUIRE(!datapump.transport_empty());
-            {
-                datapump_t::Item& datapump_item = datapump.transport_front();
-                bool retain = datapump_item.on_message_transmitted(); // pretend we sent it and invoke observer
-                REQUIRE(!retain); // expect we are NOT retaining netbuf (actually no observer should be here)
+                REQUIRE(!retain); // final transmit does NOT retain netbuf
             }
             // simulate transport send
             datapump.transport_pop();
