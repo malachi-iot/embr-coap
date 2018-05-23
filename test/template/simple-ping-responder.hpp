@@ -3,6 +3,7 @@
 #include <coap/decoder/subject.h>
 #include <mc/memory-chunk.h>
 #include <exp/datapump.h>
+#include <estd/string.h>
 
 using namespace std;
 using namespace moducom::coap;
@@ -27,6 +28,15 @@ void simple_ping_responder(TDataPumpHelper& sdh, typename TDataPumpHelper::datap
 
         // populate token, if present.  Expects decoder to be at HeaderDone phase
         decoder.process_token_experimental(&token);
+
+#ifdef FEATURE_MCCOAP_IOSTREAM_NATIVE
+        // skip any options
+        option_iterator<netbuf_t> it(decoder, true);
+
+        while(it.valid()) ++it;
+
+        decoder.process_payload_header_experimental();
+#endif
 
 #ifdef FEATURE_MCCOAP_DATAPUMP_INLINE
         NetBufEncoder<netbuf_t> encoder;

@@ -17,7 +17,7 @@ struct address_traits<sockaddr_in>
 {
     static bool equals_fromto(const sockaddr_in& from, const sockaddr_in& to)
     {
-        return from.sin_addr == to.sin_addr;
+        return from.sin_addr.s_addr == to.sin_addr.s_addr;
     }
 };
 

@@ -153,6 +153,13 @@ public:
         return header_decoder();
     }
 
+    void process_payload_header_experimental()
+    {
+        ASSERT_WARN(Decoder::OptionsDone, state(), "Expected to be at end of option processing");
+
+        process_until_experimental(Decoder::Payload);
+    }
+
     coap::Header header()
     {
         return process_header_experimental();
