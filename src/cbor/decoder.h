@@ -183,4 +183,51 @@ public:
 
 };
 
+namespace experimental {
+
+class OverallDecoder
+{
+    Decoder item_decoder;
+
+    typedef pipeline::MemoryChunk::readonly_t ro_chunk_t;
+
+public:
+    class Context //: public mem::ProcessedMemoryChunkBase<ro_chunk_t>
+    {
+        //typedef mem::ProcessedMemoryChunkBase<ro_chunk_t> base_t;
+
+        ro_chunk_t chunk;
+
+        // NOTE: manually managing pos instead of using ProcessedMemoryChunkBase because
+        // the aforementioned is structured for write operations where unprocessed=nonconst
+        // and processed=const.  We need unprocessed to also be const
+        int pos;
+
+        bool last_chunk;
+
+    public:
+        const uint8_t* unprocessed() const
+        {
+            return chunk.data(pos);
+        }
+
+        void advance(int count = 1) { pos += count; }
+
+        int length_unprocessed() const { return chunk.length() - pos; }
+
+        Context(const ro_chunk_t& chunk, bool last_chunk) :
+            //base_t(chunk),
+            chunk(chunk),
+            pos(0),
+            last_chunk(last_chunk)
+        {}
+    };
+
+    bool process(Context& context);
+
+    Root::Types type() const { return item_decoder.type(); }
+};
+
+}
+
 }}

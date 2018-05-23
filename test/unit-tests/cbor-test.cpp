@@ -312,4 +312,16 @@ TEST_CASE("CBOR decoder tests", "[cbor-decoder]")
         REQUIRE(*d++ == 3);
 #endif
     }
+    SECTION("experimental cbor decoder")
+    {
+        using namespace cbor::experimental;
+
+        pipeline::MemoryChunk::readonly_t chunk(cbor_int);
+        OverallDecoder decoder;
+        OverallDecoder::Context context(chunk, true);
+
+        decoder.process(context);
+
+        REQUIRE(decoder.type() == cbor::Root::Map);
+    }
 }

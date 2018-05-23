@@ -64,4 +64,44 @@ bool Decoder::process_iterate(uint8_t ch)
     return false;
 }
 
+namespace experimental {
+
+bool OverallDecoder::process(Context& context)
+{
+    while(context.length_unprocessed() > 0 ||
+            (context.length_unprocessed() == 0 && item_decoder.state() != Decoder::ItemDone))
+    {
+        // NOTE: processed memory chunk seems almost-suited but it's reversed,
+        // in our case 'unprocessed' memory is the one that decoder hasn't decoded yet,
+        // but with processed memory that is non-const
+        //if(item_decoder.process_iterate(*context.unprocessed()))
+        //  context.advance(1);
+        if(item_decoder.process_iterate(*context.unprocessed()))
+            context.advance();
+
+        switch(item_decoder.state())
+        {
+            case Decoder::Header:
+                break;
+
+            case Decoder::HeaderDone:
+                return false;
+
+            case Decoder::LongStart:
+                return false;
+
+            case Decoder::ItemDone:
+                break;
+
+            default:
+                break;
+        }
+    }
+
+    return true;
+}
+
+}
+
+
 }}
