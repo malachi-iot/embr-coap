@@ -27,9 +27,12 @@ const char* get_description(internal::Root::State state)
     switch(state)
     {
         case Root::Done:            return "Done";
+        case Root::Header:          return "Header";
+        case Root::OptionsStart:    return "Options Start";
         case Root::Options:         return "Options";
         case Root::OptionsDone:     return "Options Done";
         case Root::Payload:         return "Payload";
+        case Root::PayloadDone:     return "Payload Done";
     }
 }
 

@@ -36,7 +36,6 @@ void simple_ping_responder(TDataPumpHelper& sdh, typename TDataPumpHelper::datap
 
         while(it.valid()) ++it;
 
-        //decoder.process_payload_header_experimental();
         if(decoder.has_payload_experimental())
         {
             estd::layer3::basic_string<char, false> payload = decoder.payload_string_experimental();

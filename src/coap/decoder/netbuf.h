@@ -153,21 +153,31 @@ public:
         return header_decoder();
     }
 
+    void process_payload_header_experimental()
+    {
+        ASSERT_WARN(Decoder::OptionsDone, state(), "Expected to be at end of option processing");
+
+        process_iterate();
+
+        ASSERT_WARN(true,
+                    state() == Decoder::Payload || state() == Decoder::Done,
+                    "Did not encounter 'Paylod' or 'Done' state");
+    }
+
     bool has_payload_experimental()
     {
+        if(state() == OptionsDone)
+            process_payload_header_experimental();
+
         // TODO: Assert that this is Payload or Done state, otherwise undefined operation
         return state() == Payload;
     }
 
-    void process_payload_header_experimental()
-    {
-        //ASSERT_WARN(Decoder::OptionsDone, state(), "Expected to be at end of option processing");
-
-        process_until_experimental(Decoder::Payload);
-    }
-
     ro_chunk_t payload_experimental(bool* partial = NULLPTR)
     {
+        if(state() == OptionsDone)
+            process_payload_header_experimental();
+
         ASSERT_WARN(Decoder::Payload, state(), "Expected to be in payload state");
 
         //if(partial != NULLPTR)
@@ -178,7 +188,7 @@ public:
 
     estd::layer3::basic_string<char, false> payload_string_experimental(bool* partial = NULLPTR)
     {
-        ro_chunk_t p = payload_experimental();
+        ro_chunk_t p = payload_experimental(partial);
 
         estd::layer3::basic_string<char, false> payload(p.length(), (char*)p.data(), p.length());
 
@@ -253,16 +263,11 @@ public:
 
         ASSERT_WARN(Option::OptionValueDone, option_decoder().state(), "Unexpected state");
 
-        // move past option value done.  NOTE this actually moves into domain of next option,
-        // OR moves right by OptionsDone
-        // expected to be at DeltaAndLengthDone here
-        process_iterate();
-
-        if(state() == Decoder::OptionsDone &&
-            option_decoder().state() == OptionDecoder::Payload)
+        // if we have more options to process, sneak into 'em a bit
+        if(state() != OptionsDone)
         {
-            // FIX: A little clunky manually moving through
-            // OptionsDone in this circumstance
+            // this actually moves into domain of next option,
+            // expected to be at DeltaAndLengthDone here
             process_iterate();
         }
     }

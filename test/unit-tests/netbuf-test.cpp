@@ -55,11 +55,12 @@ static void suite(NetBufDecoder<NetBufMemory>& decoder)
     while(it.valid()) ++it;
 
     INFO(decoder.state());
-    REQUIRE((decoder.state() == Decoder::Done || decoder.state() == Decoder::Payload));
-    /*
-    REQUIRE_THAT(decoder.state(),
-                 Catch::Equals(Decoder::Done) ||
-                 Catch::Equals(Decoder::Payload)); */
+    REQUIRE(decoder.state() == Decoder::OptionsDone);
+
+    decoder.process_iterate();
+
+    INFO(decoder.state());
+    REQUIRE((decoder.state() == Decoder::Payload || decoder.state() == Decoder::Done));
 }
 
 TEST_CASE("netbuf+coap tests", "[netbuf-coap]")
@@ -172,12 +173,16 @@ TEST_CASE("netbuf+coap tests", "[netbuf-coap]")
             NetBufDecoder<NetBufMemory> decoder(buffer_payload_only);
 
             suite(decoder);
+
+            REQUIRE(decoder.state() == Decoder::Payload);
         }
         SECTION("With option, with payload")
         {
             NetBufDecoder<NetBufMemory> decoder(buffer_16bit_delta);
 
             suite(decoder);
+
+            REQUIRE(decoder.state() == Decoder::Payload);
         }
     }
 }
