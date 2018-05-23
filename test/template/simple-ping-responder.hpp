@@ -13,6 +13,7 @@ void simple_ping_responder(TDataPumpHelper& sdh, typename TDataPumpHelper::datap
 {
     typedef typename TDataPumpHelper::netbuf_t netbuf_t;
     typedef typename TDataPumpHelper::addr_t addr_t;
+    typedef typename moducom::pipeline::MemoryChunk::readonly_t ro_chunk_t;
 
     // echo back out a raw ACK, with no trickery just raw decoding/encoding
     if(!sdh.empty(datapump))
@@ -24,10 +25,10 @@ void simple_ping_responder(TDataPumpHelper& sdh, typename TDataPumpHelper::datap
 
         //clog << " ip=" << ipaddr.sin_addr.s_addr << endl;
 
-        Header header_in = decoder.process_header_experimental();
+        Header header_in = decoder.header();
 
         // populate token, if present.  Expects decoder to be at HeaderDone phase
-        decoder.process_token_experimental(&token);
+        decoder.token(&token);
 
 #ifdef FEATURE_MCCOAP_IOSTREAM_NATIVE
         // skip any options
@@ -36,6 +37,10 @@ void simple_ping_responder(TDataPumpHelper& sdh, typename TDataPumpHelper::datap
         while(it.valid()) ++it;
 
         decoder.process_payload_header_experimental();
+
+        estd::layer3::basic_string<char, false> payload = decoder.payload_string_experimental();
+
+        std::clog << "Got payload: " << payload << std::endl;
 #endif
 
 #ifdef FEATURE_MCCOAP_DATAPUMP_INLINE

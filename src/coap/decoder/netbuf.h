@@ -160,6 +160,25 @@ public:
         process_until_experimental(Decoder::Payload);
     }
 
+    ro_chunk_t payload_experimental(bool* partial = NULLPTR)
+    {
+        ASSERT_WARN(Decoder::Payload, state(), "Expected to be in payload state");
+
+        //if(partial != NULLPTR)
+          //  *partial = !netbuf().eol();
+
+        return context.remainder();
+    }
+
+    estd::layer3::basic_string<char, false> payload_string_experimental(bool* partial = NULLPTR)
+    {
+        ro_chunk_t p = payload_experimental();
+
+        estd::layer3::basic_string<char, false> payload(p.length(), (char*)p.data(), p.length());
+
+        return payload;
+    }
+
     coap::Header header()
     {
         return process_header_experimental();
@@ -186,6 +205,12 @@ public:
         new (token) layer2::Token(NULLPTR, 0);
 
         return false;
+    }
+
+    // alias to experimental version. we like it enough for it now to be non experimental
+    bool token(layer2::Token* token)
+    {
+        return process_token_experimental(token);
     }
 
     layer3::Token process_token_experimental()
