@@ -237,10 +237,10 @@ template <class TNetBuf>
 class NetBufDecoder;
 
 
-template <class TNetBuf>
+template <class TNetBuf, class TNetBufDecoder = NetBufDecoder<TNetBuf&> >
 struct DecoderContext
 {
-    typedef NetBufDecoder<TNetBuf&> decoder_t;
+    typedef TNetBufDecoder decoder_t;
 
 private:
     decoder_t m_decoder;
