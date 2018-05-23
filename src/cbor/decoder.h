@@ -144,6 +144,23 @@ private:
     }
 
 public:
+    // Would have used 'indefinite' but that has a different meaning in CBOR
+    // indeterminate means a size *has* been specified, but exact byte count is not
+    // available because even though number of items has been specified, the byte
+    // size of each item is not known
+    bool is_indeterminate_type() const
+    {
+        switch(type())
+        {
+            case Map:
+            case ItemArray:
+                return true;
+
+            default:
+                return false;
+        }
+    }
+
     template <class TInt>
     TInt integer()
     {

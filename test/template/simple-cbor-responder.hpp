@@ -35,7 +35,8 @@ void simple_cbor_responder(TIncomingContext& context)
         const uint8_t* data = chunk.data();
         int len = chunk.length();
 
-        while(len > 0)
+        //while(len > 0)
+        while(len > 0 || (len == 0 && cbor_decoder.state() != cbor::Decoder::ItemDone))
         {
             if(cbor_decoder.process_iterate(*data))
             {
@@ -45,7 +46,40 @@ void simple_cbor_responder(TIncomingContext& context)
 
             if(cbor_decoder.state() == cbor::Decoder::LongStart)
             {
+                if(cbor_decoder.is_indeterminate_type())
+                {
+#ifdef FEATURE_MCCOAP_IOSTREAM_NATIVE
+                    std::cout << "Fast forwarding" << std::endl;
+#endif
+                }
+                else
+                {
+                    int fast_forward_by = cbor_decoder.integer<uint16_t>();
+
+                    if(cbor_decoder.type() == cbor::Decoder::String)
+                    {
+                        estd::layer3::basic_string<char, false> s(fast_forward_by, (char*)data, fast_forward_by);
+#ifdef FEATURE_MCCOAP_IOSTREAM_NATIVE
+                        std::cout << "Got string: '" << s << "' - ";
+#endif
+                    }
+
+#ifdef FEATURE_MCCOAP_IOSTREAM_NATIVE
+                    std::cout << "Fast forwarding: " << fast_forward_by << " bytes" << std::endl;
+#endif
+                    data += fast_forward_by;
+                    len -= fast_forward_by;
+                }
+
                 cbor_decoder.fast_forward();
+            }
+            else if(cbor_decoder.state() == cbor::Decoder::ItemDone)
+            {
+                int intrinsic_int = cbor_decoder.integer<int16_t>();
+
+#ifdef FEATURE_MCCOAP_IOSTREAM_NATIVE
+                std::cout << "Accompanying int: " << intrinsic_int << std::endl;
+#endif
             }
             else if(cbor_decoder.state() == moducom::cbor::Decoder::HeaderDone)
             {
