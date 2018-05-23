@@ -1,3 +1,7 @@
+#include "../../coap/platform.h"
+
+#ifdef FEATURE_MC_MEM_LWIP
+
 #include "lwip-datapump.h"
 
 #ifdef netbuf_copy
@@ -10,8 +14,6 @@
 #ifdef netbuf_copy_saved
 #define netbuf_copy netbuf_copy_saved
 #endif
-
-#ifdef FEATURE_MC_MEM_LWIP
 
 using namespace moducom::mem;
 
