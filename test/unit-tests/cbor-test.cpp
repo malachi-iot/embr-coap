@@ -276,11 +276,18 @@ TEST_CASE("CBOR decoder tests", "[cbor-decoder]")
         encoder.integer(0x1234);
         encoder.map(4);
         encoder.string("Hi");
+#ifdef FEATURE_CPP_INITIALIZER_LIST
+        encoder.items({ 1, 2, 3 });
+#endif
 
         const uint8_t* d = encoder.netbuf().processed();
         int len = encoder.netbuf().length_processed();
 
-        REQUIRE(len == 11 + 1 + 1 + 3 + 1 + 3);
+        REQUIRE(len == (11 + 1 + 1 + 3 + 1 + 3
+#ifdef FEATURE_CPP_INITIALIZER_LIST
+                + 4
+#endif
+                ));
         REQUIRE(*d++ == 0x6B);
 
         estd::layer3::basic_string<char, false> s2(s.size(), (char*)d, s.size());
@@ -297,5 +304,12 @@ TEST_CASE("CBOR decoder tests", "[cbor-decoder]")
         REQUIRE(*d++ == 0x62); // string of 2
         REQUIRE(*d++ == 'H');
         REQUIRE(*d++ == 'i');
+
+#ifdef FEATURE_CPP_INITIALIZER_LIST
+        REQUIRE(*d++ == 0x83);
+        REQUIRE(*d++ == 1);
+        REQUIRE(*d++ == 2);
+        REQUIRE(*d++ == 3);
+#endif
     }
 }

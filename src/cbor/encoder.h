@@ -111,24 +111,19 @@ protected:
 public:
     bool string(int len)
     {
-
+        return major_type_and_integer(CBOR::String, len);
     }
 
     bool string(const char* s)
     {
-        netbuf_t& netbuf = nbw_t::netbuf();
         int len = strlen(s);
 
-        bool success = major_type_and_integer(CBOR::String, len);
-
-        if(!success) return false;
+        if(!string(len)) return false;
 
         // TODO: check for success here
-        memcpy(netbuf.unprocessed(), s, len);
+        int copied = nbw_t::write(s, len);
 
-        int copied = len;
         base_t::m_written += copied;
-        nbw_t::advance(copied);
 
         return copied == len;
     }
@@ -139,9 +134,7 @@ public:
         netbuf_t& netbuf = nbw_t::netbuf();
         int len = insert_from.size();
 
-        bool success = major_type_and_integer(CBOR::String, len);
-
-        if(!success) return false;
+        if(!string(len)) return false;
 
         // TODO: check for success here
         int copied = insert_from.copy((char*)netbuf.unprocessed(), netbuf.length_unprocessed());
@@ -167,7 +160,70 @@ public:
     {
         return major_type_and_integer(CBOR::Map, count);
     }
-};
+
+    // NOTE: this only encodes array preamble, literal string contents
+    // itself are outside the scope of this encoder
+    bool array(unsigned length)
+    {
+        return major_type_and_integer(CBOR::ByteArray, length);
+    }
+
+    // NOTE: this only encodes array preamble, literal string contents
+    // itself are outside the scope of this encoder
+    bool items(unsigned length)
+    {
+        return major_type_and_integer(CBOR::ItemArray, length);
+    }
+
+#ifdef FEATURE_CPP_INITIALIZER_LIST
+    template <class T>
+    bool array(std::initializer_list<T> l)
+    {
+        array(l.size());
+        uint8_t* d = nbw_t::netbuf().unprocessed();
+        for(auto v : l)
+        {
+            *d++ = v;
+        }
+        written(l.size());
+        nbw_t::advance(l.size());
+        return true;
+    }
+#endif
+
+    template <int N>
+    bool array(uint8_t (&a)[N])
+    {
+        array(N);
+        int w = nbw_t::write(a);
+        written(w);
+        return true;
+    }
+
+#ifdef FEATURE_CPP_INITIALIZER_LIST
+    template <class T>
+    bool items(std::initializer_list<T> l)
+    {
+        items(l.size());
+        uint8_t* d = nbw_t::netbuf().unprocessed();
+        for(auto v : l)
+        {
+            *d++ = v;
+        }
+        written(l.size());
+        nbw_t::advance(l.size());
+        return true;
+    }
+#endif
+
+    template <int N>
+    bool items(uint8_t (&a)[N])
+    {
+        items(N);
+        int w = nbw_t::write(a);
+        written(w);
+        return true;
+    }};
 
 
 template <class TBuffer>
