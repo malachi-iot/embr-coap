@@ -153,9 +153,15 @@ public:
         return header_decoder();
     }
 
+    bool has_payload_experimental()
+    {
+        // TODO: Assert that this is Payload or Done state, otherwise undefined operation
+        return state() == Payload;
+    }
+
     void process_payload_header_experimental()
     {
-        ASSERT_WARN(Decoder::OptionsDone, state(), "Expected to be at end of option processing");
+        //ASSERT_WARN(Decoder::OptionsDone, state(), "Expected to be at end of option processing");
 
         process_until_experimental(Decoder::Payload);
     }
@@ -251,6 +257,14 @@ public:
         // OR moves right by OptionsDone
         // expected to be at DeltaAndLengthDone here
         process_iterate();
+
+        if(state() == Decoder::OptionsDone &&
+            option_decoder().state() == OptionDecoder::Payload)
+        {
+            // FIX: A little clunky manually moving through
+            // OptionsDone in this circumstance
+            process_iterate();
+        }
     }
 
     const estd::layer3::basic_string<const char, false> option_string_experimental(bool* partial = NULLPTR)
