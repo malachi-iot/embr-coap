@@ -1,13 +1,17 @@
 #pragma once
 
 #include "../cbor.h"
+#include "decoder.h"
 #include "mc/encoder-base.h"
 
 namespace moducom { namespace cbor {
 
-class EncoderBaseBase : public moducom::EncoderBase<>
+class EncoderBaseBase :
+        public moducom::EncoderBase<>,
+        public Root
 {
     typedef moducom::EncoderBase<> base_t;
+protected:
     typedef CBOR::Types types_t;
     typedef CBOR::Decoder::AdditionalIntegerInformation add_int_info_t;
     typedef typename base_t::size_type size_type;
@@ -45,7 +49,6 @@ public:
         }
         else
         {
-            d++;
             uint8_t bytes_used = coap::UInt::assess_bytes_used(value);
             switch(bytes_used)
             {
@@ -69,10 +72,9 @@ public:
                     // TODO: make this an error
                     break;
             }
-            coap::UInt::set(value, d, bytes_used);
 
-            d--;
-            *d = type << 5 | additional_integer_information_from_wordsize(bytes_used);
+            *d++ = type << 5 | additional_integer_information_from_wordsize(bytes_used);
+            coap::UInt::set(value, d, bytes_used);
             written(bytes_used + 1);
             return true;
         }
@@ -84,24 +86,62 @@ class NetBufEncoder :
         public moducom::io::experimental::NetBufWriter<TNetBuf>,
         EncoderBaseBase
 {
+protected:
     typedef EncoderBaseBase base_t;
     typedef moducom::io::experimental::NetBufWriter<TNetBuf> nbw_t;
     typedef typename nbw_t::netbuf_t netbuf_t;
+    typedef typename base_t::types_t types_t;
 
-public:
-    template <class TChar, class TTraits, class TAllocator>
-    bool string(const estd::basic_string<TChar, TTraits, TAllocator>& insert_from)
+protected:
+    template <typename TInt>
+    bool major_type_and_integer(types_t type, TInt value)
     {
         netbuf_t& netbuf = nbw_t::netbuf();
 
         bool success = base_t::major_type_and_integer(
                 netbuf.unprocessed(),
                 netbuf.length_unprocessed(),
-                CBOR::String, insert_from.size());
+                type, value);
+
+        nbw_t::advance(m_written);
+
+        return success;
+    }
+
+public:
+    bool string(int len)
+    {
+
+    }
+
+    bool string(const char* s)
+    {
+        netbuf_t& netbuf = nbw_t::netbuf();
+        int len = strlen(s);
+
+        bool success = major_type_and_integer(CBOR::String, len);
 
         if(!success) return false;
 
-        nbw_t::advance(m_written);
+        // TODO: check for success here
+        memcpy(netbuf.unprocessed(), s, len);
+
+        int copied = len;
+        base_t::m_written += copied;
+        nbw_t::advance(copied);
+
+        return copied == len;
+    }
+
+    template <class TChar, class TTraits, class TAllocator>
+    bool string(const estd::basic_string<TChar, TTraits, TAllocator>& insert_from)
+    {
+        netbuf_t& netbuf = nbw_t::netbuf();
+        int len = insert_from.size();
+
+        bool success = major_type_and_integer(CBOR::String, len);
+
+        if(!success) return false;
 
         // TODO: check for success here
         int copied = insert_from.copy((char*)netbuf.unprocessed(), netbuf.length_unprocessed());
@@ -109,27 +149,23 @@ public:
         base_t::m_written += copied;
         nbw_t::advance(copied);
 
-        return copied == insert_from.size();
+        return copied == len;
     }
 
     template <typename TInt>
     bool integer(TInt value)
     {
-        netbuf_t& netbuf = nbw_t::netbuf();
-        bool result;
-
         if(value >= 0)
-            result = major_type_and_integer(netbuf.unprocessed(),
-                                          netbuf.length_unprocessed(),
-                                          CBOR::UnsignedInteger, value);
+            return major_type_and_integer(CBOR::UnsignedInteger, value);
         else
-            result = major_type_and_integer(netbuf.unprocessed(),
-                                          netbuf.length_unprocessed(),
-                                          CBOR::NegativeInteger,
+            return major_type_and_integer(CBOR::NegativeInteger,
                                           -value - 1);
+    }
 
-        nbw_t::advance(base_t::m_written);
-        return result;
+    template <typename TInt>
+    bool map(TInt count)
+    {
+        return major_type_and_integer(CBOR::Map, count);
     }
 };
 
