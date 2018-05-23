@@ -17,7 +17,7 @@ namespace moducom { namespace coap { namespace experimental {
 
 // FIX: Much more likely FRAB is a place for this, stuffing this in for now
 // so that we can be resilient with our time handling + facilitate unit tests
-struct time_traits
+struct TimePolicy
 {
     // FIX: We're gonna need a proper mapping for platform specific timing, though
     // merely tracking as milliseconds might be enough
@@ -68,7 +68,7 @@ struct RandomPolicy
 };
 
 
-template <class TTimePolicy = time_traits, class TRandomPolicy = RandomPolicy>
+template <class TTimePolicy = TimePolicy, class TRandomPolicy = RandomPolicy>
 struct RetryPolicy
 {
     typedef TTimePolicy time;
@@ -88,6 +88,7 @@ public:
     typedef typename TPolicy::time time_traits;
     typedef typename TPolicy::random random_policy;
     typedef typename time_traits::time_t time_t;
+    typedef address_traits<addr_t> address_traits;
     typedef TNetBuf netbuf_t;
 
     struct AlwaysConsumeNetbuf : IDataPumpObserver<netbuf_t, addr_t>
@@ -297,9 +298,8 @@ public:
 
         while(i != c.end())
         {
-            Item& v = *i;
+            Item& v = *i; // FIX: doing *i++ here blows up, do we have a bug in the postfix iterator?
 
-            // FIX: at the moment, v_mid isn't coming out right
             uint16_t v_mid = v.mid();
             const coap::layer2::Token& v_token = v.token();
 
@@ -309,14 +309,33 @@ public:
             // out, only compare against token and mid - this will work in the short term but
             // will ultimately fail when multiple IPs are involved
             if(
-                //v.addr == from_addr &&
+                address_traits::equals_fromto(from_addr, v.addr) &&
                 v_token == token && v_mid == mid)
             {
+                // NOTE: probably more efficient to let it just sit
+                // in priority queue with a 'kill' flag on it
                 retry_queue.erase(i);
                 return;
             }
 
-            i++;
+            ++i;
+        }
+    }
+
+    void service_ack(netbuf_t& netbuf, const addr_t& addr)
+    {
+        // TODO: optimize and use header decoder only and directly
+        NetBufDecoder<TNetBuf&> decoder(netbuf);
+
+        Header h = decoder.header();
+        coap::layer2::Token token;
+        decoder.process_token_experimental(&token);
+
+        if(h.type() == Header::Acknowledgement)
+        {
+            ack_received(addr,
+                         h.message_id(),
+                         token);
         }
     }
 
@@ -330,21 +349,11 @@ public:
 
         typedef typename TDataPump::Item item_t;
 
+        // we specifically are *not* poping this
         item_t& item = datapump.dequeue_front();
+        netbuf_t& netbuf = *item.netbuf();
 
-        // TODO: optimize and use header decoder only and directly
-        NetBufDecoder<TNetBuf&> decoder(*item.netbuf());
-
-        Header h = decoder.header();
-        coap::layer2::Token token;
-        decoder.process_token_experimental(&token);
-
-        if(h.type() == Header::Acknowledgement)
-        {
-            ack_received(item.addr(),
-                         h.message_id(),
-                         token);
-        }
+        service_ack(netbuf, item.addr());
     }
 
     // call this after front() is called and its contained 'due' has passed
@@ -368,7 +377,8 @@ public:
                 Item f = front();
 
                 // and if we're still interested in retransmissions
-                // (retry #1 and retry #2)
+                // (retry #1 and retry #2) - going to be counter values 0 and 1
+                // since we're *about* to issue the retransmit
                 if(f.retransmission_counter < COAP_MAX_RETRANSMIT - 2)
                 {
                     // Will need to maintain some kind of signal / capability
@@ -387,12 +397,8 @@ public:
                     // effectively reschedule this item
                     f.due = current_time + f.delta();
 
-#ifdef UNUSED_FEATURE_CPP_VARIADIC
-                    retry_queue.emplace(f); // doesn't quite work
-#else
                     retry_queue.pop();
                     retry_queue.push(f);
-#endif
                 }
                 // or if this is our last retransmission, queue without observer and remove
                 // our Item for retry list

@@ -12,6 +12,16 @@ typedef moducom::coap::experimental::Retry<moducom::coap::NetBufDynamicExperimen
 
 extern sockets_datapump_t sockets_datapump;
 
+template <>
+struct address_traits<sockaddr_in>
+{
+    static bool equals_fromto(const sockaddr_in& from, const sockaddr_in& to)
+    {
+        return from.sin_addr == to.sin_addr;
+    }
+};
+
+
 }}
 
 int nonblocking_datapump_setup();
