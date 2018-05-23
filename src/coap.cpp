@@ -19,6 +19,20 @@ const char* get_description(Option::Numbers number)
     }
 }
 
+
+const char* get_description(internal::Root::State state)
+{
+    using namespace internal;
+
+    switch(state)
+    {
+        case Root::Done:            return "Done";
+        case Root::Options:         return "Options";
+        case Root::OptionsDone:     return "Options Done";
+        case Root::Payload:         return "Payload";
+    }
+}
+
 namespace experimental {
 
 const char* get_description(Option::State state)

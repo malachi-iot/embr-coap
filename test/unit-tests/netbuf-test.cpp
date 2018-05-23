@@ -9,6 +9,14 @@
 using namespace moducom::io::experimental;
 using namespace moducom::coap;
 
+namespace std {
+
+std::ostream& operator << ( std::ostream& os, Decoder::State const& value ) {
+    os << get_description(value);
+    return os;
+}
+
+}
 
 // simplistic memorychunk-mapped NetBuf.  Eventually put this into mcmem itself
 // FIX: this one is hardwired to read operations - not a crime, but needs more
@@ -36,6 +44,23 @@ public:
     }
 };
 
+
+static void suite(NetBufDecoder<NetBufMemory>& decoder)
+{
+    decoder.header();
+    decoder.process_token_experimental();
+
+    option_iterator<NetBufMemory, NetBufDecoder<NetBufMemory> > it(decoder, true);
+
+    while(it.valid()) ++it;
+
+    INFO(decoder.state());
+    REQUIRE((decoder.state() == Decoder::Done || decoder.state() == Decoder::Payload));
+    /*
+    REQUIRE_THAT(decoder.state(),
+                 Catch::Equals(Decoder::Done) ||
+                 Catch::Equals(Decoder::Payload)); */
+}
 
 TEST_CASE("netbuf+coap tests", "[netbuf-coap]")
 {
@@ -120,5 +145,39 @@ TEST_CASE("netbuf+coap tests", "[netbuf-coap]")
 
         REQUIRE(buf2.length_processed() == 3);
         REQUIRE(memcmp(buf1.processed() + 1, buf2.processed(), 3) == 0);
+    }
+    SECTION("coap NetBufDecoder suite")
+    {
+        SECTION("No option, no payload")
+        {
+            NetBufDecoder<NetBufMemory> decoder(buffer_simplest_request);
+
+            suite(decoder);
+        }
+        SECTION("With option (small), no payload")
+        {
+            NetBufDecoder<NetBufMemory> decoder(buffer_oversimplified_observe);
+
+            suite(decoder);
+        }
+        /*
+        SECTION("With option, no payload")
+        {
+            NetBufDecoder<NetBufMemory> decoder(buffer_oversimplified_observe);
+
+            suite(decoder);
+        } */
+        SECTION("No option, with payload")
+        {
+            NetBufDecoder<NetBufMemory> decoder(buffer_payload_only);
+
+            suite(decoder);
+        }
+        SECTION("With option, with payload")
+        {
+            NetBufDecoder<NetBufMemory> decoder(buffer_16bit_delta);
+
+            suite(decoder);
+        }
     }
 }

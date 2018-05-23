@@ -8,7 +8,7 @@
 
 namespace moducom { namespace coap {
 
-template <class TNetBuf>
+template <class TNetBuf, class TNetBufDecoder>
 class option_iterator;
 
 // standalone Decoder works well enough, so this is largely just a netbuf-capable
@@ -20,7 +20,7 @@ class NetBufDecoder : public Decoder
     typedef Decoder base_t;
     typedef moducom::pipeline::MemoryChunk::readonly_t ro_chunk_t;
 
-    friend class option_iterator<TNetBuf>;
+    friend class option_iterator<TNetBuf, class TNetBufDecoder>;
 
 protected:
     netbuf_t m_netbuf;
@@ -284,10 +284,10 @@ public:
 // Neat, but right way to do this would be to make a 'super' OptionsDecoder which had a bit
 // of the start-stop condition awareness of full Decoder, then actually derive from that class
 // so that we can do things like postfix++
-template <class TNetBuf>
+template <class TNetBuf, class TNetBufDecoder = NetBufDecoder<TNetBuf&> >
 class option_iterator
 {
-    typedef NetBufDecoder<TNetBuf&> decoder_t;
+    typedef TNetBufDecoder decoder_t;
     typedef Option::Numbers value_type;
     typedef moducom::pipeline::MemoryChunk::readonly_t ro_chunk_t;
 
