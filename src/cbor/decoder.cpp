@@ -5,7 +5,63 @@ namespace moducom { namespace cbor {
 
 bool Decoder::process_iterate(uint8_t ch)
 {
-    return true;
+    switch(state())
+    {
+        case HeaderStart:
+            state(Header);
+            break;
+
+        case Header:
+            header(ch);
+            state(HeaderDone);
+            return true;
+
+        case HeaderDone:
+            if(is_tiny_value())
+            {
+                if(is_short_type())
+                    state(ItemDone);
+                else
+                    state(LongStart);
+            }
+            else
+                state(AdditionalStart);
+            break;
+
+        case AdditionalStart:
+            m_pos = 0;
+            state(Additional);
+            break;
+
+        case Additional:
+            buffer[m_pos++] = ch;
+            if(m_pos == additional_length())
+                state(AdditionalDone);
+
+            return true;
+
+        case AdditionalDone:
+            if(is_short_type())
+                state(ItemDone);
+            else
+                state(LongStart);
+            break;
+
+        case LongStart:
+            break;
+
+        case Long:
+            break;
+
+        case LongDone:
+            break;
+
+        case ItemDone:
+            state(HeaderStart);
+            break;
+    }
+
+    return false;
 }
 
 }}

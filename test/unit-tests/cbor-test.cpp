@@ -2,6 +2,7 @@
 
 #include <string.h>
 #include "cbor/encoder.h"
+#include "cbor/decoder.h"
 
 using namespace moducom;
 
@@ -218,5 +219,44 @@ TEST_CASE("CBOR decoder tests", "[cbor-decoder]")
 
         REQUIRE(len == 1);
         REQUIRE(encoder.data()[0] == (CBOR::String << 5 | 5));
+    }
+    SECTION("revamped cbor decoder")
+    {
+        cbor::Decoder decoder;
+        const uint8_t* data = cbor_int;
+
+        decoder.process_iterate(*data); // finish with Header
+        decoder.process_iterate(*data++); // finish with HeaderDone
+        decoder.process_iterate(*data); // finish with LongStart (because a nested map is present)
+        REQUIRE(decoder.state() == cbor::Decoder::LongStart);
+        REQUIRE(decoder.type() == cbor::Decoder::Map);
+
+        decoder.fast_forward(); // nested types, fast forward by their state
+
+        decoder.process_iterate(*data); // finished with HeaderStart
+        decoder.process_iterate(*data); // finish with Header
+        decoder.process_iterate(*data++); // finish with HeaderDone
+        decoder.process_iterate(*data); // finish with LongStart
+        REQUIRE(decoder.state() == cbor::Decoder::LongStart);
+        REQUIRE(decoder.type() == cbor::Decoder::String);
+        REQUIRE(decoder.integer<uint8_t>() == 3);
+
+        // skip the data bytes
+        data += 3;
+        decoder.fast_forward();
+
+        decoder.process_iterate(*data); // finish with Header
+        decoder.process_iterate(*data++); // finish with HeaderDone
+        decoder.process_iterate(*data); // finish with AdditionalStart
+        REQUIRE(decoder.state() == cbor::Decoder::AdditionalStart);
+        REQUIRE(decoder.type() == cbor::Decoder::NegativeInteger);
+
+        decoder.process_iterate(*data); // finish with Additional
+        decoder.process_iterate(*data++); // finish with Additional
+        decoder.process_iterate(*data++); // finish with Additional
+        decoder.process_iterate(*data++); // finish with Additional
+        decoder.process_iterate(*data++); // finish with AdditionalDone
+        REQUIRE(decoder.state() == cbor::Decoder::AdditionalDone);
+        REQUIRE(decoder.integer<int32_t>() == -123456789);
     }
 }
