@@ -273,11 +273,12 @@ TEST_CASE("CBOR decoder tests", "[cbor-decoder]")
 
         encoder.string(s);
         encoder.integer(-5);
+        encoder.integer(0x1234);
 
         const uint8_t* d = encoder.netbuf().processed();
         int len = encoder.netbuf().length_processed();
 
-        REQUIRE(len == 11 + 1 + 1);
+        REQUIRE(len == 11 + 1 + 1 + 3);
         REQUIRE(*d++ == 0x6B);
 
         estd::layer3::basic_string<char, false> s2(s.size(), (char*)d, s.size());
@@ -286,5 +287,8 @@ TEST_CASE("CBOR decoder tests", "[cbor-decoder]")
         d += s.size();
 
         REQUIRE(*d++ == 0x24);
+        REQUIRE(*d++ == cbor::Root::header(cbor::Root::UnsignedInteger, cbor::Root::bits_16));
+        REQUIRE(*d++ == 0x12);
+        REQUIRE(*d++ == 0x34);
     }
 }

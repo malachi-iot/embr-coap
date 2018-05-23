@@ -64,6 +64,11 @@ struct Root
         LongDone,
         ItemDone
     };
+
+    static uint8_t header(Types type, AdditionalTypes additional)
+    {
+        return type << 5 | additional;
+    }
 };
 
 class Decoder : public Root
