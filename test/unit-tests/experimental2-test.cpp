@@ -251,9 +251,14 @@ TEST_CASE("experimental 2 tests")
     }
     SECTION("RandomPolicy test")
     {
-        RandomPolicy::seed(5);
-        int value = RandomPolicy::rand(100, 200);
+        int value;
 
-        REQUIRE(value == 127);
+        for(int i = 0; i < 10; i++)
+        {
+            value = RandomPolicy::rand(100, 200);
+
+            REQUIRE(value >= 100);
+            REQUIRE(value <= 200);
+        }
     }
 }

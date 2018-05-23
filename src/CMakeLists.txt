@@ -77,7 +77,7 @@ set(SOURCE_FILES
 
         exp/prototype/observer-idea1.h
 
-        platform/arduino/datapump.cpp
+        platform/arduino/arduino-eth-datapump.cpp
 
         platform/generic/datapump-messageobserver.hpp
         platform/generic/malloc_netbuf.h

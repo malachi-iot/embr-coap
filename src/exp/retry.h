@@ -56,9 +56,13 @@ struct RandomPolicy
         // either/or experimental/random randint or uniform_int_distribution
         IntType delta = upper_bound - lower_bound;
         CONSTEXPR int m = max();
-        long result = rand();
-        result *= delta;
-        result /= m;
+        // macOS doesn't seem to have an even distribution of random
+        // (all very low in the RAND_MAX range), so using technique
+        // suggested here https://forums.macrumors.com/threads/random-numbers-for-c.176521/
+        //long result = std::rand();
+        //result *= delta;
+        //result /= m;
+        int result = std::rand() % delta;
         return result + lower_bound;
     }
 };
