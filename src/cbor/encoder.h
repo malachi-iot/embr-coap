@@ -16,6 +16,15 @@ protected:
     typedef CBOR::Decoder::AdditionalIntegerInformation add_int_info_t;
     typedef typename base_t::size_type size_type;
 
+    // for scenarios where we know we're dealing with a 'tiny' field encoding scenario
+    void tiny_field(uint8_t* d, types_t type, uint8_t value)
+    {
+        *d = type << 5 | value;
+        written(1);
+    }
+
+    // for scenarios where we know we're dealing with a 'short' field encoding scenario
+
 public:
     static uint8_t additional_integer_information_from_wordsize(uint8_t wordsize)
     {
@@ -50,8 +59,7 @@ public:
 
         if(value <= 24)
         {
-            *d = type << 5 | value;
-            written(1);
+            tiny_field(d, type, value);
             return true;
         }
         else
@@ -100,6 +108,19 @@ protected:
     typedef typename base_t::types_t types_t;
 
 protected:
+    bool tiny_field(types_t type, uint8_t value)
+    {
+        netbuf_t& netbuf = nbw_t::netbuf();
+
+        base_t::tiny_field(
+                netbuf.unprocessed(),
+                type, value);
+
+        nbw_t::advance(m_written);
+
+        return true;
+    }
+
     // encodes 'tiny' or 'short' type data into our netbuf
     template <typename TInt>
     bool major_type_and_integer(types_t type, TInt value)
@@ -119,14 +140,12 @@ protected:
 public:
     bool null()
     {
-        return major_type_and_integer(CBOR::SimpleData, (uint8_t) base_t::Null);
+        return tiny_field(CBOR::SimpleData, base_t::Null);
     }
 
     bool boolean(bool value)
     {
-        uint8_t raw_value = value ? base_t::True : base_t::False;
-
-        return major_type_and_integer(CBOR::SimpleData, raw_value);
+        return tiny_field(CBOR::SimpleData, value ? base_t::True : base_t::False);
     }
 
     bool string_header(int len)

@@ -406,4 +406,8 @@ TEST_CASE("CBOR decoder tests", "[cbor-decoder]")
         REQUIRE(*d++ == 0xF6);  // simple value of NULL
         REQUIRE(len == 2);
     }
+    SECTION("encoder+decoder: self-contained dogfooding")
+    {
+
+    }
 }
