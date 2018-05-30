@@ -233,6 +233,8 @@ TEST_CASE("CBOR decoder tests", "[cbor-decoder]")
         REQUIRE(len == 1);
         REQUIRE(encoder.data()[0] == (CBOR::String << 5 | 5));
     }
+    // ++++
+    // revamped code
     SECTION("revamped cbor decoder")
     {
         cbor::Decoder decoder;
@@ -385,5 +387,23 @@ TEST_CASE("CBOR decoder tests", "[cbor-decoder]")
         // NOTE: technically this is now map item #2.  Would be nice to check for this somehow
         require_string(decoder, context, "pass");
         require_string(decoder, context, "secret");
+    }
+    SECTION("encoder: boolean and NULL")
+    {
+        using namespace moducom::io::experimental;
+        using namespace moducom::coap;
+        using namespace moducom::cbor;
+
+        NetBufEncoder<NetBufDynamicExperimental> encoder;
+
+        encoder.boolean(true);
+        encoder.null();
+
+        const uint8_t* d = encoder.netbuf().processed();
+        int len = encoder.netbuf().length_processed();
+
+        REQUIRE(*d++ == 0xF5);  // simple value of TRUE
+        REQUIRE(*d++ == 0xF6);  // simple value of NULL
+        REQUIRE(len == 2);
     }
 }

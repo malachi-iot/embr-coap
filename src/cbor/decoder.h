@@ -26,6 +26,14 @@ struct Root
     };
 
 
+    enum SimpleDataValues
+    {
+        Null = 22,
+        True = 21,
+        False = 20
+    };
+
+
     // Used during non-simple-data processing
     // last 5 bits of header
     // https://tools.ietf.org/html/rfc7049#section-2
