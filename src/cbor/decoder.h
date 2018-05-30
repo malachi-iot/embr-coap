@@ -204,6 +204,8 @@ public:
     // indeterminate means a size *has* been specified, but exact byte count is not
     // available because even though number of items has been specified, the byte
     // size of each item is not known
+    // NOTE: Consider calling this a 'container' type, since Map and ItemArray are the
+    // only items which can contain other items, and thus has the more complex length behavior
     bool is_indeterminate_type() const
     {
         switch(type())
@@ -291,6 +293,8 @@ public:
 
     Root::Types type() const { return item_decoder.type(); }
 
+    // for indeterminate types, this moves *into* the type and positions at the first contained data item
+    // for non-indeterminate types, this moves *past* the type and positions at the next data item
     void fast_forward(Context& context)
     {
         ASSERT_WARN(Root::LongStart, item_decoder.state(), "Should be at start of 'long' item data");

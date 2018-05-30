@@ -78,6 +78,38 @@ struct DecoderHelper
     }
 };
 
+
+
+void require_map(cbor::experimental::StreamDecoder& decoder,
+                 cbor::experimental::StreamDecoder::Context& context,
+                 int len)
+{
+    // all maps are of long-type, this is just an optional check to make sure we're decoding that right
+    REQUIRE(decoder.is_long_start());
+    REQUIRE(decoder.type() == cbor::Root::Map);
+    REQUIRE(decoder.integer<int>() == len);
+
+    // since maps are long-type we fast forward.  For 'indeterminate' types (Map, ItemArray) this means move to
+    // *contained* data item.
+    decoder.fast_forward(context);
+
+}
+
+void require_string(cbor::experimental::StreamDecoder& decoder,
+                    cbor::experimental::StreamDecoder::Context& context,
+                    const char* str)
+{
+    // all strings are of long-type, this is just an optional check to make sure we're decoding that right
+    REQUIRE(decoder.is_long_start());
+    REQUIRE(decoder.type() == cbor::Root::String);
+
+    // this call auto fast forwards.  For 'non-indeterminate' data types, which string is, fast-forward moves
+    // completely past the data payload of the data item
+    estd::layer3::const_string s = decoder.string_experimental(context);
+
+    REQUIRE(s == str);
+}
+
 TEST_CASE("CBOR decoder tests", "[cbor-decoder]")
 {
     SECTION("True/false test")
@@ -331,5 +363,27 @@ TEST_CASE("CBOR decoder tests", "[cbor-decoder]")
         StreamDecoder::Context context(chunk, true);
 
         SimpleData::is_false(decoder);
+    }
+    SECTION("Next gen synthetic cred test")
+    {
+        using namespace cbor::experimental;
+
+        pipeline::MemoryChunk::readonly_t chunk(cbor_cred);
+        StreamDecoder decoder;
+        StreamDecoder::Context context(chunk, true);
+
+        decoder.process(context);
+
+        REQUIRE(decoder.is_long_start());
+        REQUIRE(decoder.type() == cbor::Root::Map);
+        REQUIRE(decoder.integer<int>() == 2);
+
+        decoder.fast_forward(context);
+
+        require_string(decoder, context, "ssid");
+        require_string(decoder, context, "ssid_name");
+        // NOTE: technically this is now map item #2.  Would be nice to check for this somehow
+        require_string(decoder, context, "pass");
+        require_string(decoder, context, "secret");
     }
 }
