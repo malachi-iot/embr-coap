@@ -4,29 +4,9 @@
 #include "cbor/encoder.h"
 #include "cbor/decoder.h"
 #include "platform/generic/malloc_netbuf.h"
+#include "test-data.h"
 
 using namespace moducom;
-
-static uint8_t cbor_cred[] =
-{
-0xA2,                       // map(2)
-    0x64,                    // text(4)
-        0x73, 0x73, 0x69, 0x64,          // "ssid"
-    0x69,                    // text(9)
-        0x73, 0x73, 0x69, 0x64, 0x5F, 0x6E, 0x61, 0x6D, 0x65, // "ssid_name"
-    0x64,                    // text(4)
-        0x70, 0x61, 0x73, 0x73,           // "pass"
-    0x66,                    // text(6)
-        0x73, 0x65, 0x63, 0x72, 0x65, 0x74        // "secret"
-};
-
-static uint8_t cbor_int[] =
-{
-    0xA1,             // map(1)
-    0x63,          // text(3)
-        0x76, 0x61, 0x6C,   // "val"
-    0x3A, 0x07, 0x5B, 0xCD, 0x14 // negative(123456788)
-};
 
 
 static const uint8_t* cbor_assert(CBOR::Decoder& decoder, const uint8_t* v, std::string expected)
@@ -317,13 +297,14 @@ TEST_CASE("CBOR decoder tests", "[cbor-decoder]")
         using namespace cbor::experimental;
 
         pipeline::MemoryChunk::readonly_t chunk(cbor_int);
-        OverallDecoder decoder;
-        OverallDecoder::Context context(chunk, true);
+        StreamDecoder decoder;
+        StreamDecoder::Context context(chunk, true);
 
         decoder.process(context);
 
         REQUIRE(decoder.is_long_start());
         REQUIRE(decoder.type() == cbor::Root::Map);
+        REQUIRE(decoder.integer<uint8_t>() == 1);
 
         decoder.fast_forward(context);
 
@@ -340,5 +321,15 @@ TEST_CASE("CBOR decoder tests", "[cbor-decoder]")
         REQUIRE(!decoder.is_long_start());
         REQUIRE(decoder.type() == cbor::Root::NegativeInteger);
         REQUIRE(decoder.integer<int>() == -123456789);
+    }
+    SECTION("experimental signature evaluation for cbor decoder")
+    {
+        using namespace cbor::experimental;
+
+        pipeline::MemoryChunk::readonly_t chunk(cbor_int);
+        StreamDecoder decoder;
+        StreamDecoder::Context context(chunk, true);
+
+        SimpleData::is_false(decoder);
     }
 }

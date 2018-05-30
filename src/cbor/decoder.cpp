@@ -66,7 +66,7 @@ bool Decoder::process_iterate(uint8_t ch)
 
 namespace experimental {
 
-bool OverallDecoder::process(Context& context)
+bool StreamDecoder::process(Context& context)
 {
     while(context.length_unprocessed() > 0 ||
             (context.length_unprocessed() == 0 && item_decoder.state() != Decoder::ItemDone))

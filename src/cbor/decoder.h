@@ -60,7 +60,7 @@ struct Root
         AdditionalStart, // aka 'short' encoding part
         Additional,
         AdditionalDone,
-        LongStart,
+        LongStart,      // TODO: Confirm this is official RFC name for this phase and if not rename it to be such
         Long,
         LongDone,
         ItemDone
@@ -72,8 +72,16 @@ struct Root
     }
 };
 
+namespace experimental {
+
+class SimpleData;
+
+}
+
 class Decoder : public Root
 {
+    friend class experimental::SimpleData;
+
 private:
 #ifdef CBOR_FEATURE_64_BIT
     uint8_t buffer[8];
@@ -99,7 +107,7 @@ private:
         return result;
     }
 
-    // assuming we're using bits8 thru bits64, ascertain exact buffer length needed
+    // assuming we're using additional bits8 thru bits64, ascertain exact buffer length needed
     uint8_t additional_length() const
     {
         return 1 << (additional_raw() - 24);
@@ -145,6 +153,34 @@ private:
     }
 
 public:
+    // +++
+    // prefer not to use these, they sort of just clutter up the Decoder
+    // even though they don't specifically violate its functionality
+    bool is_simple_type() const
+    {
+        return type() == SimpleData;
+    }
+
+    // only callable if is_simple_type == true
+    bool is_true() const
+    {
+        return additional_raw() == 21;
+    }
+
+    // only callable if is_simple_type == true
+    bool is_false() const
+    {
+        return additional_raw() == 20;
+    }
+
+
+    // only callable if is_simple-type == true
+    bool is_null() const
+    {
+        return additional_raw() == 22;
+    }
+    // ---
+
     // Would have used 'indefinite' but that has a different meaning in CBOR
     // indeterminate means a size *has* been specified, but exact byte count is not
     // available because even though number of items has been specified, the byte
@@ -184,13 +220,32 @@ public:
 
 };
 
+
 namespace experimental {
 
-class OverallDecoder
+// NOTE: Already don't like using this, was thinking it might be helpful to isolate decoding
+// stuff outside Decoder itself for SimpleData specific scenarios
+class SimpleDataHelper
+{
+    uint8_t additional;
+
+public:
+
+};
+
+
+
+// NOTE: Named as such based on https://tools.ietf.org/html/rfc7049#section-1.2
+// Specifically, this bears no specific relation to any mc-coap or estdlib definition of 'Stream'
+class StreamDecoder
 {
     Decoder item_decoder;
 
     typedef pipeline::MemoryChunk::readonly_t ro_chunk_t;
+
+    friend SimpleData;
+
+    const Decoder& decoder() const { return item_decoder; }
 
 public:
     class Context //: public mem::ProcessedMemoryChunkBase<ro_chunk_t>
@@ -265,6 +320,44 @@ public:
         return s;
     }
 };
+
+
+struct SimpleData
+{
+    static bool is_simple_data(const Decoder& d)
+    {
+        return d.type() == Decoder::SimpleData;
+    }
+
+    static bool is_simple_data(const StreamDecoder& d)
+    {
+        return is_simple_data(d.decoder());
+    }
+
+
+    static bool is_true(const Decoder& d)
+    {
+        return d.additional_raw() == 21;
+    }
+
+
+    static bool is_true(const StreamDecoder& d)
+    {
+        return is_true(d.decoder());
+    }
+
+    static bool is_false(const Decoder& d)
+    {
+        return d.additional_raw() == 20;
+    }
+
+
+    static bool is_false(const StreamDecoder& d)
+    {
+        return is_false(d.decoder());
+    }
+};
+
 
 }
 
