@@ -84,6 +84,9 @@ set(SOURCE_FILES
 
         platform/lwip/lwip-datapump.h
 
+        platform/mbedtls/dtls-datapump.cpp
+        platform/mbedtls/dtls-datapump.h
+
         platform/posix/sockets-datapump.h
         platform/posix/sockets-datapump.cpp
 
