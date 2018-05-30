@@ -9,8 +9,21 @@
 // TODO: Following suit of DataPump itself, we might move this down into mcmem also
 namespace moducom { namespace coap {
 
-void dtls_setup();
-void dtls_loop();
+class Dtls
+{
+public:
+    int setup();    // returns 0 on success. if fail, go straight to shutdown
+    // true = loop again, false = stop, exit, *ret holds return code, can not be null
+    bool loop(int* ret);
+    void error(int);
+    void shutdown();
+    void shutdown(int ret)
+    {
+        error(ret);
+        shutdown();
+    }
+};
+
 
 }}
 
