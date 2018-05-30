@@ -304,7 +304,7 @@ TEST_CASE("CBOR decoder tests", "[cbor-decoder]")
 
         REQUIRE(decoder.is_long_start());
         REQUIRE(decoder.type() == cbor::Root::Map);
-        REQUIRE(decoder.integer<uint8_t>() == 1);
+        REQUIRE(decoder.integer<int>() == 1);
 
         decoder.fast_forward(context);
 

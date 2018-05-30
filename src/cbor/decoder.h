@@ -28,6 +28,7 @@ struct Root
 
     // Used during non-simple-data processing
     // last 5 bits of header
+    // https://tools.ietf.org/html/rfc7049#section-2
     enum AdditionalTypes
     {
         // all self contained
@@ -50,6 +51,14 @@ struct Root
         Reserved2 = 30,
 
         Indefinite = 31
+    };
+
+    enum Tags
+    {
+        TagDateTime = 0,
+        TagEpoch = 1,
+        TagPosBignum = 2,
+        TagNegBignum = 3
     };
 
     enum State
@@ -75,12 +84,20 @@ struct Root
 namespace experimental {
 
 class SimpleData;
+class SimpleDataHelper;
 
 }
 
+// We've adopted terminology not really present in the RFC but indicated in the wiki
+// "long field" (https://en.wikipedia.org/wiki/CBOR#Long_Field_Encoding) to indicate the difference between:
+// 1. 'tiny' - all item data contained in header
+// 2. 'short' - item data contained in header + data integer
+// 3. 'long' - item data contained in header + length integer + data whose length is suggested by length integer
+// Remember, 'long' format length is often NOT specified in bytes but rather number of data items
 class Decoder : public Root
 {
     friend class experimental::SimpleData;
+    friend class experimental::SimpleDataHelper;
 
 private:
 #ifdef CBOR_FEATURE_64_BIT
@@ -137,6 +154,8 @@ private:
     }
 
     // type uses short encoding (data payload IS the 'additional' portion)
+    // is_long_type() would be one where data payload FOLLOWS the additional-int portion
+    // Note that a call to this implies we've already checked that !is_tiny_value()
     bool is_short_type() const
     {
         switch(type())
@@ -223,18 +242,6 @@ public:
 
 namespace experimental {
 
-// NOTE: Already don't like using this, was thinking it might be helpful to isolate decoding
-// stuff outside Decoder itself for SimpleData specific scenarios
-class SimpleDataHelper
-{
-    uint8_t additional;
-
-public:
-
-};
-
-
-
 // NOTE: Named as such based on https://tools.ietf.org/html/rfc7049#section-1.2
 // Specifically, this bears no specific relation to any mc-coap or estdlib definition of 'Stream'
 class StreamDecoder
@@ -243,7 +250,8 @@ class StreamDecoder
 
     typedef pipeline::MemoryChunk::readonly_t ro_chunk_t;
 
-    friend SimpleData;
+    friend class SimpleData;
+    friend class SimpleDataHelper;
 
     const Decoder& decoder() const { return item_decoder; }
 
@@ -357,6 +365,29 @@ struct SimpleData
         return is_false(d.decoder());
     }
 };
+
+
+// NOTE: Already don't like using this, was thinking it might be helpful to isolate decoding
+// stuff outside Decoder itself for SimpleData specific scenarios
+class SimpleDataHelper
+{
+    uint8_t additional;
+
+public:
+    SimpleDataHelper(const StreamDecoder& d)
+    {
+        ASSERT_WARN(d.decoder().type(), Decoder::SimpleData, "Invalid type encountered");
+
+        additional = d.decoder().additional_raw();
+    }
+
+    bool is_true() const { return additional == 21; }
+    bool is_false() const { return additional == 20; }
+    bool is_null() const { return additional == 22; }
+};
+
+
+
 
 
 }
