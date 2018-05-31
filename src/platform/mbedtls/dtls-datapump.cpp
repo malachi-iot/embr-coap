@@ -336,6 +336,8 @@ bool Dtls::loop(int* _ret)
     len = sizeof( buf ) - 1;
     memset( buf, 0, sizeof( buf ) );
 
+    // FIX: Seems that MBEDTLS_ERR_SSL_WANT_READ wants more buffer space
+    // and this code doesn't accomodate that
     do ret = mbedtls_ssl_read( &ssl, buf, len );
     while( ret == MBEDTLS_ERR_SSL_WANT_READ ||
            ret == MBEDTLS_ERR_SSL_WANT_WRITE );
@@ -376,6 +378,8 @@ bool Dtls::loop(int* _ret)
     //if(dtls_server_response_handler != NULL)
       //  len = dtls_server_response_handler(buf, sizeof(buf), NULL);
 
+    // FIX: according to https://tls.mbed.org/api/ssl_8h.html,
+    // buf and len need to be updated with ret when partial writes happen
     do ret = mbedtls_ssl_write( &ssl, buf, len );
     while( ret == MBEDTLS_ERR_SSL_WANT_READ ||
            ret == MBEDTLS_ERR_SSL_WANT_WRITE );
