@@ -11,3 +11,7 @@ a) use compiler switches to enable those platform features
 b) demand consuming programmer (you) to manually find and include CPP files in your project
 
 Leaning towards a, but we will see
+
+NOTE:
+
+Platform probably should be named 'modules' , will likely be renamed as such
