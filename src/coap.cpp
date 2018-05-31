@@ -33,6 +33,7 @@ const char* get_description(internal::Root::State state)
         case Root::OptionsDone:     return "Options Done";
         case Root::Payload:         return "Payload";
         case Root::PayloadDone:     return "Payload Done";
+        default:                    return NULLPTR;
     }
 }
 
