@@ -13,7 +13,7 @@ void simple_ping_responder(TDataPumpHelper& sdh, typename TDataPumpHelper::datap
 {
     typedef typename TDataPumpHelper::netbuf_t netbuf_t;
     typedef typename TDataPumpHelper::addr_t addr_t;
-    typedef typename moducom::pipeline::MemoryChunk::readonly_t ro_chunk_t;
+    //typedef typename moducom::pipeline::MemoryChunk::readonly_t ro_chunk_t;
 
     // echo back out a raw ACK, with no trickery just raw decoding/encoding
     if(!sdh.empty(datapump))

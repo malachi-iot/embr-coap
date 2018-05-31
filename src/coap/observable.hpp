@@ -23,7 +23,7 @@ void ObservableRegistrar<TCollection, TIncomingContext, TRequestContextTraits>::
 {
     typedef typename TDataPump::netbuf_t netbuf_t;
     typedef typename TDataPump::addr_t addr_t;
-    typedef moducom::pipeline::MemoryChunk::readonly_t ro_chunk_t;
+    //typedef moducom::pipeline::MemoryChunk::readonly_t ro_chunk_t;
 
     iterator it = begin();
 

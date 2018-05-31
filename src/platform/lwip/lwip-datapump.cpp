@@ -37,6 +37,9 @@ void netconn_callback(netconn* conn, netconn_evt evt, uint16_t len)
             // data's available for this connection.  Ultimately we can hopefully
             // get rid of our timeout/blocking code that way
             break;
+
+        default:
+            break;
     }
 }
 
