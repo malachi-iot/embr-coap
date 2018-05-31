@@ -8,6 +8,8 @@
 
 #include "dtls-datapump.h"
 
+extern "C" {
+
 #if !defined(MBEDTLS_CONFIG_FILE)
 #include "mbedtls/config.h"
 #else
@@ -64,6 +66,8 @@
 #if defined(MBEDTLS_SSL_CACHE_C)
 #include "mbedtls/ssl_cache.h"
 #endif
+
+} // extern "C"
 
 #define READ_TIMEOUT_MS 10000   /* 5 seconds */
 #define DEBUG_LEVEL 0
