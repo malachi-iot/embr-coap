@@ -251,15 +251,26 @@ int Dtls::setup()
 }
 
 
+// TODO: will take datapump either as an input or more of an instance variable
 bool Dtls::loop(int* _ret)
 {
     // FIX: Since we converted this from a suite of goto statements, keep these as static
     // until we truly scope it out and switch to DataPump
-    static unsigned char client_ip[16] = { 0 };
+    //static unsigned char client_ip[16] = { 0 };
+    addr_t client_ip = { 0 };
     static size_t cliip_len;
     static int len;
 
     int& ret = *_ret;
+
+    error(ret);
+
+    // QUESTION: Can we use mbedtls_net_bind for new outgoing UDP traffic, or must we
+    // use mbedtls_net_connect?  Furthermore, I assume mbedtls_net_connect doesn't
+    // *actually* create a connection with UDP and therefore is nonblocking, but that
+    // is an assumption - an assumption implied by dtls_client.c
+    // https://github.com/ARMmbed/mbedtls/blob/development/programs/ssl/dtls_client.c
+    // TODO: Perform a datapump.dequeue_empty()
 
     mbedtls_net_free( &client_fd );
 
@@ -396,12 +407,14 @@ close_notify:
 
 void Dtls::error(int ret)
 {
+#ifdef MBEDTLS_ERROR_C
     if( ret != 0 )
     {
         char error_buf[100];
         mbedtls_strerror( ret, error_buf, 100 );
         printf( "Last error was: %d - %s\n\n", ret, error_buf );
     }
+#endif
 }
 
 

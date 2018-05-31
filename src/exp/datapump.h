@@ -192,6 +192,7 @@ public:
         return netbuf;
     }
 
+    // ascertain whether any -> transport outgoing netbufs are present
     bool transport_empty()
     {
         return outgoing.empty();
