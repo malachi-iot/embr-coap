@@ -1,5 +1,9 @@
 #pragma once
 
+// FIX: hacky workaround for presence of other lib's coap.h (such as with esp32)
+// real fix is to inform build system not to notice their coap.h at all
+#include "../../coap.h"
+
 namespace moducom { namespace coap {
 
 // processes bytes input to then reveal more easily digestible coap options

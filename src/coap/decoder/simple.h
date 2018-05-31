@@ -1,6 +1,6 @@
 #pragma once
 
-#include "coap.h"
+#include "../../coap.h" // more resilient against other coap.h's when we do this
 
 namespace moducom { namespace coap {
 

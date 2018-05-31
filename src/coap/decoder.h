@@ -6,7 +6,7 @@
 #ifndef MC_COAP_TEST_COAP_DECODER_H
 #define MC_COAP_TEST_COAP_DECODER_H
 
-#include "coap.h"
+#include "../coap.h" // more resilient against other coap.h's when we do this
 #include "coap/decoder/simple.h"
 #include "coap/decoder/option.h"
 

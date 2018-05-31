@@ -7,6 +7,11 @@
 
 
 #include "coap/platform.h"
+
+#ifndef SRC_COAP_H
+#define SRC_COAP_H
+
+
 #include "mc/memory-chunk.h"
 //#include "mc/pipeline.h"
 #include <stdint.h>
@@ -14,9 +19,6 @@
 #include <new>
 
 #include "coap-header.h"
-
-#ifndef SRC_COAP_H
-#define SRC_COAP_H
 
 namespace moducom {
 namespace coap {
