@@ -31,6 +31,12 @@ extern "C" {
 #define mbedtls_time_t     time_t
 #endif
 
+// MB: Hack this in since we provide our own timing
+#define MBEDTLS_TIMING_C
+
+// MB: Hack this since ESP32 seems to have the flag reversed?
+#define MBEDTLS_NET_C
+
 #if !defined(MBEDTLS_SSL_SRV_C) || !defined(MBEDTLS_SSL_PROTO_DTLS) ||    \
     !defined(MBEDTLS_SSL_COOKIE_C) || !defined(MBEDTLS_NET_C) ||          \
     !defined(MBEDTLS_ENTROPY_C) || !defined(MBEDTLS_CTR_DRBG_C) ||        \
@@ -241,6 +247,8 @@ int Dtls::setup()
         return ret;
     }
 
+    // As per https://tls.mbed.org/kb/how-to/dtls-tutorial, this should happen
+    // on the 'main thread' so beware
     mbedtls_ssl_conf_dtls_cookies( &conf, mbedtls_ssl_cookie_write, mbedtls_ssl_cookie_check,
                                &cookie_ctx );
 
