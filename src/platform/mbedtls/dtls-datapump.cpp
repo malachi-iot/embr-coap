@@ -34,8 +34,16 @@ extern "C" {
 // MB: Hack this in since we provide our own timing
 #define MBEDTLS_TIMING_C
 
-// MB: Hack this since ESP32 seems to have the flag reversed?
+// As per https://tls.mbed.org/api/config_8h.html#ae73dbeb395510070a756ed6689459b30
+// this is only available on POSIX type systems.  ESP32 appears to *only* provide
+// drop-in compatility for MBEDTLS_NET_C by *disabling* MBEDTLS_NET_C flag for
+// system compilation.
+// 
+// Confusing, but there it is.  Re-enable it here since we *do* use those
+// APIs - mainly to pass the following big-define-test
+#if defined(ESP32)
 #define MBEDTLS_NET_C
+#endif
 
 #if !defined(MBEDTLS_SSL_SRV_C) || !defined(MBEDTLS_SSL_PROTO_DTLS) ||    \
     !defined(MBEDTLS_SSL_COOKIE_C) || !defined(MBEDTLS_NET_C) ||          \
