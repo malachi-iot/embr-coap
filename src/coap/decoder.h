@@ -6,7 +6,9 @@
 #ifndef MC_COAP_TEST_COAP_DECODER_H
 #define MC_COAP_TEST_COAP_DECODER_H
 
-#include "../coap.h" // more resilient against other coap.h's when we do this
+// FIX: hacky workaround for presence of other lib's coap.h (such as with esp32)
+// real fix is to inform build system not to notice their coap.h at all
+#include "../coap.h"
 #include "coap/decoder/simple.h"
 #include "coap/decoder/option.h"
 
