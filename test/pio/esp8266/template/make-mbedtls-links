@@ -1,0 +1,10 @@
+#!/bin/bash
+
+# Run this *in* the folder you wish to set up as your pio lib
+# Be sure to include the library.json file also
+
+export PLATFORMIO_HOME_DIR=$HOME/.platformio
+export FRAMEWORK_DIR=$PLATFORMIO_HOME_DIR/packages/framework-esp8266-rtos-sdk
+
+ln -s $FRAMEWORK_DIR/include
+ln -s $FRAMEWORK_DIR/third_party/mbedtls
