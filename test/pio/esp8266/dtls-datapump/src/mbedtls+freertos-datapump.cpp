@@ -10,8 +10,6 @@ extern "C" void coap_daemon(void *)
 {
     Dtls dtls;
 
-    printf("DTLS daemon running\n");
-
     int ret = dtls.setup();
     bool _continue = true;
 

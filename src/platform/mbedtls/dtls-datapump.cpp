@@ -4,6 +4,8 @@
 
 // Adapting from https://github.com/ARMmbed/mbedtls/blob/development/programs/ssl/dtls_server.c
 
+#include <mc/opts-internal.h>
+
 #ifdef FEATURE_MCCOAP_MBEDTLS
 
 #include "dtls-datapump.h"
@@ -37,6 +39,8 @@ extern "C" {
     !defined(MBEDTLS_TIMING_C)
 
 #error "Missing requisite flag - see dtls-datapump.cpp"
+
+} // for extern "C" portion
 
 #else
 
