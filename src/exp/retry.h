@@ -237,7 +237,7 @@ private:
 
         container_type& get_container() { return base_t::c; }
 
-        bool erase(typename container_type::const_iterator it)
+        void erase(typename container_type::const_iterator it)
         {
             base_t::c.erase(it);
             std::make_heap(base_t::c.begin(), base_t::c.end(), base_t::get_compare());

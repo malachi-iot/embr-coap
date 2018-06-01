@@ -87,13 +87,6 @@ public:
                 {}
     };
 
-    // FIX: Repair this, nobody should be peering in and changing state
-    // made the name extra ugly just to draw attention to it
-    void state_for_decoder_subject_unused(internal::root_state_t s)
-    {
-        state(s);
-    }
-
     // NOTE: This is necessary to use because OptionDecoder in due course of its
     // operation *might* clobber its option_number() before it fully evaluates option_length()
     // the 'length' field in optionHolder isn't *technically* necessary, as that doesn't

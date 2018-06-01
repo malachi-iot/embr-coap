@@ -11,37 +11,65 @@
 
 namespace moducom { namespace coap {
 
+namespace internal {
+
+// lightly tested (16-bit values pushed through)
+template <typename TReturn>
+inline TReturn uint_get(const uint8_t* value, const size_t len)
+{
+    // coap cleverly allows 0-length integer buffers, which means value=0
+    if(len == 0) return 0;
+
+    TReturn v = *value;
+
+    for(int i = 1; i < len; i++)
+    {
+        v <<= 8;
+        v |= value[i];
+    }
+
+    return v;
+}
+
+
+template <>
+inline uint8_t uint_get<uint8_t>(const uint8_t* value, const size_t len)
+{
+    // coap cleverly allows 0-length integer buffers, which means value=0
+    if(len == 0) return 0;
+
+    ASSERT_WARN(1, len, "len can only be 1 here");
+
+    return *value;
+}
+
+}
+
 // where all the static helper methods will live
 // This UInt helper class accepts network-order buffers in and decodes them
 // to host order
 class UInt
 {
 public:
-    // lightly tested (16-bit values pushed through)
-    // uint8_t does not, it doesn't like v <<= 8
-    template <typename TReturn>
+    template <class TReturn>
     static TReturn get(const uint8_t* value, const size_t len = sizeof(TReturn))
     {
-        // coap cleverly allows 0-length integer buffers, which means value=0
-        if(len == 0) return 0;
-
-        TReturn v = *value;
-
-        for(int i = 1; i < len; i++)
-        {
-            v <<= 8;
-            v |= value[i];
-        }
-
-        return v;
+        return internal::uint_get<TReturn>(value, len);
     }
 
 
+    // NOTE: Obviously only goes to 32 bits, but evetually we'll want more
     template <typename TInput>
     inline static uint8_t assess_bytes_used(TInput input)
     {
-        uint8_t bytes_used;
+        uint8_t bytes_used = 0;
 
+        for(; input != 0; bytes_used++)
+            input >>= 8;
+
+        return bytes_used;
+
+        /*
         if(input == 0)
             bytes_used = 0;
         else if(input <= 0xFF)
@@ -53,7 +81,7 @@ public:
         else
             bytes_used = 4;
 
-        return bytes_used;
+        return bytes_used; */
     }
 
     // untested
@@ -96,34 +124,6 @@ public:
 
 
     template <class TInput, class TOutput>
-    inline static uint8_t set(TInput input, TOutput& output)
-    {
-        uint8_t bytes_used;
-
-        // TODO: Could optimize by detecting type/sizeof(type) and only checking
-        // if type is capable of holding values that large
-        if(input == 0)
-            return 0;
-        else if(input <= 0xFF)
-            bytes_used = 1;
-        else if(input <= 0xFFFF)
-            bytes_used = 2;
-        else if(input <= 0XFFFFFF)
-            bytes_used = 3;
-        else
-            bytes_used = 4;
-
-        for(int i = bytes_used; i-- > 0;)
-        {
-            output[i] = input & 0xFF;
-            input >>= 8;
-        }
-
-        return bytes_used;
-    }
-
-
-    template <class TInput, class TOutput>
     inline static void set(TInput input, TOutput& output, uint8_t output_length)
     {
         for(int i = output_length; i-- > 0;)
@@ -131,6 +131,17 @@ public:
             output[i] = input & 0xFF;
             input >>= 8;
         }
+    }
+
+
+    template <class TInput, class TOutput>
+    inline static uint8_t set(TInput input, TOutput& output)
+    {
+        uint8_t bytes_used = assess_bytes_used(input);
+
+        set(input, output, bytes_used);
+
+        return bytes_used;
     }
 };
 
