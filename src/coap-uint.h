@@ -54,15 +54,18 @@ public:
     template <class TReturn>
     static TReturn get(const uint8_t* value, const size_t len = sizeof(TReturn))
     {
+        ASSERT_WARN(true, sizeof(TReturn) >= len, "decoding integer size too small");
+
         return internal::uint_get<TReturn>(value, len);
     }
 
 
-    // NOTE: Obviously only goes to 32 bits, but evetually we'll want more
+    // UInt has special behavior where an input value of 0 means
+    // 0 bytes are used (more or less NULL = 0 value)
     template <typename TInput>
-    inline static uint8_t assess_bytes_used(TInput input)
+    inline static uint8_t assess_bytes_used(TInput input, uint8_t bytes_used_headstart = 0)
     {
-        uint8_t bytes_used = 0;
+        uint8_t bytes_used = bytes_used_headstart;
 
         for(; input != 0; bytes_used++)
             input >>= 8;
@@ -84,12 +87,11 @@ public:
         return bytes_used; */
     }
 
-    // untested
+    // untested, pads to particular byte size, useful for standard uint16, uint32, etc. sizes
+    // like many including CBOR use
     template <class TInput, class TOutput>
     inline static void set_padded(TInput input, TOutput& output, size_t output_size)
     {
-        uint8_t bytes_used;
-
         // TODO: Could optimize by detecting type/sizeof(type) and only checking
         // if type is capable of holding values that large
         if(input == 0)
@@ -98,6 +100,10 @@ public:
                 output[i] = 0;
             return;
         }
+
+        // headstart with 1, since we know we're at least 1 byte big if input != 0
+        uint8_t bytes_used = assess_bytes_used(input >> 8, 1);
+        /*
         else if(input <= 0xFF)
             bytes_used = 1;
         else if(input <= 0xFFFF)
@@ -105,8 +111,9 @@ public:
         else if(input <= 0XFFFFFF)
             bytes_used = 3;
         else
-            bytes_used = 4;
+            bytes_used = 4; */
 
+        // full output size - actual bytes used yields number of bytes to left-pad with 0
         uint8_t bytes_pad = output_size - bytes_used;
 
         for(int i = 0; i < bytes_pad; i++)
@@ -134,6 +141,8 @@ public:
     }
 
 
+    // taking TOutput& because MemoryChunk gets thrown in here.  Not fully sold
+    // on the idea really, the proper simplicity of uint8_t* is hard to beat
     template <class TInput, class TOutput>
     inline static uint8_t set(TInput input, TOutput& output)
     {
