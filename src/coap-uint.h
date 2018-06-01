@@ -60,6 +60,19 @@ public:
     }
 
 
+    template <class TReturn, size_t len>
+    static TReturn get(const uint8_t (&value) [len])
+    {
+#ifdef FEATURE_CPP_STATIC_ASSERT
+        static_assert(sizeof(TReturn) >= len, "decoding integer size too small");
+#else
+        ASSERT_WARN(true, sizeof(TReturn) >= len, "decoding integer size too small");
+#endif
+
+        return internal::uint_get<TReturn>(value, len);
+    }
+
+
     // UInt has special behavior where an input value of 0 means
     // 0 bytes are used (more or less NULL = 0 value)
     template <typename TInput>

@@ -54,6 +54,7 @@ set(SOURCE_FILES
         netbuf-test.cpp
         test-observer.h experimental2-test.cpp
         retry-test.cpp
+        uint-test.cpp
         )
 
 add_executable(mc-coap-test ${SOURCE_FILES})
