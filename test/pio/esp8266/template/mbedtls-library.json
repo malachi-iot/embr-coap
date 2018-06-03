@@ -13,7 +13,7 @@
         "url": "https://github.com/espressif/ESP8266_RTOS_SDK/tree/release/v2.x.x"
     },
     "build": {
-        "flags": "-Isrc -Iinclude/lwip/posix -Iinclude",
+        "flags": "-Iinclude",
         "srcFilter": [
             "+<mbedtls/**>",
             "-<test>",

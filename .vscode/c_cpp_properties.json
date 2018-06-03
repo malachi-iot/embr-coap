@@ -2,8 +2,7 @@
     "env" : {
         "myDefaultIncludePath": [
             "${workspaceFolder}",
-            "${workspaceFolder}/lib/lib_a/src",
-            "${workspaceFolder}/lib/lib_b/src"
+            "${workspaceFolder}/src"
         ],
         "myCompilerPath": "/usr/local/bin/gcc-7"
     },
