@@ -15,16 +15,8 @@
     "build": {
         "flags": "-Iinclude",
         "srcFilter": [
-            "+<mbedtls/**>",
-            "-<test>",
-            "-<src/old>"
+            "+<mbedtls/**>"
         ] 
     },
-    "frameworks": "esp8266-rtos-sdk",
-    "dependencies": 
-    [
-        {
-            "frameworks": "esp8266-rtos-sdk"
-        }
-    ]
+    "frameworks": "esp8266-rtos-sdk"
 }
