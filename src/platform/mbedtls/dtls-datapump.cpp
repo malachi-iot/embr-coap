@@ -7,7 +7,7 @@
 // MBEDTLS_CONFIG_FILE specifies this, but experimenting we need to help it along
 // for PIO.  Probably chain+ ldf will resolve without this help, but for now
 // let's not take any chances
-#include "mbedtls/config_esp.h"
+//#include "mbedtls/config_esp.h"
 
 #include <mc/opts-internal.h>
 
