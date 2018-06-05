@@ -46,22 +46,25 @@ extern "C" {
 // 
 // Confusing, but there it is.  Re-enable it here since we *do* use those
 // APIs - mainly to pass the following big-define-test
-#if defined(ESP32)
+#if defined(ESP32) || defined(ESP8266)
 #define MBEDTLS_NET_C
 #endif
 
 #if !defined(MBEDTLS_SSL_SRV_C) || !defined(MBEDTLS_SSL_PROTO_DTLS) ||    \
     !defined(MBEDTLS_SSL_COOKIE_C) || !defined(MBEDTLS_NET_C) ||          \
-    !defined(MBEDTLS_ENTROPY_C) || !defined(MBEDTLS_CTR_DRBG_C) ||        \
-    !defined(MBEDTLS_X509_CRT_PARSE_C) || !defined(MBEDTLS_RSA_C) ||      \
+    !defined(MBEDTLS_ENTROPY_C) || !defined(MBEDTLS_CTR_DRBG_C)
+
+#error "Missing requisite flag - see dtls-datapump.cpp (batch 1)"
+
+#endif
+
+#if !defined(MBEDTLS_X509_CRT_PARSE_C) || !defined(MBEDTLS_RSA_C) ||      \
     !defined(MBEDTLS_CERTS_C) || !defined(MBEDTLS_PEM_PARSE_C) ||         \
     !defined(MBEDTLS_TIMING_C)
 
-#error "Missing requisite flag - see dtls-datapump.cpp"
+#error "Missing requisite flag - see dtls-datapump.cpp (batch 2)"
 
-} // for extern "C" portion
-
-#else
+#endif
 
 #if defined(_WIN32)
 #include <windows.h>
@@ -88,6 +91,12 @@ extern "C" {
 
 #if defined(MBEDTLS_SSL_CACHE_C)
 #include "mbedtls/ssl_cache.h"
+#endif
+
+#ifdef ESP8266
+// as per https://github.com/espressif/ESP8266_RTOS_SDK/issues/77
+// Not 100% sure we need it for DTLS, but definitely for TLS
+unsigned int max_content_len = 3072;
 #endif
 
 } // extern "C"
@@ -470,8 +479,5 @@ mbedtls_net_free( &client_fd );
 
 
 }}
-
-#endif // met MBEDTLS flag requisites
-
 
 #endif
