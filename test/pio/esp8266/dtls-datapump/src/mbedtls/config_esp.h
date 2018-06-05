@@ -1,12 +1,14 @@
-// Not getting here, damn
-#error GOT HERE
-
 #include_next<mbedtls/config_esp.h>
 
 #define MBEDTLS_NET_C
+#define MBEDTLS_DEBUG_C
 
 #define MBEDTLS_SSL_PROTO_TLS1_2
+
+// these two are both needed to enable test certificates
+#define MBEDTLS_SELF_TEST
 #define MBEDTLS_CERTS_C
+
 #define MBEDTLS_X509_CRT_PARSE_C
 #define MBEDTLS_RSA_C
 #define MBEDTLS_PEM_PARSE_C
