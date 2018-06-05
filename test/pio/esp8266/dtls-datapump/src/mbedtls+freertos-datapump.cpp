@@ -1,6 +1,10 @@
 #include <exp/datapump.hpp>
 #include <platform/mbedtls/dtls-datapump.h>
 
+// Experimental
+// trying to 'prime' the LDF pump so it picks up our mbedtls-custom
+#include "mbedtls/net.h"
+
 // FIX: temporarily conflating datapump and ping responder
 //#include <simple-ping-responder.hpp>
 
