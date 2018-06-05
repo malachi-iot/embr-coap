@@ -2,22 +2,25 @@
     "name": "mbedtls-custom",
     "keywords": "mbedtls",
     "description": "mbedtls",
-    "version": "0.1.0",
-    "authors": 
-    {
-        "name": "Malachi Burke"
-    },
+    "version": "0.1.1",
+    "authors": [
+        {
+            "name": "ARMmbed",
+            "url": "https://github.com/ARMmbed/mbedtls"
+        },
+        {
+            "name": "Malachi Burke"
+        }
+    ],
     "repository":
     {
         "type": "git",
-        "url": "https://github.com/espressif/ESP8266_RTOS_SDK/tree/release/v2.x.x"
+        "url": "https://github.com/espressif/ESP8266_RTOS_SDK/tree/release/v2.x.x/third_party/mbedtls"
     },
     "build": {
-        "flags": "-Isrc -Iinclude/lwip/posix -Iinclude",
+        "flags": "-Iinclude/lwip/posix -Iinclude",
         "srcFilter": [
-            "+<mbedtls/**>",
-            "-<test>",
-            "-<src/old>"
+            "+<mbedtls/**>"
         ] 
     },
     "frameworks": "esp8266-rtos-sdk"
