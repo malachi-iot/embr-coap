@@ -1,0 +1,1 @@
+# COMPONENT_SRCDIRS := folder1 coap mc-mem
