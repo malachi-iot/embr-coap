@@ -46,23 +46,34 @@ extern "C" {
 // 
 // Confusing, but there it is.  Re-enable it here since we *do* use those
 // APIs - mainly to pass the following big-define-test
-#if defined(ESP32) || defined(ESP8266)
+#if defined(ESP32) || defined(ESP8266) || defined(IDF_VER)
 #define MBEDTLS_NET_C
 #endif
 
 #if !defined(MBEDTLS_SSL_SRV_C) || !defined(MBEDTLS_SSL_PROTO_DTLS) ||    \
-    !defined(MBEDTLS_SSL_COOKIE_C) || !defined(MBEDTLS_NET_C) ||          \
-    !defined(MBEDTLS_ENTROPY_C) || !defined(MBEDTLS_CTR_DRBG_C)
+    !defined(MBEDTLS_SSL_COOKIE_C) || !defined(MBEDTLS_NET_C)
 
 #error "Missing requisite flag - see dtls-datapump.cpp (batch 1)"
 
 #endif
 
-#if !defined(MBEDTLS_X509_CRT_PARSE_C) || !defined(MBEDTLS_RSA_C) ||      \
-    !defined(MBEDTLS_CERTS_C) || !defined(MBEDTLS_PEM_PARSE_C) ||         \
-    !defined(MBEDTLS_TIMING_C)
+
+#if !defined(MBEDTLS_ENTROPY_C) || !defined(MBEDTLS_CTR_DRBG_C)
 
 #error "Missing requisite flag - see dtls-datapump.cpp (batch 2)"
+
+#endif
+
+#if !defined(MBEDTLS_X509_CRT_PARSE_C) || !defined(MBEDTLS_RSA_C)
+
+#error "Missing requisite flag - see dtls-datapump.cpp (batch 3)"
+
+#endif
+
+#if !defined(MBEDTLS_CERTS_C) || !defined(MBEDTLS_PEM_PARSE_C) ||         \
+    !defined(MBEDTLS_TIMING_C)
+
+#error "Missing requisite flag - see dtls-datapump.cpp (batch 4)"
 
 #endif
 

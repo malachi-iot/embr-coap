@@ -11,3 +11,5 @@ COMPONENT_PRIV_INCLUDEDIRS := ../components/coap/main ../components/estdlib/main
 # -fno-threadsafe-statics -DESP_DEBUG -DFEATURE_MC_MEM_LWIP -DUDP_DEBUG=LWIP_DBG_ON
 CXXFLAGS += -DFEATURE_MC_MEM_LWIP -DFEATURE_MCCOAP_MBEDTLS
 # FIX: above I don't think is quite working as expected
+
+#COMPONENTS += coap

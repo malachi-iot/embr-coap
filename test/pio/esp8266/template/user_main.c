@@ -24,6 +24,7 @@
 
 #include "multicast_config.h"
 
+// If need be, we can access IDF-VER ala https://github.com/espressif/ESP8266_RTOS_SDK/blob/master/make/project.mk
 #ifdef OLD_STYLE
 #include "esp_common.h"
 #else
