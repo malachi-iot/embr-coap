@@ -1,0 +1,3 @@
+COMPONENT_SRCDIRS := main
+COMPONENT_PRIV_INCLUDEDIRS := ../estdlib/main main
+COMPONENT_EXTRA_INCLUDES := ../estdlib/main
