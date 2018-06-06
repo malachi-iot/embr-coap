@@ -288,6 +288,10 @@ int Dtls::setup()
     return ret;
 }
 
+extern "C" int dbg_mbedtls_net_accept( mbedtls_net_context *bind_ctx,
+                        mbedtls_net_context *client_ctx,
+                        void *client_ip, size_t buf_size, size_t *ip_len );
+
 
 // TODO: will take datapump either as an input or more of an instance variable
 bool Dtls::loop(int* _ret)
@@ -320,7 +324,8 @@ bool Dtls::loop(int* _ret)
     printf( "  . Waiting for a remote connection ..." );
     fflush( stdout );
 
-    if( ( ret = mbedtls_net_accept( &listen_fd, &client_fd,
+    if( ( ret = dbg_mbedtls_net_accept( &listen_fd, &client_fd,
+    //if( ( ret = mbedtls_net_accept( &listen_fd, &client_fd,
                     client_ip, sizeof( client_ip ), &cliip_len ) ) != 0 )
     {
         printf( " failed\n  ! mbedtls_net_accept returned %d\n\n", ret );
