@@ -1,26 +1,32 @@
-/* Flash Split for 4M chips */
-/* sketch 1019KB */
-/* empty  1024KB */
-/* spiffs 2028KB */
-/* eeprom 20KB */
+/* eagle.flash.bin     @ 0x00000 */
+/* eagle.irom0text.bin @ 0x20000 */
 
-/* MB: Copied from https://raw.githubusercontent.com/esp8266/Arduino/master/tools/sdk/ld/eagle.flash.4m2m.ld
- * All my test ESP modules have this, but would be nice to try to get 1MB size to work also
- * (I will conceded 512K is too small considering just core ESP8266 firmware with few options
- *  was around ~300K last I checked, and mbedtls is reasonable to be larger than a few 100k)
- */
+/* Flash Map, support 512KB/1MB/2MB/4MB SPI Flash */
+/* |......|..............................|..........................|.....|....|                       */
+/* ^      ^                              ^                          ^     ^                            */
+/* |_flash.bin start(0x0000)             |_irom0text.bin start(0x20000)   |                            */
+/*        |_flash.bin end                                           |_irom0text.bin end                */
+/*                                                                        |_system param area(0x7b000) */
+
+/* NOTICE: */ 
+/* 1. You can change irom0 org, but MUST make sure irom0text.bin start not overlap flash.bin end.   */
+/* 2. You can change irom0 len, but MUST make sure irom0text.bin end not overlap system param area. */
+/* 3. Space between flash.bin end and irom0text.bin start can be used as user param area.           */
+/* 4. Space between irom0text.bin end and system param area can be used as user param area.         */
+/* 5. Make sure irom0text.bin end < 0x100000                                                        */
+/* 6. system param area:                                                                            */
+/*    1>. 512KB--->0x07b000                                                                         */
+/*    2>. 1MB----->0x0fb000                                                                         */
+/*    3>. 2MB----->0x1fb000                                                                         */
+/*    4>. 4MB----->0x3fb000                                                                         */
+/* 7. Don't change any other seg.                                                                   */
 
 MEMORY
 {
-  dport0_0_seg :                        org = 0x3FF00000, len = 0x10
-  dram0_0_seg :                         org = 0x3FFE8000, len = 0x14000
-  iram1_0_seg :                         org = 0x40100000, len = 0x8000
-  irom0_0_seg :                         org = 0x40201010, len = 0xfeff0
+  dport0_0_seg :                      	org = 0x3FF00000, len = 0x10
+  dram0_0_seg :                       	org = 0x3FFE8000, len = 0x18000
+  iram1_0_seg :                       	org = 0x40100000, len = 0x8000
+  irom0_0_seg :                       	org = 0x40220000, len = 0xfb000
 }
-
-PROVIDE ( _SPIFFS_start = 0x40400000 );
-PROVIDE ( _SPIFFS_end = 0x405FB000 );
-PROVIDE ( _SPIFFS_page = 0x100 );
-PROVIDE ( _SPIFFS_block = 0x2000 );
 
 INCLUDE "../ld/eagle.app.v6.common.ld"
