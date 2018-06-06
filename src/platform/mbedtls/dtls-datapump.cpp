@@ -462,7 +462,7 @@ void Dtls::error(int ret)
 
 void Dtls::shutdown()
 {
-mbedtls_net_free( &client_fd );
+    mbedtls_net_free( &client_fd );
     mbedtls_net_free( &listen_fd );
 
     mbedtls_x509_crt_free( &srvcert );
