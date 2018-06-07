@@ -1,6 +1,8 @@
 //
 // Created by malachi on 5/30/18.
 //
+// Importantly, this already has extern "C" wrapper in it
+#include "mbedtls/ssl.h"
 
 #ifndef MC_COAP_TEST_MBEDTLS_DATAPUMP_H
 #define MC_COAP_TEST_MBEDTLS_DATAPUMP_H
@@ -14,6 +16,9 @@ namespace moducom { namespace coap {
 // TODO: Might have to go dtls-datapump.hpp and make this templated on TNetBuf
 class Dtls
 {
+    mbedtls_ssl_context ssl;
+    mbedtls_ssl_config conf;
+
     // as indicated by dtls_server.c examples
     // TODO: In order for 'observe' functionality we'll need to be able to construct these
     // from scratch.  Standard request/response stuff we should be good echoing back what
@@ -21,6 +26,8 @@ class Dtls
     typedef uint8_t addr_t[16];
 
 public:
+    mbedtls_ssl_config& ssl_config() { return conf; }
+
     int setup();    // returns 0 on success. if fail, go straight to shutdown
     // true = loop again, false = stop, exit, *ret holds return code, can not be null
     bool loop(int* ret);

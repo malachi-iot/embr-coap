@@ -13,6 +13,7 @@
 #include "esp_common.h"
 #elif defined(IDF_VER) // newer direct RTOS-SDK inclusion
 #include "esp_system.h"
+#include "mbedtls/esp_debug.h"
 #endif
 
 using namespace moducom::coap;
@@ -25,6 +26,14 @@ extern "C" void coap_daemon(void *)
 
     int ret = dtls.setup();
     bool _continue = true;
+
+#ifdef MBEDTLS_DEBUG_C
+    // slightly non-trivial call, needs ssl info first
+    // see https://github.com/espressif/ESP8266_RTOS_SDK/blob/master/components/ssl/mbedtls/port/esp8266/mbedtls_debug.c
+    // nab debug level from Kconfig
+    // 
+    mbedtls_esp_enable_debug_log(&dtls.ssl_config(), CONFIG_MBEDTLS_DEBUG_LEVEL);
+#endif
 
     while(ret == 0 && _continue)
     {
