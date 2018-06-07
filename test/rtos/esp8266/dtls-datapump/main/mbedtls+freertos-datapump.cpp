@@ -14,6 +14,9 @@
 #elif defined(IDF_VER) // newer direct RTOS-SDK inclusion
 #include "esp_system.h"
 #include "mbedtls/esp_debug.h"
+
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
 #endif
 
 using namespace moducom::coap;
@@ -38,6 +41,8 @@ extern "C" void coap_daemon(void *)
     while(ret == 0 && _continue)
     {
         _continue = dtls.loop(&ret);
+
+        taskYIELD();
 
 #ifdef DIAGNOSTIC_MODE
         // diagnostic mode, starts right back up again after an error

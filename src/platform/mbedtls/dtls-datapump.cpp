@@ -48,6 +48,12 @@ extern "C" {
 // APIs - mainly to pass the following big-define-test
 #if defined(ESP32) || defined(ESP8266) || defined(IDF_VER)
 #define MBEDTLS_NET_C
+
+// do some non-MBEDTLS_NET_C stuff here also
+#define FREERTOS // TODO: Grab proper FreeRTOS flag from FreeRTOS itself, if we can
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
+
 #endif
 
 #if !defined(MBEDTLS_SSL_SRV_C) || !defined(MBEDTLS_SSL_PROTO_DTLS)
@@ -115,8 +121,8 @@ extern "C" {
 #include "mbedtls/ssl_cache.h"
 #endif
 
-#define BUFSIZE1    3072
-#define BUFSIZE2    4096
+#define BUFSIZE1    8192
+#define BUFSIZE2    8192
 
 #ifdef ESP8266
 // as per https://github.com/espressif/ESP8266_RTOS_SDK/issues/77
@@ -378,6 +384,8 @@ bool Dtls::loop(int* _ret)
      */
     printf( "  . Performing the DTLS handshake..." );
     fflush( stdout );
+
+    taskYIELD();
 
     do ret = mbedtls_ssl_handshake( &ssl );
     while( ret == MBEDTLS_ERR_SSL_WANT_READ ||
