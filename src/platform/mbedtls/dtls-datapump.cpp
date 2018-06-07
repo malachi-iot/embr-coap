@@ -346,8 +346,8 @@ bool Dtls::loop(int* _ret)
     printf( "  . Waiting for a remote connection ..." );
     fflush( stdout );
 
-    if( ( ret = dbg_mbedtls_net_accept( &listen_fd, &client_fd,
-    //if( ( ret = mbedtls_net_accept( &listen_fd, &client_fd,
+    //if( ( ret = dbg_mbedtls_net_accept( &listen_fd, &client_fd,
+    if( ( ret = mbedtls_net_accept( &listen_fd, &client_fd,
                     client_ip, sizeof( client_ip ), &cliip_len ) ) != 0 )
     {
         printf( " failed\n  ! mbedtls_net_accept returned %d\n\n", ret );

@@ -53,7 +53,7 @@ void igmp_send_task(void *pvParameters)
 {
     struct sockaddr_in addr;
     int fd, cnt;
-    struct ip_mreq mreq;
+    //struct ip_mreq mreq;
     char *message = "Hello, World!\n";
     /* create what looks like an ordinary UDP socket */
     if ((fd=socket(AF_INET,SOCK_DGRAM,0)) < 0) {
@@ -87,7 +87,7 @@ void igmp_recv_task(void *pvParameters)
     int fd, nbytes, addrlen;
     struct ip_mreq mreq;
     char msgbuf[MSGBUFSIZE] = { 0 };
-    u_int yes = 1;
+    //u_int yes = 1;
 
 if ((fd=socket(AF_INET,SOCK_DGRAM,0)) < 0)
     {
@@ -164,7 +164,7 @@ void wifi_event_handler_cb(System_Event_t * event)
  *******************************************************************************/
 void wifi_config(void *pvParameters)
 {
-    struct ip_info ip_config;
+    //struct ip_info ip_config;
     struct station_config sta_config;
     memset(&sta_config, 0, sizeof(struct station_config));
     wifi_set_opmode(STATION_MODE);
