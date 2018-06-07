@@ -1,0 +1,4 @@
+#!/bin/bash
+
+openssl s_client -connect 192.168.2.15:4433 -dtls
+

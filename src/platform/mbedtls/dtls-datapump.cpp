@@ -115,10 +115,13 @@ extern "C" {
 #include "mbedtls/ssl_cache.h"
 #endif
 
+#define BUFSIZE1    3072
+#define BUFSIZE2    4096
+
 #ifdef ESP8266
 // as per https://github.com/espressif/ESP8266_RTOS_SDK/issues/77
 // Not 100% sure we need it for DTLS, but definitely for TLS
-unsigned int max_content_len = 3072;
+unsigned int max_content_len = BUFSIZE1;
 #endif
 
 } // extern "C"
@@ -153,7 +156,7 @@ static void my_debug( void *ctx, int level,
 #if defined(MBEDTLS_SSL_CACHE_C)
     mbedtls_ssl_cache_context cache;
 #endif
-    uint8_t buf[1024];
+    uint8_t buf[BUFSIZE2];
 
 int Dtls::setup()
 {
@@ -342,6 +345,7 @@ bool Dtls::loop(int* _ret)
 
     /*
      * 3. Wait until a client connects
+     * FIX: make this nonblocking at some point
      */
     printf( "  . Waiting for a remote connection ..." );
     fflush( stdout );
@@ -481,7 +485,7 @@ void Dtls::error(int ret)
     {
         char error_buf[100];
         mbedtls_strerror( ret, error_buf, 100 );
-        printf( "Last error was: %d - %s\n\n", ret, error_buf );
+        printf( "Last error was: %x - %s\n\n", ret, error_buf );
     }
 #endif
 }

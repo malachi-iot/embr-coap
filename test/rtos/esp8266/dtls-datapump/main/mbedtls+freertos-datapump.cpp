@@ -8,9 +8,11 @@
 // FIX: temporarily conflating datapump and ping responder
 //#include <simple-ping-responder.hpp>
 
-#ifdef ESP8266
+#ifdef ESP8266 // pio flavor (older SDK)
 // for heap size info
 #include "esp_common.h"
+#elif defined(IDF_VER) // newer direct RTOS-SDK inclusion
+#include "esp_system.h"
 #endif
 
 using namespace moducom::coap;
@@ -30,10 +32,13 @@ extern "C" void coap_daemon(void *)
 
 #ifdef DIAGNOSTIC_MODE
         // diagnostic mode, starts right back up again after an error
-        if(!_continue)
+        if(!_continue || ret != 0)
         {
+            printf("diagnostic mode: resuming\n");
+            
+            dtls.error(ret);
             dtls.shutdown();
-#ifdef ESP8266
+#if defined(ESP8266) || defined(IDF_VER)
             printf("free heap size %d line %d \n", system_get_free_heap_size(), __LINE__);
 #endif
             ret = dtls.setup();
