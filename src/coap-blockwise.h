@@ -6,7 +6,6 @@
 #define MC_COAP_TEST_COAP_BLOCKWISE_H
 
 #include <stdint.h>
-#include "platform.h"
 #include "mc/memory-chunk.h"
 #include "coap-uint.h"
 
