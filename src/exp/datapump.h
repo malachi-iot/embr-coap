@@ -271,7 +271,7 @@ public:
         {
             decoder_t& d = this->decoder();
             base_t::header(d.header());
-            d.process_token_experimental(&this->_token);
+            d.token(&this->_token);
             d.begin_option_experimental();
         }
 

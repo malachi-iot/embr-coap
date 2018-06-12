@@ -48,7 +48,7 @@ public:
 static void suite(NetBufDecoder<NetBufMemory>& decoder)
 {
     decoder.header();
-    decoder.process_token_experimental();
+    decoder.token();
 
     option_iterator<NetBufMemory, NetBufDecoder<NetBufMemory> > it(decoder, true);
 
@@ -86,13 +86,13 @@ TEST_CASE("netbuf+coap tests", "[netbuf-coap]")
 
         REQUIRE(header.message_id() == 0x0123);
 
-        // FIX: this has a problem because actually TokenDone isn't evaluated if
-        // no token is present.  We're going to change that, because of this wording
-        // from RFC7252
-        // "(Note that every message carries a token, even if it is of zero length.)"
-        moducom::coap::layer3::Token token = decoder.process_token_experimental();
+        moducom::coap::layer3::Token token = decoder.token();
 
         REQUIRE(token.length() == 0);
+
+        // from RFC7252
+        // "(Note that every message carries a token, even if it is of zero length.)"
+        REQUIRE(decoder.state() == Decoder::TokenDone);
     }
     SECTION("'simplest' (data) incoming decoder")
     {

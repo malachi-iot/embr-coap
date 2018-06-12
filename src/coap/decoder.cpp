@@ -108,7 +108,7 @@ bool Decoder::process_iterate(Context& context)
 
             // FIX: Payload now discovered and heeded in optionDecoder, do so out here
             // as well
-// handle option a.1), a.2) or b.1) described below
+            // handle option a.1), a.2) or b.1) described below
             if (optionDecoder.state() == OptionDecoder::Payload)
             {
                 state(OptionsDone);

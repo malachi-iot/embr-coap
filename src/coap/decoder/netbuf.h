@@ -28,12 +28,34 @@ protected:
     ro_chunk_t chunk;
     Context context;
 
+
+    bool process_iterate(State assert_start_state, const char* errmsg = NULLPTR)
+    {
+        if(errmsg)
+        {
+            ASSERT_ERROR(assert_start_state, state(), errmsg);
+        }
+        else
+        {
+#ifdef FEATURE_MCCOAP_CLOG
+            ASSERT_ERROR(assert_start_state, state(),
+                         "Expected state " << assert_start_state << " but got: " << state());
+#else
+            ASSERT_ERROR(assert_start_state, state(), "Encountered unexpected state");
+#endif
+        }
+        bool result = base_t::process_iterate(context);
+
+        return result;
+    }
+
 public:
     bool process_iterate()
     {
         // TODO: Will know how to advance through netbuf
         return base_t::process_iterate(context);
     }
+
 
     void process_option_header_experimental()
     {
@@ -78,6 +100,7 @@ protected:
 
     // internal call , needs to be mated to process_option_header_experimental
 public:
+    // FIX: convert (reverse) this from 'partial' to 'completed' flag
     ro_chunk_t process_option_value_experimental(bool* partial = NULLPTR)
     {
         ASSERT_WARN(Decoder::Options, state(), "Must be in options processing mode");
@@ -106,16 +129,6 @@ public:
             return ro_chunk_t(raw, value_length);
     }
 
-public:
-    NetBufDecoder(const netbuf_t& netbuf) :
-        m_netbuf(netbuf),
-        chunk(netbuf.processed(), netbuf.length_processed()),
-        // NOTE: Be advised that netbuf.end() differs from traditional iterator end
-        // in that it is a bool indicating that we are ON the last chunk, not PAST it
-        context(chunk, netbuf.end())
-    {}
-
-    netbuf_t& netbuf() { return m_netbuf; }
 
     // keep processing until we encounter state
     // keep processing for max_attempts
@@ -123,12 +136,19 @@ public:
     // where core decoder though it knows whether it's the last chunk, it doesn't know how
     // to retrieve the next one
     // in debug mode, this should indicate an error if we never reach said state
-    bool process_until_experimental(Decoder::State s, int max_attempts = 50)
+    // NOTE: return value convention differs here from underlying process_iterate
+    //   process_iterate indicates whether we've reached end of chunk, while
+    //   process_until_experimental indicates whether we found the state we're looking for
+    bool process_until_experimental(Decoder::State s, int max_attempts = 10)
     {
         while(max_attempts-- > 0)
         {
             if(state() != s)
             {
+                // NOTE: Probably an optimization we can inspect process iterate
+                // for completion of buffer.  Don't do it yet though because
+                // after buffer completion, it's still prudent to process state
+                // (state iterations can happen even after buffer has been exhausted)
                 process_iterate();
             }
             else
@@ -143,6 +163,35 @@ public:
 #endif
         return false;
     }
+
+    int8_t preprocess_token()
+    {
+        int8_t tkl = header_decoder().token_length();
+
+        // assert we're starting at headerdone, and expect to move to end of TokenDone
+        process_iterate(Decoder::HeaderDone);
+
+        // won't proceed unless enough bytes have been processed to form a complete token
+        // (we queue it up in this decoder)
+        // if token bytes are present, we'll move through Decoder::Token state
+        // if no token bytes are present, we'll move directly to Decoder::TokenDone
+        if(!process_until_experimental(Decoder::TokenDone)) return -1;
+
+        return tkl;
+    }
+
+
+
+public:
+    NetBufDecoder(const netbuf_t& netbuf) :
+        m_netbuf(netbuf),
+        chunk(netbuf.processed(), netbuf.length_processed()),
+        // NOTE: Be advised that netbuf.end() differs from traditional iterator end
+        // in that it is a bool indicating that we are ON the last chunk, not PAST it
+        context(chunk, netbuf.end())
+    {}
+
+    netbuf_t& netbuf() { return m_netbuf; }
 
     coap::Header process_header_experimental()
     {
@@ -173,7 +222,7 @@ public:
         return state() == Payload;
     }
 
-    ro_chunk_t payload_experimental(bool* partial = NULLPTR)
+    ro_chunk_t payload_experimental(bool* completed = NULLPTR)
     {
         if(state() == OptionsDone)
             process_payload_header_experimental();
@@ -186,9 +235,9 @@ public:
         return context.remainder();
     }
 
-    estd::layer3::basic_string<char, false> payload_string_experimental(bool* partial = NULLPTR)
+    estd::layer3::basic_string<char, false> payload_string_experimental(bool* completed = NULLPTR)
     {
-        ro_chunk_t p = payload_experimental(partial);
+        ro_chunk_t p = payload_experimental(completed);
 
         estd::layer3::basic_string<char, false> payload(p.length(), (char*)p.data(), p.length());
 
@@ -200,27 +249,21 @@ public:
         return process_header_experimental();
     }
 
-
-    // TODO: Ensure this is a non-blocking call and return true or false denoting
-    // whether we've reached a blocking point, not whether we got a nonzero tkl
+    // returns true if we consumed enough bytes to produce a complete token.  NOTE this
+    //   could validly be a count of 0 bytes for 0-length tokens
+    // returnse false otherwise
     bool process_token_experimental(layer2::Token* token)
     {
-        ASSERT_WARN(Decoder::HeaderDone, state(), "Expected to be at end of header processing");
+        int tkl = preprocess_token();
 
-        int tkl = header_decoder().token_length();
-
-        // NOTE: Can't 100% remember if TokenDone is triggered on a 0-length token
-        process_until_experimental(Decoder::TokenDone);
+        if(tkl < 0) return false;
 
         if(tkl > 0)
-        {
             new (token) layer2::Token(token_decoder().data(), tkl);
-            return true;
-        }
+        else
+            new (token) layer2::Token(NULLPTR, 0);
 
-        new (token) layer2::Token(NULLPTR, 0);
-
-        return false;
+        return true;
     }
 
     // alias to experimental version. we like it enough for it now to be non experimental
@@ -229,25 +272,38 @@ public:
         return process_token_experimental(token);
     }
 
-    layer3::Token process_token_experimental()
+    // by its nature, this will be less efficient than a layer2::Token
+    // if we only hace a partial token available and conversely more efficient
+    // if we have a non-partial token.  At this time Decoder (due to current TokenDecoder)
+    // actually buffers incoming token, so we're talking:
+    // 1. incoming packet (token present in 0 byte, fragmented, or complete form) ->
+    // 2. token decoder (8-byte token buffer)
+    // 3. this layer3::Token, which is a pointer to #2
+    // eventually I plan to phase out mandatory #2 buffering, since the majority of use cases
+    //   are a non-fragmented header+token
+    layer3::Token process_token_experimental(bool* completed = NULLPTR)
     {
-        ASSERT_WARN(Decoder::HeaderDone, state(), "Expected to be at end of header processing");
+        int tkl = preprocess_token();
 
-        int tkl = header_decoder().token_length();
+        if(completed != NULLPTR) *completed = tkl >= 0;
 
-        // NOTE: Can't 100% remember if TokenDone is triggered on a 0-length token
-        process_until_experimental(Decoder::TokenDone);
-
+        // NOTE: We'll be assembling a layer3::Token with a -1 length here if completed isn't
+        // set to true.  So a 2nd way to detect unfinished token processing, but a bit more
+        // obscure
         return layer3::Token(token_decoder().data(), tkl);
+    }
+
+    // alias to experimental version. we like it enough for it now to be non experimental
+    layer3::Token token(bool* completed = NULLPTR)
+    {
+        return process_token_experimental(completed);
     }
 
     // kicks off option processing
     bool begin_option_experimental()
     {
-        ASSERT_WARN(Decoder::TokenDone, state(), "Must be at end of token processing");
-
-        // move us into OptionsStart
-        process_iterate();
+        // move us into OptionsStart, asserting we're starting at TokenDone
+        process_iterate(Decoder::TokenDone);
         // move us into Options or OptionsDone
         process_iterate();
 

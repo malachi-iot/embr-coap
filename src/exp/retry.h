@@ -193,7 +193,7 @@ public:
             coap::layer2::Token token;
 
             decoder.header();
-            decoder.process_token_experimental(&token);
+            decoder.token(&token);
 
             return token;
         }
@@ -329,7 +329,7 @@ public:
 
         Header h = decoder.header();
         coap::layer2::Token token;
-        decoder.process_token_experimental(&token);
+        decoder.token(&token);
 
         if(h.type() == Header::Acknowledgement)
         {
