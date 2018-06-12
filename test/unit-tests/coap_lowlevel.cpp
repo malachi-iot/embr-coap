@@ -49,7 +49,7 @@ TEST_CASE("CoAP low level tests", "[coap-lowlevel]")
         {
             // A little clunky but should work, just to stay 1:1 with old test
             moducom::pipeline::MemoryChunk temp_chunk(&buffer[i], 1);
-            parser.process(temp_chunk, i == sizeof(buffer) - 1);
+            parser.process_deprecated(temp_chunk, i == sizeof(buffer) - 1);
 
             switch (i + 1)
             {

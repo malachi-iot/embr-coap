@@ -12,42 +12,91 @@
 #include "coap/decoder/simple.h"
 #include "coap/decoder/option.h"
 
+// TODO: Keep an eye on this, pretty sure we need to use our own special one if in C++03
+#include <type_traits> // for std::conditional
+#include <estd/type_traits.h> // for estd::conditional, if necessary
+
 namespace moducom { namespace coap {
+
+
+// gauruntees about contiguous nature (or lack thereof) of incoming
+// messages
+struct DefaultDecoderTraits
+{
+    static CONSTEXPR bool contiguous_through_token() { return false; }
+    static CONSTEXPR bool contiguous_through_options() { return false; }
+
+    static CONSTEXPR bool contiguous() { return false; }
+};
+
+
+// Incomplete DecoderBase to eventually sort out optimization of sub-decoders
+// (header, token, option) based on compile-time indication of how contiguous
+// our CoAP buffers are gaurunteed to be
+template <class TDecoderTraits = DefaultDecoderTraits>
+class DecoderBase
+{
+protected:
+    typedef TDecoderTraits decoder_traits;
+
+    typedef typename std::conditional<
+            decoder_traits::contiguous_through_token(),
+            CounterDecoder<uint8_t>,
+            RawDecoder<8> >::type token_decoder_t;
+
+
+    // NOTE: Keep an eye on this. C++03 is sensitive about union-izing actual C++ classes
+    // (vs basic structs).  So far it seems to be behaving OK since we don't have explicit
+    // constructors for these decoders
+    // TODO: This will become more complex as we branch out and handle decoder traits.  Note
+    // that when we do, to really take advantage of optimizations, we'll have to turn Decoder::process_iterate
+    // into an .hpp/templatized function
+    union
+    {
+        token_decoder_t tokenDecoder;
+        OptionDecoder optionDecoder;
+    };
+
+    // FIX: have to non-unionize headerDecoder because Decoder::process_iterate processes tokenDecoder
+    // based on input from headerDecoder.  Ways to optimize this vary based on decoder_traits settings
+    HeaderDecoder headerDecoder;
+
+    DecoderBase() {}
+};
 
 // TODO: As an optimization, make version of TokenDecoder which is zerocopy
 class Decoder :
+    public DecoderBase<DefaultDecoderTraits>,
     public internal::Root,
     public StateHelper<internal::root_state_t>
 {
     typedef internal::_root_state_t _state_t;
+    typedef DecoderBase<DefaultDecoderTraits> decoder_base_t;
+
+public:
+    typedef decoder_base_t::token_decoder_t token_decoder_t;
+
+    HeaderDecoder& header_decoder() { return decoder_base_t::headerDecoder; }
+    token_decoder_t& token_decoder() { return decoder_base_t::tokenDecoder; }
+    OptionDecoder& option_decoder() { return decoder_base_t::optionDecoder; }
 
 protected:
-    // TODO: Union-ize this  Not doing so now because of C++03 trickiness
-    HeaderDecoder headerDecoder;
-    OptionDecoder optionDecoder;
-    TokenDecoder tokenDecoder;
-
-
-    inline void init_header_decoder() { new (&headerDecoder) HeaderDecoder; }
+    inline void init_header_decoder() { new (&header_decoder()) HeaderDecoder; }
 
     // NOTE: Initial reset redundant since class initializes with 0, though this
     // may well change when we union-ize the decoders.  Likely though instead we'll
     // use an in-place new
-    inline void init_token_decoder() { tokenDecoder.reset(); }
+    inline void init_token_decoder() { token_decoder().reset(); }
 
     // NOTE: reset might be more useful if we plan on not auto-resetting
     // option decoder from within its own state machine
     inline void init_option_decoder()
     {
-        new (&optionDecoder) OptionDecoder;
+        new (&option_decoder()) OptionDecoder;
         //optionDecoder.reset();
     }
 
 public:
-    HeaderDecoder& header_decoder() { return headerDecoder; }
-    TokenDecoder& token_decoder() { return tokenDecoder; }
-    OptionDecoder& option_decoder() { return optionDecoder; }
-
     // making context public (hopefully temporarily) since we use Decoder in a
     // composable (has a) vs hierarchical (is-a) way
 public:
@@ -111,8 +160,8 @@ public:
     bool process_iterate(Context& context);
 
     // Of limited to no use, since we blast through chunk without caller having a chance
-    // to inspect what's going on
-    void process(const pipeline::experimental::ReadOnlyMemoryChunk<>& chunk, bool last_chunk = true)
+    // to inspect what's going on.  Only keeping around for coap_lowlevel test
+    void process_deprecated(const pipeline::experimental::ReadOnlyMemoryChunk<>& chunk, bool last_chunk = true)
     {
         Context context(chunk, last_chunk);
 
@@ -124,85 +173,6 @@ public:
         return optionDecoder.state(); 
     }
 };
-
-#ifdef UNUSED
-
-namespace experimental
-{
-
-class PipelineReaderDecoderBase
-{
-protected:
-};
-
-
-// FIX: crap name
-template <class TDecoder>
-class PipelineReaderDecoder {};
-
-template <>
-class PipelineReaderDecoder<OptionDecoder>
-{
-    OptionDecoder::OptionExperimental built_option;
-    OptionDecoder decoder;
-
-public:
-    PipelineReaderDecoder<OptionDecoder>()
-    {
-        built_option.number_delta = 0;
-    }
-
-    bool process_iterate(pipeline::IBufferedPipelineReader& reader)
-    {
-        // FIX: pretty sure OptionDecoder doesn't discover end of options/beginning of payload
-        // marker like we'll need it to
-        return decoder.process_iterate(reader, &built_option);
-    }
-
-    const OptionDecoder::OptionExperimental& option() const { return built_option; }
-
-    uint16_t number_delta() const { return built_option.number_delta; }
-    uint16_t length() const { return built_option.length; }
-};
-
-
-template <>
-class PipelineReaderDecoder<HeaderDecoder>
-{
-    HeaderDecoder decoder;
-
-public:
-    bool process_iterate(pipeline::IBufferedPipelineReader& reader)
-    {
-        pipeline::PipelineMessage msg = reader.peek();
-
-        size_t counter = 0;
-        size_t length = msg.length();
-
-        while(length--)
-        {
-            if(decoder.process_iterate(msg[counter++]))
-            {
-                reader.advance_read(counter);
-                return true;
-            }
-        }
-
-        reader.advance_read(counter);
-        return false;
-    }
-
-    const Header& header() const { return decoder; }
-};
-
-/*
-inline bool decode_to_input_iterate(PipelineReaderDecoder<OptionDecoder>& decoder, pipeline::IBufferedPipelineReader& reader, IOptionObserver& input)
-{
-    decoder.process_iterate(reader);
-}
-*/
-}
-#endif
 
 }}
 

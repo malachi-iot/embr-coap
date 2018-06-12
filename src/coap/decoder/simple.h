@@ -45,6 +45,7 @@ public:
 };
 
 
+// Used for Token Decoding, but generic enough to do any buffered accumulation
 template <size_t buffer_size, typename TCounter=uint8_t>
 class RawDecoder : public CounterDecoder<TCounter>
 {
@@ -62,8 +63,6 @@ public:
         return base_t::process_iterate(max_size);
     }
 };
-
-typedef RawDecoder<8> TokenDecoder;
 
 
 class HeaderDecoder :

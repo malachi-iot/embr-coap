@@ -104,7 +104,7 @@ void DecoderSubjectBase<TMessageObserver>::dispatch_token()
     // of tkl==0
     if(decoder.header_decoder().token_length() == 0) return;
 
-    const TokenDecoder& token_decoder = decoder.token_decoder();
+    const Decoder::token_decoder_t& token_decoder = decoder.token_decoder();
     // NOTE: 90% sure it's safe to intermingle header decoder + token decoder (pretty
     // sure we retain header all the way thru) but doublecheck and document
     ro_chunk_t chunk(token_decoder.data(),
