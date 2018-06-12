@@ -193,7 +193,7 @@ public:
 
     netbuf_t& netbuf() { return m_netbuf; }
 
-    coap::Header process_header_experimental()
+    coap::Header header()
     {
         ASSERT_WARN(Decoder::Uninitialized, state(), "Expected to be at beginning of decoder processing");
 
@@ -244,15 +244,10 @@ public:
         return payload;
     }
 
-    coap::Header header()
-    {
-        return process_header_experimental();
-    }
-
     // returns true if we consumed enough bytes to produce a complete token.  NOTE this
     //   could validly be a count of 0 bytes for 0-length tokens
     // returnse false otherwise
-    bool process_token_experimental(layer2::Token* token)
+    bool token(layer2::Token* token)
     {
         int tkl = preprocess_token();
 
@@ -266,12 +261,6 @@ public:
         return true;
     }
 
-    // alias to experimental version. we like it enough for it now to be non experimental
-    bool token(layer2::Token* token)
-    {
-        return process_token_experimental(token);
-    }
-
     // by its nature, this will be less efficient than a layer2::Token
     // if we only hace a partial token available and conversely more efficient
     // if we have a non-partial token.  At this time Decoder (due to current TokenDecoder)
@@ -281,7 +270,7 @@ public:
     // 3. this layer3::Token, which is a pointer to #2
     // eventually I plan to phase out mandatory #2 buffering, since the majority of use cases
     //   are a non-fragmented header+token
-    layer3::Token process_token_experimental(bool* completed = NULLPTR)
+    layer3::Token token(bool* completed = NULLPTR)
     {
         int tkl = preprocess_token();
 
@@ -291,12 +280,6 @@ public:
         // set to true.  So a 2nd way to detect unfinished token processing, but a bit more
         // obscure
         return layer3::Token(token_decoder().data(), tkl);
-    }
-
-    // alias to experimental version. we like it enough for it now to be non experimental
-    layer3::Token token(bool* completed = NULLPTR)
-    {
-        return process_token_experimental(completed);
     }
 
     // kicks off option processing

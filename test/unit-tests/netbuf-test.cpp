@@ -99,7 +99,7 @@ TEST_CASE("netbuf+coap tests", "[netbuf-coap]")
         NetBufDecoder<NetBufMemory>  reader(buffer_simplest_request);
 
         reader.header();
-        reader.process_token_experimental();
+        reader.token();
         reader.begin_option_experimental();
 
         REQUIRE(reader.netbuf().length_unprocessed() == sizeof(buffer_simplest_request));
@@ -111,7 +111,7 @@ TEST_CASE("netbuf+coap tests", "[netbuf-coap]")
 
         Header header = decoder.header();
 
-        decoder.process_token_experimental();
+        decoder.token();
 
         decoder.begin_option_experimental();
 
