@@ -6,6 +6,9 @@
 #include "coap-uint.h"
 #include "coap/context.h"
 
+#include <type_traits>  // for std::remove_reference
+#include <estd/type_traits.h>
+
 namespace moducom { namespace coap {
 
 template <class TNetBuf, class TNetBufDecoder>
@@ -17,13 +20,17 @@ template <class TNetBuf>
 class NetBufDecoder : public Decoder
 {
     typedef TNetBuf netbuf_t;
+
+    // experimental because I am pretty sure I want netbuf_t itself to be this
+    typedef std::remove_reference<TNetBuf> netbuf_experimental_value_t;
+
     typedef Decoder base_t;
     typedef moducom::pipeline::MemoryChunk::readonly_t ro_chunk_t;
 
     friend class option_iterator<TNetBuf, class TNetBufDecoder>;
 
 protected:
-    netbuf_t m_netbuf;
+    TNetBuf m_netbuf;
     // FIX: intermediate chunk until context has a value instead of a ref for its chunk
     ro_chunk_t chunk;
     Context context;
@@ -331,6 +338,7 @@ public:
 template <class TNetBuf, class TNetBufDecoder = NetBufDecoder<TNetBuf&> >
 class option_iterator
 {
+    typedef typename std::remove_reference<TNetBuf>::type netbuf_t;
     typedef TNetBufDecoder decoder_t;
     typedef Option::Numbers value_type;
     typedef moducom::pipeline::MemoryChunk::readonly_t ro_chunk_t;

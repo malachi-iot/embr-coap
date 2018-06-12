@@ -21,7 +21,7 @@ std::ostream& operator << ( std::ostream& os, Decoder::State const& value ) {
 // simplistic memorychunk-mapped NetBuf.  Eventually put this into mcmem itself
 // FIX: this one is hardwired to read operations - not a crime, but needs more
 // architectual planning to actually be used elsewhere
-class NetBufMemory :
+class NetBufReadOnlyMemory :
         public NetBufMemoryTemplate<moducom::pipeline::MemoryChunk::readonly_t >
 {
     typedef moducom::pipeline::MemoryChunk::readonly_t chunk_t;
@@ -29,7 +29,7 @@ class NetBufMemory :
 
 public:
     template <size_t N>
-    NetBufMemory(const uint8_t (&a) [N]) :
+    NetBufReadOnlyMemory(const uint8_t (&a) [N]) :
         base_t(chunk_t(a, N))
     {
 
@@ -45,12 +45,16 @@ public:
 };
 
 
-static void suite(NetBufDecoder<NetBufMemory>& decoder)
+template <class TNetBuf>
+static void suite(NetBufDecoder<TNetBuf>& decoder)
 {
     decoder.header();
     decoder.token();
 
-    option_iterator<NetBufMemory, NetBufDecoder<NetBufMemory> > it(decoder, true);
+    // NOTE: Flawed, because option_iterator sometimes wants
+    // a reference for its parameter into NetBufDecoder.  Though in this
+    // unit test, that is so far not the case
+    option_iterator<TNetBuf, NetBufDecoder<TNetBuf> > it(decoder, true);
 
     while(it.valid()) ++it;
 
@@ -63,24 +67,26 @@ static void suite(NetBufDecoder<NetBufMemory>& decoder)
     REQUIRE((decoder.state() == Decoder::Payload || decoder.state() == Decoder::Done));
 }
 
+
+
 TEST_CASE("netbuf+coap tests", "[netbuf-coap]")
 {
     SECTION("writer")
     {
         // FIX: This is a bad test, writer shouldn't be prepopulated!
-        NetBufWriter<NetBufMemory> writer(buffer_16bit_delta);
+        NetBufWriter<NetBufReadOnlyMemory> writer(buffer_16bit_delta);
 
         REQUIRE(writer.size() == sizeof(buffer_16bit_delta));
     }
     SECTION("reader")
     {
-        NetBufReader<NetBufMemory> reader(buffer_16bit_delta);
+        NetBufReader<NetBufReadOnlyMemory> reader(buffer_16bit_delta);
 
         REQUIRE(reader.netbuf().length_unprocessed() == sizeof(buffer_16bit_delta));
     }
     SECTION("netbuf decoder")
     {
-        NetBufDecoder<NetBufMemory> decoder(buffer_16bit_delta);
+        NetBufDecoder<NetBufReadOnlyMemory> decoder(buffer_16bit_delta);
 
         Header header = decoder.header();
 
@@ -96,7 +102,7 @@ TEST_CASE("netbuf+coap tests", "[netbuf-coap]")
     }
     SECTION("'simplest' (data) incoming decoder")
     {
-        NetBufDecoder<NetBufMemory>  reader(buffer_simplest_request);
+        NetBufDecoder<NetBufReadOnlyMemory>  reader(buffer_simplest_request);
 
         reader.header();
         reader.token();
@@ -107,7 +113,7 @@ TEST_CASE("netbuf+coap tests", "[netbuf-coap]")
     SECTION("0-length value option")
     {
         typedef moducom::pipeline::MemoryChunk::readonly_t chunk_t;
-        NetBufDecoder<NetBufMemory> decoder(buffer_oversimplified_observe);
+        NetBufDecoder<NetBufReadOnlyMemory> decoder(buffer_oversimplified_observe);
 
         Header header = decoder.header();
 
@@ -129,7 +135,7 @@ TEST_CASE("netbuf+coap tests", "[netbuf-coap]")
     }
     SECTION("netbuf copy")
     {
-        NetBufMemory buf1(buffer_simplest_request);
+        NetBufReadOnlyMemory buf1(buffer_simplest_request);
         NetBufDynamicExperimental buf2;
 
         netbuf_copy(buf1, buf2);
@@ -139,7 +145,7 @@ TEST_CASE("netbuf+coap tests", "[netbuf-coap]")
     }
     SECTION("netbuf copy ('skip' feature)")
     {
-        NetBufMemory buf1(buffer_simplest_request);
+        NetBufReadOnlyMemory buf1(buffer_simplest_request);
         NetBufDynamicExperimental buf2;
 
         netbuf_copy(buf1, buf2, 1);
@@ -151,13 +157,13 @@ TEST_CASE("netbuf+coap tests", "[netbuf-coap]")
     {
         SECTION("No option, no payload")
         {
-            NetBufDecoder<NetBufMemory> decoder(buffer_simplest_request);
+            NetBufDecoder<NetBufReadOnlyMemory> decoder(buffer_simplest_request);
 
             suite(decoder);
         }
         SECTION("With option (small), no payload")
         {
-            NetBufDecoder<NetBufMemory> decoder(buffer_oversimplified_observe);
+            NetBufDecoder<NetBufReadOnlyMemory> decoder(buffer_oversimplified_observe);
 
             suite(decoder);
         }
@@ -170,7 +176,7 @@ TEST_CASE("netbuf+coap tests", "[netbuf-coap]")
         } */
         SECTION("No option, with payload")
         {
-            NetBufDecoder<NetBufMemory> decoder(buffer_payload_only);
+            NetBufDecoder<NetBufReadOnlyMemory> decoder(buffer_payload_only);
 
             suite(decoder);
 
@@ -178,7 +184,7 @@ TEST_CASE("netbuf+coap tests", "[netbuf-coap]")
         }
         SECTION("With option, with payload")
         {
-            NetBufDecoder<NetBufMemory> decoder(buffer_16bit_delta);
+            NetBufDecoder<NetBufReadOnlyMemory> decoder(buffer_16bit_delta);
 
             suite(decoder);
 
