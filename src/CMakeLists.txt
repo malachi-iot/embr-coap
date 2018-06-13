@@ -43,6 +43,7 @@ set(SOURCE_FILES
 
         coap/decoder.cpp
         coap/decoder.h
+        coap/decoder.hpp
 
         coap/decoder/netbuf.h
         coap/decoder/observer.h

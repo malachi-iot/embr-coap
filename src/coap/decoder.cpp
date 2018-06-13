@@ -10,7 +10,6 @@ namespace moducom { namespace coap {
 bool Decoder::process_iterate(Context& context)
 {
     size_t& pos = context.pos;
-    bool process_done = false;
     bool last_chunk = context.last_chunk;
     typedef pipeline::MemoryChunk::readonly_t ro_chunk_t;
     const ro_chunk_t& chunk = context.chunk;
@@ -25,15 +24,7 @@ bool Decoder::process_iterate(Context& context)
 
         case Header:
         {
-            while (pos < chunk.length() && !process_done)
-            {
-                process_done = header_decoder().process_iterate(chunk[pos]);
-
-                // FIX: This meaning I believe is reversed from non decoder process calls
-                // FIX: process_done does not designate whether bytes were consumed, for
-                // headerDecoder and tokenDecoder, byte is always consumed
-                pos++;
-            }
+            bool process_done = decoder_base_t::header_process_iterate(context);
 
             if (process_done) state(HeaderDone);
 
@@ -56,20 +47,13 @@ bool Decoder::process_iterate(Context& context)
             break;
 
         case Token:
-            while(pos < chunk.length() && !process_done)
-            {
-                // TODO: Utilize a simpler counter and chunk out token
-                process_done = token_decoder().process_iterate(chunk[pos], header_decoder().token_length());
-
-                // FIX: This meaning I believe is reversed from non decoder process calls
-                // FIX: process_done does not designate whether bytes were consumed, for
-                // headerDecoder and tokenDecoder, byte is always consumed
-                pos++;
-            }
+        {
+            bool process_done = decoder_base_t::token_process_iterate(context);
 
             if(process_done) state(TokenDone);
 
             break;
+        }
 
         case TokenDone:
             state(OptionsStart);
@@ -92,9 +76,9 @@ bool Decoder::process_iterate(Context& context)
                 optionHolder.length = 0;
                 // We have to do some level of processing on OptionsStart to know
                 // whether we have any optons at all.  So remember
-                pos += optionDecoder.process_iterate(remainder, &optionHolder, last_chunk);
+                pos += option_decoder().process_iterate(remainder, &optionHolder, last_chunk);
                 // hit payload immediately (no options, but followed by payload)
-                if (optionDecoder.state() == OptionDecoder::Payload)
+                if (option_state() == OptionDecoder::Payload)
                     state(OptionsDone);
                 else
                     state(Options);
@@ -104,12 +88,12 @@ bool Decoder::process_iterate(Context& context)
 
         case Options:
         {
-            pos += optionDecoder.process_iterate(chunk.remainder(pos), &optionHolder, last_chunk);
+            pos += option_decoder().process_iterate(chunk.remainder(pos), &optionHolder, last_chunk);
 
             // FIX: Payload now discovered and heeded in optionDecoder, do so out here
             // as well
             // handle option a.1), a.2) or b.1) described below
-            if (optionDecoder.state() == OptionDecoder::Payload)
+            if (option_state() == OptionDecoder::Payload)
             {
                 state(OptionsDone);
             }
@@ -119,7 +103,7 @@ bool Decoder::process_iterate(Context& context)
             {
                 // now that optionDecoder.process_iterate can iterate at EOF with no characters,
                 // this is as simple as waiting until we get OptionValueDone
-                if(optionDecoder.state() == OptionDecoder::OptionValueDone)
+                if(option_state() == OptionDecoder::OptionValueDone)
                     state(OptionsDone);
 
                 /*
@@ -162,7 +146,7 @@ bool Decoder::process_iterate(Context& context)
         case OptionsDone:
             // Encounters this when we lead with a payload, eventually all payload markers
             // I want handled this way so we can eliminate the explicit 0xFF later
-            if(optionDecoder.state() == OptionDecoder::Payload)
+            if(option_state() == OptionDecoder::Payload)
             {
                 state(Payload);
             } else
@@ -198,7 +182,7 @@ bool Decoder::process_iterate(Context& context)
             break;
 
         case Payload:
-            // fast forward pos to end of chunk since chunk here on out chunk
+            // fast forward pos to end of chunk since here on out it
             // only contains payload information
             pos = chunk.length();
             if(last_chunk)  state(PayloadDone);

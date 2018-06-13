@@ -60,8 +60,8 @@ TEST_CASE("CoAP low level tests", "[coap-lowlevel]")
                 case 5:
                     REQUIRE(parser.state() == _state_t::Options);
                     REQUIRE(parser.option_state() == OptionDecoder::OptionDeltaAndLengthDone);
-                    REQUIRE(parser.optionHolder.number_delta == 1);
-                    REQUIRE(parser.optionHolder.length == 1);
+                    REQUIRE(parser.option_number() == 1);
+                    REQUIRE(parser.option_length() == 1);
                     break;
 
                 case 6:
@@ -73,8 +73,8 @@ TEST_CASE("CoAP low level tests", "[coap-lowlevel]")
 
                 case 7:
                     REQUIRE(parser.state() == _state_t::Options);
-                    REQUIRE(parser.optionHolder.number_delta == 2); // Our delta trick auto adds, thus the divergence in test from below
-                    REQUIRE(parser.optionHolder.length == 2);
+                    REQUIRE(parser.option_number() == 2); // Our delta trick auto adds, thus the divergence in test from below
+                    REQUIRE(parser.option_length() == 2);
                     break;
 
                 case 8:
@@ -114,8 +114,8 @@ TEST_CASE("CoAP low level tests", "[coap-lowlevel]")
 
             OptionDecoder::State sub_state = parser.option_state();
 
-            uint16_t option_delta = parser.optionHolder.number_delta;
-            uint16_t option_length = parser.optionHolder.length;
+            uint16_t option_delta = parser.option_number();
+            uint16_t option_length = parser.option_length();
 
             switch (i + 1)
             {

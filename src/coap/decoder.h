@@ -31,6 +31,46 @@ struct DefaultDecoderTraits
     static CONSTEXPR bool contiguous() { return false; }
 };
 
+namespace internal {
+
+// NOTE: Running into this pattern a lot, a memory chunk augmented by a "worker position"
+// which moves through it
+struct DecoderContext
+{
+    typedef pipeline::experimental::ReadOnlyMemoryChunk<> chunk_t;
+
+    // TODO: optimize by making this a value not a ref, and bump up "data" pointer
+    // (and down length) instead of bumping up pos.  A little more fiddly, but then
+    // we less frequently have to create new temporary memorychunks on the stack
+    // May also just be a better architecture, so that we don't have to demand
+    // a memory chunk is living somewhere for this context to operate.  Note though
+    // that we need to remember what our original length was, so we still need
+    // pos, unless we decrement length along the way
+    const chunk_t& chunk;
+
+    // current processing position.  Should be chunk.length once processing is done
+    size_t pos;
+
+    // flag which indicates this is the last chunk to be processed for this message
+    // does NOT indicate if a boundary demarkates the end of the coap message BEFORE
+    // the chunk itself end
+    const bool last_chunk;
+
+    // Unused helper function
+    //const uint8_t* data() const { return chunk.data() + pos; }
+
+    chunk_t remainder() const { return chunk.remainder(pos); }
+
+public:
+    DecoderContext(const chunk_t& chunk, bool last_chunk) :
+            chunk(chunk),
+            pos(0),
+            last_chunk(last_chunk)
+            {}
+};
+
+
+}
 
 // Incomplete DecoderBase to eventually sort out optimization of sub-decoders
 // (header, token, option) based on compile-time indication of how contiguous
@@ -38,7 +78,7 @@ struct DefaultDecoderTraits
 template <class TDecoderTraits = DefaultDecoderTraits>
 class DecoderBase
 {
-protected:
+public:
     typedef TDecoderTraits decoder_traits;
 
 #ifdef FEATURE_CPP_CONSTEXPR
@@ -52,6 +92,7 @@ protected:
 #endif
 
 
+private:
     // TODO: This will become more complex as we branch out and handle decoder traits.  Note
     // that when we do, to really take advantage of optimizations, we'll have to turn Decoder::process_iterate
     // into an .hpp/templatized function
@@ -71,26 +112,25 @@ protected:
     // based on input from headerDecoder.  Ways to optimize this vary based on decoder_traits settings
     HeaderDecoder headerDecoder;
 
+protected:
     DecoderBase() {}
-};
-
-// TODO: As an optimization, make version of TokenDecoder which is zerocopy
-class Decoder :
-    public DecoderBase<DefaultDecoderTraits>,
-    public internal::Root,
-    public StateHelper<internal::root_state_t>
-{
-    typedef internal::_root_state_t _state_t;
-    typedef DecoderBase<DefaultDecoderTraits> decoder_base_t;
 
 public:
-    typedef decoder_base_t::token_decoder_t token_decoder_t;
+    // TODO: Make only the const ones public.  Right now a lot of the DecoderSubject
+    // stuff implicitly demands non-const, but architectually speaking it should be OK
+    // with const
+    HeaderDecoder& header_decoder() { return headerDecoder; }
+    token_decoder_t& token_decoder() { return tokenDecoder; }
+    OptionDecoder& option_decoder() { return optionDecoder; }
 
-    HeaderDecoder& header_decoder() { return decoder_base_t::headerDecoder; }
-    token_decoder_t& token_decoder() { return decoder_base_t::tokenDecoder; }
-    OptionDecoder& option_decoder() { return decoder_base_t::optionDecoder; }
+    const HeaderDecoder& header_decoder() const { return headerDecoder; }
+    const OptionDecoder& option_decoder() const { return optionDecoder; }
+    const token_decoder_t& token_decoder() const { return tokenDecoder; }
 
 protected:
+    bool header_process_iterate(internal::DecoderContext& context);
+    bool token_process_iterate(internal::DecoderContext& context);
+
     inline void init_header_decoder() { new (&header_decoder()) HeaderDecoder; }
 
     // NOTE: Initial reset redundant since class initializes with 0, though this
@@ -105,46 +145,20 @@ protected:
         new (&option_decoder()) OptionDecoder;
         //optionDecoder.reset();
     }
+};
 
-public:
-    // making context public (hopefully temporarily) since we use Decoder in a
-    // composable (has a) vs hierarchical (is-a) way
-public:
-    // NOTE: Running into this pattern a lot, a memory chunk augmented by a "worker position"
-    // which moves through it
-    struct Context
-    {
-        typedef pipeline::experimental::ReadOnlyMemoryChunk<> chunk_t;
 
-        // TODO: optimize by making this a value not a ref, and bump up "data" pointer
-        // (and down length) instead of bumping up pos.  A little more fiddly, but then
-        // we less frequently have to create new temporary memorychunks on the stack
-        // May also just be a better architecture, so that we don't have to demand
-        // a memory chunk is living somewhere for this context to operate.  Note though
-        // that we need to remember what our original length was, so we still need
-        // pos, unless we decrement length along the way
-        const chunk_t& chunk;
+// TODO: As an optimization, make version of TokenDecoder which is zerocopy
+class Decoder :
+    public DecoderBase<DefaultDecoderTraits>,
+    public internal::Root,
+    public StateHelper<internal::root_state_t>
+{
+    template <class TMessageObserver>
+    friend class DecoderSubjectBase;
 
-        // current processing position.  Should be chunk.length once processing is done
-        size_t pos;
-
-        // flag which indicates this is the last chunk to be processed for this message
-        // does NOT indicate if a boundary demarkates the end of the coap message BEFORE
-        // the chunk itself end
-        const bool last_chunk;
-
-        // Unused helper function
-        //const uint8_t* data() const { return chunk.data() + pos; }
-
-        chunk_t remainder() const { return chunk.remainder(pos); }
-
-    public:
-        Context(const chunk_t& chunk, bool last_chunk) :
-                chunk(chunk),
-                pos(0),
-                last_chunk(last_chunk)
-                {}
-    };
+    typedef internal::_root_state_t _state_t;
+    typedef DecoderBase<DefaultDecoderTraits> decoder_base_t;
 
     // NOTE: This is necessary to use because OptionDecoder in due course of its
     // operation *might* clobber its option_number() before it fully evaluates option_length()
@@ -155,6 +169,10 @@ public:
     // TODO: Also be sure to union-ize this, if appropriate
     OptionDecoder::OptionExperimental optionHolder;
 
+    // making context public (hopefully temporarily) since we use Decoder in a
+    // composable (has a) vs hierarchical (is-a) way
+public:
+    typedef internal::DecoderContext Context;
 
 public:
     Decoder() : StateHelper(_state_t::Uninitialized) {}
@@ -180,10 +198,12 @@ public:
 
     OptionDecoder::State option_state() const 
     { 
-        return optionDecoder.state(); 
+        return option_decoder().state();
     }
 };
 
 }}
+
+#include "decoder.hpp"
 
 #endif //MC_COAP_TEST_COAP_DECODER_H
