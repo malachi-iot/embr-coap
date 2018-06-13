@@ -74,10 +74,11 @@ void simple_observable_responder(TIncomingContext& context,
     using namespace moducom::coap;
 
     typedef typename TIncomingContext::netbuf_t netbuf_t;
+    typedef typename TIncomingContext::decoder_t decoder_t;
 
     estd::layer1::string<128> uri;
     Header::Code::Codes response_code = Header::Code::NotFound;
-    option_iterator<netbuf_t> it(context);
+    option_iterator<decoder_t> it(context);
 
     while(it.valid())
     {
