@@ -241,12 +241,13 @@ template <class TNetBuf, class TNetBufDecoder = NetBufDecoder<TNetBuf&> >
 struct DecoderContext
 {
     typedef TNetBufDecoder decoder_t;
+    typedef typename std::remove_reference<typename decoder_t::netbuf_t>::type netbuf_t;
 
 private:
     decoder_t m_decoder;
 
 protected:
-    DecoderContext(TNetBuf& netbuf) : m_decoder(netbuf) {}
+    DecoderContext(netbuf_t& netbuf) : m_decoder(netbuf) {}
 
 public:
     decoder_t& decoder() { return m_decoder; }

@@ -49,6 +49,7 @@ public:
     typedef TNetBuf* pnetbuf_t;
 #endif
     typedef IDataPumpObserver<TNetBuf, TAddr> datapump_observer_t;
+    typedef NetBufDecoder<netbuf_t&> decoder_t;
 
 public:
     // TODO: account for https://tools.ietf.org/html/rfc7252#section-4.2
@@ -261,7 +262,6 @@ public:
         friend class DataPump;
 
         typedef TNetBuf netbuf_t;
-        typedef NetBufDecoder<netbuf_t&> decoder_t;
         typedef coap::IncomingContext<addr_t, false> base_t;
 
     private:

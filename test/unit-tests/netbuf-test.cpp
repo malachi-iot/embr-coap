@@ -54,7 +54,7 @@ static void suite(NetBufDecoder<TNetBuf>& decoder)
     // NOTE: Flawed, because option_iterator sometimes wants
     // a reference for its parameter into NetBufDecoder.  Though in this
     // unit test, that is so far not the case
-    option_iterator<TNetBuf, NetBufDecoder<TNetBuf> > it(decoder, true);
+    option_iterator<NetBufDecoder<TNetBuf> > it(decoder, true);
 
     while(it.valid()) ++it;
 

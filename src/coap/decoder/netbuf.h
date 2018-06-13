@@ -11,7 +11,7 @@
 
 namespace moducom { namespace coap {
 
-template <class TNetBuf, class TNetBufDecoder>
+template <class TNetBufDecoder>
 class option_iterator;
 
 // standalone Decoder works well enough, so this is largely just a netbuf-capable
@@ -19,15 +19,17 @@ class option_iterator;
 template <class TNetBuf>
 class NetBufDecoder : public Decoder
 {
+public:
     typedef TNetBuf netbuf_t;
 
     // experimental because I am pretty sure I want netbuf_t itself to be this
     typedef std::remove_reference<TNetBuf> netbuf_experimental_value_t;
 
+private:
     typedef Decoder base_t;
     typedef moducom::pipeline::MemoryChunk::readonly_t ro_chunk_t;
 
-    friend class option_iterator<TNetBuf, class TNetBufDecoder>;
+    friend class option_iterator<class TNetBufDecoder>;
 
 protected:
     TNetBuf m_netbuf;
@@ -198,6 +200,9 @@ public:
         context(chunk, netbuf.end())
     {}
 
+
+    typedef coap::option_iterator<NetBufDecoder<TNetBuf> > option_iterator;
+
     netbuf_t& netbuf() { return m_netbuf; }
 
     coap::Header header()
@@ -335,10 +340,10 @@ public:
 // Neat, but right way to do this would be to make a 'super' OptionsDecoder which had a bit
 // of the start-stop condition awareness of full Decoder, then actually derive from that class
 // so that we can do things like postfix++
-template <class TNetBuf, class TNetBufDecoder = NetBufDecoder<TNetBuf&> >
+template <class TNetBufDecoder>
 class option_iterator
 {
-    typedef typename std::remove_reference<TNetBuf>::type netbuf_t;
+    typedef typename std::remove_reference<typename TNetBufDecoder::netbuf_t>::type netbuf_t;
     typedef TNetBufDecoder decoder_t;
     typedef Option::Numbers value_type;
     typedef moducom::pipeline::MemoryChunk::readonly_t ro_chunk_t;
@@ -375,7 +380,7 @@ public:
         partial_advance_and_get_number();
     }
 
-    option_iterator(DecoderContext<TNetBuf>& context, bool begin_option = false) :
+    option_iterator(DecoderContext<netbuf_t>& context, bool begin_option = false) :
         decoder(context.decoder())
     {
         // NOT repeatable
