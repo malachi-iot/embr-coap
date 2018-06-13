@@ -310,7 +310,7 @@ class ObservableOptionObserverBase : public experimental::MessageObserverBase<TR
 
     // FIX: Once LinkedListPool is operational use that for our allocator
     // or at least have it as a default template parameter for ObservableOptionObserverBase itself
-    typedef estd::forward_list<
+    typedef estd::internal::forward_list<
             observable_session_t,
                 estd::experimental::ValueNode<
                     observable_session_t,
