@@ -13,6 +13,7 @@ void simple_ping_responder(TDataPumpHelper& sdh, typename TDataPumpHelper::datap
 {
     typedef typename TDataPumpHelper::netbuf_t netbuf_t;
     typedef typename TDataPumpHelper::addr_t addr_t;
+    typedef NetBufDecoder<netbuf_t&> decoder_t;
     //typedef typename moducom::pipeline::MemoryChunk::readonly_t ro_chunk_t;
 
     // echo back out a raw ACK, with no trickery just raw decoding/encoding
@@ -20,7 +21,7 @@ void simple_ping_responder(TDataPumpHelper& sdh, typename TDataPumpHelper::datap
     {
         addr_t ipaddr;
 
-        NetBufDecoder<netbuf_t&> decoder(*sdh.front(&ipaddr, datapump));
+        decoder_t decoder(*sdh.front(&ipaddr, datapump));
         layer2::Token token;
 
         //clog << " ip=" << ipaddr.sin_addr.s_addr << endl;
@@ -32,7 +33,7 @@ void simple_ping_responder(TDataPumpHelper& sdh, typename TDataPumpHelper::datap
 
 #ifdef FEATURE_MCCOAP_IOSTREAM_NATIVE
         // skip any options
-        option_iterator<netbuf_t> it(decoder, true);
+        option_iterator<decoder_t> it(decoder, true);
 
         while(it.valid()) ++it;
 

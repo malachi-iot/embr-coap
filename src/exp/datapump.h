@@ -257,7 +257,7 @@ public:
     // non-inline-token
     struct IncomingContext :
             coap::IncomingContext<addr_t, false>,
-            DecoderContext<netbuf_t>
+            DecoderContext<decoder_t>
     {
         friend class DataPump;
 
@@ -277,7 +277,7 @@ public:
 
     public:
         IncomingContext(DataPump& datapump, netbuf_t& netbuf) :
-            DecoderContext<netbuf_t>(netbuf),
+            DecoderContext<decoder_t>(netbuf),
             datapump(datapump)
         {}
 

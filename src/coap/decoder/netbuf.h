@@ -379,7 +379,7 @@ public:
         partial_advance_and_get_number();
     }
 
-    option_iterator(DecoderContext<netbuf_t>& context, bool begin_option = false) :
+    option_iterator(DecoderContext<decoder_t>& context, bool begin_option = false) :
         decoder(context.decoder())
     {
         // NOT repeatable
