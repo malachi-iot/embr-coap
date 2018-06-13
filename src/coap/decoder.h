@@ -12,9 +12,11 @@
 #include "coap/decoder/simple.h"
 #include "coap/decoder/option.h"
 
-// TODO: Keep an eye on this, pretty sure we need to use our own special one if in C++03
-#include <type_traits> // for std::conditional
-#include <estd/type_traits.h> // for estd::conditional, if necessary
+#if __cplusplus >= 201103L
+#include <type_traits>
+#else
+#include <estd/type_traits.h>
+#endif
 
 namespace moducom { namespace coap {
 
@@ -39,23 +41,31 @@ class DecoderBase
 protected:
     typedef TDecoderTraits decoder_traits;
 
+#ifdef FEATURE_CPP_CONSTEXPR
     typedef typename std::conditional<
             decoder_traits::contiguous_through_token(),
             CounterDecoder<uint8_t>,
             RawDecoder<8> >::type token_decoder_t;
+#else
+    // pre C++11 we'll need a different technique for specialization
+    typedef RawDecoder<8> token_decoder_t;
+#endif
 
 
-    // NOTE: Keep an eye on this. C++03 is sensitive about union-izing actual C++ classes
-    // (vs basic structs).  So far it seems to be behaving OK since we don't have explicit
-    // constructors for these decoders
     // TODO: This will become more complex as we branch out and handle decoder traits.  Note
     // that when we do, to really take advantage of optimizations, we'll have to turn Decoder::process_iterate
     // into an .hpp/templatized function
+#if __cplusplus >= 201103L
     union
     {
         token_decoder_t tokenDecoder;
         OptionDecoder optionDecoder;
     };
+#else
+    // C++03 sensitive to unions with classes with constructors
+    token_decoder_t tokenDecoder;
+    OptionDecoder optionDecoder;
+#endif
 
     // FIX: have to non-unionize headerDecoder because Decoder::process_iterate processes tokenDecoder
     // based on input from headerDecoder.  Ways to optimize this vary based on decoder_traits settings

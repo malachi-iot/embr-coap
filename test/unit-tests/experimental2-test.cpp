@@ -9,7 +9,9 @@
 #include "exp/prototype/observer-idea1.h"
 
 #include "coap/decoder/subject.hpp"
+#if __cplusplus >= 201103L
 #include "platform/generic/malloc_netbuf.h"
+#endif
 
 #include "test-data.h"
 

@@ -3,7 +3,9 @@
 #include <coap/decoder/netbuf.h>
 #include <exp/netbuf.h>
 #include <exp/datapump.hpp>
+#if __cplusplus >= 201103L
 #include "platform/generic/malloc_netbuf.h"
+#endif
 #include "test-data.h"
 
 using namespace moducom::io::experimental;
@@ -133,6 +135,7 @@ TEST_CASE("netbuf+coap tests", "[netbuf-coap]")
 
         REQUIRE(value.length() == 0);
     }
+#if __cplusplus >= 201103L
     SECTION("netbuf copy")
     {
         NetBufReadOnlyMemory buf1(buffer_simplest_request);
@@ -153,6 +156,7 @@ TEST_CASE("netbuf+coap tests", "[netbuf-coap]")
         REQUIRE(buf2.length_processed() == 3);
         REQUIRE(memcmp(buf1.processed() + 1, buf2.processed(), 3) == 0);
     }
+#endif
     SECTION("coap NetBufDecoder suite")
     {
         SECTION("No option, no payload")

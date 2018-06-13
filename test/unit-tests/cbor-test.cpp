@@ -3,7 +3,9 @@
 #include <string.h>
 #include "cbor/encoder.h"
 #include "cbor/decoder.h"
+#if __cplusplus >= 201103L
 #include "platform/generic/malloc_netbuf.h"
+#endif
 #include "test-data.h"
 
 using namespace moducom;
@@ -274,6 +276,7 @@ TEST_CASE("CBOR decoder tests", "[cbor-decoder]")
         REQUIRE(decoder.state() == cbor::Decoder::AdditionalDone);
         REQUIRE(decoder.integer<int32_t>() == -123456789);
     }
+#if __cplusplus >= 201103L
     SECTION("revamped netbuf encoder")
     {
         using namespace moducom::io::experimental;
@@ -326,6 +329,7 @@ TEST_CASE("CBOR decoder tests", "[cbor-decoder]")
         REQUIRE(*d++ == 3);
 #endif
     }
+#endif
     SECTION("experimental cbor decoder")
     {
         using namespace cbor::experimental;
@@ -388,6 +392,7 @@ TEST_CASE("CBOR decoder tests", "[cbor-decoder]")
         require_string(decoder, context, "pass");
         require_string(decoder, context, "secret");
     }
+#if __cplusplus >= 201103L
     SECTION("encoder: boolean and NULL")
     {
         using namespace moducom::io::experimental;
@@ -406,6 +411,7 @@ TEST_CASE("CBOR decoder tests", "[cbor-decoder]")
         REQUIRE(*d++ == 0xF6);  // simple value of NULL
         REQUIRE(len == 2);
     }
+#endif
     SECTION("encoder+decoder: self-contained dogfooding")
     {
 

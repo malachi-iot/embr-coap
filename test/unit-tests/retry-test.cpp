@@ -9,7 +9,9 @@
 #include "exp/prototype/observer-idea1.h"
 
 #include "coap/decoder/subject.hpp"
+#if __cplusplus >= 201103L
 #include "platform/generic/malloc_netbuf.h"
+#endif
 
 #include "test-data.h"
 
@@ -39,6 +41,7 @@ TEST_CASE("retry logic")
 
         REQUIRE(h->type() == Header::Acknowledgement);
     }
+#if __cplusplus >= 201103L
     SECTION("retry")
     {
         typedef NetBufDynamicExperimental netbuf_t;
@@ -182,4 +185,5 @@ TEST_CASE("retry logic")
             retry.service_ack(datapump);
         }
     }
+#endif
 }

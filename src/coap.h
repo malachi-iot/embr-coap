@@ -13,10 +13,16 @@
 
 
 #include "mc/memory-chunk.h"
-//#include "mc/pipeline.h"
+
 #include <stdint.h>
 #include <stdlib.h>
 #include <new>
+
+#if __cplusplus >= 201103L
+#include <type_traits>
+#else
+#include <estd/type_traits.h>
+#endif
 
 #include "coap-header.h"
 
@@ -227,6 +233,7 @@ std::basic_ostream<CharT, Traits>& operator <<(std::basic_ostream<CharT, Traits>
 }
 
 
+#ifdef FEATURE_CPP_DECLVAL
 // valiant attempt, but doesn't work
 // is_function always evaluates 'false' - something to do with specifying get_description's arguments
 template <class CharT, class Traits, typename THasGetDescription
@@ -248,6 +255,8 @@ std::basic_ostream<CharT, Traits>& operator <<(std::basic_ostream<CharT, Traits>
 
     return os;
 }
+#endif
+
 #endif
 
 #endif //SRC_COAP_H

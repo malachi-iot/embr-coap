@@ -6,7 +6,6 @@
 #include "coap-uint.h"
 #include "coap/context.h"
 
-#include <type_traits>  // for std::remove_reference
 #include <estd/type_traits.h>
 
 namespace moducom { namespace coap {
@@ -23,7 +22,7 @@ public:
     typedef TNetBuf netbuf_t;
 
     // experimental because I am pretty sure I want netbuf_t itself to be this
-    typedef std::remove_reference<TNetBuf> netbuf_experimental_value_t;
+    typedef estd::remove_reference<TNetBuf> netbuf_experimental_value_t;
 
 private:
     typedef Decoder base_t;
@@ -343,7 +342,7 @@ public:
 template <class TNetBufDecoder>
 class option_iterator
 {
-    typedef typename std::remove_reference<typename TNetBufDecoder::netbuf_t>::type netbuf_t;
+    typedef typename estd::remove_reference<typename TNetBufDecoder::netbuf_t>::type netbuf_t;
     typedef TNetBufDecoder decoder_t;
     typedef Option::Numbers value_type;
     typedef moducom::pipeline::MemoryChunk::readonly_t ro_chunk_t;
