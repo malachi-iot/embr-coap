@@ -167,8 +167,8 @@ public:
         return copied == len;
     }
 
-    template <class TChar, class TTraits, class TAllocator>
-    bool string(const estd::basic_string<TChar, TTraits, TAllocator>& insert_from)
+    template <class TChar, class TStringTraits, class TAllocator>
+    bool string(const estd::basic_string<TChar, typename TStringTraits::char_traits, TAllocator, TStringTraits>& insert_from)
     {
         netbuf_t& netbuf = nbw_t::netbuf();
         int len = insert_from.size();

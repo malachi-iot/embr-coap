@@ -307,7 +307,8 @@ TEST_CASE("CBOR decoder tests", "[cbor-decoder]")
                 ));
         REQUIRE(*d++ == 0x6B);
 
-        estd::layer3::basic_string<char, false> s2(s.size(), (char*)d, s.size());
+        // wrap a layer3 around this buffer spot
+        estd::layer3::const_string s2((const char*)d, s.size());
 
         REQUIRE(s2 == _s);
         d += s.size();
