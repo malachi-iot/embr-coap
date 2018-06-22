@@ -53,7 +53,8 @@ public:
     void token(const pipeline::MemoryChunk::readonly_t* t)
     {
         _token_present = true;
-        _token.copy_from(*t);
+        std::copy(t->data(), t->data() + t->length(), _token.begin());
+        //_token.copy_from(*t);
     }
 
     // TODO: Reconcile naming, either call this have_token() or rename
@@ -75,7 +76,7 @@ public:
         : _token(NULLPTR, 0)
     {}
 
-    inline bool token_present() const { return _token.length() > 0; }
+    inline bool token_present() const { return _token.size() > 0; }
 
     // if a) incoming message has a token and b) we've decoded the token and have it
     // available, then this will be non-null

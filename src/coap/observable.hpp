@@ -52,7 +52,7 @@ void ObservableRegistrar<TCollection, TIncomingContext, TRequestContextTraits>::
         int sequence = ++(*it).sequence;
 
         header.message_id(mid++);
-        header.token_length(token.length());
+        header.token_length(token.size());
 
         encoder.header(header);
         encoder.token(token);

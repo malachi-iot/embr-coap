@@ -40,7 +40,7 @@ TEST_CASE("CoAP token tests", "[coap-token]")
             //moducom::coap::layer2::UInt uint_val;
         }
     }
-    SECTION("1")
+    SECTION("Token Generator")
     {
         moducom::coap::SimpleTokenGenerator generator;
         moducom::coap::layer2::Token token;
@@ -52,39 +52,41 @@ TEST_CASE("CoAP token tests", "[coap-token]")
 
         generator.generate(&token);
 
-        REQUIRE(token.length() == 2);
+        REQUIRE(token.size() == 2);
 
         generator.set(0x30201);
 
         generator.generate(&token);
 
-        REQUIRE(token[0] == 3);
-        REQUIRE(token[1] == 2);
-        REQUIRE(token[2] == 1);
-        REQUIRE(token.length() == 3);
+        REQUIRE((int)token[0] == 3);
+        REQUIRE((int)token[1] == 2);
+        REQUIRE((int)token[2] == 1);
+        REQUIRE(token.size() == 3);
     }
     SECTION("Token test")
     {
         moducom::coap::layer2::Token token;
 
-        token.set(0);
+        //token.set(0);
+        token.resize(1);
 
         token[0] = '3';
 
-        REQUIRE(token[0] == '3');
+        REQUIRE((char)token[0] == '3');
     }
     SECTION("layer3 token")
     {
         moducom::coap::layer2::Token token;
 
-        token.set(0);
+        token.resize(1);
+        //token.set(0);
 
         token[0] = '3';
 
-        REQUIRE(token[0] == '3');
+        REQUIRE((char)token[0] == '3');
 
-        moducom::coap::layer3::Token token2(token.data(), 4);
+        moducom::coap::layer3::Token token2(token);
 
-        REQUIRE(token2.data() == token.data());
+        REQUIRE(token2 == token);
     }
 }

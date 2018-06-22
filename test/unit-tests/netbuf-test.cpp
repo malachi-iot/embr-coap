@@ -96,7 +96,7 @@ TEST_CASE("netbuf+coap tests", "[netbuf-coap]")
 
         moducom::coap::layer3::Token token = decoder.token();
 
-        REQUIRE(token.length() == 0);
+        REQUIRE(token.size() == 0);
 
         // from RFC7252
         // "(Note that every message carries a token, even if it is of zero length.)"

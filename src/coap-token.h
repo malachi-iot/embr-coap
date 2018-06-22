@@ -10,6 +10,9 @@
 #include "coap/platform.h"
 #include "mc/memory-chunk.h"
 
+#include <estd/array.h>
+#include <estd/vector.h>
+
 #ifdef FEATURE_CPP_INITIALIZER_LIST
 #include <initializer_list>
 #include <algorithm> // for std::copy
@@ -21,17 +24,14 @@ namespace layer1 {
 
 // https://tools.ietf.org/html/rfc7252#section-5.3.1
 // semi-duplicate of one in coap_transmission
-class Token : public moducom::pipeline::layer1::MemoryChunk<8>
+class Token : public estd::array<uint8_t, 8>
 {
-    typedef moducom::pipeline::layer1::MemoryChunk<8> base_t;
+    typedef estd::array<uint8_t, 8> base_t;
 
 public:
 #ifdef FEATURE_CPP_INITIALIZER_LIST
-    Token(std::initializer_list<uint8_t> l)
+    Token(std::initializer_list<uint8_t> l) : base_t(l)
     {
-        // TODO: Move this actually into memorychunk itself, and make
-        // this constructor just pass it along (if defaults don't handle it)
-        std::copy(l.begin(), l.end(), base_t::buffer);
     }
 
     Token() {}
@@ -44,23 +44,24 @@ namespace layer2 {
 
 // https://tools.ietf.org/html/rfc7252#section-5.3.1
 // semi-duplicate of one in coap_transmission
-class Token : public moducom::pipeline::layer2::MemoryChunk<8, uint8_t>
+class Token : public estd::layer1::vector<uint8_t, 8>
 {
-    typedef moducom::pipeline::layer2::MemoryChunk<8, uint8_t> base_t;
+    typedef estd::layer1::vector<uint8_t, 8> base_t;
 
 public:
     Token() {}
 
     Token(const layer1::Token& t, size_t tkl)
     {
-        memcpy(t.data(), tkl);
-        length(tkl);
+        // FIX: temporary measure to interact with estd::array's fluctuating code
+        // base
+        const uint8_t* data = &t[0];
+        base_t::_append(data, tkl);
     }
 
     Token(const uint8_t* data, size_t tkl)
     {
-        memcpy(data, tkl);
-        length(tkl);
+        base_t::_append(data, tkl);
     }
 
     // TODO: put this into MemoryChunk itself
@@ -68,8 +69,10 @@ public:
     // it might lose the const qualifiers
     operator moducom::pipeline::MemoryChunk::readonly_t() const
     {
-        return moducom::pipeline::MemoryChunk::readonly_t(data(), length());
+        const uint8_t* data = clock(); // TODO: phase out memory chunks completely then we won't need a lingering lock
+        return moducom::pipeline::MemoryChunk::readonly_t(data, size());
     }
+    /*
 
     // TODO: Move this into underlying MemoryChunk
     bool operator ==(const Token& compare_to) const
@@ -77,7 +80,7 @@ public:
         if(compare_to.length() != length()) return false;
 
         return memcmp(data(), compare_to.data(), length()) == 0;
-    }
+    } */
 };
 
 
@@ -86,15 +89,20 @@ public:
 
 namespace layer3 {
 
-class Token :
-        public moducom::pipeline::experimental::ReadOnlyMemoryChunk<uint8_t>
+class Token : public estd::layer2::vector<const uint8_t, 8>
 {
-    typedef moducom::pipeline::experimental::ReadOnlyMemoryChunk<uint8_t> base_t;
+    typedef estd::layer2::vector<const uint8_t, 8> base_t;
 
 public:
-    Token(const uint8_t* data, size_t tkl) : base_t(data, tkl) {}
+    Token(const uint8_t* data, size_t tkl) : base_t(data)
+    {
+        base_t::impl().size(tkl);
+    }
 
-    Token(const layer2::Token& token) : base_t(token.data(), token.length()) {}
+    Token(const layer2::Token& token) : base_t(token.clock())
+    {
+        base_t::impl().size(token.size());
+    }
 };
 
 }

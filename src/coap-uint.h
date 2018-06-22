@@ -6,6 +6,7 @@
 #define MC_COAP_TEST_COAP_UINT_H
 
 #include <stdint.h>
+#include <estd/internal/dynamic_array.h>
 #include <mc/mem/platform.h>
 #include "mc/memory-chunk.h"
 

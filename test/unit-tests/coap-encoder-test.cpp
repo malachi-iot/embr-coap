@@ -102,14 +102,14 @@ TEST_CASE("CoAP encoder tests", "[coap-encoder]")
 
         moducom::coap::layer2::Token token;
 
+        token.resize(3);
         token[0] = 1;
         token[1] = 2;
         token[2] = 3;
-        token.length(3);
 
         Header header;
 
-        header.token_length(token.length());
+        header.token_length(token.size());
 
         Option::Numbers n = Option::UriPath;
 
@@ -125,7 +125,7 @@ TEST_CASE("CoAP encoder tests", "[coap-encoder]")
         REQUIRE(data[expected_msg_size] == 1);
         REQUIRE(data[expected_msg_size + 1] == 2);
 
-        expected_msg_size += token.length();
+        expected_msg_size += token.size();
 
         REQUIRE(netbuf.length_processed() == expected_msg_size);
 
