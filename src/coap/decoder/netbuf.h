@@ -109,8 +109,7 @@ protected:
 
     // internal call , needs to be mated to process_option_header_experimental
 public:
-    // FIX: convert (reverse) this from 'partial' to 'completed' flag
-    ro_chunk_t process_option_value_experimental(bool* partial = NULLPTR)
+    ro_chunk_t process_option_value_experimental(bool* completed = NULLPTR)
     {
         ASSERT_WARN(Decoder::Options, state(), "Must be in options processing mode");
 
@@ -119,23 +118,21 @@ public:
 
         // NOTE: Safe to grab this, option_decoder().option_length() doesn't get clobbered for a while still
         int value_length = option_decoder().option_length();
-        const uint8_t* raw = context.chunk.data() + context.pos;
-        int actual_remaining_length = context.chunk.size() - context.pos;
-        bool _partial = value_length > actual_remaining_length;
+        ro_chunk_t ret = context.remainder();
+        bool _completed = value_length <= ret.size();
 
-        if(partial != NULLPTR)
-            *partial = _partial;
+        if(completed != NULLPTR)
+            *completed = _completed;
         else
         {
-            ASSERT_WARN(false, _partial, "Partial data encountered but potentially ignored");
+            ASSERT_WARN(true, _completed, "Partial data encountered but potentially ignored");
         }
 
-        // it's implied there's another chunk coming if value_length
-        // exceeds actual_remaining_length
-        if(_partial)
-            return ro_chunk_t(raw, actual_remaining_length);
-        else
-            return ro_chunk_t(raw, value_length);
+        // if completed, be sure we resize down the remainder to a maximum
+        // value_length size rather than the entire remaining buffer
+        if(_completed)   ret.resize(value_length);
+
+        return ret;
     }
 
 
