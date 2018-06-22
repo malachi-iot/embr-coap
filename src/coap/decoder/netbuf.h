@@ -246,11 +246,11 @@ public:
         return context.remainder();
     }
 
-    estd::layer3::basic_string<char, false> payload_string_experimental(bool* completed = NULLPTR)
+    estd::layer3::const_string payload_string_experimental(bool* completed = NULLPTR)
     {
         ro_chunk_t p = payload_experimental(completed);
 
-        estd::layer3::basic_string<char, false> payload(p.length(), (char*)p.data(), p.length());
+        estd::layer3::const_string payload((const char*)p.data(), p.length());
 
         return payload;
     }
@@ -322,14 +322,13 @@ public:
         }
     }
 
-    const estd::layer3::basic_string<const char, false> option_string_experimental(bool* partial = NULLPTR)
+    const estd::layer3::const_string option_string_experimental(bool* partial = NULLPTR)
     {
         uint16_t length = option_decoder().option_length();
 
         ro_chunk_t option_value = process_option_value_experimental(partial);
 
-        const estd::layer3::basic_string<const char, false> s(length,
-                                                        (const char*) option_value.data(), length);
+        estd::layer3::const_string s((const char*)option_value.data(), length);
 
         return s;
     }
