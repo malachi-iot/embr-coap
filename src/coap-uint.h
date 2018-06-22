@@ -9,6 +9,7 @@
 #include <estd/internal/dynamic_array.h>
 #include <mc/mem/platform.h>
 #include "mc/memory-chunk.h"
+#include <estd/vector.h>
 
 namespace moducom { namespace coap {
 
@@ -207,13 +208,14 @@ namespace layer2 {
 // also we may want larger than 4 at some point, but that's
 // as big as is convenient for now
 template <size_t buffer_size = 4>
-class UInt : pipeline::layer2::MemoryChunk<buffer_size, uint8_t>
+class UInt : estd::layer1::vector<uint8_t, buffer_size>
+        //pipeline::layer2::MemoryChunk<buffer_size, uint8_t>
 {
-    typedef pipeline::layer2::MemoryChunk<buffer_size, uint8_t> base_t;
+    typedef estd::layer1::vector<uint8_t, buffer_size> base_t;
 
 public:
-    inline uint8_t length() const { return base_t::length(); }
-    const uint8_t* data() const { return base_t::data(); }
+    inline uint8_t length() const { return base_t::size(); }
+    const uint8_t* data() const { return base_t::clock(); } // FIX: Do explicit lock/unlock
 
     // copy-pastes from OptionExperimentalDeprecated
     uint8_t get_uint8_t() const
@@ -247,33 +249,29 @@ public:
         }
     }
 
-    // Have yet to see a CoAP UINT option value larger than 32 bits
-    uint32_t get_uint32_t() const
-    {
-        ASSERT_ERROR(true, length() <= 4, "Option length too large");
-
-        return moducom::coap::UInt::get<uint32_t>(data(), length());
-    }
-
-
     template <class TInput>
     inline void set(TInput input)
     {
-        uint8_t* data = base_t::data();
+        uint8_t* data = base_t::lock();
         uint8_t byte_length = moducom::coap::UInt::set(input, data);
-        base_t::length(byte_length);
+        // FIX: We actually need to do the resize before the set
+        base_t::resize(byte_length);
+        base_t::unlock();
     }
 
     template <typename TReturn>
     TReturn get() const
     {
         // TODO: Needs assert
-        return moducom::coap::UInt::get<TReturn>(base_t::data(), base_t::length());
+        ASSERT_ERROR(true, length() <= sizeof(TReturn), "Option length too large");
+        TReturn ret = moducom::coap::UInt::get<TReturn>(base_t::lock(), base_t::size());
+        base_t::unlock();
+        return ret;
     }
 
-    inline uint8_t operator[](size_t index) const
+    inline const uint8_t operator[](size_t index) const
     {
-        return *(base_t::data(index));
+        return base_t::at(index);
     }
 };
 

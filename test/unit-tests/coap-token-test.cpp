@@ -6,18 +6,21 @@
 #include "coap-token.h"
 #include "coap-blockwise.h"
 
+#include <estd/vector.h>
+
 TEST_CASE("CoAP token tests", "[coap-token]")
 {
     SECTION("UInt tests")
     {
         SECTION("Test 1")
         {
-            moducom::pipeline::layer2::MemoryChunk<8> chunk;
+            //moducom::pipeline::layer2::MemoryChunk<8> chunk;
+            estd::layer1::vector<uint8_t, 8> chunk;
 
             int bytes_used = moducom::coap::UInt::set(0xFEDCBA, chunk);
 
             REQUIRE(bytes_used == 3);
-            REQUIRE(chunk[0] == 0xFE);
+            REQUIRE((uint8_t)chunk[0] == 0xFE);
         }
         SECTION("Test 2")
         {
@@ -31,7 +34,7 @@ TEST_CASE("CoAP token tests", "[coap-token]")
             //uint32_t val = uint_val.get_uint32_t();
             const uint8_t* data = uint_val.data();
 
-            uint32_t val = moducom::coap::UInt::get<uint32_t>(uint_val.data(), uint_val.length());
+            uint32_t val = moducom::coap::UInt::get<uint32_t>(data, uint_val.length());
 
             REQUIRE(val == 0xFEDCBA);
         }
