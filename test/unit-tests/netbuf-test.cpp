@@ -73,6 +73,8 @@ static void suite(NetBufDecoder<TNetBuf>& decoder)
 
 TEST_CASE("netbuf+coap tests", "[netbuf-coap]")
 {
+    typedef estd::experimental::const_buffer chunk_t;
+
     SECTION("writer")
     {
         // FIX: This is a bad test, writer shouldn't be prepopulated!
@@ -114,8 +116,6 @@ TEST_CASE("netbuf+coap tests", "[netbuf-coap]")
     }
     SECTION("0-length value option")
     {
-        //typedef moducom::pipeline::MemoryChunk::readonly_t chunk_t;
-        typedef estd::experimental::const_buffer chunk_t;
         NetBufDecoder<NetBufReadOnlyMemory> decoder(buffer_oversimplified_observe);
 
         Header header = decoder.header();
@@ -132,7 +132,7 @@ TEST_CASE("netbuf+coap tests", "[netbuf-coap]")
 
         REQUIRE(decoder.option_number() == Option::Observe);
 
-        chunk_t value = decoder.process_option_value_experimental();
+        chunk_t value = decoder.option();
 
         REQUIRE(value.size() == 0);
     }

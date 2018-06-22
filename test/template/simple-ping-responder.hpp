@@ -39,7 +39,7 @@ void simple_ping_responder(TDataPumpHelper& sdh, typename TDataPumpHelper::datap
 
         if(decoder.has_payload_experimental())
         {
-            estd::layer3::const_string payload = decoder.payload_string_experimental();
+            estd::layer3::const_string payload = decoder.payload();
 
             std::clog << "Got payload: " << payload << std::endl;
         }

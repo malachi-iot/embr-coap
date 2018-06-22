@@ -192,6 +192,9 @@ public:
     Decoder() : StateHelper(_state_t::Uninitialized) {}
 
     // Available only during select times during Options state
+    // FIX: May want to disambiguate naming a bit, because decoder options are starting to
+    // default to side-affecting things, whereas these do not.  Considered 'peek_' prefix,
+    // but that was looking pretty clumsy and ugly
     uint16_t option_number() const { return optionHolder.number_delta; }
     uint16_t option_length() const { return optionHolder.length; }
 

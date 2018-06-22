@@ -109,7 +109,7 @@ protected:
 
     // internal call , needs to be mated to process_option_header_experimental
 public:
-    ro_chunk_t process_option_value_experimental(bool* completed = NULLPTR)
+    ro_chunk_t option(bool* completed = NULLPTR)
     {
         ASSERT_WARN(Decoder::Options, state(), "Must be in options processing mode");
 
@@ -231,7 +231,7 @@ public:
         return state() == Payload;
     }
 
-    ro_chunk_t payload_experimental(bool* completed = NULLPTR)
+    ro_chunk_t payload(bool* completed = NULLPTR)
     {
         if(state() == OptionsDone)
             process_payload_header_experimental();
@@ -242,15 +242,6 @@ public:
           //  *partial = !netbuf().eol();
 
         return context.remainder();
-    }
-
-    estd::layer3::const_string payload_string_experimental(bool* completed = NULLPTR)
-    {
-        ro_chunk_t p = payload_experimental(completed);
-
-        estd::layer3::const_string payload((const char*)p.data(), p.size());
-
-        return payload;
     }
 
     // returns true if we consumed enough bytes to produce a complete token.  NOTE this
@@ -318,15 +309,6 @@ public:
             // expected to be at DeltaAndLengthDone here
             process_iterate();
         }
-    }
-
-    const estd::layer3::const_string option_string_experimental(bool* partial = NULLPTR)
-    {
-        ro_chunk_t v = process_option_value_experimental(partial);
-
-        estd::layer3::const_string s((const char*)v.data(), v.size());
-
-        return s;
     }
 };
 
@@ -424,12 +406,7 @@ public:
         return (value_type) decoder.option_number();
     }
 
-    // this signature is EXPERIMENTAL.  implied by title of this class (experimental_option_iterator)
-    // but this one is extra so (naming wise) than the other methods here
-    ro_chunk_t opaque()
-    {
-        return decoder.process_option_value_experimental();
-    }
+    ro_chunk_t opaque() { return decoder.option(); }
 
     template <typename TUInt>
     TUInt uint()
@@ -467,9 +444,7 @@ public:
 
     estd::layer3::const_string string()
     {
-        using namespace moducom::coap;
-
-        estd::layer3::const_string s = decoder.option_string_experimental();
+        estd::layer3::const_string s = opaque();
 
 #ifdef FEATURE_ESTD_IOSTREAM_NATIVE
         std::clog << " (";
