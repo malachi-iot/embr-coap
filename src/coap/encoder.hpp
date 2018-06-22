@@ -68,11 +68,11 @@ bool NetBufEncoder<TNetBuf>::option_header(option_number_t number, uint16_t valu
 
 
 template <class TNetBuf>
-bool NetBufEncoder<TNetBuf>::option(option_number_t number, const pipeline::MemoryChunk::readonly_t& ov, bool last_chunk)
+bool NetBufEncoder<TNetBuf>::option(option_number_t number, const ro_chunk_t& ov, bool last_chunk)
 {
     // NOTE: last_chunk not yet supported
 
-    const uint16_t len = ov.length();
+    const uint16_t len = ov.size();
 
     if(!option_header(number, len)) return false;
 

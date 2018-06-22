@@ -13,10 +13,11 @@ using namespace moducom::pipeline;
 
 TEST_CASE("CoAP observable (RFC-7641) tests", "[coap-observer]")
 {
+    typedef estd::experimental::const_buffer ro_chunk_t;
+
     SECTION("(over)simplest example")
     {
-        //MemoryChunk::readonly_t chunk(buffer_oversimplified_observe);
-        estd::experimental::const_buffer chunk(buffer_oversimplified_observe);
+        ro_chunk_t chunk(buffer_oversimplified_observe);
         Decoder d;
         Decoder::Context context(chunk, true);
 
@@ -37,7 +38,7 @@ TEST_CASE("CoAP observable (RFC-7641) tests", "[coap-observer]")
         REQUIRE(d.option_number() == Option::Observe);
         REQUIRE(d.option_length() == 0);
 
-        estd::experimental::const_buffer value = context.remainder();
+        ro_chunk_t value = context.remainder();
 
         // CoAP folks were clever, a subscribe option only takes one extra byte
         // due to implicit value of their UInt

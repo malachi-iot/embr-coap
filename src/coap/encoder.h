@@ -5,6 +5,8 @@
 #include "../coap-uint.h"
 #include "context.h"
 
+#include <estd/exp/buffer.h>
+
 #include <utility>
 
 namespace moducom { namespace coap {
@@ -22,7 +24,7 @@ class NetBufEncoder :
 {
     typedef TNetBuf netbuf_t;
     typedef moducom::io::experimental::NetBufWriter<TNetBuf> base_t;
-    typedef const pipeline::MemoryChunk::readonly_t ro_chunk_t;
+    typedef const estd::experimental::const_buffer ro_chunk_t;
 
     OptionEncoder option_encoder;
 
@@ -38,9 +40,9 @@ public:
     }
 
 protected:
-    size_type write(const pipeline::MemoryChunk::readonly_t& chunk)
+    size_type write(const ro_chunk_t& chunk)
     {
-        return base_t::write(chunk.data(), chunk.length());
+        return base_t::write(chunk.data(), chunk.size());
     }
 
     // experimental
@@ -61,11 +63,11 @@ protected:
     bool option_header(option_number_t number, uint16_t value_length);
 
     // process ONLY value portion of option
-    template <class TMemory>
-    bool option_value(const TMemory& chunk, bool last_chunk)
+    template <class TContainer>
+    bool option_value(const TContainer& chunk, bool last_chunk)
     {
         size_type written = write(chunk);
-        if(written == chunk.length())
+        if(written == chunk.size())
         {
             if (last_chunk)
                 option_encoder.fast_forward();
@@ -221,7 +223,9 @@ public:
                 const pipeline::MemoryChunk& option_value,
                 bool last_chunk = true)
     {
-        ro_chunk_t& ov = option_value;
+        // since there's a tiny bit of overload-complexity, do a legacy behavior here
+        // until we clean the overload complexity up
+        ro_chunk_t ov(option_value.data(), option_value.length());
 
         return option(number, ov, last_chunk);
     }

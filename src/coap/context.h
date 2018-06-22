@@ -10,6 +10,8 @@
 #include "mc/objstack.h"
 #include <estd/type_traits.h>
 
+#include <estd/exp/buffer.h>
+
 // TODO:
 // a) add decoder state accessor/decoder* to context itself for convenient query as to
 //    present state of decode
@@ -50,10 +52,10 @@ public:
     {}
 
 public:
-    void token(const pipeline::MemoryChunk::readonly_t* t)
+    void token(const estd::experimental::const_buffer* t)
     {
         _token_present = true;
-        std::copy(t->data(), t->data() + t->length(), _token.begin());
+        std::copy(t->begin(), t->end(), _token.begin());
         //_token.copy_from(*t);
     }
 
@@ -172,7 +174,7 @@ public:
 // be mindful to validate this data before tossing it in here
 class SimpleBufferContext
 {
-    typedef pipeline::MemoryChunk::readonly_t ro_chunk_t;
+    typedef estd::experimental::const_buffer ro_chunk_t;
 
     ro_chunk_t chunk;
 
@@ -189,7 +191,8 @@ public:
 
     inline ro_chunk_t token() const
     {
-        return ro_chunk_t(chunk.data(4), header().token_length());
+        // skip header portion
+        return ro_chunk_t(chunk.data() + 4, header().token_length());
     }
 };
 
@@ -207,7 +210,7 @@ struct TokenAndHeaderContext<true> :
         return layer2::Token(_token, header().token_length());
     }
 
-    void token(const pipeline::MemoryChunk::readonly_t* t)
+    void token(const estd::experimental::const_buffer* t)
     {
         TokenContext<true>::token(t);
     }
