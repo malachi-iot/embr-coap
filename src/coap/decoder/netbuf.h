@@ -322,11 +322,9 @@ public:
 
     const estd::layer3::const_string option_string_experimental(bool* partial = NULLPTR)
     {
-        uint16_t length = option_decoder().option_length();
+        ro_chunk_t v = process_option_value_experimental(partial);
 
-        ro_chunk_t option_value = process_option_value_experimental(partial);
-
-        estd::layer3::const_string s((const char*)option_value.data(), length);
+        estd::layer3::const_string s((const char*)v.data(), v.size());
 
         return s;
     }
@@ -467,11 +465,11 @@ public:
     uint16_t uint16() { return uint<uint16_t>(); }
     uint32_t uint32() { return uint<uint32_t>(); }
 
-    estd::layer3::basic_string<const char, false> string()
+    estd::layer3::const_string string()
     {
         using namespace moducom::coap;
 
-        estd::layer3::basic_string<const char, false> s = decoder.option_string_experimental();
+        estd::layer3::const_string s = decoder.option_string_experimental();
 
 #ifdef FEATURE_ESTD_IOSTREAM_NATIVE
         std::clog << " (";
