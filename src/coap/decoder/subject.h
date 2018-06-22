@@ -2,6 +2,8 @@
 
 #include "../../coap-dispatcher.h"
 
+#include <estd/exp/buffer.h>
+
 namespace moducom { namespace coap {
 
 // Revamped "Dispatcher"
@@ -13,6 +15,7 @@ class DecoderSubjectBase
     TMessageObserver observer;
     typedef internal::option_number_t option_number_t;
     typedef pipeline::MemoryChunk::readonly_t ro_chunk_t;
+    typedef estd::experimental::const_buffer ro_chunk2_t;
 
     // do these observer_xxx versions so that compile errors are easier to track
     inline void observer_on_option(option_number_t n,
@@ -78,7 +81,7 @@ public:
      * @param last_chunk denotes whether we have reached complete end of coap message with this chunk
      * @return
      */
-    size_t dispatch(const ro_chunk_t& chunk, bool last_chunk = true)
+    size_t dispatch(const ro_chunk2_t& chunk, bool last_chunk = true)
     {
         Decoder::Context context(chunk, last_chunk);
 

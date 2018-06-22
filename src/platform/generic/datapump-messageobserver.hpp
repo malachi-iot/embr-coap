@@ -9,7 +9,8 @@ template <class TMessageObserver, class TNetBuf>
 void process_messageobserver_helper(DecoderSubjectBase<TMessageObserver>& ds, TNetBuf& netbuf,
     typename TMessageObserver::context_t& context)
 {
-    typedef pipeline::MemoryChunk::readonly_t chunk_t;
+    //typedef pipeline::MemoryChunk::readonly_t chunk_t;
+    typedef estd::experimental::const_buffer chunk_t;
     typedef typename TMessageObserver::context_t request_context_t;
 
     netbuf.first();

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <estd/exp/buffer.h>
+
 namespace moducom { namespace coap {
 
 // processes bytes input to then reveal more easily digestible coap options
@@ -172,7 +174,7 @@ public:
     // we want to force a bit more process_iterate operation to move through the states
     // consistently.  This might gently conflict the notion of state machines, but is 100%
     // congruent with coap operation which explicitly depends on a known message length
-    size_t process_iterate(const pipeline::MemoryChunk::readonly_t& input,
+    size_t process_iterate(const estd::experimental::const_buffer& input,
                            OptionExperimental* built_option,
                            bool last_chunk);
 };

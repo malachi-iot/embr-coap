@@ -9,7 +9,7 @@ bool DecoderBase<TDecoderTraits>::header_process_iterate(internal::DecoderContex
 {
     bool process_done = false;
 
-    while (c.pos < c.chunk.length() && !process_done)
+    while (c.pos < c.chunk.size() && !process_done)
     {
         process_done = header_decoder().process_iterate(c.chunk[c.pos]);
 
@@ -27,7 +27,7 @@ bool DecoderBase<TDecoderTraits>::token_process_iterate(internal::DecoderContext
 {
     bool process_done = false;
 
-    while(c.pos < c.chunk.length() && !process_done)
+    while(c.pos < c.chunk.size() && !process_done)
     {
         // TODO: Utilize a simpler counter and chunk out token
         process_done = token_decoder().process_iterate(c.chunk[c.pos], header_decoder().token_length());

@@ -266,11 +266,11 @@ bool OptionDecoder::process_iterate(pipeline::IBufferedPipelineReader& reader, O
 }
 #endif
 
-size_t OptionDecoder::process_iterate(const pipeline::MemoryChunk::readonly_t& chunk,
+size_t OptionDecoder::process_iterate(const estd::experimental::const_buffer& chunk,
                                       OptionExperimental* built_option,
                                       bool last_chunk)
 {
-    size_t length = chunk.length(); // represents remaining length to be processed
+    size_t length = chunk.size(); // represents remaining length to be processed
 
     // last chunk + length == 0 means special EOF processing mode
     if(length == 0 && last_chunk)

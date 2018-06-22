@@ -48,7 +48,8 @@ TEST_CASE("CoAP low level tests", "[coap-lowlevel]")
         for (int i = 0; i < sizeof(buffer); i++)
         {
             // A little clunky but should work, just to stay 1:1 with old test
-            moducom::pipeline::MemoryChunk temp_chunk(&buffer[i], 1);
+            //moducom::pipeline::MemoryChunk temp_chunk(&buffer[i], 1);
+            estd::experimental::const_buffer temp_chunk(&buffer[i], 1);
             parser.process_deprecated(temp_chunk, i == sizeof(buffer) - 1);
 
             switch (i + 1)
@@ -105,7 +106,8 @@ TEST_CASE("CoAP low level tests", "[coap-lowlevel]")
         for (int i = 0; i < sizeof(buffer_16bit_delta); i++)
         {
             // A little clunky but should work, just to stay 1:1 with old test
-            moducom::pipeline::MemoryChunk::readonly_t temp_chunk(&buffer[i], 1);
+            //moducom::pipeline::MemoryChunk::readonly_t temp_chunk(&buffer[i], 1);
+            estd::experimental::const_buffer temp_chunk(&buffer[i], 1);
             parser_t::Context context(temp_chunk, i == sizeof(buffer_16bit_delta) - 1);
 
             while(!parser.process_iterate(context));

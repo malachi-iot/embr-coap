@@ -26,7 +26,8 @@ public:
 
 private:
     typedef Decoder base_t;
-    typedef moducom::pipeline::MemoryChunk::readonly_t ro_chunk_t;
+    //typedef moducom::pipeline::MemoryChunk::readonly_t ro_chunk_t;
+    typedef estd::experimental::const_buffer ro_chunk_t;
 
     friend class option_iterator<class TNetBufDecoder>;
 
@@ -103,7 +104,7 @@ protected:
     // see above
     size_t length_unevaluated() const
     {
-        return context.chunk.length() - context.pos;
+        return context.chunk.size() - context.pos;
     }
 
     // internal call , needs to be mated to process_option_header_experimental
@@ -118,8 +119,8 @@ public:
 
         // NOTE: Safe to grab this, option_decoder().option_length() doesn't get clobbered for a while still
         int value_length = option_decoder().option_length();
-        const uint8_t* raw = context.chunk.data(context.pos);
-        int actual_remaining_length = context.chunk.length() - context.pos;
+        const uint8_t* raw = context.chunk.data() + context.pos;
+        int actual_remaining_length = context.chunk.size() - context.pos;
         bool _partial = value_length > actual_remaining_length;
 
         if(partial != NULLPTR)
@@ -250,7 +251,7 @@ public:
     {
         ro_chunk_t p = payload_experimental(completed);
 
-        estd::layer3::const_string payload((const char*)p.data(), p.length());
+        estd::layer3::const_string payload((const char*)p.data(), p.size());
 
         return payload;
     }

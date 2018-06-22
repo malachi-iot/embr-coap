@@ -28,7 +28,8 @@ TEST_CASE("CoAP decoder tests", "[coap-decoder]")
     SECTION("Payload only test")
     {
         Decoder decoder;
-        MemoryChunk::readonly_t chunk(buffer_payload_only);
+        //MemoryChunk::readonly_t chunk(buffer_payload_only);
+        estd::experimental::const_buffer chunk(buffer_payload_only);
         Decoder::Context context(chunk, true);
 
         REQUIRE(decoder.process_iterate(context) == false);
@@ -54,7 +55,8 @@ TEST_CASE("CoAP decoder tests", "[coap-decoder]")
     SECTION("16 bit delta test")
     {
         Decoder decoder;
-        MemoryChunk::readonly_t chunk(buffer_16bit_delta);
+        //MemoryChunk::readonly_t chunk(buffer_16bit_delta);
+        estd::experimental::const_buffer chunk(buffer_16bit_delta);
         Decoder::Context context(chunk, true);
 
         REQUIRE(decoder.process_iterate(context) == false);

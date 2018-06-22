@@ -22,9 +22,11 @@ using namespace moducom::pipeline;
 
 TEST_CASE("CoAP decoder subject tests", "[coap-decoder-subject]")
 {
+    typedef estd::experimental::const_buffer ro_chunk_t;
+
     SECTION("16 bit delta: ContextDispatcherHandler")
     {
-        MemoryChunk::readonly_t chunk(buffer_16bit_delta);
+        ro_chunk_t chunk(buffer_16bit_delta);
         test.dispatch(chunk);
 
         REQUIRE(test_ctx.have_header());
@@ -36,19 +38,19 @@ TEST_CASE("CoAP decoder subject tests", "[coap-decoder-subject]")
         DecoderSubjectBase<Buffer16BitDeltaObserver<request_context_t> > test2(test_ctx2);
         // FIX: on_payload not evaluating for these tests, not surprising
         // since subject-decoder is revamping how payload processing works
-        MemoryChunk::readonly_t chunk(buffer_16bit_delta);
+        ro_chunk_t chunk(buffer_16bit_delta);
         test2.dispatch(chunk);
     }
     SECTION("16 bit detla: Buffer16BitDeltaObserver&")
     {
         Buffer16BitDeltaObserver<ObserverContext> observer;
         DecoderSubjectBase<IMessageObserver&> test2(observer);
-        MemoryChunk::readonly_t chunk(buffer_16bit_delta);
+        ro_chunk_t chunk(buffer_16bit_delta);
         test2.dispatch(chunk);
     }
     SECTION("payload only")
     {
-        MemoryChunk::readonly_t chunk(buffer_payload_only);
+        ro_chunk_t chunk(buffer_payload_only);
 
         // TODO: Make an observer to evaluate that payload is appearing as expected
         test.reset();
@@ -59,7 +61,7 @@ TEST_CASE("CoAP decoder subject tests", "[coap-decoder-subject]")
     }
     SECTION("'plausible' coap buffer")
     {
-        MemoryChunk::readonly_t chunk(buffer_plausible);
+        ro_chunk_t chunk(buffer_plausible);
 
         test.reset();
         test.dispatch(chunk);

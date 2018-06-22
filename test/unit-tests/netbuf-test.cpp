@@ -114,7 +114,8 @@ TEST_CASE("netbuf+coap tests", "[netbuf-coap]")
     }
     SECTION("0-length value option")
     {
-        typedef moducom::pipeline::MemoryChunk::readonly_t chunk_t;
+        //typedef moducom::pipeline::MemoryChunk::readonly_t chunk_t;
+        typedef estd::experimental::const_buffer chunk_t;
         NetBufDecoder<NetBufReadOnlyMemory> decoder(buffer_oversimplified_observe);
 
         Header header = decoder.header();
@@ -133,7 +134,7 @@ TEST_CASE("netbuf+coap tests", "[netbuf-coap]")
 
         chunk_t value = decoder.process_option_value_experimental();
 
-        REQUIRE(value.length() == 0);
+        REQUIRE(value.size() == 0);
     }
 #if __cplusplus >= 201103L
     SECTION("netbuf copy")

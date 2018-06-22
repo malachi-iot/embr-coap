@@ -11,6 +11,7 @@
 #include "../coap.h"
 #include "coap/decoder/simple.h"
 #include "coap/decoder/option.h"
+#include <estd/exp/buffer.h>
 
 #if __cplusplus >= 201103L
 #include <type_traits>
@@ -37,7 +38,8 @@ namespace internal {
 // which moves through it
 struct DecoderContext
 {
-    typedef pipeline::experimental::ReadOnlyMemoryChunk<> chunk_t;
+    //typedef pipeline::experimental::ReadOnlyMemoryChunk<> chunk_t;
+    typedef estd::experimental::const_buffer chunk_t;
 
     // TODO: optimize by making this a value not a ref, and bump up "data" pointer
     // (and down length) instead of bumping up pos.  A little more fiddly, but then
@@ -59,7 +61,19 @@ struct DecoderContext
     // Unused helper function
     //const uint8_t* data() const { return chunk.data() + pos; }
 
-    chunk_t remainder() const { return chunk.remainder(pos); }
+    chunk_t remainder() const
+    {
+        chunk_t r(chunk.data() + pos, chunk.size() - pos);
+        return r;
+        //return chunk.remainder(pos);
+    }
+
+    // Helper method as we transition to estd::const_buffer
+    moducom::pipeline::MemoryChunk::readonly_t remainder_legacy() const
+    {
+        moducom::pipeline::MemoryChunk::readonly_t r(chunk.data() + pos, chunk.size() - pos);
+        return r;
+    }
 
 public:
     DecoderContext(const chunk_t& chunk, bool last_chunk) :
@@ -189,7 +203,7 @@ public:
 
     // Of limited to no use, since we blast through chunk without caller having a chance
     // to inspect what's going on.  Only keeping around for coap_lowlevel test
-    void process_deprecated(const pipeline::experimental::ReadOnlyMemoryChunk<>& chunk, bool last_chunk = true)
+    void process_deprecated(const estd::experimental::const_buffer& chunk, bool last_chunk = true)
     {
         Context context(chunk, last_chunk);
 

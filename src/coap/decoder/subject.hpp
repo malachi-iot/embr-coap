@@ -25,11 +25,13 @@ bool DecoderSubjectBase<TMessageObserver>::dispatch_iterate(Decoder::Context& co
             break;
 
         case Decoder::Payload:
-            observer_on_payload(context.remainder(), context.last_chunk);
+        {
+            observer_on_payload(context.remainder_legacy(), context.last_chunk);
 
             // FIX: A little hacky, falls through to brute force on_complete
             // we *might* run into double-calls of Decoder::Done in this case
             if(!context.last_chunk) break;
+        }
 
         case Decoder::Done:
             // FIX: Frequently not called, needs work -
@@ -86,7 +88,7 @@ void DecoderSubjectBase<TMessageObserver>::dispatch_option(Decoder::Context& con
         }
 
         case OptionDecoder::OptionValue:
-            observer_on_option(context.remainder());
+            observer_on_option(context.remainder_legacy());
             break;
 
         default:

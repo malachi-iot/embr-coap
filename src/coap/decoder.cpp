@@ -11,7 +11,8 @@ bool Decoder::process_iterate(Context& context)
 {
     size_t& pos = context.pos;
     bool last_chunk = context.last_chunk;
-    typedef pipeline::MemoryChunk::readonly_t ro_chunk_t;
+    //typedef pipeline::MemoryChunk::readonly_t ro_chunk_t;
+    typedef Context::chunk_t ro_chunk_t;
     const ro_chunk_t& chunk = context.chunk;
 
     switch (state())
@@ -61,10 +62,11 @@ bool Decoder::process_iterate(Context& context)
 
         case OptionsStart:
         {
-            ro_chunk_t remainder = chunk.remainder(pos);
+            //ro_chunk_t remainder = chunk.remainder(pos);
+            ro_chunk_t remainder = context.remainder();
 
             // if we're at EOF (happens with header+token only messages)
-            if(remainder.length() == 0 && last_chunk)
+            if(remainder.size() == 0 && last_chunk)
             {
                 // then never go through an options processing phase at all
                 state(OptionsDone);
@@ -88,7 +90,7 @@ bool Decoder::process_iterate(Context& context)
 
         case Options:
         {
-            pos += option_decoder().process_iterate(chunk.remainder(pos), &optionHolder, last_chunk);
+            pos += option_decoder().process_iterate(context.remainder(), &optionHolder, last_chunk);
 
             // FIX: Payload now discovered and heeded in optionDecoder, do so out here
             // as well
@@ -99,7 +101,7 @@ bool Decoder::process_iterate(Context& context)
             }
             // reach here under circumstance where there is no payload at all -
             // we're at the end of the buffer and no payload marker seen
-            else if ((pos == chunk.length() && last_chunk))
+            else if ((pos == chunk.size() && last_chunk))
             {
                 // now that optionDecoder.process_iterate can iterate at EOF with no characters,
                 // this is as simple as waiting until we get OptionValueDone
@@ -158,7 +160,7 @@ bool Decoder::process_iterate(Context& context)
             // b.1) end of datagram - entire chunk present
             // b.2) end of chunk - only partial chunk present
             // c) as-yet-to-be-determined streaming end of chunk marker
-            if (pos == chunk.length() && last_chunk)
+            if (pos == chunk.size() && last_chunk)
             {
                 // this is for condition b.1)
                 state(Done);
@@ -184,7 +186,7 @@ bool Decoder::process_iterate(Context& context)
         case Payload:
             // fast forward pos to end of chunk since here on out it
             // only contains payload information
-            pos = chunk.length();
+            pos = chunk.size();
             if(last_chunk)  state(PayloadDone);
             break;
 
@@ -199,9 +201,9 @@ bool Decoder::process_iterate(Context& context)
     }
 
     // TODO: Do an assert to make sure pos never exceeds chunk boundary
-    ASSERT_ERROR(true, pos <= chunk.length(), "pos should never exceed chunk length");
+    ASSERT_ERROR(true, pos <= chunk.size(), "pos should never exceed chunk length");
 
-    return pos == chunk.length();
+    return pos == chunk.size();
 }
 
 }}
