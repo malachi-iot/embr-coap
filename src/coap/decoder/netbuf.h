@@ -342,7 +342,7 @@ class option_iterator
     typedef typename estd::remove_reference<typename TNetBufDecoder::netbuf_t>::type netbuf_t;
     typedef TNetBufDecoder decoder_t;
     typedef Option::Numbers value_type;
-    typedef moducom::pipeline::MemoryChunk::readonly_t ro_chunk_t;
+    typedef estd::experimental::const_buffer ro_chunk_t;
 
     decoder_t& decoder;
 
@@ -440,7 +440,7 @@ public:
         // int is big enough to hold it
         ro_chunk_t v = opaque();
 
-        TUInt retval = UInt::get<TUInt>(v.data(), v.length());
+        TUInt retval = UInt::get<TUInt>(v.data(), v.size());
 
 #ifdef FEATURE_ESTD_IOSTREAM_NATIVE
         std::clog << " (" << retval << ')';
@@ -453,9 +453,9 @@ public:
     {
         ro_chunk_t v = opaque();
 
-        uint8_t retval = v.length() == 0 ? 0 : *v.data();
+        uint8_t retval = v.size() == 0 ? 0 : *v.data();
 
-        ASSERT_WARN(true, v.length() <= 1, "uint8 call expects a length of <= 1 byte");
+        ASSERT_WARN(true, v.size() <= 1, "uint8 call expects a length of <= 1 byte");
 
 #ifdef FEATURE_ESTD_IOSTREAM_NATIVE
         std::clog << " (" << (int)retval << ')';

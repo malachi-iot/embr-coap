@@ -9,10 +9,9 @@ using namespace moducom::pipeline;
 
 TEST_CASE("CoAP decoder tests", "[coap-decoder]")
 {
-    //layer3::MemoryChunk<1024> buffer_in;
-    //buffer_in.memcpy(buffer_16bit_delta, sizeof(buffer_16bit_delta));
+    typedef estd::experimental::const_buffer ro_chunk_t;
 
-    MemoryChunk::readonly_t buffer_in(buffer_16bit_delta);
+    ro_chunk_t buffer_in(buffer_16bit_delta);
 
 
     //layer3::SimpleBufferedPipeline net_in(buffer_in);
@@ -28,8 +27,7 @@ TEST_CASE("CoAP decoder tests", "[coap-decoder]")
     SECTION("Payload only test")
     {
         Decoder decoder;
-        //MemoryChunk::readonly_t chunk(buffer_payload_only);
-        estd::experimental::const_buffer chunk(buffer_payload_only);
+        ro_chunk_t chunk(buffer_payload_only);
         Decoder::Context context(chunk, true);
 
         REQUIRE(decoder.process_iterate(context) == false);
@@ -55,8 +53,7 @@ TEST_CASE("CoAP decoder tests", "[coap-decoder]")
     SECTION("16 bit delta test")
     {
         Decoder decoder;
-        //MemoryChunk::readonly_t chunk(buffer_16bit_delta);
-        estd::experimental::const_buffer chunk(buffer_16bit_delta);
+        ro_chunk_t chunk(buffer_16bit_delta);
         Decoder::Context context(chunk, true);
 
         REQUIRE(decoder.process_iterate(context) == false);
