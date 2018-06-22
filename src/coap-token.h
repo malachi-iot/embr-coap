@@ -53,34 +53,13 @@ public:
 
     Token(const layer1::Token& t, size_t tkl)
     {
-        // FIX: temporary measure to interact with estd::array's fluctuating code
-        // base
-        const uint8_t* data = &t[0];
-        base_t::_append(data, tkl);
+        base_t::append(t.data(), tkl);
     }
 
     Token(const uint8_t* data, size_t tkl)
     {
-        base_t::_append(data, tkl);
+        base_t::append(data, tkl);
     }
-
-    // TODO: put this into MemoryChunk itself
-    // we don't expose ReadOnly constructor which can do this copy because
-    // it might lose the const qualifiers
-    operator moducom::pipeline::MemoryChunk::readonly_t() const
-    {
-        const uint8_t* data = clock(); // TODO: phase out memory chunks completely then we won't need a lingering lock
-        return moducom::pipeline::MemoryChunk::readonly_t(data, size());
-    }
-    /*
-
-    // TODO: Move this into underlying MemoryChunk
-    bool operator ==(const Token& compare_to) const
-    {
-        if(compare_to.length() != length()) return false;
-
-        return memcmp(data(), compare_to.data(), length()) == 0;
-    } */
 };
 
 

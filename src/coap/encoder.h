@@ -141,6 +141,14 @@ public:
         return base_t::write(d, len);
     }
 
+    template <class TImpl>
+    size_type write(const estd::internal::allocated_array<TImpl>& value)
+    {
+        size_type written = base_t::write(value.clock(), value.size());
+        value.cunlock();
+        return written;
+    }
+
 protected:
     // represents how many bytes were written during last public/high level encode operation
     // only available if encode operation comes back as false.  Undefined when operation
@@ -180,6 +188,17 @@ public:
         }
     }
 
+    template <class TImpl>
+    bool token(const estd::internal::allocated_array<TImpl>& value, bool last_chunk = true)
+    {
+        // TODO: handle chunking
+        assert_state(_state_t::HeaderDone);
+        size_type written = write(value);
+        state(_state_t::TokenDone);
+        this->written(written);
+        return written == value.size();
+    }
+
 
     // this variety does not handle chunking on the input
     bool token(const uint8_t* data, size_type tkl)
@@ -191,25 +210,6 @@ public:
         return written == tkl;
     }
 
-    bool token(const pipeline::MemoryChunk::readonly_t& value, bool last_chunk = true)
-    {
-        // TODO: handle chunking
-        assert_state(_state_t::HeaderDone);
-        size_type written = write(value);
-        state(_state_t::TokenDone);
-        this->written(written);
-        return written == value.length();
-    }
-
-
-    /*
-    bool token(const moducom::coap::layer2::Token& value)
-    {
-        assert_state(_state_t::HeaderDone);
-        write(value.data(), value.length());
-        state(_state_t::TokenDone);
-        return true;
-    } */
 
     bool option(option_number_t number,
                 ro_chunk_t& option_value,
