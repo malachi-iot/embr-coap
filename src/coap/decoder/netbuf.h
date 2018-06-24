@@ -98,7 +98,7 @@ protected:
     // but in this case const applies)
     const uint8_t* unevaluated() const
     {
-        return context.chunk.data(context.pos);
+        return context.chunk.data() + context.pos;
     }
 
     // see above
