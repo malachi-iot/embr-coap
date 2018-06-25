@@ -4,6 +4,94 @@
 
 namespace moducom { namespace coap {
 
+namespace experimental {
+
+// shall bear very strong resemblace to predecessor's DecoderSubjectBase dispatch_iterate
+template <class TSubject>
+bool notify_from_decoder(const TSubject& subject, Decoder& decoder, Decoder::Context& context)
+{
+    typedef event_base::buffer_t buffer_t;
+
+    switch(decoder.state())
+    {
+        case Decoder::HeaderDone:
+            subject.notify(header_event { decoder.header_decoder() });
+            break;
+
+        case Decoder::TokenDone:
+        {
+            buffer_t chunk(decoder.token_decoder().data(),
+                             decoder.header_decoder().token_length());
+
+            subject.notify(token_event(chunk, true));
+            break;
+        }
+
+        case Decoder::Options:
+            switch(decoder.option_state())
+            {
+                // service at *start* and iteration of OptionValue
+                // so that we can grab buffer contents.  Waiting until
+                // OptionValueDone/OptionDone potentially loses chunked
+                // buffer pieces
+                case OptionDecoder::OptionValue:
+                {
+                    uint16_t option_number = decoder.option_number();
+                    uint16_t option_length = decoder.option_length();
+                    buffer_t remainder = context.remainder();
+
+                    if (option_length > 0)
+                    {
+                        bool last_chunk;
+
+                        if(remainder.size() >= option_length)
+                        {
+                            last_chunk = true;
+
+                            remainder.resize(option_length);
+                        }
+                        else
+                        {
+                            // We expect at least 1 more call to observer_on_option,
+                            // so decrement length accordingly
+                            // FIX: Need to do friend or similar here
+                            //decoder.optionHolder.length -= chunk.length();
+                            last_chunk = false;
+
+                            // remainder represents partial chunk, so don't resize it
+                        }
+
+                        subject.notify(
+                                option_event(option_number), remainder, last_chunk);
+                    }
+                    else
+                        subject.notify(option_event(option_number));
+
+                    break;
+                }
+            }
+            break;
+
+        case Decoder::Payload:
+        {
+            subject.notify(payload_event(context.remainder(), true));
+
+            // FIX: A little hacky, falls through to brute force on_complete
+            // we *might* run into double-calls of Decoder::Done in this case
+            if(!context.last_chunk) break;
+        }
+
+        case Decoder::Done:
+            subject.notify(completed_event { });
+            break;
+
+        default: break;
+    }
+
+    return decoder.process_iterate(context);
+}
+
+}
 
 // TODO: Eventually clean up dispatch_option and then
 // just run process_iterate always at the bottom
