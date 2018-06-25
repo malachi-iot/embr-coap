@@ -77,9 +77,9 @@ class Token : public estd::layer2::vector<const uint8_t, 8>
     typedef estd::layer2::vector<const uint8_t, 8> base_t;
 
 public:
-    Token(const uint8_t* data, size_t tkl) : base_t(data)
+    Token(const uint8_t* data, size_t tkl) :
+            base_t(data, tkl)
     {
-        base_t::impl().size(tkl);
     }
 
     Token(const layer2::Token& token) : base_t(token.clock())
