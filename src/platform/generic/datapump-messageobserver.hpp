@@ -87,4 +87,36 @@ void process_messageobserver(TDataPump& datapump, TDecoderSubject& ds)
     }
 }
 
+
+// 2nd-generation subject/observer code designed for use with estd::experimental::subject code
+// merely evaluates presence of incoming-from-transport data, and if present, fires off
+// notification to subject
+// FIX: Obviously needs better name
+template <class TDataPump, class TSubject>
+void process_messageobserver2(TDataPump& datapump, TSubject& subject)
+{
+    typedef TDataPump datapump_t;
+    typedef typename datapump_t::Item item_t;
+    typedef typename datapump_t::netbuf_t netbuf_t;
+    typedef typename datapump_t::addr_t addr_t;
+
+    if(!datapump.dequeue_empty())
+    {
+        item_t& item = datapump.dequeue_front();
+
+        addr_t addr_incoming = item.addr();
+        netbuf_t* netbuf = item.netbuf();
+
+        subject.notify(item);
+
+#ifdef FEATURE_MCCOAP_DATAPUMP_INLINE
+#else
+        // FIX: Need a much more cohesive way of doing this
+        delete netbuf;
+#endif
+
+        datapump.dequeue_pop();
+    }
+}
+
 }}
