@@ -15,7 +15,7 @@ bool notify_from_decoder(TSubject& subject, Decoder& decoder, Decoder::Context& 
     switch(decoder.state())
     {
         case Decoder::HeaderDone:
-            subject.notify(header_event { decoder.header_decoder() });
+            subject.notify(header_event(decoder.header_decoder()));
             break;
 
         case Decoder::TokenDone:
@@ -65,7 +65,7 @@ bool notify_from_decoder(TSubject& subject, Decoder& decoder, Decoder::Context& 
         }
 
         case Decoder::Done:
-            subject.notify(completed_event { });
+            subject.notify(completed_event());
             break;
 
         default: break;

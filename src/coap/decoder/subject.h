@@ -64,6 +64,9 @@ struct completed_event {};
 struct header_event
 {
     Header header;
+
+    header_event(const Header& header) :
+        header(header) {}
 };
 
 
