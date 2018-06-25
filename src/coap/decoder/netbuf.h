@@ -13,27 +13,34 @@ namespace moducom { namespace coap {
 template <class TNetBufDecoder>
 class option_iterator;
 
-// standalone Decoder works well enough, so this is largely just a netbuf-capable
-// wrapper around it
-template <class TNetBuf>
-class NetBufDecoder : public Decoder
+// Split out code from NetBufDecoder, however, may have been a bit overzealous
+// as the NetBufDecoder doesn't fully do the next/advance semantics just yet,
+// and therefore some of the calls I moved into DecoderWithContext may have
+// to be overridden/moved back to NetBufDecoder 
+class DecoderWithContext : public Decoder
 {
-public:
-    typedef TNetBuf netbuf_t;
-
-    // experimental because I am pretty sure I want netbuf_t itself to be this
-    typedef estd::remove_reference<TNetBuf> netbuf_experimental_value_t;
-
-private:
+protected:
     typedef Decoder base_t;
-    //typedef moducom::pipeline::MemoryChunk::readonly_t ro_chunk_t;
     typedef estd::experimental::const_buffer ro_chunk_t;
 
-    friend class option_iterator<class TNetBufDecoder>;
-
-protected:
-    TNetBuf m_netbuf;
     Context context;
+
+    DecoderWithContext(const ro_chunk_t& chunk, bool last_chunk) :
+        context(chunk, last_chunk)
+        {}
+
+    // simulate processed memory chunk behavior here (like unprocessed,
+    // but in this case const applies)
+    const uint8_t* unevaluated() const
+    {
+        return context.chunk.data() + context.pos;
+    }
+
+    // see above
+    size_t length_unevaluated() const
+    {
+        return context.chunk.size() - context.pos;
+    }
 
 
     bool process_iterate(State assert_start_state, const char* errmsg = NULLPTR)
@@ -55,84 +62,6 @@ protected:
 
         return result;
     }
-
-public:
-    bool process_iterate()
-    {
-        // TODO: Will know how to advance through netbuf
-        return base_t::process_iterate(context);
-    }
-
-
-    void process_option_header_experimental()
-    {
-        // if we're gonna evaluate an option header, ensure we're at least in option
-        // processing mode
-        ASSERT_WARN(Decoder::Options, state(), "Must be in options processing mode");
-
-        // move past header
-        process_iterate();
-
-        ASSERT_WARN(OptionDecoder::ValueStart, option_decoder().state(), "Must be at OptionValueStart");
-    }
-protected:
-
-    // NOTE: Actually shaping up to be an internal call, because we always want
-    // to move past OptionValueDone when evaluating/processing options and this
-    // call does not do that
-    // NOTE: May not be so useful or interesting after all, since option_number
-    // and option_length are so readily available
-    bool process_option_header_experimental(Option::Numbers* number, uint16_t* length)
-    {
-        process_option_header_experimental();
-
-        (int&)(*number) += option_number();
-        *length = option_length();
-
-        return true;
-    }
-
-    // simulate processed memory chunk behavior here (like unprocessed,
-    // but in this case const applies)
-    const uint8_t* unevaluated() const
-    {
-        return context.chunk.data() + context.pos;
-    }
-
-    // see above
-    size_t length_unevaluated() const
-    {
-        return context.chunk.size() - context.pos;
-    }
-
-    // internal call , needs to be mated to process_option_header_experimental
-public:
-    ro_chunk_t option(bool* completed = NULLPTR)
-    {
-        ASSERT_WARN(Decoder::Options, state(), "Must be in options processing mode");
-
-        // assert that we are at ValueStart or OptionValue (latter when chunked)
-        ASSERT_WARN(OptionDecoder::ValueStart, option_decoder().state(), "Must be at ValueStart");
-
-        // NOTE: Safe to grab this, option_decoder().option_length() doesn't get clobbered for a while still
-        int value_length = option_decoder().option_length();
-        ro_chunk_t ret = context.remainder();
-        bool _completed = value_length <= ret.size();
-
-        if(completed != NULLPTR)
-            *completed = _completed;
-        else
-        {
-            ASSERT_WARN(true, _completed, "Partial data encountered but potentially ignored");
-        }
-
-        // if completed, be sure we resize down the remainder to a maximum
-        // value_length size rather than the entire remaining buffer
-        if(_completed)   ret.resize(value_length);
-
-        return ret;
-    }
-
 
     // keep processing until we encounter state
     // keep processing for max_attempts
@@ -185,19 +114,14 @@ public:
     }
 
 
-
 public:
-    NetBufDecoder(const netbuf_t& netbuf) :
-        m_netbuf(netbuf),
-        // NOTE: Be advised that netbuf.end() differs from traditional iterator end
-        // in that it is a bool indicating that we are ON the last chunk, not PAST it
-        context(ro_chunk_t(netbuf.processed(), netbuf.length_processed()), netbuf.end())
-    {}
+    bool process_iterate()
+    {
+        // TODO: Will know how to advance through netbuf
+        return base_t::process_iterate(context);
+    }
 
 
-    typedef coap::option_iterator<NetBufDecoder<TNetBuf> > option_iterator;
-
-    netbuf_t& netbuf() { return m_netbuf; }
 
     coap::Header header()
     {
@@ -206,39 +130,6 @@ public:
         process_until_experimental(Decoder::HeaderDone);
 
         return header_decoder();
-    }
-
-    void process_payload_header_experimental()
-    {
-        ASSERT_WARN(Decoder::OptionsDone, state(), "Expected to be at end of option processing");
-
-        process_iterate();
-
-        ASSERT_WARN(true,
-                    state() == Decoder::Payload || state() == Decoder::Done,
-                    "Did not encounter 'Paylod' or 'Done' state");
-    }
-
-    bool has_payload_experimental()
-    {
-        if(state() == OptionsDone)
-            process_payload_header_experimental();
-
-        // TODO: Assert that this is Payload or Done state, otherwise undefined operation
-        return state() == Payload;
-    }
-
-    ro_chunk_t payload(bool* completed = NULLPTR)
-    {
-        if(state() == OptionsDone)
-            process_payload_header_experimental();
-
-        ASSERT_WARN(Decoder::Payload, state(), "Expected to be in payload state");
-
-        //if(partial != NULLPTR)
-          //  *partial = !netbuf().eol();
-
-        return context.remainder();
     }
 
     // returns true if we consumed enough bytes to produce a complete token.  NOTE this
@@ -278,6 +169,135 @@ public:
         // obscure
         return layer3::Token(token_decoder().data(), tkl);
     }
+
+
+    ro_chunk_t option(bool* completed = NULLPTR)
+    {
+        ASSERT_WARN(Decoder::Options, state(), "Must be in options processing mode");
+
+        // assert that we are at ValueStart or OptionValue (latter when chunked)
+        ASSERT_WARN(OptionDecoder::ValueStart, option_decoder().state(), "Must be at ValueStart");
+
+        // NOTE: Safe to grab this, option_decoder().option_length() doesn't get clobbered for a while still
+        int value_length = option_decoder().option_length();
+        ro_chunk_t ret = context.remainder();
+        bool _completed = value_length <= ret.size();
+
+        if(completed != NULLPTR)
+            *completed = _completed;
+        else
+        {
+            ASSERT_WARN(true, _completed, "Partial data encountered but potentially ignored");
+        }
+
+        // if completed, be sure we resize down the remainder to a maximum
+        // value_length size rather than the entire remaining buffer
+        if(_completed)   ret.resize(value_length);
+
+        return ret;
+    }
+};
+
+// standalone Decoder works well enough, so this is largely just a netbuf-capable
+// wrapper around it
+template <class TNetBuf>
+class NetBufDecoder : public DecoderWithContext
+{
+public:
+    typedef TNetBuf netbuf_t;
+
+    // experimental because I am pretty sure I want netbuf_t itself to be this
+    typedef estd::remove_reference<TNetBuf> netbuf_experimental_value_t;
+
+private:
+    typedef DecoderWithContext base_t;
+    //typedef moducom::pipeline::MemoryChunk::readonly_t ro_chunk_t;
+
+    friend class option_iterator<class TNetBufDecoder>;
+
+protected:
+    TNetBuf m_netbuf;
+
+public:
+    void process_option_header_experimental()
+    {
+        // if we're gonna evaluate an option header, ensure we're at least in option
+        // processing mode
+        ASSERT_WARN(Decoder::Options, state(), "Must be in options processing mode");
+
+        // move past header
+        process_iterate();
+
+        ASSERT_WARN(OptionDecoder::ValueStart, option_decoder().state(), "Must be at OptionValueStart");
+    }
+protected:
+
+    // NOTE: Actually shaping up to be an internal call, because we always want
+    // to move past OptionValueDone when evaluating/processing options and this
+    // call does not do that
+    // NOTE: May not be so useful or interesting after all, since option_number
+    // and option_length are so readily available
+    bool process_option_header_experimental(Option::Numbers* number, uint16_t* length)
+    {
+        process_option_header_experimental();
+
+        (int&)(*number) += option_number();
+        *length = option_length();
+
+        return true;
+    }
+
+    // internal call , needs to be mated to process_option_header_experimental
+public:
+
+
+
+public:
+    NetBufDecoder(const netbuf_t& netbuf) :
+        m_netbuf(netbuf),
+        // NOTE: Be advised that netbuf.end() differs from traditional iterator end
+        // in that it is a bool indicating that we are ON the last chunk, not PAST it
+        base_t(ro_chunk_t(netbuf.processed(), netbuf.length_processed()), netbuf.end())
+    {}
+
+
+    typedef coap::option_iterator<NetBufDecoder<TNetBuf> > option_iterator;
+
+    netbuf_t& netbuf() { return m_netbuf; }
+
+    void process_payload_header_experimental()
+    {
+        ASSERT_WARN(Decoder::OptionsDone, state(), "Expected to be at end of option processing");
+
+        process_iterate();
+
+        ASSERT_WARN(true,
+                    state() == Decoder::Payload || state() == Decoder::Done,
+                    "Did not encounter 'Paylod' or 'Done' state");
+    }
+
+    bool has_payload_experimental()
+    {
+        if(state() == OptionsDone)
+            process_payload_header_experimental();
+
+        // TODO: Assert that this is Payload or Done state, otherwise undefined operation
+        return state() == Payload;
+    }
+
+    ro_chunk_t payload(bool* completed = NULLPTR)
+    {
+        if(state() == OptionsDone)
+            process_payload_header_experimental();
+
+        ASSERT_WARN(Decoder::Payload, state(), "Expected to be in payload state");
+
+        //if(partial != NULLPTR)
+          //  *partial = !netbuf().eol();
+
+        return context.remainder();
+    }
+
 
     // kicks off option processing
     bool begin_option_experimental()
