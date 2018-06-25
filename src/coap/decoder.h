@@ -48,7 +48,7 @@ struct DecoderContext
     // a memory chunk is living somewhere for this context to operate.  Note though
     // that we need to remember what our original length was, so we still need
     // pos, unless we decrement length along the way
-    const chunk_t& chunk;
+    const chunk_t chunk;
 
     // current processing position.  Should be chunk.length once processing is done
     size_t pos;
@@ -81,6 +81,12 @@ public:
             pos(0),
             last_chunk(last_chunk)
             {}
+
+    DecoderContext(const pipeline::MemoryChunk::readonly_t& legacy_chunk, bool last_chunk) :
+            chunk(legacy_chunk.data(), legacy_chunk.length()),
+            pos(0),
+            last_chunk(last_chunk)
+    {}
 };
 
 

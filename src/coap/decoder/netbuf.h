@@ -33,8 +33,6 @@ private:
 
 protected:
     TNetBuf m_netbuf;
-    // FIX: intermediate chunk until context has a value instead of a ref for its chunk
-    ro_chunk_t chunk;
     Context context;
 
 
@@ -191,10 +189,9 @@ public:
 public:
     NetBufDecoder(const netbuf_t& netbuf) :
         m_netbuf(netbuf),
-        chunk(netbuf.processed(), netbuf.length_processed()),
         // NOTE: Be advised that netbuf.end() differs from traditional iterator end
         // in that it is a bool indicating that we are ON the last chunk, not PAST it
-        context(chunk, netbuf.end())
+        context(ro_chunk_t(netbuf.processed(), netbuf.length_processed()), netbuf.end())
     {}
 
 
