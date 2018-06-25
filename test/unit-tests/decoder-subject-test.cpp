@@ -19,6 +19,8 @@ static DecoderSubjectBase<experimental::ContextDispatcherHandler<request_context
 // FIX: putting this above causes compilation issues, clean that up
 #include "test-observer.h"
 
+// FIX: Nevermind, because inheritence ends up hiding overloaded names,
+// these dummy base classes won't help
 struct dummy_observer
 {
     void on_notify(const header_event& e) {}
@@ -26,6 +28,38 @@ struct dummy_observer
     void on_notify(const option_event& e) {}
     void on_notify(const payload_event& e) {}
     void on_notify(const completed_event& e) {}
+};
+
+
+struct dummy_static_observer
+{
+    static void on_notify(const header_event& e) {}
+    static void on_notify(const token_event& e) {}
+    static void on_notify(const option_event& e) {}
+    static void on_notify(const payload_event& e) {}
+    static void on_notify(const completed_event& e) {}
+};
+
+
+static int test_static_observer_counter = 0;
+
+struct test_static_observer
+{
+    static void on_notify(const header_event& e) {}
+    static void on_notify(const token_event& e) {}
+    static void on_notify(const payload_event& e) {}
+
+    static void on_notify(const completed_event&)
+    {
+        REQUIRE(test_static_observer_counter == 2);
+        test_static_observer_counter++;
+    }
+
+    static void on_notify(const option_event& e)
+    {
+        REQUIRE(e.option_number >= 270);
+        test_static_observer_counter++;
+    }
 };
 
 using namespace moducom::pipeline;
@@ -85,15 +119,28 @@ TEST_CASE("CoAP decoder subject tests", "[coap-decoder-subject]")
     }
     SECTION("new estd::experimental::subject flavor of things")
     {
-        estd::experimental::void_subject s;
         ro_chunk_t chunk(buffer_16bit_delta);
         Decoder decoder;
         Decoder::Context context(chunk, true);
 
-        do
+        SECTION("void subject")
         {
-            notify_from_decoder(s, decoder, context);
+            estd::experimental::void_subject s;
+            do
+            {
+                notify_from_decoder(s, decoder, context);
+            } while (decoder.state() != Decoder::Done);
         }
-        while(decoder.state() != Decoder::Done);
+#ifdef FEATURE_CPP_VARIADIC
+        SECTION("stateless subject")
+        {
+            estd::experimental::internal::stateless_subject<test_static_observer> s;
+            do
+            {
+                notify_from_decoder(s, decoder, context);
+            } while (decoder.state() != Decoder::Done);
+            REQUIRE(test_static_observer_counter == 3);
+        }
+#endif
     }
 }

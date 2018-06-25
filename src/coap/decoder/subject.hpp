@@ -24,6 +24,7 @@ bool notify_from_decoder(TSubject& subject, Decoder& decoder, Decoder::Context& 
             buffer_t chunk(decoder.token_decoder().data(),
                              decoder.header_decoder().token_length());
 
+            // TODO: Do chunking
             subject.notify(token_event(chunk, true));
             break;
         }
@@ -56,7 +57,7 @@ bool notify_from_decoder(TSubject& subject, Decoder& decoder, Decoder::Context& 
 
         case Decoder::Payload:
         {
-            subject.notify(payload_event(context.remainder(), true));
+            subject.notify(payload_event(context.remainder(), context.last_chunk));
 
             // FIX: A little hacky, falls through to brute force on_complete
             // we *might* run into double-calls of Decoder::Done in this case

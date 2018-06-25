@@ -41,7 +41,9 @@ struct option_event : chunk_event_base
     option_event(uint16_t n,
                  const buffer_t& chunk,
                 bool last_chunk) :
-            chunk_event_base(chunk, last_chunk) {}
+            chunk_event_base(chunk, last_chunk),
+            option_number((option_number_t)n)
+    {}
 };
 
 // doing struct instead of typedef to ensure it overloads as
