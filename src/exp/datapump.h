@@ -32,12 +32,20 @@ namespace moducom { namespace coap {
 #endif
 
 
-
+template <size_t queue_depth = 10>
+struct InlineQueuePolicy
+{
+    template <class TItem>
+    struct Queue
+    {
+        typedef estd::layer1::queue<TItem, queue_depth> queue_type;
+    };
+};
 
 // If this continues to be coap-inspecific, it would be reasonable to move this
 // datapump code out to mc-mem.  Until that decision is made, keeping this in
 // experimental area
-template <class TNetBuf, class TAddr, class TAllocator = ::std::allocator<TNetBuf> >
+template <class TNetBuf, class TAddr, class TPolicy = InlineQueuePolicy<> >
 class DataPump
 {
 public:
@@ -147,14 +155,11 @@ private:
         coap::layer1::Token token;
     };
 
-    // does not want to initialize because Item has no default constructor
-    // specifically underlying array is an array of Item...
-    // TODO: Make underlying array capable of non-initialized data somehow, since
-    // a queue is technically that to start with
-    estd::layer1::queue<Item, 10> incoming;
-    estd::layer1::queue<Item, 10> outgoing;
+    typedef TPolicy policy_type;
+    typedef typename policy_type::template Queue<Item>::queue_type queue_type;
 
-    //estd::forward_list<> retry;
+    queue_type incoming;
+    queue_type outgoing;
 
     // might be better served by 2 different maps or some kind of memory_pool,
     // but we'll roll with just a low-tech vector for now
