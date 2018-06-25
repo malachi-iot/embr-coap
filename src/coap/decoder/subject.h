@@ -56,7 +56,7 @@ struct payload_event : chunk_event_base
 };
 
 
-struct completed_event;
+struct completed_event {};
 
 
 struct header_event
@@ -74,6 +74,7 @@ struct token_event : chunk_event_base
     {}
 };
 
+// TODO: If we like these observer helpers, move them into observer.h not subject.h
 template <class TNotifier1, class TNotifier2 = void, class TNotifier3 = void, class TNotifier4 = void, class TNotifier5 = void, class TDecider = void>
 struct observer_base_base;
 
@@ -163,7 +164,7 @@ struct observer_wrapper : observer_base
 // NOTE: Not perfect location, a global function, but not terrible either.  Perhaps
 // attaching it to Decoder, since TSubject is entirely ephemeral anyway?
 template <class TSubject>
-bool notify_from_decoder(const TSubject& subject, Decoder& decoder, Decoder::Context& context);
+bool notify_from_decoder(TSubject& subject, Decoder& decoder, Decoder::Context& context);
 
 
 }

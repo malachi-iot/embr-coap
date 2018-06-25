@@ -4,6 +4,7 @@
 #include "test-data.h"
 
 #include <estd/vector.h>
+#include <estd/exp/observer.h>
 
 using namespace moducom::coap;
 
@@ -17,6 +18,15 @@ static DecoderSubjectBase<experimental::ContextDispatcherHandler<request_context
 
 // FIX: putting this above causes compilation issues, clean that up
 #include "test-observer.h"
+
+struct dummy_observer
+{
+    void on_notify(const header_event& e) {}
+    void on_notify(const token_event& e) {}
+    void on_notify(const option_event& e) {}
+    void on_notify(const payload_event& e) {}
+    void on_notify(const completed_event& e) {}
+};
 
 using namespace moducom::pipeline;
 
@@ -72,5 +82,18 @@ TEST_CASE("CoAP decoder subject tests", "[coap-decoder-subject]")
         //IDecoderObserver<ObserverContext>** helper = preset;
         //AggregateDecoderObserver<ObserverContext, estd::layer2::vector<IDecoderObserver<ObserverContext>*, 10> >
           //      ado = preset;
+    }
+    SECTION("new estd::experimental::subject flavor of things")
+    {
+        estd::experimental::void_subject s;
+        ro_chunk_t chunk(buffer_16bit_delta);
+        Decoder decoder;
+        Decoder::Context context(chunk, true);
+
+        do
+        {
+            notify_from_decoder(s, decoder, context);
+        }
+        while(decoder.state() != Decoder::Done);
     }
 }

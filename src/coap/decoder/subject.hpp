@@ -8,7 +8,7 @@ namespace experimental {
 
 // shall bear very strong resemblace to predecessor's DecoderSubjectBase dispatch_iterate
 template <class TSubject>
-bool notify_from_decoder(const TSubject& subject, Decoder& decoder, Decoder::Context& context)
+bool notify_from_decoder(TSubject& subject, Decoder& decoder, Decoder::Context& context)
 {
     typedef event_base::buffer_t buffer_t;
 
@@ -20,6 +20,7 @@ bool notify_from_decoder(const TSubject& subject, Decoder& decoder, Decoder::Con
 
         case Decoder::TokenDone:
         {
+            // FIX: Not 100% sure token_length is available at this point
             buffer_t chunk(decoder.token_decoder().data(),
                              decoder.header_decoder().token_length());
 
@@ -62,7 +63,7 @@ bool notify_from_decoder(const TSubject& subject, Decoder& decoder, Decoder::Con
                         }
 
                         subject.notify(
-                                option_event(option_number), remainder, last_chunk);
+                                option_event(option_number, remainder, last_chunk));
                     }
                     else
                         subject.notify(option_event(option_number));
