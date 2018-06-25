@@ -269,7 +269,7 @@ public:
         return ret;
     }
 
-    inline const uint8_t operator[](size_t index) const
+    inline uint8_t operator[](size_t index) const
     {
         return base_t::at(index);
     }

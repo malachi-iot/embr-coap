@@ -233,10 +233,10 @@ public:
 
 public:
     NetBufDecoder(const netbuf_t& netbuf) :
-        m_netbuf(netbuf),
         // NOTE: Be advised that netbuf.end() differs from traditional iterator end
         // in that it is a bool indicating that we are ON the last chunk, not PAST it
-        base_t(ro_chunk_t(netbuf.processed(), netbuf.length_processed()), netbuf.end())
+        base_t(ro_chunk_t(netbuf.processed(), netbuf.length_processed()), netbuf.end()),
+        m_netbuf(netbuf)
     {}
 
 
