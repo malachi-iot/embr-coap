@@ -3,26 +3,13 @@
 #include "exp/datapump.h"
 #include <platform/lwip/lwip-netbuf.h>
 #include <lwip/api.hpp> // for lwip::Netconn usage
+#include "lwip-portandaddress.h"
 
 // we don't want any of that stdio stuff here, this is LWIP land!
 #define MCCOAP_PUTCHAR_SAVED putchar
 #undef putchar
 
 namespace moducom { namespace coap {
-
-struct LwipPortAndAddress
-{
-    ip_addr_t addr;
-    uint16_t port;
-
-    LwipPortAndAddress() {}
-
-    LwipPortAndAddress(netbuf* nb)
-    {
-        addr = *netbuf_fromaddr(nb);
-        port = netbuf_fromport(nb);
-    }
-};
 
 typedef moducom::coap::DataPump<moducom::mem::LwipNetbuf, LwipPortAndAddress> lwip_datapump_t;
 

@@ -18,7 +18,7 @@ struct address_traits
 // skip represents number of bytes from beginning of source to skip before
 // initiating copy.  NOTE: this skip may obviate reset flag
 template <class TNetBuf, class TNetBuf2>
-void netbuf_copy(TNetBuf& source, TNetBuf2& dest, int skip = 0, bool reset = false);
+void coap_netbuf_copy(TNetBuf& source, TNetBuf2& dest, int skip = 0, bool reset = false);
 
 // Chances are passing in netbuf/addr is redundant since observer and retry logic will
 // already have this info, but could be useful down the line so keeping it

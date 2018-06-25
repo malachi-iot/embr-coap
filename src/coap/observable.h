@@ -100,7 +100,7 @@ class ObservableMetaSession :
 
             // copy just-sent netbuf to new newbut, skipping the header and token of
             // source (explicitly) and destingation (implicitly)
-            netbuf_copy(*netbuf, rewritten_header_and_token.netbuf(), 4 + header.token_length());
+            coap_netbuf_copy(*netbuf, rewritten_header_and_token.netbuf(), 4 + header.token_length());
 
             rewritten_header_and_token.netbuf().complete();
 

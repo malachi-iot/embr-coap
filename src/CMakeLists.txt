@@ -84,6 +84,7 @@ set(SOURCE_FILES
         platform/generic/malloc_netbuf.h
 
         platform/lwip/lwip-datapump.h
+        platform/lwip/lwip-portandaddress.h
 
         platform/mbedtls/dtls-datapump.cpp
         platform/mbedtls/dtls-datapump.h

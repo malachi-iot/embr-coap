@@ -18,7 +18,7 @@ void DataPump<TNetBuf, TAddr, TAllocator>::transport_in(TNetBuf& in, const addr_
 #endif
 
 template <class TNetBuf, class TNetBuf2>
-void netbuf_copy(TNetBuf& source, TNetBuf2& dest, int skip, bool reset)
+void coap_netbuf_copy(TNetBuf& source, TNetBuf2& dest, int skip, bool reset)
 {
     if(reset)
     {
