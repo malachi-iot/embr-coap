@@ -194,6 +194,15 @@ class Decoder :
 public:
     typedef internal::DecoderContext Context;
 
+    // FIX: Only public right now to feed experimental new estd::experimental::subject driven
+    // code in subject.hpp
+public:
+    typedef typename Context::chunk_t ro_chunk_t;
+
+    // attempt to retrieve as much of one complete option as possible
+    // we assume we're positioned at the ValueStart portion of an option
+    ro_chunk_t option(Context& context, bool* completed = NULLPTR);
+
 public:
     Decoder() : StateHelper(_state_t::Uninitialized) {}
 

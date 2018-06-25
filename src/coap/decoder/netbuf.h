@@ -16,7 +16,7 @@ class option_iterator;
 // Split out code from NetBufDecoder, however, may have been a bit overzealous
 // as the NetBufDecoder doesn't fully do the next/advance semantics just yet,
 // and therefore some of the calls I moved into DecoderWithContext may have
-// to be overridden/moved back to NetBufDecoder 
+// to be overridden/moved back to NetBufDecoder
 class DecoderWithContext : public Decoder
 {
 protected:
@@ -173,28 +173,7 @@ public:
 
     ro_chunk_t option(bool* completed = NULLPTR)
     {
-        ASSERT_WARN(Decoder::Options, state(), "Must be in options processing mode");
-
-        // assert that we are at ValueStart or OptionValue (latter when chunked)
-        ASSERT_WARN(OptionDecoder::ValueStart, option_decoder().state(), "Must be at ValueStart");
-
-        // NOTE: Safe to grab this, option_decoder().option_length() doesn't get clobbered for a while still
-        int value_length = option_decoder().option_length();
-        ro_chunk_t ret = context.remainder();
-        bool _completed = value_length <= ret.size();
-
-        if(completed != NULLPTR)
-            *completed = _completed;
-        else
-        {
-            ASSERT_WARN(true, _completed, "Partial data encountered but potentially ignored");
-        }
-
-        // if completed, be sure we resize down the remainder to a maximum
-        // value_length size rather than the entire remaining buffer
-        if(_completed)   ret.resize(value_length);
-
-        return ret;
+        return base_t::option(context, completed);
     }
 };
 

@@ -135,7 +135,7 @@ public:
         OptionLength, // processing length portion (after header, if applicable)
         OptionLengthDone, // done with length portion
         OptionDeltaAndLengthDone, // done with both length and size, happens only when no extended values are used
-        ValueStart, // when we are ready to begin processing value.  This is reached even when no value is present
+        ValueStart, // when we are ready to begin processing value.  This is reached even when no value (aka 0-length) is present
         OptionValue, // processing value portion (this decoder merely skips value, outer processors handle it)
         OptionValueDone, // done with value portion.  Also indicates completion of option, even with zero-length value
         OptionDone, // Not used yet, but indicates option done - I might prefer this to overloading OptionValueDone

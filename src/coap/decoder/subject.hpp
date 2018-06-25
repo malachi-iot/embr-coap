@@ -31,45 +31,26 @@ bool notify_from_decoder(TSubject& subject, Decoder& decoder, Decoder::Context& 
         case Decoder::Options:
             switch(decoder.option_state())
             {
-                // service at *start* and iteration of OptionValue
-                // so that we can grab buffer contents.  Waiting until
-                // OptionValueDone/OptionDone potentially loses chunked
-                // buffer pieces
-                case OptionDecoder::OptionValue:
+                // a lot of option states pass by, but we always latch on to the ValueStart state
+                // remember, this state is seen even with "0-length" values
+                case OptionDecoder::ValueStart:
                 {
                     uint16_t option_number = decoder.option_number();
-                    uint16_t option_length = decoder.option_length();
-                    buffer_t remainder = context.remainder();
 
-                    if (option_length > 0)
+                    if (decoder.option_length() > 0)
                     {
-                        bool last_chunk;
+                        bool completed;
 
-                        if(remainder.size() >= option_length)
-                        {
-                            last_chunk = true;
-
-                            remainder.resize(option_length);
-                        }
-                        else
-                        {
-                            // We expect at least 1 more call to observer_on_option,
-                            // so decrement length accordingly
-                            // FIX: Need to do friend or similar here
-                            //decoder.optionHolder.length -= chunk.length();
-                            last_chunk = false;
-
-                            // remainder represents partial chunk, so don't resize it
-                        }
-
-                        subject.notify(
-                                option_event(option_number, remainder, last_chunk));
+                        // will take more work than commented code, and not as fast,
+                        // but this way it's code reuse & dogfooding
+                        buffer_t b = decoder.option(context, &completed);
+                        subject.notify(option_event(option_number, b, completed));
                     }
                     else
                         subject.notify(option_event(option_number));
-
-                    break;
                 }
+
+                default: break;
             }
             break;
 

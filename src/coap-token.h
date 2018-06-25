@@ -68,6 +68,10 @@ public:
 
 namespace layer3 {
 
+// NOTE: This differs slightly from a regular const_buffer approach in that
+// we expect the underlying data buffer to actually be 8 bytes large,
+// even if tkl itself is smaller.  As of this writing that behavior is not used
+// though
 class Token : public estd::layer2::vector<const uint8_t, 8>
 {
     typedef estd::layer2::vector<const uint8_t, 8> base_t;
