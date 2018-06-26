@@ -3,7 +3,7 @@
 //
 
 #include "decoder.h"
-#include "coap_transmission.h"
+#include "../coap_transmission.h"
 
 namespace moducom { namespace coap {
 
