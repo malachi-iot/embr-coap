@@ -1,7 +1,7 @@
 #pragma once
 
-#include "mc/memory-pool.h"
-#include "coap/context.h"
+#include <mc/memory-pool.h>
+#include "../context.h"
 
 namespace moducom { namespace coap {
 
