@@ -11,7 +11,7 @@ void process_messageobserver_helper(DecoderSubjectBase<TMessageObserver>& ds, TN
 {
     //typedef pipeline::MemoryChunk::readonly_t chunk_t;
     typedef estd::experimental::const_buffer chunk_t;
-    typedef typename TMessageObserver::context_t request_context_t;
+    //typedef typename TMessageObserver::context_t request_context_t;
 
     netbuf.first();
 
@@ -97,21 +97,19 @@ void process_messageobserver2(TDataPump& datapump, TSubject& subject)
 {
     typedef TDataPump datapump_t;
     typedef typename datapump_t::Item item_t;
-    typedef typename datapump_t::netbuf_t netbuf_t;
-    typedef typename datapump_t::addr_t addr_t;
+    //typedef typename datapump_t::addr_t addr_t;
 
     if(!datapump.dequeue_empty())
     {
         item_t& item = datapump.dequeue_front();
 
-        addr_t addr_incoming = item.addr();
-        netbuf_t* netbuf = item.netbuf();
-
         subject.notify(item);
 
 #ifdef FEATURE_MCCOAP_DATAPUMP_INLINE
 #else
+        typedef typename datapump_t::netbuf_t netbuf_t;
         // FIX: Need a much more cohesive way of doing this
+        netbuf_t* netbuf = item.netbuf();
         delete netbuf;
 #endif
 
