@@ -19,11 +19,15 @@ class option_iterator;
 // to be overridden/moved back to NetBufDecoder
 class DecoderWithContext : public Decoder
 {
+public:
+    // FIX: Want this to be private.  Making this public only so that we can easily experiment
+    // with notify_from_decoder which currently is a global function, but probably eventually
+    // will be a member function of Decoder
+    Context context;
+
 protected:
     typedef Decoder base_t;
     typedef estd::experimental::const_buffer ro_chunk_t;
-
-    Context context;
 
     DecoderWithContext(const ro_chunk_t& chunk, bool last_chunk) :
         context(chunk, last_chunk)

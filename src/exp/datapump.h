@@ -286,6 +286,13 @@ public:
             datapump(datapump)
         {}
 
+        IncomingContext(DataPump& datapump, netbuf_t& netbuf, addr_t& addr) :
+            DecoderContext<decoder_t>(netbuf),
+            datapump(datapump)
+        {
+            this->addr = addr;
+        }
+
         // marks end of input processing
         void deallocate_input()
         {
