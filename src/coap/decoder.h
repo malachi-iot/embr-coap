@@ -9,8 +9,8 @@
 // FIX: hacky workaround for presence of other lib's coap.h (such as with esp32)
 // real fix is to inform build system not to notice their coap.h at all
 #include "../coap.h"
-#include "coap/decoder/simple.h"
-#include "coap/decoder/option.h"
+#include "decoder/simple.h"
+#include "decoder/option.h"
 #include <estd/exp/buffer.h>
 
 #if __cplusplus >= 201103L
