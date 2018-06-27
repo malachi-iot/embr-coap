@@ -4,9 +4,10 @@ namespace moducom { namespace coap {
 
 template <class TNetBuf, class TAddr, class TAllocator>
 #ifdef FEATURE_MCCOAP_DATAPUMP_INLINE
-void DataPump<TNetBuf, TAddr, TAllocator>::transport_in(TNetBuf&& in, const addr_t& addr)
+auto DataPump<TNetBuf, TAddr, TAllocator>::transport_in(TNetBuf&& in, const addr_t& addr) ->
+    const Item&
 {
-    incoming.emplace(std::forward<TNetBuf>(in), addr);
+    return incoming.emplace(std::move(in), addr);
 }
 #else
 void DataPump<TNetBuf, TAddr, TAllocator>::transport_in(TNetBuf& in, const addr_t& addr)

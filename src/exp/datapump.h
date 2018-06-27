@@ -172,7 +172,7 @@ private:
 
 public:
     // process data coming in from transport into coap queue
-    void transport_in(
+    const Item& transport_in(
 #ifdef FEATURE_MCCOAP_DATAPUMP_INLINE
             TNetBuf&& in,
 #else

@@ -7,7 +7,16 @@ namespace experimental {
 namespace event {
 
 template <class TNetBuf, class TAddr>
-struct Base {};
+struct Base
+{
+    TNetBuf& netbuf;
+    const TAddr& addr;
+
+    Base(TNetBuf& netbuf, const TAddr& addr) :
+        netbuf(netbuf),
+        addr(addr)
+    {}
+};
 
 template <class TItem>
 struct ItemBase
@@ -22,7 +31,9 @@ struct ItemBase
 template <class TNetBuf, class TAddr>
 struct TransportReceived : Base<TNetBuf, TAddr>
 {
-
+    TransportReceived(TNetBuf& netbuf, const TAddr& addr) :
+        Base<TNetBuf, TAddr>(netbuf, addr)
+    {}
 };
 
 
@@ -30,21 +41,23 @@ struct TransportReceived : Base<TNetBuf, TAddr>
 template <class TNetBuf, class TAddr>
 struct TransportSent : Base<TNetBuf, TAddr>
 {
-
+    TransportSent(TNetBuf& netbuf, const TAddr& addr) :
+        Base<TNetBuf, TAddr>(netbuf, addr)
+    {}
 };
 
 // queued for send out over transport
 template <class TItem>
 struct SendQueued : ItemBase<TItem>
 {
-
+    SendQueued(TItem& item) : ItemBase<TItem>(item) {}
 };
 
 // about to send over transport
 template <class TItem>
 struct SendDequeuing : ItemBase<TItem>
 {
-
+    SendDequeuing(TItem& item) : ItemBase<TItem>(item) {}
 };
 
 // sent over transport, now removing from send queue
@@ -53,7 +66,7 @@ struct SendDequeuing : ItemBase<TItem>
 template <class TItem>
 struct SendDequeued : ItemBase<TItem>
 {
-
+    SendDequeued(TItem& item) : ItemBase<TItem>(item) {}
 };
 
 
@@ -61,7 +74,7 @@ struct SendDequeued : ItemBase<TItem>
 template <class TItem>
 struct ReceiveQueued : ItemBase<TItem>
 {
-
+    ReceiveQueued(TItem& item) : ItemBase<TItem>(item) {}
 };
 
 
