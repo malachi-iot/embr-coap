@@ -3,6 +3,7 @@
 #include <catch.hpp>
 
 #include "coap-dispatcher.h"
+#include <coap/decoder/subject.h> // for event definitions
 #include "coap/experimental-observer.h"
 #include "test-data.h"
 
@@ -88,3 +89,6 @@ class EmptyObserver : public MessageObserverBase <TIncomingContext>
 {
 public:
 };
+
+
+

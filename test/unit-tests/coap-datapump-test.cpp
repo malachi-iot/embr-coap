@@ -1,19 +1,39 @@
 #include <catch.hpp>
 
+//#define FEATURE_ESTD_EXPLICIT_OBSERVER
+
 #include <platform/generic/datapump-messageobserver.hpp>
 #include <exp/datapump.hpp>
 #include "coap/decoder/subject.hpp"
+
 #include "test-data.h"
+#include "test-observer.h"
+
+#include <estd/exp/observer.h>
 
 using namespace moducom::coap;
+
+typedef moducom::io::experimental::NetBufDynamicMemory<> netbuf_t;
+typedef uint32_t addr_t;
+typedef DataPump<netbuf_t, addr_t> datapump_t;
+typedef datapump_t::Item item_t;
+
+struct DatapumpObserver
+{
+    // thought const& would be necessary because of lack of copy constructors, but nope
+    static void on_notify(moducom::coap::experimental::event::ReceiveDequeued<item_t> e)
+    {
+        REQUIRE(e.item.addr() == 0);
+    }
+};
 
 TEST_CASE("Data pump tests", "[datapump]")
 {
     SECTION("Datapump")
     {
         //typedef moducom::io::experimental::layer2::NetBufMemory<512> netbuf_t;
-        typedef moducom::io::experimental::NetBufDynamicMemory<> netbuf_t;
-        typedef uint32_t addr_t;
+        //typedef moducom::io::experimental::NetBufDynamicMemory<> netbuf_t;
+        //typedef uint32_t addr_t;
 
         // will only work if I make it <const char, but then
         // s.copy won't work since it wants to output to value_type*
@@ -49,8 +69,8 @@ TEST_CASE("Data pump tests", "[datapump]")
         // -just past- the end, ala std iterator behaviors
 
         // set up netbuf-writer, datapump
-        typedef moducom::io::experimental::NetBufDynamicMemory<> netbuf_t;
-        typedef uint32_t addr_t;
+        //typedef moducom::io::experimental::NetBufDynamicMemory<> netbuf_t;
+        //typedef uint32_t addr_t;
 
 #ifdef FEATURE_MCCOAP_DATAPUMP_INLINE
         moducom::io::experimental::NetBufWriter<netbuf_t> writer;
@@ -72,7 +92,7 @@ TEST_CASE("Data pump tests", "[datapump]")
 
         // set up message subject+observer
         IncomingContext<addr_t> test_ctx;
-        DecoderSubjectBase<experimental::ContextDispatcherHandler<IncomingContext<addr_t> > > test(test_ctx);
+        DecoderSubjectBase<moducom::coap::experimental::ContextDispatcherHandler<IncomingContext<addr_t> > > test(test_ctx);
 
         REQUIRE(!test_ctx.have_header());
 
@@ -83,5 +103,19 @@ TEST_CASE("Data pump tests", "[datapump]")
         // Assert that ContextDispatcherHandler indeed parsed the incoming message
         REQUIRE(test_ctx.have_header());
         REQUIRE(test_ctx.header().message_id() == 0x0123);
+
+#ifdef FEATURE_CPP_DECLTYPE
+        // Now take that synthetic netbuf data and simulates a transport input
+        // on datapump
+        datapump.transport_in(writer.netbuf(), 0);
+
+
+        SECTION("Experimental datapump dequeuing test")
+        {
+            estd::experimental::internal::stateless_subject<DatapumpObserver> s;
+
+            process_messageobserver2(datapump, s);
+        }
+#endif
     }
 }

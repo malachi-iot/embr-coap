@@ -2,6 +2,7 @@
 #include "coap/decoder/subject.hpp"
 #include "coap/decoder/observer-aggregate.hpp"
 #include "test-data.h"
+#include "test-observer.h"
 
 #include <estd/vector.h>
 #include <estd/exp/observer.h>
@@ -13,7 +14,7 @@ typedef TokenAndHeaderContext<true> request_context_t;
 // +++ just to test compilation, eliminate once decent unit tests for
 // DecoderSubjectBase is in place
 static request_context_t test_ctx;
-static DecoderSubjectBase<experimental::ContextDispatcherHandler<request_context_t> > test(test_ctx);
+static DecoderSubjectBase<moducom::coap::experimental::ContextDispatcherHandler<request_context_t> > test(test_ctx);
 // ---
 
 // FIX: putting this above causes compilation issues, clean that up
@@ -41,26 +42,30 @@ struct dummy_static_observer
 };
 
 
-static int test_static_observer_counter = 0;
-
+// NOTE: Next generation subject/observe code, will replace the above EmptyObserver and friends
 struct test_static_observer
 {
+    static int counter;
+
     static void on_notify(const header_event& e) {}
     static void on_notify(const token_event& e) {}
     static void on_notify(const payload_event& e) {}
 
     static void on_notify(const completed_event&)
     {
-        REQUIRE(test_static_observer_counter == 2);
-        test_static_observer_counter++;
+        REQUIRE(counter == 2);
+        counter++;
     }
 
     static void on_notify(const option_event& e)
     {
         REQUIRE(e.option_number >= 270);
-        test_static_observer_counter++;
+        counter++;
     }
 };
+
+
+int test_static_observer::counter = 0;
 
 using namespace moducom::pipeline;
 
@@ -139,7 +144,7 @@ TEST_CASE("CoAP decoder subject tests", "[coap-decoder-subject]")
             {
                 notify_from_decoder(s, decoder, context);
             } while (decoder.state() != Decoder::Done);
-            REQUIRE(test_static_observer_counter == 3);
+            REQUIRE(test_static_observer::counter == 3);
         }
 #endif
     }

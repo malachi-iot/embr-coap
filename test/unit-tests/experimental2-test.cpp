@@ -13,6 +13,8 @@
 #include "platform/generic/malloc_netbuf.h"
 #endif
 
+#include "exp/events.h"
+
 #include "test-data.h"
 
 using namespace moducom::coap;

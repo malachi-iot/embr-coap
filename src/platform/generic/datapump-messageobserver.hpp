@@ -3,6 +3,8 @@
 #include <coap/decoder/netbuf.h>
 #include <coap/decoder/subject.h>
 
+#include <exp/events.h>
+
 namespace moducom { namespace coap {
 
 template <class TMessageObserver, class TNetBuf>
@@ -103,7 +105,8 @@ void process_messageobserver2(TDataPump& datapump, TSubject& subject)
     {
         item_t& item = datapump.dequeue_front();
 
-        subject.notify(item);
+        subject.notify(experimental::event::ReceiveDequeuing<item_t>(item));
+        subject.notify(experimental::event::ReceiveDequeued<item_t>(item));
 
 #ifdef FEATURE_MCCOAP_DATAPUMP_INLINE
 #else
