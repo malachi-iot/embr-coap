@@ -172,10 +172,11 @@ private:
 
 public:
     // process data coming in from transport into coap queue
-    const Item& transport_in(
 #ifdef FEATURE_MCCOAP_DATAPUMP_INLINE
+    const Item& transport_in(
             TNetBuf&& in,
 #else
+    void transport_in(
             TNetBuf& in,
 #endif
             const addr_t& addr);
@@ -223,10 +224,9 @@ public:
 
 #ifdef FEATURE_MCCOAP_DATAPUMP_INLINE
     // enqueue complete netbuf for outgoing transport to pick up
-    bool enqueue_out(TNetBuf&& out, const addr_t& addr_out, datapump_observer_t* observer = NULLPTR)
+    const Item& enqueue_out(TNetBuf&& out, const addr_t& addr_out, datapump_observer_t* observer = NULLPTR)
     {
-        outgoing.emplace(std::forward<TNetBuf>(out), addr_out, observer);
-        return true;
+        return outgoing.emplace(std::move(out), addr_out, observer);
     }
 #else
     // enqueue complete netbuf for outgoing transport to pick up
