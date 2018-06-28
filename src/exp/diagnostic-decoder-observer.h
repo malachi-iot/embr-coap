@@ -71,9 +71,9 @@ struct DiagnosticMessageObserver
 
         if(description == nullptr) description = "Unknown";
 
-        printf("[DEBUG] Option: (%d) len=%3zu %-10s value = ",
+        printf("[DEBUG] Option: (%d) len=%3d %-10s value = ",
             e.option_number,
-            e.chunk.size(),
+            (int)e.chunk.size(),
             description
             );
 
@@ -127,7 +127,8 @@ struct DiagnosticMessageObserver
 
     static void on_notify(const payload_event& e)
     {
-        printf("[DEBUG] Payload: len=%zu\n", e.chunk.size());
+        printf("[DEBUG] Payload: len=%d\n", 
+            (int)e.chunk.size());
         opaque_dump_line(e.chunk, true, 16);
     }
 
