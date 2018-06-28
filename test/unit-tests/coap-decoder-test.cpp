@@ -93,4 +93,20 @@ TEST_CASE("CoAP decoder tests", "[coap-decoder]")
         REQUIRE(decoder.process_iterate(context) == false);
         REQUIRE(decoder.state() == Decoder::OptionsDone);
     }
+    SECTION("Parity test with bronze-star project (incoming request header)")
+    {
+        Decoder decoder;
+        uint8_t header[] = { 0x44, 0x01, 0x6F, 0x34 };
+        ro_chunk_t chunk(header);
+
+        Decoder::Context context(chunk, true);
+
+        REQUIRE(decoder.state() == Decoder::Uninitialized);
+        decoder.process_iterate(context);
+        REQUIRE(decoder.state() == Decoder::Header);
+        decoder.process_iterate(context);
+        REQUIRE(decoder.state() == Decoder::HeaderDone);
+        decoder.process_iterate(context);
+        decoder.process_iterate(context);
+    }
 }
