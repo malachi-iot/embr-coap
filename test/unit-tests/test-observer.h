@@ -5,6 +5,8 @@
 #include "coap-dispatcher.h"
 #include <coap/decoder/subject.h> // for event definitions
 #include "coap/experimental-observer.h"
+#include <coap/decoder/netbuf.h>
+#include <exp/netbuf.h>
 #include "test-data.h"
 
 using namespace moducom::coap;
@@ -91,4 +93,28 @@ public:
 };
 
 
+// simplistic memorychunk-mapped NetBuf.  Eventually put this into mcmem itself
+// FIX: this one is hardwired to read operations - not a crime, but needs more
+// architectual planning to actually be used elsewhere
+class NetBufReadOnlyMemory :
+        public moducom::io::experimental::NetBufMemoryTemplate<moducom::pipeline::MemoryChunk::readonly_t >
+{
+    typedef moducom::pipeline::MemoryChunk::readonly_t chunk_t;
+    typedef moducom::io::experimental::NetBufMemoryTemplate<chunk_t> base_t;
 
+public:
+    template <size_t N>
+    NetBufReadOnlyMemory(const uint8_t (&a) [N]) :
+        base_t(chunk_t(a, N))
+    {
+
+    }
+
+    // FIX: hard wiring this to a read-oriented NetBuf
+    // there's some mild indication this isn't ideal since conjunctive decoder
+    // still needs to maintain a pos to read through this
+    size_t length_processed() const
+    {
+        return base_t::_chunk.length();
+    }
+};

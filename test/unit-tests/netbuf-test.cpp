@@ -7,6 +7,7 @@
 #include "platform/generic/malloc_netbuf.h"
 #endif
 #include "test-data.h"
+#include "test-observer.h"
 
 using namespace moducom::io::experimental;
 using namespace moducom::coap;
@@ -20,31 +21,7 @@ std::ostream& operator << ( std::ostream& os, Decoder::State const& value ) {
 
 }
 
-// simplistic memorychunk-mapped NetBuf.  Eventually put this into mcmem itself
-// FIX: this one is hardwired to read operations - not a crime, but needs more
-// architectual planning to actually be used elsewhere
-class NetBufReadOnlyMemory :
-        public NetBufMemoryTemplate<moducom::pipeline::MemoryChunk::readonly_t >
-{
-    typedef moducom::pipeline::MemoryChunk::readonly_t chunk_t;
-    typedef NetBufMemoryTemplate<chunk_t> base_t;
 
-public:
-    template <size_t N>
-    NetBufReadOnlyMemory(const uint8_t (&a) [N]) :
-        base_t(chunk_t(a, N))
-    {
-
-    }
-
-    // FIX: hard wiring this to a read-oriented NetBuf
-    // there's some mild indication this isn't ideal since conjunctive decoder
-    // still needs to maintain a pos to read through this
-    size_t length_processed() const
-    {
-        return base_t::_chunk.length();
-    }
-};
 
 
 template <class TNetBuf>

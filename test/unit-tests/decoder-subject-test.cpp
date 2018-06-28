@@ -147,5 +147,23 @@ TEST_CASE("CoAP decoder subject tests", "[coap-decoder-subject]")
             REQUIRE(test_static_observer::counter == 3);
         }
 #endif
+        SECTION("DecoderContext / subject observe test")
+        {
+            test_static_observer::counter = 0;
+
+            estd::experimental::internal::stateless_subject<test_static_observer> s;
+            typedef NetBufReadOnlyMemory netbuf_t;
+
+            netbuf_t nb(buffer_16bit_delta);
+
+            moducom::coap::DecoderContext<NetBufDecoder<netbuf_t&>> dc(nb);
+
+            NetBufDecoder<netbuf_t&> decoder = dc.decoder();
+
+            do
+            {
+                notify_from_decoder(s, decoder, decoder.context);
+            } while (decoder.state() != Decoder::Done);
+        }
     }
 }

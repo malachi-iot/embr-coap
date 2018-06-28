@@ -5,6 +5,8 @@ project(mc-coap-test)
 set(CMAKE_CXX_STANDARD 11)
 #set(CMAKE_CXX_STANDARD 98)
 
+add_definitions(-DUNIT_TESTING)
+
 set(ROOT_DIR ../..)
 set(MC_MEM_DIR ${ROOT_DIR}/ext/moducom-memory/src)
 set(ESTDLIB_DIR ${ROOT_DIR}/ext/estdlib/src)

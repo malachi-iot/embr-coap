@@ -251,7 +251,11 @@ struct DecoderContext
 private:
     decoder_t m_decoder;
 
+#ifdef UNIT_TESTING
+public:
+#else
 protected:
+#endif
     DecoderContext(netbuf_t& netbuf) : m_decoder(netbuf) {}
 
 public:
