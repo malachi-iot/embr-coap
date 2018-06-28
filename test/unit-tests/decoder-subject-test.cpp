@@ -1,6 +1,7 @@
 #include <catch.hpp>
 #include "coap/decoder/subject.hpp"
 #include "coap/decoder/observer-aggregate.hpp"
+#include <exp/diagnostic-decoder-observer.h>
 #include "test-data.h"
 #include "test-observer.h"
 

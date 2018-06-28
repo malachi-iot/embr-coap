@@ -3,83 +3,14 @@
 #include "../../coap-dispatcher.h"
 
 #include <estd/exp/buffer.h>
+#include "../../exp/events.h"
 
 namespace moducom { namespace coap {
 
 namespace experimental {
 
-// 6/24/2018 revamped event system based on upcoming estd::experimental::subject code
 
-// using only for typedef convenience
-struct event_base
-{
-    typedef estd::experimental::const_buffer buffer_t;
-    typedef internal::option_number_t option_number_t;
-};
-
-struct chunk_event_base : event_base
-{
-    buffer_t chunk;
-    bool last_chunk;
-
-    chunk_event_base() :
-            chunk(NULLPTR, 0),
-            last_chunk(true) {}
-
-    chunk_event_base(const buffer_t& chunk, bool last_chunk) :
-            chunk(chunk),
-            last_chunk(last_chunk) {}
-};
-
-struct option_event : chunk_event_base
-{
-    option_number_t option_number;
-
-    option_event(uint16_t n) :
-            option_number((option_number_t)n) {}
-
-    option_event(uint16_t n,
-                 const buffer_t& chunk,
-                bool last_chunk) :
-            chunk_event_base(chunk, last_chunk),
-            option_number((option_number_t)n)
-    {}
-};
-
-// doing struct instead of typedef to ensure it overloads as
-// a different type during on_notify
-struct payload_event : chunk_event_base
-{
-    payload_event(
-            const buffer_t& chunk,
-            bool last_chunk) :
-            chunk_event_base(chunk, last_chunk)
-    {}
-};
-
-
-struct completed_event {};
-
-
-struct header_event
-{
-    Header header;
-
-    header_event(const Header& header) :
-        header(header) {}
-};
-
-
-struct token_event : chunk_event_base
-{
-    token_event(
-            const buffer_t& chunk,
-            bool last_chunk) :
-            chunk_event_base(chunk, last_chunk)
-    {}
-};
-
-// TODO: If we like these observer helpers, move them into observer.h not subject.h
+// TODO: If we like these observer helpers, move them into (estd) observer.h not subject.h
 template <class TNotifier1, class TNotifier2 = void, class TNotifier3 = void, class TNotifier4 = void, class TNotifier5 = void, class TDecider = void>
 struct observer_base_base;
 

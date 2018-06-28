@@ -76,6 +76,7 @@ set(SOURCE_FILES
         exp/message-observer.h
         exp/option-trait.h
         exp/retry.h
+        exp/diagnostic-decoder-observer.h
 
         exp/prototype/observer-idea1.h
 
