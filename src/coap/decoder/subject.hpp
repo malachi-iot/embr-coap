@@ -7,15 +7,20 @@ namespace moducom { namespace coap {
 namespace experimental {
 
 // shall bear very strong resemblace to predecessor's DecoderSubjectBase dispatch_iterate
-template <class TSubject>
-bool notify_from_decoder(TSubject& subject, Decoder& decoder, Decoder::Context& context)
+template <class TSubject, class TContext>
+bool notify_from_decoder(TSubject& subject, Decoder& decoder, Decoder::Context& context, TContext& app_context)
 {
     typedef event_base::buffer_t buffer_t;
+
+    // NOTE: We deviate from norm and do state machine processing before then evaluating
+    // state.  This means we'll miss out on responding to 'Uninitialized' state (oh no)
+    // and importantly, means that we can consistently respond to 'done' state
+    bool at_end = decoder.process_iterate(context);
 
     switch(decoder.state())
     {
         case Decoder::HeaderDone:
-            subject.notify(header_event(decoder.header_decoder()));
+            subject.notify(header_event(decoder.header_decoder()), app_context);
             break;
 
         case Decoder::TokenDone:
@@ -25,7 +30,7 @@ bool notify_from_decoder(TSubject& subject, Decoder& decoder, Decoder::Context& 
                              decoder.header_decoder().token_length());
 
             // TODO: Do chunking
-            subject.notify(token_event(chunk, true));
+            subject.notify(token_event(chunk, true), app_context);
             break;
         }
 
@@ -45,10 +50,11 @@ bool notify_from_decoder(TSubject& subject, Decoder& decoder, Decoder::Context& 
                         // will take more work than commented code, and not as fast,
                         // but this way it's code reuse & dogfooding
                         buffer_t b = decoder.option(context, &completed);
-                        subject.notify(option_event(option_number, b, completed));
+                        subject.notify(option_event(option_number, b, completed),
+                                       app_context);
                     }
                     else
-                        subject.notify(option_event(option_number));
+                        subject.notify(option_event(option_number), app_context);
                 }
 
                 default: break;
@@ -56,22 +62,18 @@ bool notify_from_decoder(TSubject& subject, Decoder& decoder, Decoder::Context& 
             break;
 
         case Decoder::Payload:
-        {
-            subject.notify(payload_event(context.remainder(), context.last_chunk));
-
-            // FIX: A little hacky, falls through to brute force on_complete
-            // we *might* run into double-calls of Decoder::Done in this case
-            if(!context.last_chunk) break;
-        }
+            subject.notify(payload_event(context.remainder(), context.last_chunk),
+                           app_context);
+            break;
 
         case Decoder::Done:
-            subject.notify(completed_event());
+            subject.notify(completed_event(), app_context);
             break;
 
         default: break;
     }
 
-    return decoder.process_iterate(context);
+    return at_end;
 }
 
 }

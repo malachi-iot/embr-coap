@@ -168,9 +168,20 @@ struct observer_wrapper : observer_base
 // TSubject = one of the new estd::experimental::subject classes
 // NOTE: Not perfect location, a global function, but not terrible either.  Perhaps
 // attaching it to Decoder, since TSubject is entirely ephemeral anyway?
-template <class TSubject>
-bool notify_from_decoder(TSubject& subject, Decoder& decoder, Decoder::Context& context);
+template <class TSubject, class TContext>
+bool notify_from_decoder(TSubject& subject,
+                         Decoder& decoder,
+                         Decoder::Context& context,
+                         TContext& app_context);
 
+
+template <class TSubject>
+bool notify_from_decoder(TSubject& subject, Decoder& decoder, Decoder::Context& context)
+{
+    int fake_app_context = 0;
+
+    return notify_from_decoder(subject, decoder, context, fake_app_context);
+}
 
 }
 
