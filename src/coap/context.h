@@ -65,10 +65,11 @@ public:
 };
 
 
+// NOTE: Code has signficantly changed and this is now considered not tested
 template <>
 class TokenContext<false>
 {
-    typedef layer2::Token token_t;
+    typedef layer3::Token token_t;
 
 protected:
     token_t _token;
