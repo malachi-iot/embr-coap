@@ -259,24 +259,29 @@ public:
         incoming.pop();
     }
 
-    // non-inline-token
+    // inline-token, since decoder blasts over its own copy
     struct IncomingContext :
-            coap::IncomingContext<addr_t, false>,
+            coap::IncomingContext<addr_t, true>,
             DecoderContext<decoder_t>
     {
         friend class DataPump;
 
         typedef TNetBuf netbuf_t;
-        typedef coap::IncomingContext<addr_t, false> base_t;
+        typedef coap::IncomingContext<addr_t, true> base_t;
 
     private:
         DataPump& datapump;
 
+        // decode header and token and begin option decode
         void prepopulate()
         {
             decoder_t& d = this->decoder();
             base_t::header(d.header());
-            d.token(&this->_token);
+            // This old code was for non-inline token, but because
+            // I was erroneously using token2 (inline) then this call
+            // to d.token worked
+            //d.token(this->_token);
+            this->token(d.token()); // overdoing/abusing it, but should get us there for now
             d.begin_option_experimental();
         }
 

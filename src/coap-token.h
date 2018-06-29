@@ -12,6 +12,7 @@
 
 #include <estd/array.h>
 #include <estd/vector.h>
+#include <estd/exp/buffer.h>
 
 #ifdef FEATURE_CPP_INITIALIZER_LIST
 #include <initializer_list>
@@ -60,6 +61,16 @@ public:
     {
         base_t::append(data, tkl);
     }
+
+    template <class TImpl>
+    Token& operator =(const estd::internal::allocated_array<TImpl>& assign_from)
+    {
+        base_t::assign(assign_from.clock(), assign_from.size());
+        assign_from.cunlock();
+        // can't do this because I think layer1::vector implicitly deleted it
+        //base_t::operator =(assign_from);
+        return *this;
+    }
 };
 
 
@@ -85,6 +96,11 @@ public:
     Token(const layer2::Token& token) : base_t(token.clock())
     {
         base_t::impl().size(token.size());
+    }
+
+    operator estd::const_buffer()
+    {
+        return estd::const_buffer(lock(), size());
     }
 };
 

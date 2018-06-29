@@ -83,6 +83,12 @@ public:
     // based setter
     void token(const estd::const_buffer& token)
     {
+        //printf("%02x %02x %02x %02x", token[0], token[1], token[2], token[3]);
+        std::clog << std::hex <<  ' ' << (int)token[0];
+        std::clog << ' ' << (int) token[1];
+        std::clog << ' ' << (int) token[2];
+        std::clog << ' ' << (int) token[3];
+        std::clog << std::dec << std::endl;
         _token = token.data();
     }
 
@@ -225,11 +231,15 @@ struct TokenAndHeaderContext<false, false> :
         public TokenContext<false>,
         public HeaderContext
 {
-    inline const layer3::Token token() const
+    inline layer3::Token token() const
     {
-        return layer2::Token(_token, header().token_length());
+        return layer3::Token(_token, header().token_length());
     }
 
+    void token(const estd::const_buffer &t)
+    {
+        TokenContext<false>::token(t);
+    }
 };
 
 
