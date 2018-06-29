@@ -29,6 +29,8 @@ void ObservableRegistrar<TCollection, TIncomingContext, TRequestContextTraits>::
 
     while(it != end())
     {
+        // TODO: Don't forget to filter by a resource key
+
         //std::clog << "Sending to " << addr << std::endl;
 #ifdef FEATURE_MCCOAP_IOSTREAM_NATIVE
         std::clog << "Event fired" << std::endl;
@@ -66,7 +68,7 @@ void ObservableRegistrar<TCollection, TIncomingContext, TRequestContextTraits>::
         encoder.complete();
 
 #ifdef FEATURE_MCCOAP_DATAPUMP_INLINE
-        datapump.enqueue_out(std::forward<netbuf_t>(encoder.netbuf()), addr);
+        datapump.enqueue_out(std::move(encoder.netbuf()), addr);
 #else
         datapump.enqueue_out(encoder.netbuf(), addr);
 #endif

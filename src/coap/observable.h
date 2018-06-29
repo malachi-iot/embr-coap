@@ -153,32 +153,16 @@ public:
     typedef observable_session_t key_t;
 
 
-    void do_register(const layer3::Token& token, const addr_t& addr)
-    {
-        observable_session_t os;
-
-        os.sequence = 0;
-        os.token = token;
-        os.addr = addr;
-
-        registrations.push_back(os);
-    }
-
-    void do_register(const layer2::Token& token, const addr_t& addr)
-    {
-        observable_session_t os;
-
-        os.sequence = 0;
-        os.token = token;
-        os.addr = addr;
-
-        registrations.push_back(os);
-    }
-
     template <bool inline_token>
     void do_register(const IncomingContext<addr_t, inline_token>& context)
     {
-        do_register(context.token(), context.address());
+        observable_session_t os;
+
+        os.sequence = 0;
+        os.token = context.token();
+        os.addr = context.address();
+
+        registrations.push_back(os);
     }
 
 
