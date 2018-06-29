@@ -286,9 +286,9 @@ void ContextDispatcherHandler<TRequestContext>::on_token(const pipeline::MemoryC
 #ifdef FEATURE_MCCOAP_INLINE_TOKEN
     // Doing legacy-wrapper until we also revamp dispatcher/observable stuff.  That itself is on hold until we
     // do more alpha-level work with raw decoder
-    estd::experimental::const_buffer b(token_part.data(), token_part.length());
+    estd::const_buffer b(token_part.data(), token_part.length());
     // NOTE: this won't yet work with chunked
-    this->context().token(&b);
+    this->context().token(b);
 #else
     // FIX: access already-allocated token manager (aka token pool) and allocate a new
     // token or link to already-allocated token.

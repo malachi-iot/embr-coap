@@ -260,8 +260,8 @@ public:
 
     // do a most-used case for filling out a response based on a requesting
     // token and header context
-    template <bool inline_token>
-    bool header_and_token(TokenAndHeaderContext<inline_token>& context,
+    template <bool inline_token, bool simple_buffer>
+    bool header_and_token(TokenAndHeaderContext<inline_token, simple_buffer>& context,
                           Header::Code::Codes response_code)
     {
         // Not going to check header write, we always assume we have at least 4 bytes

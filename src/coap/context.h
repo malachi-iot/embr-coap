@@ -31,6 +31,8 @@ public:
     const TAddr& address() const { return addr; }
 };
 
+// Holds only the data portion of the token, need header.tkl to
+// find its length
 template <bool inline_token>
 class TokenContext;
 
@@ -52,10 +54,10 @@ public:
     {}
 
 public:
-    void token(const estd::experimental::const_buffer* t)
+    void token(const estd::const_buffer& t)
     {
         _token_present = true;
-        std::copy(t->begin(), t->end(), _token.begin());
+        std::copy(t.begin(), t.end(), _token.begin());
         //_token.copy_from(*t);
     }
 
@@ -69,25 +71,24 @@ public:
 template <>
 class TokenContext<false>
 {
-    typedef layer3::Token token_t;
-
 protected:
-    token_t _token;
+    const uint8_t* _token;
 
 public:
     TokenContext()
-        : _token(NULLPTR, 0)
+        : _token(NULLPTR)
     {}
-
-    inline bool token_present() const { return _token.size() > 0; }
-
-    // if a) incoming message has a token and b) we've decoded the token and have it
-    // available, then this will be non-null
-    const token_t& token() const { return _token; }
 
     // Since tokens arrive piecemeal and oftentimes not at all, we have a non-constructor
     // based setter
-    void token(const token_t* token) { _token = *token; }
+    void token(const estd::const_buffer& token)
+    {
+        _token = token.data();
+    }
+
+    // TODO: Reconcile naming, either call this have_token() or rename
+    // have_header to header_present()
+    inline bool token_present() const { return _token != NULLPTR; }
 };
 
 
@@ -175,9 +176,7 @@ public:
 // be mindful to validate this data before tossing it in here
 class SimpleBufferContext
 {
-    typedef estd::experimental::const_buffer ro_chunk_t;
-
-    ro_chunk_t chunk;
+    estd::const_buffer chunk;
 
 public:
     const Header& header() const
@@ -190,28 +189,31 @@ public:
 
     bool have_header() const { return header().version() > 0; }
 
-    inline ro_chunk_t token() const
+    inline layer3::Token token() const
     {
         // skip header portion
-        return ro_chunk_t(chunk.data() + 4, header().token_length());
+        return layer3::Token(chunk.data() + 4, header().token_length());
     }
+
+    inline bool token_present() const { return true; }
 };
 
 // these two really like to go together
-template <bool inline_token>
+template <bool inline_token, bool simple_buffer>
 struct TokenAndHeaderContext;
 
 template <>
-struct TokenAndHeaderContext<true> :
+struct TokenAndHeaderContext<true, false> :
         public TokenContext<true>,
         public HeaderContext
 {
-    inline const layer2::Token token() const
+    inline const layer3::Token token() const
     {
-        return layer2::Token(_token, header().token_length());
+        return layer3::Token(_token.data(),
+                             header().token_length());
     }
 
-    void token(const estd::experimental::const_buffer* t)
+    void token(const estd::const_buffer& t)
     {
         TokenContext<true>::token(t);
     }
@@ -219,9 +221,16 @@ struct TokenAndHeaderContext<true> :
 
 
 template <>
-struct TokenAndHeaderContext<false> :
+struct TokenAndHeaderContext<false, false> :
         public TokenContext<false>,
-        public HeaderContext {};
+        public HeaderContext
+{
+    inline const layer3::Token token() const
+    {
+        return layer2::Token(_token, header().token_length());
+    }
+
+};
 
 
 
@@ -230,9 +239,9 @@ struct TokenAndHeaderContext<false> :
 // foundational base class
 // Called Incoming context because remember some incoming messages are RESPONSES, even
 // when we are the server (ACKs, etc)
-template <class TAddr, bool inline_token = true>
+template <class TAddr, bool inline_token = true, bool simple_buffer = false>
 class IncomingContext :
-        public TokenAndHeaderContext<inline_token>,
+        public TokenAndHeaderContext<inline_token, simple_buffer>,
         public AddressContext<TAddr>
 {
 public:
