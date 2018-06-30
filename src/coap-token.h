@@ -12,7 +12,7 @@
 
 #include <estd/array.h>
 #include <estd/vector.h>
-#include <estd/exp/buffer.h>
+#include <estd/span.h>
 
 #ifdef FEATURE_CPP_INITIALIZER_LIST
 #include <initializer_list>

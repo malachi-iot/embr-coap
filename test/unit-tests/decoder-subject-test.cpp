@@ -72,7 +72,7 @@ using namespace moducom::pipeline;
 
 TEST_CASE("CoAP decoder subject tests", "[coap-decoder-subject]")
 {
-    typedef estd::experimental::const_buffer ro_chunk_t;
+    typedef estd::const_buffer ro_chunk_t;
 
     SECTION("16 bit delta: ContextDispatcherHandler")
     {

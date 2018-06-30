@@ -10,7 +10,7 @@
 #include "mc/objstack.h"
 #include <estd/type_traits.h>
 
-#include <estd/exp/buffer.h>
+#include <estd/span.h>
 
 // TODO:
 // a) add decoder state accessor/decoder* to context itself for convenient query as to

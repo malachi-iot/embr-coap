@@ -50,7 +50,7 @@ static void suite(NetBufDecoder<TNetBuf>& decoder)
 
 TEST_CASE("netbuf+coap tests", "[netbuf-coap]")
 {
-    typedef estd::experimental::const_buffer chunk_t;
+    typedef estd::const_buffer chunk_t;
 
     SECTION("writer")
     {

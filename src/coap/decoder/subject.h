@@ -2,7 +2,7 @@
 
 #include "../../coap-dispatcher.h"
 
-#include <estd/exp/buffer.h>
+#include <estd/span.h>
 #include "../../exp/events.h"
 
 namespace moducom { namespace coap {
@@ -125,7 +125,7 @@ class DecoderSubjectBase
     TMessageObserver observer;
     typedef internal::option_number_t option_number_t;
     typedef pipeline::MemoryChunk::readonly_t ro_chunk_t;
-    typedef estd::experimental::const_buffer ro_chunk2_t;
+    typedef estd::const_buffer ro_chunk2_t;
 
     // do these observer_xxx versions so that compile errors are easier to track
     inline void observer_on_option(option_number_t n,

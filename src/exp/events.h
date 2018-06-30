@@ -9,7 +9,7 @@ namespace experimental {
 // using only for typedef convenience
 struct event_base
 {
-    typedef estd::experimental::const_buffer buffer_t;
+    typedef estd::const_buffer buffer_t;
     typedef internal::option_number_t option_number_t;
 };
 

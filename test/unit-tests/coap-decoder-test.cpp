@@ -9,7 +9,7 @@ using namespace moducom::pipeline;
 
 TEST_CASE("CoAP decoder tests", "[coap-decoder]")
 {
-    typedef estd::experimental::const_buffer ro_chunk_t;
+    typedef estd::const_buffer ro_chunk_t;
 
     ro_chunk_t buffer_in(buffer_16bit_delta);
 

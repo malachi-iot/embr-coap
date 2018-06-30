@@ -5,7 +5,7 @@
 #include "../coap-uint.h"
 #include "context.h"
 
-#include <estd/exp/buffer.h>
+#include <estd/span.h>
 
 #include <utility>
 
@@ -24,7 +24,7 @@ class NetBufEncoder :
 {
     typedef TNetBuf netbuf_t;
     typedef moducom::io::experimental::NetBufWriter<TNetBuf> base_t;
-    typedef const estd::experimental::const_buffer ro_chunk_t;
+    typedef const estd::const_buffer ro_chunk_t;
 
     OptionEncoder option_encoder;
 

@@ -27,7 +27,7 @@ public:
 
 protected:
     typedef Decoder base_t;
-    typedef estd::experimental::const_buffer ro_chunk_t;
+    typedef estd::const_buffer ro_chunk_t;
 
     DecoderWithContext(const ro_chunk_t& chunk, bool last_chunk) :
         context(chunk, last_chunk)
@@ -322,7 +322,7 @@ class option_iterator
     typedef typename estd::remove_reference<typename TNetBufDecoder::netbuf_t>::type netbuf_t;
     typedef TNetBufDecoder decoder_t;
     typedef Option::Numbers value_type;
-    typedef estd::experimental::const_buffer ro_chunk_t;
+    typedef estd::const_buffer ro_chunk_t;
 
     decoder_t& decoder;
 

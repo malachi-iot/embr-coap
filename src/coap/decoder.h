@@ -11,7 +11,7 @@
 #include "../coap.h"
 #include "decoder/simple.h"
 #include "decoder/option.h"
-#include <estd/exp/buffer.h>
+#include <estd/span.h>
 
 #if __cplusplus >= 201103L
 #include <type_traits>
@@ -39,7 +39,7 @@ namespace internal {
 struct DecoderContext
 {
     //typedef pipeline::experimental::ReadOnlyMemoryChunk<> chunk_t;
-    typedef estd::experimental::const_buffer chunk_t;
+    typedef estd::const_buffer chunk_t;
 
     // TODO: optimize by making this a value not a ref, and bump up "data" pointer
     // (and down length) instead of bumping up pos.  A little more fiddly, but then
@@ -221,7 +221,7 @@ public:
 
     // Of limited to no use, since we blast through chunk without caller having a chance
     // to inspect what's going on.  Only keeping around for coap_lowlevel test
-    void process_deprecated(const estd::experimental::const_buffer& chunk, bool last_chunk = true)
+    void process_deprecated(const estd::const_buffer& chunk, bool last_chunk = true)
     {
         Context context(chunk, last_chunk);
 

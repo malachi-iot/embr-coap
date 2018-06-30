@@ -1,4 +1,4 @@
-#include <estd/exp/buffer.h>
+#include <estd/span.h>
 #include <estd/string.h>
 #include "events.h"
 #include "../coap-uint.h"

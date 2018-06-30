@@ -266,7 +266,7 @@ bool OptionDecoder::process_iterate(pipeline::IBufferedPipelineReader& reader, O
 }
 #endif
 
-size_t OptionDecoder::process_iterate(const estd::experimental::const_buffer& chunk,
+size_t OptionDecoder::process_iterate(const estd::const_buffer& chunk,
                                       OptionExperimental* built_option,
                                       bool last_chunk)
 {

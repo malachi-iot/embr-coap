@@ -175,7 +175,7 @@ TEST_CASE("CoAP dispatcher tests", "[coap-dispatcher]")
     SECTION("Dispatcher Factory")
     {
         //MemoryChunk chunk(buffer_plausible, sizeof(buffer_plausible));
-        estd::experimental::const_buffer chunk(buffer_plausible);
+        estd::const_buffer chunk(buffer_plausible);
 
         moducom::pipeline::layer3::MemoryChunk<512> dispatcherBuffer;
         ObserverContext context(dispatcherBuffer);
