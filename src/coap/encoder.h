@@ -160,12 +160,18 @@ protected:
     void written(size_type w) { m_written = w; }
 
 public:
+#ifdef FEATURE_CPP_MOVESEMANTIC
+    template <class ...TArgs>
+    NetBufEncoder(TArgs&&...args) :
+        base_t(std::forward<TArgs>(args)...) {}
+#else
     template <class TNetBufInitParam>
     NetBufEncoder(TNetBufInitParam& netbufinitparam) :
         base_t(netbufinitparam)
     {
         payload_marker_written(false);
     }
+#endif
 
 
     NetBufEncoder() { payload_marker_written(false); }
