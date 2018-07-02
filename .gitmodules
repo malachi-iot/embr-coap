@@ -12,3 +12,9 @@
 	path = ext/estdlib
 	url = git@github.com:malachi-iot/estdlib.git
 	branch = dev
+[submodule "ext/embr-dataport"]
+	path = ext/embr-dataport
+	url = git@github.com:malachi-iot/embr-dataport.git
+[submodule "ext/embr-netbuf"]
+	path = ext/embr-netbuf
+	url = git@github.com:malachi-iot/embr-netbuf.git

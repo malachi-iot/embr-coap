@@ -9,11 +9,15 @@ project(mc-coap)
 set(ROOT_DIR ..)
 set(MC_MEM_DIR ${ROOT_DIR}/ext/moducom-memory/src)
 set(ESTDLIB_DIR ${ROOT_DIR}/ext/estdlib/src)
+set(EMBR_DATAPORT_DIR ${ROOT_DIR}/ext/embr-dataport/src)
+set(EMBR_NETBUF_DIR ${ROOT_DIR}/ext/embr-netbuf/src)
 
 include_directories(${PROJECT_SOURCE_DIR})
 
 include_directories(${MC_MEM_DIR})
 include_directories(${ESTDLIB_DIR})
+include_directories(${EMBR_NETBUF_DIR})
+include_directories(${EMBR_DATAPORT_DIR})
 
 # set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "../../../bin")
 
