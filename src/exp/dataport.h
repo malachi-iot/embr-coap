@@ -179,8 +179,8 @@ public:
 template <class TTransport, class TSubject,
             class TDataPort = DataPort<
                 moducom::coap::DataPump<
-                    typename TTransport::netbuf_t,
-                    typename TTransport::addr_t >,
+                    typename TTransport::transport_descriptor_t
+                    >,
                 TTransport,
                 TSubject> >
 TDataPort make_dataport(TSubject& s)
