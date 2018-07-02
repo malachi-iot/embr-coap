@@ -415,7 +415,7 @@ public:
         // int is big enough to hold it
         ro_chunk_t v = opaque();
 
-        TUInt retval = UInt::get<TUInt>(v.data(), v.size());
+        TUInt retval = UInt::get<TUInt>(v);
 
 #ifdef FEATURE_ESTD_IOSTREAM_NATIVE
         std::clog << " (" << retval << ')';

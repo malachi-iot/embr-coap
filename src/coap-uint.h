@@ -10,6 +10,7 @@
 #include <mc/mem/platform.h>
 #include "mc/memory-chunk.h"
 #include <estd/vector.h>
+#include <estd/span.h>
 
 namespace moducom { namespace coap {
 
@@ -59,6 +60,15 @@ public:
         ASSERT_WARN(true, sizeof(TReturn) >= len, "decoding integer size too small");
 
         return internal::uint_get<TReturn>(value, len);
+    }
+
+
+    template <class TReturn>
+    static TReturn get(const estd::const_buffer& b)
+    {
+        ASSERT_WARN(true, sizeof(TReturn) >= b.size(), "decoding integer size too small");
+
+        return internal::uint_get<TReturn>(b.data(), b.size());
     }
 
 

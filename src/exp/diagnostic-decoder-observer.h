@@ -105,9 +105,7 @@ struct DiagnosticMessageObserver
 
             case OptionDecoder::UInt:
             {
-                auto v = UInt::get<long unsigned>(
-                    e.chunk.data(),
-                    e.chunk.size());
+                auto v = UInt::get<long unsigned>(e.chunk);
 
                 printf("%lu\n", v);
                 break;

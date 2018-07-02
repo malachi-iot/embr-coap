@@ -42,7 +42,7 @@ TEST_CASE("CoAP observable (RFC-7641) tests", "[coap-observer]")
 
         // CoAP folks were clever, a subscribe option only takes one extra byte
         // due to implicit value of their UInt
-        uint16_t option_value = UInt::get<uint16_t>(value.data(), value.size());
+        uint16_t option_value = UInt::get<uint16_t>(value);
 
         // TODO: still working on processing this scenario right
         REQUIRE(option_value == 0);
