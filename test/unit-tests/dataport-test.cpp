@@ -33,16 +33,7 @@ TEST_CASE("Dataport tests", "[dataport]")
     {
         auto s = estd::experimental::layer0::make_subject();
 
-        auto dataport = mb_iot::make_dataport<LoopbackTransport>(s);
-
-        /*
-        emb::DataPort
-        emb::iot::DataPort
-        emb::service::DataPort
-        emb::sys::DataPort
-        emb::system::DataPort
-        emb::subsystem::DataPort
-        */
+        auto dataport = embr::make_dataport<LoopbackTransport>(s);
     }
 }
 
