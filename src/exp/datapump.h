@@ -10,7 +10,9 @@
 #include "coap/decoder/netbuf.h"
 #include "coap/encoder.h"
 #include "coap/observable.h"
+
 #include "datapump-observer.h"
+#include "misc.h"
 
 #ifdef FEATURE_MCCOAP_RELIABLE
 #include "retry.h"

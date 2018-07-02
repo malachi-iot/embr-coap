@@ -7,7 +7,8 @@
 
 namespace moducom { namespace coap {
 
-typedef moducom::coap::DataPump<moducom::coap::NetBufDynamicExperimental, sockaddr_in> sockets_datapump_t;
+typedef moducom::coap::TransportDescriptor<moducom::coap::NetBufDynamicExperimental, sockaddr_in> transport_descriptor_t;
+typedef moducom::coap::DataPump<transport_descriptor_t> sockets_datapump_t;
 typedef moducom::coap::experimental::Retry<moducom::coap::NetBufDynamicExperimental, sockaddr_in> sockets_retry_t;
 
 extern sockets_datapump_t sockets_datapump;

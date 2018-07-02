@@ -76,6 +76,7 @@ set(SOURCE_FILES
         exp/datapump-observer.h
         exp/events.h
         exp/message-observer.h
+        exp/misc.h
         exp/option-trait.h
         exp/retry.h
         exp/diagnostic-decoder-observer.h
