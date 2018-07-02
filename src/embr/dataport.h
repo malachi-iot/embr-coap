@@ -4,7 +4,7 @@
 #include "../exp/events.h"
 #include "datapump.h"
 
-namespace mb_iot {
+namespace embr {
 
 // DataPort events, specifically
 template <class TDatapump>

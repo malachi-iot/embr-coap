@@ -265,7 +265,7 @@ public:
     {
         friend class DataPump;
 
-        typedef netbuf_t netbuf_t;
+        typedef typename transport_descriptor_t::netbuf_t netbuf_t;
         typedef moducom::coap::IncomingContext<addr_t, true> base_t;
 
     private:

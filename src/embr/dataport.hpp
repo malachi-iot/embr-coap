@@ -1,6 +1,6 @@
 #include "dataport.h"
 
-namespace mb_iot {
+namespace embr {
 
 template <class TDatapump, class TTransportDescriptor, class TSubject>
 void DatapumpSubject<TDatapump, TTransportDescriptor, TSubject>::service()
