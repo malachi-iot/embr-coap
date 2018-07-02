@@ -12,7 +12,9 @@ const char* get_description(Option::Numbers number)
         case Option::ETag:          return "ETag";
         case Option::Observe:       return "Observe";
         case Option::UriPath:       return "Uri-Path";
+        case Option::ContentFormat: return "Content-Format";
         case Option::UriQuery:      return "Uri-Query";
+        case Option::Accept:        return "Accept";
         case Option::Block1:        return "Block1";
         case Option::Block2:        return "Block2";
         default:                    return NULLPTR;

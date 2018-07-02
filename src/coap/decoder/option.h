@@ -139,6 +139,8 @@ public:
             case _number_t::LocationPath:    return String;
             case _number_t::UriPath:         return String;
             case _number_t::ContentFormat:   return UInt;
+            case _number_t::UriQuery:        return String;
+            case _number_t::Accept:          return UInt;
 
             case _number_t::Block1:
             case _number_t::Block2:
