@@ -22,7 +22,10 @@
 #include <utility> // for std::forward
 #endif
 
-namespace moducom { namespace coap {
+namespace mb_iot {
+
+// temporary as we decouple / redo retry logic
+using namespace moducom::coap;
 
 #ifdef FEATURE_MCCOAP_DATAPUMP_INLINE
 #ifndef FEATURE_CPP_MOVESEMANTIC
@@ -184,26 +187,10 @@ public:
 
 
 private:
-    struct AddrMapper
-    {
-        addr_t address;
-        coap::Header header; // for tkl and mid
-        coap::layer1::Token token;
-    };
-
     typedef typename policy_type::template Queue<Item>::queue_type queue_type;
 
     queue_type incoming;
     queue_type outgoing;
-
-    // might be better served by 2 different maps or some kind of memory_pool,
-    // but we'll roll with just a low-tech vector for now
-    estd::layer1::vector<AddrMapper, 10> addr_mapping;
-
-    static bool find_mapper_by_addr(const AddrMapper& mapper)
-    {
-        return false;
-    }
 
 public:
     // process data coming in from transport into coap queue
@@ -273,13 +260,13 @@ public:
     // NOTE: Deprecated
     // inline-token, since decoder blasts over its own copy
     struct IncomingContext :
-            coap::IncomingContext<addr_t, true>,
+            moducom::coap::IncomingContext<addr_t, true>,
             DecoderContext<decoder_t>
     {
         friend class DataPump;
 
         typedef netbuf_t netbuf_t;
-        typedef coap::IncomingContext<addr_t, true> base_t;
+        typedef moducom::coap::IncomingContext<addr_t, true> base_t;
 
     private:
         DataPump& datapump;
@@ -385,4 +372,4 @@ public:
     }
 };
 
-}}
+}

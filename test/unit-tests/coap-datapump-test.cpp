@@ -12,6 +12,7 @@
 #include <estd/exp/observer.h>
 
 using namespace moducom::coap;
+using namespace mb_iot;
 
 typedef moducom::io::experimental::NetBufDynamicMemory<> netbuf_t;
 typedef uint32_t addr_t;

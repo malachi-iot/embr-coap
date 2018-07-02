@@ -1,6 +1,7 @@
 #include <catch.hpp>
 
 #include <coap/decoder/netbuf.h>
+#include <exp/misc.h>
 #include <exp/netbuf.h>
 #include <exp/datapump.hpp>
 #if __cplusplus >= 201103L
@@ -119,7 +120,7 @@ TEST_CASE("netbuf+coap tests", "[netbuf-coap]")
         NetBufReadOnlyMemory buf1(buffer_simplest_request);
         NetBufDynamicExperimental buf2;
 
-        coap_netbuf_copy(buf1, buf2);
+        mb_iot::coap_netbuf_copy(buf1, buf2);
 
         REQUIRE(buf2.length_processed() == 4);
         REQUIRE(memcmp(buf1.processed(), buf2.processed(), 4) == 0);
@@ -129,7 +130,7 @@ TEST_CASE("netbuf+coap tests", "[netbuf-coap]")
         NetBufReadOnlyMemory buf1(buffer_simplest_request);
         NetBufDynamicExperimental buf2;
 
-        coap_netbuf_copy(buf1, buf2, 1);
+        mb_iot::coap_netbuf_copy(buf1, buf2, 1);
 
         REQUIRE(buf2.length_processed() == 3);
         REQUIRE(memcmp(buf1.processed() + 1, buf2.processed(), 3) == 0);

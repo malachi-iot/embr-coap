@@ -25,7 +25,7 @@ TEST_CASE("Dataport tests", "[dataport]")
     {
         auto s = estd::experimental::layer0::make_subject();
 
-        auto dataport = experimental::make_dataport<LoopbackTransport>(s);
+        auto dataport = mb_iot::make_dataport<LoopbackTransport>(s);
     }
 }
 

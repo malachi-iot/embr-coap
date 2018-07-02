@@ -1,6 +1,6 @@
 #include "datapump.h"
 
-namespace moducom { namespace coap {
+namespace mb_iot {
 
 template <class TTransportDescriptor, class TPolicy>
 #ifdef FEATURE_MCCOAP_DATAPUMP_INLINE
@@ -96,4 +96,4 @@ void coap_netbuf_copy(TNetBuf& source, TNetBuf2& dest, int skip, bool reset)
     }
 }
 
-}}
+}

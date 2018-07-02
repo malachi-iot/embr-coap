@@ -4,11 +4,11 @@
 #include "events.h"
 #include "datapump.h"
 
-namespace experimental {
+namespace mb_iot {
 
 // DataPort events, specifically
 template <class TDatapump>
-struct Events :
+struct DataPortEvents :
     // Be careful, TDatapump is being used as transport description.  In this case, it's OK
     moducom::coap::experimental::event::Transport<TDatapump>,
     moducom::coap::experimental::event::Datapump<typename TDatapump::Item> {};
@@ -89,7 +89,7 @@ struct DatapumpSubject
     // since datapump uses those.  Right now datapump 'supplies its own' but
     // eventually want to hang that off transport descriptor
     typedef TTransportDescriptor transport_descriptor_t;
-    typedef Events<TDatapump> event;
+    typedef DataPortEvents<TDatapump> event;
 
     TDatapump datapump;
     TSubject subject;
@@ -141,7 +141,7 @@ struct DataPort : DatapumpSubject<
 
     typedef DatapumpSubject<TDatapump, transport_descriptor_t, TSubject> base_t;
 
-    typedef Events<TDatapump> event;
+    typedef DataPortEvents<TDatapump> event;
     typedef typename base_t::item_t item_t;
     typedef typename base_t::netbuf_t netbuf_t;
     typedef typename base_t::addr_t addr_t;
@@ -178,7 +178,7 @@ public:
 // we can push initialization to transport constructor
 template <class TTransport, class TSubject,
             class TDataPort = DataPort<
-                moducom::coap::DataPump<
+                mb_iot::DataPump<
                     typename TTransport::transport_descriptor_t
                     >,
                 TTransport,
