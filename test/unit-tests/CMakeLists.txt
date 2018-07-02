@@ -51,6 +51,7 @@ set(SOURCE_FILES
         coap-dispatcher-test.cpp test-data.h coap-encoder-test.cpp
         coap-token-test.cpp
         coap-observable-test.cpp
+        dataport-test.cpp
         experimental-test.cpp
         decoder-subject-test.cpp
         mc/opts.h
