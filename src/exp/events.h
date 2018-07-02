@@ -1,5 +1,8 @@
 #pragma once
 
+#include <estd/span.h>
+#include "../coap.h"
+
 namespace moducom { namespace coap {
 
 namespace experimental {

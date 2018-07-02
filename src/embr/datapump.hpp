@@ -1,22 +1,24 @@
 #include "datapump.h"
 
-namespace moducom { namespace coap {
+namespace embr {
 
-template <class TNetBuf, class TAddr, class TAllocator>
+template <class TTransportDescriptor, class TPolicy>
 #ifdef FEATURE_MCCOAP_DATAPUMP_INLINE
-auto DataPump<TNetBuf, TAddr, TAllocator>::transport_in(TNetBuf&& in, const addr_t& addr) ->
+auto DataPump<TTransportDescriptor, TPolicy>::transport_in(netbuf_t&& in, const addr_t& addr) ->
     const Item&
 {
     return incoming.emplace(std::move(in), addr);
 }
 #else
-void DataPump<TNetBuf, TAddr, TAllocator>::transport_in(TNetBuf& in, const addr_t& addr)
+void DataPump<TTransportDescriptor, TPolicy>::transport_in(netbuf_t& in, const addr_t& addr)
 {
     Item item(in, addr);
 
     incoming.push(item);
 }
 #endif
+
+namespace experimental {
 
 template <class TNetBuf, class TNetBuf2>
 void coap_netbuf_copy(TNetBuf& source, TNetBuf2& dest, int skip, bool reset)
@@ -96,4 +98,6 @@ void coap_netbuf_copy(TNetBuf& source, TNetBuf2& dest, int skip, bool reset)
     }
 }
 
-}}
+}
+
+}

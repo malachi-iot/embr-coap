@@ -10,17 +10,22 @@
 #include "coap/decoder/netbuf.h"
 #include "coap/encoder.h"
 #include "coap/observable.h"
-#include "datapump-observer.h"
+
+#include "../exp/datapump-observer.h"
+#include "../exp/misc.h"
 
 #ifdef FEATURE_MCCOAP_RELIABLE
-#include "retry.h"
+#include "../exp/retry.h"
 #endif
 
 #ifdef FEATURE_CPP_MOVESEMANTIC
 #include <utility> // for std::forward
 #endif
 
-namespace moducom { namespace coap {
+namespace embr {
+
+// temporary as we decouple / redo retry logic
+using namespace moducom::coap;
 
 #ifdef FEATURE_MCCOAP_DATAPUMP_INLINE
 #ifndef FEATURE_CPP_MOVESEMANTIC
@@ -50,7 +55,10 @@ struct InlineQueuePolicy
     {
         typedef estd::layer1::queue<TItem, queue_depth> queue_type;
     };
+};
 
+struct CoapAppDataPolicy
+{
     template <class TTransportDescriptor>
     struct AppData
     {
@@ -60,29 +68,37 @@ struct InlineQueuePolicy
         // NOTE: Not yet used, and not bad but working on decoupling DataPump from coap altogether
         // so a different default policy would be good to supply this AppData
 #ifdef FEATURE_MCCOAP_RELIABLE
-        typename experimental::Retry<netbuf_t, addr_t>::Metadata m_retry;
+        typename moducom::coap::experimental::Retry<netbuf_t, addr_t>::Metadata m_retry;
 #endif
     };
+};
+
+
+// just a convenient default for datapump
+struct CoapAndInlineQueuePolicy :
+        InlineQueuePolicy<>,
+        CoapAppDataPolicy
+{
 };
 
 // If this continues to be coap-inspecific, it would be reasonable to move this
 // datapump code out to mc-mem.  Until that decision is made, keeping this in
 // experimental area
-template <class TNetBuf, class TAddr, class TPolicy = InlineQueuePolicy<> >
+template <class TTransportDescriptor, class TPolicy = CoapAndInlineQueuePolicy >
 class DataPump
 {
 public:
-    typedef TAddr addr_t;
-    typedef TNetBuf netbuf_t;
+    typedef TTransportDescriptor transport_descriptor_t;
+    typedef typename transport_descriptor_t::addr_t addr_t;
+    typedef typename transport_descriptor_t::netbuf_t netbuf_t;
 #ifdef FEATURE_MCCOAP_DATAPUMP_INLINE
-    typedef TNetBuf pnetbuf_t;
+    typedef netbuf_t pnetbuf_t;
 #else
-    typedef TNetBuf* pnetbuf_t;
+    typedef netbuf_t* pnetbuf_t;
 #endif
-    typedef IDataPumpObserver<TNetBuf, TAddr> datapump_observer_t;
+    typedef IDataPumpObserver<netbuf_t, addr_t> datapump_observer_t;
     typedef NetBufDecoder<netbuf_t&> decoder_t;
     typedef TPolicy policy_type;
-    typedef TransportDescriptor<netbuf_t, addr_t> transport_descriptor_t;
 
 public:
     // TODO: account for https://tools.ietf.org/html/rfc7252#section-4.2
@@ -99,11 +115,11 @@ public:
         Item() {}
 
 #ifdef FEATURE_MCCOAP_DATAPUMP_INLINE
-        Item(TNetBuf&& netbuf, const addr_t& addr,
+        Item(netbuf_t&& netbuf, const addr_t& addr,
              datapump_observer_t* observer = NULLPTR) :
             m_netbuf(std::forward<netbuf_t>(netbuf)),
 #else
-        Item(TNetBuf& netbuf, const addr_t& addr,
+        Item(netbuf_t& netbuf, const addr_t& addr,
              datapump_observer_t* observer = NULLPTR) :
             m_netbuf(&netbuf),
 #endif
@@ -171,58 +187,24 @@ public:
 
 
 private:
-    struct AddrMapper
-    {
-        addr_t address;
-        coap::Header header; // for tkl and mid
-        coap::layer1::Token token;
-    };
-
     typedef typename policy_type::template Queue<Item>::queue_type queue_type;
 
     queue_type incoming;
     queue_type outgoing;
 
-    // might be better served by 2 different maps or some kind of memory_pool,
-    // but we'll roll with just a low-tech vector for now
-    estd::layer1::vector<AddrMapper, 10> addr_mapping;
-
-    static bool find_mapper_by_addr(const AddrMapper& mapper)
-    {
-        return false;
-    }
-
 public:
     // process data coming in from transport into coap queue
 #ifdef FEATURE_MCCOAP_DATAPUMP_INLINE
     const Item& transport_in(
-            TNetBuf&& in,
+            netbuf_t&& in,
 #else
     void transport_in(
-            TNetBuf& in,
+            netbuf_t& in,
 #endif
             const addr_t& addr);
 
-    // provide a netbuf containing data to be sent out over transport, or NULLPTR
-    // if no data is ready
-    TNetBuf* transport_front_old(addr_t* addr_out)
-    {
-        if(outgoing.empty()) return NULLPTR;
-
-        // can't quite do it because it wants AddrMapper (by way of iterator) to have ==
-        // but I am not convinced that's the best approach
-        //std::find(addr_mapping.begin(), addr_mapping.end(), find_mapper_by_addr);
-
-        Item& f = outgoing.front();
-
-        *addr_out = f.addr();
-        TNetBuf* netbuf = f.netbuf();
-
-        return netbuf;
-    }
-
     // ascertain whether any -> transport outgoing netbufs are present
-    bool transport_empty()
+    bool transport_empty() const
     {
         return outgoing.empty();
     }
@@ -232,44 +214,38 @@ public:
         return outgoing.front();
     }
 
-    // manually pop Item away, the above transport_out needs to be followed up
-    // by this call.  Adding experimental retry hint as a way of transport-specific
-    // code indicating an ACK should be expected.
-    // Note that this entire datapump code
-    // has naturally unfolded as largely coap-inspecific, these ACK/CON interactions
-    // may be the first actual coap specificity
-    void transport_pop(bool experimental_retry_hint = false)
+    void transport_pop()
     {
-        // TODO: This is so far the ideal spot to kick off retry queuing
         outgoing.pop();
     }
 
 #ifdef FEATURE_MCCOAP_DATAPUMP_INLINE
     // enqueue complete netbuf for outgoing transport to pick up
-    const Item& enqueue_out(TNetBuf&& out, const addr_t& addr_out, datapump_observer_t* observer = NULLPTR)
+    const Item& enqueue_out(netbuf_t&& out, const addr_t& addr_out, datapump_observer_t* observer = NULLPTR)
     {
         return outgoing.emplace(std::move(out), addr_out, observer);
     }
 #else
     // enqueue complete netbuf for outgoing transport to pick up
-    bool enqueue_out(TNetBuf& out, const addr_t& addr_out, datapump_observer_t* observer = NULLPTR)
+    bool enqueue_out(netbuf_t& out, const addr_t& addr_out, datapump_observer_t* observer = NULLPTR)
     {
         return outgoing.push(Item(out, addr_out, observer));
     }
 #endif
 
     // see if any netbufs were queued from transport in
-    bool dequeue_empty() { return incoming.empty(); }
+    bool dequeue_empty() const { return incoming.empty(); }
 
     Item& dequeue_front() { return incoming.front(); }
 
+    // TODO: deprecated
     // dequeue complete netbuf which was queued from transport in
-    TNetBuf* dequeue_in(addr_t* addr_in)
+    netbuf_t* dequeue_in(addr_t* addr_in)
     {
         if(incoming.empty()) return NULLPTR;
 
         Item& f = incoming.front();
-        TNetBuf* netbuf = f.netbuf();
+        netbuf_t* netbuf = f.netbuf();
         *addr_in = f.addr();
 
         return netbuf;
@@ -281,15 +257,16 @@ public:
         incoming.pop();
     }
 
+    // NOTE: Deprecated
     // inline-token, since decoder blasts over its own copy
     struct IncomingContext :
-            coap::IncomingContext<addr_t, true>,
+            moducom::coap::IncomingContext<addr_t, true>,
             DecoderContext<decoder_t>
     {
         friend class DataPump;
 
-        typedef TNetBuf netbuf_t;
-        typedef coap::IncomingContext<addr_t, true> base_t;
+        typedef typename transport_descriptor_t::netbuf_t netbuf_t;
+        typedef moducom::coap::IncomingContext<addr_t, true> base_t;
 
     private:
         DataPump& datapump;
@@ -395,4 +372,4 @@ public:
     }
 };
 
-}}
+}

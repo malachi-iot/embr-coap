@@ -1,6 +1,6 @@
 #include <catch.hpp>
 
-#include <exp/datapump.hpp>
+#include <embr/datapump.hpp>
 #include <exp/retry.h>
 
 #include <exp/message-observer.h>
@@ -45,8 +45,9 @@ TEST_CASE("retry logic")
     SECTION("retry")
     {
         typedef NetBufDynamicExperimental netbuf_t;
+        typedef embr::TransportDescriptor<netbuf_t, addr_t> transport_descriptor_t;
         typedef Retry<netbuf_t, addr_t, RetryPolicy<fake_time_traits, UnitTestRetryRandPolicy> > retry_t;
-        typedef DataPump<netbuf_t, addr_t> datapump_t;
+        typedef embr::DataPump<transport_descriptor_t> datapump_t;
         addr_t fakeaddr;
         netbuf_t netbuf;
 
@@ -91,7 +92,11 @@ TEST_CASE("retry logic")
             // simulate queue to send.  assumes (correctly so, always)
             // that this is a CON message.  This is our first (non retry)
             // send
+#ifdef FEATURE_MCCOAP_DATAPUMP_INLINE
+            datapump.enqueue_out(std::move(netbuf), fakeaddr, &retry.always_consume_netbuf);
+#else
             datapump.enqueue_out(netbuf, fakeaddr, &retry.always_consume_netbuf);
+#endif
 
             {
                 datapump_t::Item& datapump_item = datapump.transport_front();
@@ -160,7 +165,11 @@ TEST_CASE("retry logic")
 
             // simulate queue to send.  assumes (correctly so, always)
             // that this is a CON message
+#ifdef FEATURE_MCCOAP_DATAPUMP_INLINE
+            datapump.enqueue_out(std::move(netbuf), fakeaddr, &retry.always_consume_netbuf);
+#else
             datapump.enqueue_out(netbuf, fakeaddr, &retry.always_consume_netbuf);
+#endif
 
             {
                 datapump_t::Item& datapump_item = datapump.transport_front();
@@ -178,7 +187,11 @@ TEST_CASE("retry logic")
             memcpy(simulated_ack.unprocessed(), buffer_ack, sizeof(buffer_ack));
             simulated_ack.advance(sizeof(buffer_ack));
 
+#ifdef FEATURE_MCCOAP_DATAPUMP_INLINE
+            datapump.transport_in(std::move(simulated_ack), fakeaddr);
+#else
             datapump.transport_in(simulated_ack, fakeaddr);
+#endif
 
             REQUIRE(!datapump.dequeue_empty());
 

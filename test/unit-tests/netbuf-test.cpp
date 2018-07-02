@@ -1,8 +1,9 @@
 #include <catch.hpp>
 
 #include <coap/decoder/netbuf.h>
+#include <exp/misc.h>
 #include <exp/netbuf.h>
-#include <exp/datapump.hpp>
+#include <embr/datapump.hpp>
 #if __cplusplus >= 201103L
 #include "platform/generic/malloc_netbuf.h"
 #endif
@@ -11,6 +12,7 @@
 
 using namespace moducom::io::experimental;
 using namespace moducom::coap;
+using namespace embr::experimental;
 
 namespace std {
 

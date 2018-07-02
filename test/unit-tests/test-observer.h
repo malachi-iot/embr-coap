@@ -110,6 +110,15 @@ public:
 
     }
 
+    NetBufReadOnlyMemory(const NetBufReadOnlyMemory& copy_from) :
+        base_t(copy_from)
+    {
+
+    }
+
+#ifdef FEATURE_CPP_MOVESEMANTIC
+#endif
+
     // FIX: hard wiring this to a read-oriented NetBuf
     // there's some mild indication this isn't ideal since conjunctive decoder
     // still needs to maintain a pos to read through this

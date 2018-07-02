@@ -3,7 +3,7 @@
 //#define FEATURE_ESTD_EXPLICIT_OBSERVER
 
 #include <platform/generic/datapump-messageobserver.hpp>
-#include <exp/datapump.hpp>
+#include <embr/datapump.hpp>
 #include "coap/decoder/subject.hpp"
 
 #include "test-data.h"
@@ -12,10 +12,12 @@
 #include <estd/exp/observer.h>
 
 using namespace moducom::coap;
+using namespace embr;
 
 typedef moducom::io::experimental::NetBufDynamicMemory<> netbuf_t;
 typedef uint32_t addr_t;
-typedef DataPump<netbuf_t, addr_t> datapump_t;
+typedef TransportDescriptor<netbuf_t, addr_t> transport_descriptor_t;
+typedef DataPump<transport_descriptor_t> datapump_t;
 typedef datapump_t::Item item_t;
 
 struct DatapumpObserver
@@ -40,7 +42,7 @@ TEST_CASE("Data pump tests", "[datapump]")
         // which will be const char*
         //const estd::layer2::basic_string<char, 4> s = "Hi2u";
 
-        DataPump<netbuf_t, addr_t> datapump;
+        datapump_t datapump;
         addr_t addr;
 
         netbuf_t netbuf;
@@ -51,9 +53,15 @@ TEST_CASE("Data pump tests", "[datapump]")
 
         writer.write("hi2u", 4);
 
+#ifdef FEATURE_MCCOAP_DATAPUMP_INLINE
+        datapump.enqueue_out(std::move(writer.netbuf()), addr);
+#else
         datapump.enqueue_out(writer.netbuf(), addr);
+#endif
 
-        netbuf_t* to_transport = datapump.transport_front_old(&addr);
+        datapump_t::Item& item = datapump.transport_front();
+        netbuf_t* to_transport = item.netbuf();
+        addr = item.addr();
 
         REQUIRE(to_transport != NULLPTR);
 
@@ -81,20 +89,26 @@ TEST_CASE("Data pump tests", "[datapump]")
 
         moducom::io::experimental::NetBufWriter<netbuf_t&> writer(*netbuf);
 #endif
-        DataPump<netbuf_t, addr_t> datapump;
+        datapump_t datapump;
 
         // push synthetic incoming coap request data into netbuf via writer
         writer.write(buffer_16bit_delta, sizeof(buffer_16bit_delta));
 
         // Now take that synthetic netbuf data and simulates a transport input
         // on datapump
+#ifdef FEATURE_MCCOAP_DATAPUMP_INLINE
+        netbuf_t netbuf_copy = writer.netbuf();
+        datapump.transport_in(std::move(writer.netbuf()), 0);
+#else
         datapump.transport_in(writer.netbuf(), 0);
+#endif
 
         // set up message subject+observer
         IncomingContext<addr_t> test_ctx;
         DecoderSubjectBase<moducom::coap::experimental::ContextDispatcherHandler<IncomingContext<addr_t> > > test(test_ctx);
 
         REQUIRE(!test_ctx.have_header());
+
 
         // now service the datapump with the 'test' DecoderSubject pushing out
         // to the message observer
@@ -105,9 +119,12 @@ TEST_CASE("Data pump tests", "[datapump]")
         REQUIRE(test_ctx.header().message_id() == 0x0123);
 
 #ifdef FEATURE_CPP_DECLTYPE
-        // Now take that synthetic netbuf data and simulates a transport input
-        // on datapump
+        // Requeue same synthetic data again for another test
+#ifdef FEATURE_MCCOAP_DATAPUMP_INLINE
+        datapump.transport_in(std::move(netbuf_copy), 0);
+#else
         datapump.transport_in(writer.netbuf(), 0);
+#endif
 
 
         SECTION("Experimental datapump dequeuing test")

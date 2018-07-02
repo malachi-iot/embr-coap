@@ -9,11 +9,15 @@ project(mc-coap)
 set(ROOT_DIR ..)
 set(MC_MEM_DIR ${ROOT_DIR}/ext/moducom-memory/src)
 set(ESTDLIB_DIR ${ROOT_DIR}/ext/estdlib/src)
+set(EMBR_DATAPORT_DIR ${ROOT_DIR}/ext/embr-dataport/src)
+set(EMBR_NETBUF_DIR ${ROOT_DIR}/ext/embr-netbuf/src)
 
 include_directories(${PROJECT_SOURCE_DIR})
 
 include_directories(${MC_MEM_DIR})
 include_directories(${ESTDLIB_DIR})
+include_directories(${EMBR_NETBUF_DIR})
+include_directories(${EMBR_DATAPORT_DIR})
 
 # set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "../../../bin")
 
@@ -70,10 +74,15 @@ set(SOURCE_FILES
         coap-token.h coap-token.cpp
         coap-uripath-dispatcher.hpp coap-uripath-dispatcher.h
 
-        exp/datapump.h exp/datapump.hpp
+        embr/dataport.h
+        embr/dataport.hpp
+        embr/datapump.h
+        embr/datapump.hpp
+
         exp/datapump-observer.h
         exp/events.h
         exp/message-observer.h
+        exp/misc.h
         exp/option-trait.h
         exp/retry.h
         exp/diagnostic-decoder-observer.h

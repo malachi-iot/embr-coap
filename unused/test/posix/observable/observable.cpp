@@ -3,7 +3,7 @@
 #include "coap/observable.h"
 #include "coap-uripath-dispatcher.h"
 
-#include "coap/decoder-subject.hpp"
+#include "coap/decoder/subject.hpp"
 #include "coap-dispatcher.hpp"
 
 #include "main.h"
