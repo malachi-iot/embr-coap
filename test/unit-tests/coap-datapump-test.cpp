@@ -97,7 +97,7 @@ TEST_CASE("Data pump tests", "[datapump]")
         // on datapump
 #ifdef FEATURE_MCCOAP_DATAPUMP_INLINE
         netbuf_t netbuf_copy = writer.netbuf();
-        datapump.transport_in(std::move(netbuf_copy), 0);
+        datapump.transport_in(std::move(writer.netbuf()), 0);
 #else
         datapump.transport_in(writer.netbuf(), 0);
 #endif
@@ -108,6 +108,7 @@ TEST_CASE("Data pump tests", "[datapump]")
 
         REQUIRE(!test_ctx.have_header());
 
+
         // now service the datapump with the 'test' DecoderSubject pushing out
         // to the message observer
         process_messageobserver(datapump, test);
@@ -117,11 +118,9 @@ TEST_CASE("Data pump tests", "[datapump]")
         REQUIRE(test_ctx.header().message_id() == 0x0123);
 
 #ifdef FEATURE_CPP_DECLTYPE
-        // Now take that synthetic netbuf data and simulates a transport input
-        // on datapump
+        // Requeue same synthetic data again for another test
 #ifdef FEATURE_MCCOAP_DATAPUMP_INLINE
-        // FIX: Expect this to fail because we already queued and moved this netbuf
-        datapump.transport_in(std::move(writer.netbuf()), 0);
+        datapump.transport_in(std::move(netbuf_copy), 0);
 #else
         datapump.transport_in(writer.netbuf(), 0);
 #endif
