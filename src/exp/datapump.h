@@ -50,7 +50,10 @@ struct InlineQueuePolicy
     {
         typedef estd::layer1::queue<TItem, queue_depth> queue_type;
     };
+};
 
+struct CoapAppDataPolicy
+{
     template <class TTransportDescriptor>
     struct AppData
     {
@@ -65,10 +68,18 @@ struct InlineQueuePolicy
     };
 };
 
+
+// just a convenient default for datapump
+struct CoapAndInlineQueuePolicy :
+        InlineQueuePolicy<>,
+        CoapAppDataPolicy
+{
+};
+
 // If this continues to be coap-inspecific, it would be reasonable to move this
 // datapump code out to mc-mem.  Until that decision is made, keeping this in
 // experimental area
-template <class TTransportDescriptor, class TPolicy = InlineQueuePolicy<> >
+template <class TTransportDescriptor, class TPolicy = CoapAndInlineQueuePolicy >
 class DataPump
 {
 public:
@@ -214,15 +225,8 @@ public:
         return outgoing.front();
     }
 
-    // manually pop Item away, the above transport_out needs to be followed up
-    // by this call.  Adding experimental retry hint as a way of transport-specific
-    // code indicating an ACK should be expected.
-    // Note that this entire datapump code
-    // has naturally unfolded as largely coap-inspecific, these ACK/CON interactions
-    // may be the first actual coap specificity
-    void transport_pop(bool experimental_retry_hint = false)
+    void transport_pop()
     {
-        // TODO: This is so far the ideal spot to kick off retry queuing
         outgoing.pop();
     }
 
@@ -241,7 +245,7 @@ public:
 #endif
 
     // see if any netbufs were queued from transport in
-    bool dequeue_empty() { return incoming.empty(); }
+    bool dequeue_empty() const { return incoming.empty(); }
 
     Item& dequeue_front() { return incoming.front(); }
 
@@ -264,6 +268,7 @@ public:
         incoming.pop();
     }
 
+    // NOTE: Deprecated
     // inline-token, since decoder blasts over its own copy
     struct IncomingContext :
             coap::IncomingContext<addr_t, true>,
