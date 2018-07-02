@@ -1,6 +1,6 @@
 #include "datapump.h"
 
-namespace mb_iot {
+namespace embr {
 
 template <class TTransportDescriptor, class TPolicy>
 #ifdef FEATURE_MCCOAP_DATAPUMP_INLINE
@@ -17,6 +17,8 @@ void DataPump<TTransportDescriptor, TPolicy>::transport_in(netbuf_t& in, const a
     incoming.push(item);
 }
 #endif
+
+namespace experimental {
 
 template <class TNetBuf, class TNetBuf2>
 void coap_netbuf_copy(TNetBuf& source, TNetBuf2& dest, int skip, bool reset)
@@ -94,6 +96,8 @@ void coap_netbuf_copy(TNetBuf& source, TNetBuf2& dest, int skip, bool reset)
             // src was completely copied
             break;
     }
+}
+
 }
 
 }

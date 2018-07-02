@@ -2,8 +2,8 @@
 
 #include <estd/exp/observer.h>
 
-#include <exp/datapump.hpp>
-#include <exp/dataport.hpp>
+#include <embr/datapump.hpp>
+#include <embr/dataport.hpp>
 #include "coap.h"
 
 #ifdef FEATURE_MCCOAP_DATAPUMP_INLINE

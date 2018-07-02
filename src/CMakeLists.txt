@@ -70,9 +70,11 @@ set(SOURCE_FILES
         coap-token.h coap-token.cpp
         coap-uripath-dispatcher.hpp coap-uripath-dispatcher.h
 
-        exp/dataport.h
-        exp/dataport.hpp
-        exp/datapump.h exp/datapump.hpp
+        embr/dataport.h
+        embr/dataport.hpp
+        embr/datapump.h
+        embr/datapump.hpp
+
         exp/datapump-observer.h
         exp/events.h
         exp/message-observer.h

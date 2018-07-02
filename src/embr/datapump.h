@@ -11,18 +11,18 @@
 #include "coap/encoder.h"
 #include "coap/observable.h"
 
-#include "datapump-observer.h"
-#include "misc.h"
+#include "../exp/datapump-observer.h"
+#include "../exp/misc.h"
 
 #ifdef FEATURE_MCCOAP_RELIABLE
-#include "retry.h"
+#include "../exp/retry.h"
 #endif
 
 #ifdef FEATURE_CPP_MOVESEMANTIC
 #include <utility> // for std::forward
 #endif
 
-namespace mb_iot {
+namespace embr {
 
 // temporary as we decouple / redo retry logic
 using namespace moducom::coap;
@@ -68,7 +68,7 @@ struct CoapAppDataPolicy
         // NOTE: Not yet used, and not bad but working on decoupling DataPump from coap altogether
         // so a different default policy would be good to supply this AppData
 #ifdef FEATURE_MCCOAP_RELIABLE
-        typename experimental::Retry<netbuf_t, addr_t>::Metadata m_retry;
+        typename moducom::coap::experimental::Retry<netbuf_t, addr_t>::Metadata m_retry;
 #endif
     };
 };

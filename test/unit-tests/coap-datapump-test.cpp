@@ -3,7 +3,7 @@
 //#define FEATURE_ESTD_EXPLICIT_OBSERVER
 
 #include <platform/generic/datapump-messageobserver.hpp>
-#include <exp/datapump.hpp>
+#include <embr/datapump.hpp>
 #include "coap/decoder/subject.hpp"
 
 #include "test-data.h"
@@ -12,7 +12,7 @@
 #include <estd/exp/observer.h>
 
 using namespace moducom::coap;
-using namespace mb_iot;
+using namespace embr;
 
 typedef moducom::io::experimental::NetBufDynamicMemory<> netbuf_t;
 typedef uint32_t addr_t;
