@@ -163,7 +163,10 @@ public:
 #ifdef FEATURE_CPP_MOVESEMANTIC
     template <class ...TArgs>
     NetBufEncoder(TArgs&&...args) :
-        base_t(std::forward<TArgs>(args)...) {}
+        base_t(std::forward<TArgs>(args)...)
+    {
+        payload_marker_written(false);
+    }
 #else
     template <class TNetBufInitParam>
     NetBufEncoder(TNetBufInitParam& netbufinitparam) :
@@ -216,6 +219,12 @@ public:
         state(_state_t::TokenDone);
         this->written(written);
         return written == tkl;
+    }
+
+
+    bool token(const estd::const_buffer& b)
+    {
+        return token(b.data(), b.size());
     }
 
 

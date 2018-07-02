@@ -177,7 +177,7 @@ TEST_CASE("CoAP encoder tests", "[coap-encoder]")
         uint8_t token[] = { 0, 1, 2, 3 };
 
         encoder.header(Header(Header::Confirmable, Header::Code::Content));
-        encoder.token(token, 4);
+        encoder.token(token);
 
         encoder.payload_header();
 
