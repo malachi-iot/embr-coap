@@ -6,6 +6,7 @@ set(CMAKE_CXX_STANDARD 11)
 #set(CMAKE_CXX_STANDARD 98)
 
 add_definitions(-DUNIT_TESTING)
+#add_definitions(-DDEBUG)
 
 set(ROOT_DIR ../..)
 set(MC_MEM_DIR ${ROOT_DIR}/ext/moducom-memory/src)

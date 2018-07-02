@@ -169,4 +169,30 @@ TEST_CASE("CoAP encoder tests", "[coap-encoder]")
 
         encoder.complete();
     }
+    SECTION("synthetic test 1")
+    {
+        typedef moducom::io::experimental::layer2::NetBufMemory<256> netbuf_t;
+
+        NetBufEncoder<netbuf_t> encoder;
+        uint8_t token[] = { 0, 1, 2, 3 };
+
+        encoder.header(Header(Header::Confirmable, Header::Code::Content));
+        encoder.token(token, 4);
+
+        encoder.payload_header();
+
+        estd::layer2::const_string s = "hi2u";
+
+        encoder << s;
+        encoder.complete();
+
+        netbuf_t& netbuf = encoder.netbuf();
+
+        REQUIRE(netbuf.processed()[4] == token[0]);
+        REQUIRE(netbuf.processed()[5] == token[1]);
+        REQUIRE(netbuf.processed()[6] == token[2]);
+        REQUIRE(netbuf.processed()[7] == token[3]);
+        REQUIRE(netbuf.processed()[8] == 0xFF);
+        REQUIRE(netbuf.processed()[9] == s[0]);
+    }
 }
