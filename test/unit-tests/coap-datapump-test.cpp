@@ -52,7 +52,11 @@ TEST_CASE("Data pump tests", "[datapump]")
 
         writer.write("hi2u", 4);
 
+#ifdef FEATURE_MCCOAP_DATAPUMP_INLINE
+        datapump.enqueue_out(std::move(writer.netbuf()), addr);
+#else
         datapump.enqueue_out(writer.netbuf(), addr);
+#endif
 
         datapump_t::Item& item = datapump.transport_front();
         netbuf_t* to_transport = item.netbuf();
@@ -91,7 +95,12 @@ TEST_CASE("Data pump tests", "[datapump]")
 
         // Now take that synthetic netbuf data and simulates a transport input
         // on datapump
+#ifdef FEATURE_MCCOAP_DATAPUMP_INLINE
+        netbuf_t netbuf_copy = writer.netbuf();
+        datapump.transport_in(std::move(netbuf_copy), 0);
+#else
         datapump.transport_in(writer.netbuf(), 0);
+#endif
 
         // set up message subject+observer
         IncomingContext<addr_t> test_ctx;
@@ -110,7 +119,12 @@ TEST_CASE("Data pump tests", "[datapump]")
 #ifdef FEATURE_CPP_DECLTYPE
         // Now take that synthetic netbuf data and simulates a transport input
         // on datapump
+#ifdef FEATURE_MCCOAP_DATAPUMP_INLINE
+        // FIX: Expect this to fail because we already queued and moved this netbuf
+        datapump.transport_in(std::move(writer.netbuf()), 0);
+#else
         datapump.transport_in(writer.netbuf(), 0);
+#endif
 
 
         SECTION("Experimental datapump dequeuing test")
