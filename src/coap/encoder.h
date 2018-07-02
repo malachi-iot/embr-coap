@@ -40,15 +40,9 @@ public:
     }
 
 protected:
-    size_type write(const ro_chunk_t& chunk)
+    size_type write(const estd::const_buffer& chunk)
     {
         return base_t::write(chunk.data(), chunk.size());
-    }
-
-    // experimental
-    size_type write(unsigned long val)
-    {
-        return 0;
     }
 
     // would use declval to deduce a .data() and .length() provider or not but that's

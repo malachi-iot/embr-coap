@@ -31,6 +31,16 @@ namespace moducom { namespace coap {
 #endif
 #endif
 
+#pragma once
+
+// bundle these two together, since they are paired all over the darned place
+template <class TNetBuf, class TAddr>
+struct TransportDescriptor
+{
+    typedef TNetBuf netbuf_t;
+    typedef TAddr addr_t;
+};
+
 
 template <size_t queue_depth = 10>
 struct InlineQueuePolicy
@@ -39,6 +49,19 @@ struct InlineQueuePolicy
     struct Queue
     {
         typedef estd::layer1::queue<TItem, queue_depth> queue_type;
+    };
+
+    template <class TTransportDescriptor>
+    struct AppData
+    {
+        typedef typename TTransportDescriptor::netbuf_t netbuf_t;
+        typedef typename TTransportDescriptor::addr_t addr_t;
+
+        // NOTE: Not yet used, and not bad but working on decoupling DataPump from coap altogether
+        // so a different default policy would be good to supply this AppData
+#ifdef FEATURE_MCCOAP_RELIABLE
+        typename experimental::Retry<netbuf_t, addr_t>::Metadata m_retry;
+#endif
     };
 };
 
@@ -58,19 +81,19 @@ public:
 #endif
     typedef IDataPumpObserver<TNetBuf, TAddr> datapump_observer_t;
     typedef NetBufDecoder<netbuf_t&> decoder_t;
+    typedef TPolicy policy_type;
+    typedef TransportDescriptor<netbuf_t, addr_t> transport_descriptor_t;
 
 public:
     // TODO: account for https://tools.ietf.org/html/rfc7252#section-4.2
-    // though we have retry.h, some state wants to be tracked here though eventually
-    // I expect we'll do some fancy allocations to have them more directly interact
-    class Item
+    // though we have retry.h
+    // To track that and other non-core-datagram behavior, stuff everything into AppData
+    // via (experimentally) TPolicy.  Deriving from it so that it resolves to truly 0
+    // bytes if no AppData is desired
+    class Item : policy_type::template AppData<transport_descriptor_t>
     {
         pnetbuf_t m_netbuf;
         addr_t m_addr;
-
-#ifdef FEATURE_MCCOAP_RELIABLE
-        typename experimental::Retry<netbuf_t, addr_t>::Metadata m_retry;
-#endif
 
     public:
         Item() {}
@@ -155,7 +178,6 @@ private:
         coap::layer1::Token token;
     };
 
-    typedef TPolicy policy_type;
     typedef typename policy_type::template Queue<Item>::queue_type queue_type;
 
     queue_type incoming;
