@@ -45,8 +45,9 @@ TEST_CASE("retry logic")
     SECTION("retry")
     {
         typedef NetBufDynamicExperimental netbuf_t;
+        typedef TransportDescriptor<netbuf_t, addr_t> transport_descriptor_t;
         typedef Retry<netbuf_t, addr_t, RetryPolicy<fake_time_traits, UnitTestRetryRandPolicy> > retry_t;
-        typedef DataPump<netbuf_t, addr_t> datapump_t;
+        typedef DataPump<transport_descriptor_t> datapump_t;
         addr_t fakeaddr;
         netbuf_t netbuf;
 

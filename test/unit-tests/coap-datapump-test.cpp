@@ -15,7 +15,8 @@ using namespace moducom::coap;
 
 typedef moducom::io::experimental::NetBufDynamicMemory<> netbuf_t;
 typedef uint32_t addr_t;
-typedef DataPump<netbuf_t, addr_t> datapump_t;
+typedef TransportDescriptor<netbuf_t, addr_t> transport_descriptor_t;
+typedef DataPump<transport_descriptor_t> datapump_t;
 typedef datapump_t::Item item_t;
 
 struct DatapumpObserver
@@ -40,7 +41,7 @@ TEST_CASE("Data pump tests", "[datapump]")
         // which will be const char*
         //const estd::layer2::basic_string<char, 4> s = "Hi2u";
 
-        DataPump<netbuf_t, addr_t> datapump;
+        datapump_t datapump;
         addr_t addr;
 
         netbuf_t netbuf;
@@ -53,7 +54,9 @@ TEST_CASE("Data pump tests", "[datapump]")
 
         datapump.enqueue_out(writer.netbuf(), addr);
 
-        netbuf_t* to_transport = datapump.transport_front_old(&addr);
+        datapump_t::Item& item = datapump.transport_front();
+        netbuf_t* to_transport = item.netbuf();
+        addr = item.addr();
 
         REQUIRE(to_transport != NULLPTR);
 
@@ -81,7 +84,7 @@ TEST_CASE("Data pump tests", "[datapump]")
 
         moducom::io::experimental::NetBufWriter<netbuf_t&> writer(*netbuf);
 #endif
-        DataPump<netbuf_t, addr_t> datapump;
+        datapump_t datapump;
 
         // push synthetic incoming coap request data into netbuf via writer
         writer.write(buffer_16bit_delta, sizeof(buffer_16bit_delta));
