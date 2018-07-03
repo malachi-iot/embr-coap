@@ -43,6 +43,8 @@ set(SOURCE_FILES
         cbor/decoder.h
         cbor/encoder.h
 
+        coap/blockwise.h
+
         coap/context.h
 
         coap/decoder.cpp
@@ -65,8 +67,7 @@ set(SOURCE_FILES
         coap/platform.h
         coap/option-decoder.cpp
 
-        coap-blockwise.h
-#        coap-blockwise.cpp
+
         coap-dispatcher.cpp coap-dispatcher.hpp coap-dispatcher.h
         coap-encoder.h
         coap-encoder.cpp

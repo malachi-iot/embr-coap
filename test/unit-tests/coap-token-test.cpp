@@ -4,7 +4,7 @@
 
 #include <catch.hpp>
 #include "coap-token.h"
-#include "coap-blockwise.h"
+#include "coap-uint.h"
 
 #include <estd/vector.h>
 

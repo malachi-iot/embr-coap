@@ -3,7 +3,7 @@
 //
 
 #include "coap-token.h"
-#include "coap-blockwise.h"
+#include "coap-uint.h"
 
 namespace moducom { namespace coap {
 
