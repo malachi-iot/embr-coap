@@ -96,6 +96,10 @@ TEST_CASE("experimental tests", "[experimental]")
         REQUIRE(option_traits_type::format(Option::UriPath) == Option::String);
         REQUIRE(option_traits_type::min(Option::UriPath) == 0);
         REQUIRE(option_traits_type::max(Option::UriPath) == 255);
+
+        OptionRuntimeTrait t = option_traits_type::runtime_trait(Option::UriPath);
+
+        REQUIRE(t.format == Option::String);
     }
     SECTION("ManagedBuffer")
     {

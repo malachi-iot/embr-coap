@@ -11,6 +11,14 @@ struct OptionTrait
 
 };
 
+struct OptionRuntimeTrait
+{
+    Option::ValueFormats format;
+    const char* description;
+    int min;
+    int max;
+};
+
 
 
 template <Option::Numbers ...option_numbers>
@@ -26,6 +34,16 @@ struct OptionTraitContainer<>
 
     static int min(Option::Numbers) { return -1; }
     static int max(Option::Numbers) { return -1; }
+
+    static OptionRuntimeTrait runtime_trait(Option::Numbers)
+    {
+        return OptionRuntimeTrait
+        {
+            Option::Unknown,
+            NULLPTR,
+            -1, -1
+        };
+    }
 };
 
 template <Option::Numbers option_number, Option::Numbers ...option_numbers>
@@ -49,6 +67,22 @@ struct OptionTraitContainer<option_number, option_numbers...>
         if(number == option_number) return trait::format();
 
         return base_t::format(number);
+    }
+
+    static OptionRuntimeTrait runtime_trait(Option::Numbers number)
+    {
+        if(number == option_number)
+        {
+            return OptionRuntimeTrait
+            {
+                trait::format(),
+                "N/A",
+                trait::min(),
+                trait::max()
+            };
+        }
+
+        return base_t::runtime_trait(number);
     }
 };
 
