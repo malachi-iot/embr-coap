@@ -91,6 +91,12 @@ TEST_CASE("experimental tests", "[experimental]")
         REQUIRE(Option::String == option_trait_t::format());
         //REQUIRE(Option::UInt == option2_trait_t::format());
     }
+    SECTION("more option traits")
+    {
+        REQUIRE(option_traits_type::format(Option::UriPath) == Option::String);
+        REQUIRE(option_traits_type::min(Option::UriPath) == 0);
+        REQUIRE(option_traits_type::max(Option::UriPath) == 255);
+    }
     SECTION("ManagedBuffer")
     {
         experimental::v2::ManagedBuffer buffer;
