@@ -1,14 +1,17 @@
 // Yanked in from PGESP-4
-#if defined(ESP8266) || defined(IDF_VER)
+//#if defined(ESP8266) || (defined(IDF_VER) && !defined(ESP32))
 
+// FIX: Change this to more of a FreeRTOS timing component
+
+#ifdef IDF_VER
 #include <mbedtls/timing.h>
 
 // If need be, we can access IDF-VER ala https://github.com/espressif/ESP8266_RTOS_SDK/blob/master/make/project.mk
 #ifdef OLD_STYLE
 #include "esp_common.h"
 #else
-#include "esp_misc.h"
-#include "esp_sta.h"
+//#include "esp_misc.h"
+//#include "esp_sta.h"
 #include "esp_system.h"
 
 #include "freertos/FreeRTOS.h"
