@@ -82,6 +82,12 @@ public:
     bool handshake(HandshakeContext context, int* _ret);
     void handshake();
 
+    // check to see if any other datagrams are ready for us to read
+    bool is_pending()
+    {
+        return mbedtls_ssl_check_pending(&ssl) != 0;
+    }
+
     template <class TNetBuf>
     void write(TNetBuf& netbuf);
 

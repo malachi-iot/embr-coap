@@ -397,6 +397,8 @@ void DtlsServer::write(TNetBuf& netbuf)
 
 }
 
+// TODO: Need a way to identify a read failure.  an unchanged netbuf is a good
+// clue but a more specific error code is gonna be a lot better
 template <class TNetBuf>
 bool DtlsServer::read(TNetBuf& netbuf)
 {
@@ -405,6 +407,8 @@ bool DtlsServer::read(TNetBuf& netbuf)
     // embr is the newer, better version)
     unsigned char* buf = netbuf.data();
     int len = netbuf.size();
+
+    // TODO: Utilize NetBufReader
 
     // TODO: Doesn't handle partial read of ret just yet
     do ret = mbedtls_ssl_read( &ssl, buf, len );
