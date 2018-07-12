@@ -69,6 +69,8 @@
         "tuple": "cpp",
         "typeinfo": "cpp",
         "utility": "cpp",
-        "freertos.h": "c"
+        "freertos.h": "c",
+        "regex": "cpp",
+        "__locale": "cpp"
     }
 }
