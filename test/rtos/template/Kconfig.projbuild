@@ -1,6 +1,6 @@
 menu "WiFi configuration"
 
-# doing things esp8266-rtos style
+# doing things esp8266-rtos/esp-idf style
 
 config WIFI_SSID
     string "WiFi SSID"
