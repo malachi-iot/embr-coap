@@ -11,6 +11,8 @@
 
 #include <estd/exp/observer.h>
 
+//#define putchar(c) put_value(c)
+
 using namespace moducom::coap;
 using namespace embr;
 
@@ -69,6 +71,16 @@ TEST_CASE("Data pump tests", "[datapump]")
 
         REQUIRE(p[0] == 'h');
 
+    }
+    SECTION("API collision test")
+    {
+        netbuf_t netbuf;
+
+        moducom::io::experimental::NetBufWriter<netbuf_t&> writer(netbuf);
+
+        writer.putchar(0x77);
+
+        REQUIRE(netbuf.processed()[0] == 0x77);
     }
     SECTION("full synthetic request")
     {
