@@ -9,18 +9,25 @@ add_definitions(-DUNIT_TESTING)
 #add_definitions(-DDEBUG)
 
 set(ROOT_DIR ../..)
-set(MC_MEM_DIR ${ROOT_DIR}/ext/moducom-memory/src)
-set(ESTDLIB_DIR ${ROOT_DIR}/ext/estdlib/src)
 set(MC_COAP_DIR ${ROOT_DIR}/src)
+
+include_directories(${MC_COAP_DIR})
+add_subdirectory(${MC_COAP_DIR} coap)
 
 include_directories(${PROJECT_SOURCE_DIR})
 
 #message(${PROJECT_SOURCE_DIR})
 
+set(MC_MEM_DIR ${ROOT_DIR}/ext/moducom-memory/src)
+set(ESTDLIB_DIR ${ROOT_DIR}/ext/estdlib/src)
+set(EMBR_DIR ${ROOT_DIR}/ext/embr/src)
+
 include_directories(${ROOT_DIR}/ext/Catch/include)
+
 include_directories(${MC_MEM_DIR})
-include_directories(${MC_COAP_DIR})
 include_directories(${ESTDLIB_DIR})
+
+include_directories(${EMBR_DIR})
 
 # set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "../../../bin")
 # add_subdirectory(. CMAKE_RUNTIME_OUTPUT_DIRECTORY)
@@ -32,7 +39,6 @@ include_directories(${ESTDLIB_DIR})
 # add_subdirectory(${ESTDLIB_DIR} estd)
 
 add_subdirectory(${MC_MEM_DIR} mem)
-add_subdirectory(${MC_COAP_DIR} coap)
 
 # using technique from https://coderwall.com/p/y3zzbq/use-cmake-enabled-libraries-in-your-cmake-project
 #include(ExternalProject)
@@ -65,4 +71,5 @@ set(SOURCE_FILES
 add_executable(mc-coap-test ${SOURCE_FILES})
 
 target_link_libraries(mc-coap-test moducom-coap-lib moducom_memory_lib)
+#embr-netbuf-lib)
 
