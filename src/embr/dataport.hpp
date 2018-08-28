@@ -71,6 +71,7 @@ void DatapumpSubject<TDatapump, TTransportDescriptor, TSubject>::enqueue_for_sen
     netbuf_t&& nb,
     const addr_t& addr)
 {
+    // FIX: Badly need to do auto& or better yet explicit Item&
     auto item = datapump.enqueue_out(std::move(nb), addr);
 
     notify(typename event::send_queued(item));
@@ -82,11 +83,12 @@ void DatapumpSubject<TDatapump, TTransportDescriptor, TSubject>::enqueue_from_re
     netbuf_t&& nb,
     const addr_t& addr)
 {
-        // think of datapump as a application-level queue, while
-        // udp_data_recv sorta responds to a system-level queue
-        auto item = datapump.transport_in(std::move(nb), addr);
+    // think of datapump as a application-level queue, while
+    // udp_data_recv sorta responds to a system-level queue
+    // FIX: Badly need to do auto& or better yet explicit Item&
+    auto item = datapump.transport_in(std::move(nb), addr);
 
-        notify(typename event::receive_queued(item));
+    notify(typename event::receive_queued(item));
 }
 
 }
