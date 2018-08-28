@@ -9,13 +9,15 @@
 //#include "coap/context.h"
 //#include "coap/decoder/netbuf.h"
 //#include "coap/encoder.h"
-#include "coap/observable.h"
+//#include "coap/observable.h"
 
 //#include "../exp/datapump-observer.h"
 #include "../exp/misc.h"
 
+// FIX: reliable messaging currently broken due to Observer-pattern
+// refactor
 #ifdef FEATURE_MCCOAP_RELIABLE
-#include "../exp/retry.h"
+//#include "../exp/retry.h"
 #endif
 
 #ifdef FEATURE_CPP_MOVESEMANTIC
@@ -96,8 +98,7 @@ public:
 #else
     typedef netbuf_t* pnetbuf_t;
 #endif
-    typedef IDataPumpObserver<netbuf_t, addr_t> datapump_observer_t;
-    typedef NetBufDecoder<netbuf_t&> decoder_t;
+    //typedef NetBufDecoder<netbuf_t&> decoder_t;
     typedef TPolicy policy_type;
 
 public:
@@ -115,37 +116,28 @@ public:
         Item() {}
 
 #ifdef FEATURE_MCCOAP_DATAPUMP_INLINE
-        Item(netbuf_t&& netbuf, const addr_t& addr,
-             datapump_observer_t* observer = NULLPTR) :
-            m_netbuf(std::forward<netbuf_t>(netbuf)),
+        Item(netbuf_t&& netbuf, const addr_t& addr) :
+            m_netbuf(std::move(netbuf)),
 #else
-        Item(netbuf_t& netbuf, const addr_t& addr,
-             datapump_observer_t* observer = NULLPTR) :
+        Item(netbuf_t& netbuf, const addr_t& addr) :
             m_netbuf(&netbuf),
 #endif
             m_addr(addr)
-#ifdef FEATURE_MCCOAP_DATAPUMP_OBSERVABLE
-            ,observer(observer)
-#endif
         {}
 
+        // TODO: Make this explicit - auto-calling this by accident can cause real
+        // problems due to destruction of an inline netbuf
         Item(const Item& copy_from) :
             m_netbuf(copy_from.m_netbuf),
             m_addr(copy_from.m_addr)
-#ifdef FEATURE_MCCOAP_DATAPUMP_OBSERVABLE
-            ,observer(copy_from.observer)
-#endif
         {
 
         }
 
 #if defined(FEATURE_CPP_MOVESEMANTIC) && defined(FEATURE_MCCOAP_DATAPUMP_INLINE)
         Item(Item&& move_from) :
-            m_netbuf(std::forward<netbuf_t>(move_from.m_netbuf)),
-            m_addr(std::forward<addr_t>(move_from.m_addr))
-#ifdef FEATURE_MCCOAP_DATAPUMP_OBSERVABLE
-            ,observer(move_from.observer)
-#endif
+            m_netbuf(std::move(move_from.m_netbuf)),
+            m_addr(std::move(move_from.m_addr))
         {
 
         }
@@ -163,26 +155,6 @@ public:
 #endif
         }
 
-#ifdef FEATURE_MCCOAP_DATAPUMP_OBSERVABLE
-    private:
-        datapump_observer_t* observer;
-
-    public:
-        void on_message_transmitting()
-        {
-            if(observer != NULLPTR)
-                observer->on_message_transmitting(netbuf(), addr());
-        }
-
-
-        bool on_message_transmitted()
-        {
-            if(observer != NULLPTR)
-                return observer->on_message_transmitted(netbuf(), addr());
-
-            return false;
-        }
-#endif
     };
 
 
@@ -221,15 +193,15 @@ public:
 
 #ifdef FEATURE_MCCOAP_DATAPUMP_INLINE
     // enqueue complete netbuf for outgoing transport to pick up
-    const Item& enqueue_out(netbuf_t&& out, const addr_t& addr_out, datapump_observer_t* observer = NULLPTR)
+    const Item& enqueue_out(netbuf_t&& out, const addr_t& addr_out)
     {
-        return outgoing.emplace(std::move(out), addr_out, observer);
+        return outgoing.emplace(std::move(out), addr_out);
     }
 #else
     // enqueue complete netbuf for outgoing transport to pick up
-    bool enqueue_out(netbuf_t& out, const addr_t& addr_out, datapump_observer_t* observer = NULLPTR)
+    bool enqueue_out(netbuf_t& out, const addr_t& addr_out)
     {
-        return outgoing.push(Item(out, addr_out, observer));
+        return outgoing.push(Item(out, addr_out));
     }
 #endif
 
@@ -257,6 +229,8 @@ public:
         incoming.pop();
     }
 
+
+#ifdef UNUSED
     // NOTE: Deprecated
     // inline-token, since decoder blasts over its own copy
     struct IncomingContext :
@@ -370,6 +344,7 @@ public:
 
         }
     }
+#endif
 };
 
 }
