@@ -96,7 +96,7 @@ TEST_CASE("retry logic")
             // simulate queue to send.  assumes (correctly so, always)
             // that this is a CON message.  This is our first (non retry)
             // send
-#ifdef FEATURE_MCCOAP_DATAPUMP_INLINE
+#ifdef FEATURE_EMBR_DATAPUMP_INLINE
             datapump.enqueue_out(std::move(netbuf), fakeaddr);
 #else
             datapump.enqueue_out(netbuf, fakeaddr);
@@ -169,7 +169,7 @@ TEST_CASE("retry logic")
 
             // simulate queue to send.  assumes (correctly so, always)
             // that this is a CON message
-#ifdef FEATURE_MCCOAP_DATAPUMP_INLINE
+#ifdef FEATURE_EMBR_DATAPUMP_INLINE
             datapump.enqueue_out(std::move(netbuf), fakeaddr, &retry.always_consume_netbuf);
 #else
             datapump.enqueue_out(netbuf, fakeaddr, &retry.always_consume_netbuf);
@@ -191,7 +191,7 @@ TEST_CASE("retry logic")
             memcpy(simulated_ack.unprocessed(), buffer_ack, sizeof(buffer_ack));
             simulated_ack.advance(sizeof(buffer_ack));
 
-#ifdef FEATURE_MCCOAP_DATAPUMP_INLINE
+#ifdef FEATURE_EMBR_DATAPUMP_INLINE
             datapump.transport_in(std::move(simulated_ack), fakeaddr);
 #else
             datapump.transport_in(simulated_ack, fakeaddr);

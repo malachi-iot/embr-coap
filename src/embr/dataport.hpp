@@ -12,7 +12,7 @@ void DatapumpSubject<TDatapump, TTransportDescriptor, TSubject>::service()
 
         notify(typename event::receive_dequeuing(item));
 
-#ifndef FEATURE_MCCOAP_DATAPUMP_INLINE
+#ifndef FEATURE_EMBR_DATAPUMP_INLINE
         typedef typename datapump_t::netbuf_t netbuf_t;
         // FIX: Need a much more cohesive way of doing this
         netbuf_t* netbuf = item.netbuf();

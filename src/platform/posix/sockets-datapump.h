@@ -91,7 +91,7 @@ public:
     }
 
 // queue up to send out over transport
-#ifdef FEATURE_MCCOAP_DATAPUMP_INLINE
+#ifdef FEATURE_EMBR_DATAPUMP_INLINE
     void enqueue(
             netbuf_t&& netbuf,
             const addr_t& addr_out, sockets_datapump_t& datapump = sockets_datapump)

@@ -25,7 +25,7 @@ typedef datapump_t::Item item_t;
 struct DatapumpObserver
 {
     // thought const& would be necessary because of lack of copy constructors, but nope
-    static void on_notify(moducom::coap::experimental::event::ReceiveDequeued<item_t> e)
+    static void on_notify(embr::event::ReceiveDequeued<item_t> e)
     {
         REQUIRE(e.item.addr() == 0);
     }
@@ -55,7 +55,7 @@ TEST_CASE("Data pump tests", "[datapump]")
 
         writer.write("hi2u", 4);
 
-#ifdef FEATURE_MCCOAP_DATAPUMP_INLINE
+#ifdef FEATURE_EMBR_DATAPUMP_INLINE
         datapump.enqueue_out(std::move(writer.netbuf()), addr);
 #else
         datapump.enqueue_out(writer.netbuf(), addr);
@@ -92,7 +92,7 @@ TEST_CASE("Data pump tests", "[datapump]")
         //typedef moducom::io::experimental::NetBufDynamicMemory<> netbuf_t;
         //typedef uint32_t addr_t;
 
-#ifdef FEATURE_MCCOAP_DATAPUMP_INLINE
+#ifdef FEATURE_EMBR_DATAPUMP_INLINE
         moducom::io::experimental::NetBufWriter<netbuf_t> writer;
 #else
         // FIX: doing this because of floating 'delete' within process_messageobserver
@@ -108,7 +108,7 @@ TEST_CASE("Data pump tests", "[datapump]")
 
         // Now take that synthetic netbuf data and simulates a transport input
         // on datapump
-#ifdef FEATURE_MCCOAP_DATAPUMP_INLINE
+#ifdef FEATURE_EMBR_DATAPUMP_INLINE
         netbuf_t netbuf_copy = writer.netbuf();
         datapump.transport_in(std::move(writer.netbuf()), 0);
 #else
@@ -132,7 +132,7 @@ TEST_CASE("Data pump tests", "[datapump]")
 
 #ifdef FEATURE_CPP_DECLTYPE
         // Requeue same synthetic data again for another test
-#ifdef FEATURE_MCCOAP_DATAPUMP_INLINE
+#ifdef FEATURE_EMBR_DATAPUMP_INLINE
         datapump.transport_in(std::move(netbuf_copy), 0);
 #else
         datapump.transport_in(writer.netbuf(), 0);

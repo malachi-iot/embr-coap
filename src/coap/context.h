@@ -163,7 +163,7 @@ class GlobalDatapumpOutputContext
     typedef typename DataPump::addr_t addr_t;
 
 public:
-#ifdef FEATURE_MCCOAP_DATAPUMP_INLINE
+#ifdef FEATURE_EMBR_DATAPUMP_INLINE
     void send(netbuf_t&& out, const addr_t& addr_out)
     {
         global_datapump->enqueue_out(std::forward<netbuf_t>(out), addr_out);

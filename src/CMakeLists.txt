@@ -77,6 +77,7 @@ set(SOURCE_FILES
         embr/dataport.hpp
         embr/datapump.h
         embr/datapump.hpp
+        embr/events.h
 
         exp/datapump-observer.h
         exp/events.h

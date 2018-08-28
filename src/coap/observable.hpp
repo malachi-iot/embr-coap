@@ -13,7 +13,7 @@ void ObservableRegistrar<TCollection, TIncomingContext, TRequestContextTraits>::
     for_each(
         TDataPump& datapump,
         void (*emit_observe_fn)(
-#ifdef FEATURE_MCCOAP_DATAPUMP_INLINE
+#ifdef FEATURE_EMBR_DATAPUMP_INLINE
             moducom::coap::NetBufEncoder<typename TDataPump::netbuf_t>& encoder,
 #else
             moducom::coap::NetBufEncoder<typename TDataPump::netbuf_t&>& encoder,
@@ -36,7 +36,7 @@ void ObservableRegistrar<TCollection, TIncomingContext, TRequestContextTraits>::
         std::clog << "Event fired" << std::endl;
 #endif
 
-#ifdef FEATURE_MCCOAP_DATAPUMP_INLINE
+#ifdef FEATURE_EMBR_DATAPUMP_INLINE
         NetBufEncoder<netbuf_t> encoder;
 #else
         NetBufEncoder<netbuf_t&> encoder(* new netbuf_t);
@@ -67,7 +67,7 @@ void ObservableRegistrar<TCollection, TIncomingContext, TRequestContextTraits>::
 
         encoder.complete();
 
-#ifdef FEATURE_MCCOAP_DATAPUMP_INLINE
+#ifdef FEATURE_EMBR_DATAPUMP_INLINE
         datapump.enqueue_out(std::move(encoder.netbuf()), addr);
 #else
         datapump.enqueue_out(encoder.netbuf(), addr);

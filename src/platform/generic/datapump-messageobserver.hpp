@@ -1,9 +1,9 @@
 #include <embr/datapump.h>
+#include <embr/events.h>
+
 #include <coap/encoder.h>
 #include <coap/decoder/netbuf.h>
 #include <coap/decoder/subject.h>
-
-#include <exp/events.h>
 
 namespace moducom { namespace coap {
 
@@ -73,7 +73,7 @@ void process_messageobserver(TDataPump& datapump, TDecoderSubject& ds)
 
         process_messageobserver_netbuf(ds, *netbuf, addr_incoming);
 
-#ifdef FEATURE_MCCOAP_DATAPUMP_INLINE
+#ifdef FEATURE_EMBR_DATAPUMP_INLINE
         netbuf_t temporary;
 
         // in this scenario, netbuf gets copied around.  Ideally we'd actually do an emplace
@@ -105,10 +105,10 @@ void process_messageobserver2(TDataPump& datapump, TSubject& subject)
     {
         item_t& item = datapump.dequeue_front();
 
-        subject.notify(experimental::event::ReceiveDequeuing<item_t>(item));
-        subject.notify(experimental::event::ReceiveDequeued<item_t>(item));
+        subject.notify(embr::event::ReceiveDequeuing<item_t>(item));
+        subject.notify(embr::event::ReceiveDequeued<item_t>(item));
 
-#ifdef FEATURE_MCCOAP_DATAPUMP_INLINE
+#ifdef FEATURE_EMBR_DATAPUMP_INLINE
 #else
         typedef typename datapump_t::netbuf_t netbuf_t;
         // FIX: Need a much more cohesive way of doing this

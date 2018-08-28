@@ -1,7 +1,7 @@
 #pragma once
 
 #include <estd/type_traits.h>
-#include "../exp/events.h"
+#include "events.h"
 #include "datapump.h"
 
 namespace embr {
@@ -10,8 +10,8 @@ namespace embr {
 template <class TDatapump>
 struct DataPortEvents :
     // Be careful, TDatapump is being used as transport description.  In this case, it's OK
-    moducom::coap::experimental::event::Transport<TDatapump>,
-    moducom::coap::experimental::event::Datapump<typename TDatapump::Item> {};
+    event::Transport<TDatapump>,
+    event::Datapump<typename TDatapump::Item> {};
 
 // NOTE: For now, this actually is just a test event to make sure our event system
 // is working as expected

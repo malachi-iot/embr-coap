@@ -104,7 +104,7 @@ void nonblocking_datapump_loop(int sockfd, sockets_datapump_t& sockets_datapump)
         bool netbuf_ownership_transferred = false; // always own netbuf in this scenario
 #endif
 
-#ifdef FEATURE_MCCOAP_DATAPUMP_INLINE
+#ifdef FEATURE_EMBR_DATAPUMP_INLINE
 #else
         // FIX: Not a long-term way to handle netbuf deallocation
         if(!netbuf_ownership_transferred)
@@ -130,7 +130,7 @@ void nonblocking_datapump_loop(int sockfd, sockets_datapump_t& sockets_datapump)
     if(poll_result != 1)
         std::clog << "Warning: got unexpected poll_result: " << poll_result;
 
-#ifdef FEATURE_MCCOAP_DATAPUMP_INLINE
+#ifdef FEATURE_EMBR_DATAPUMP_INLINE
     netbuf_t temporary;
     // in this scenario, netbuf_in gets value-copied into the queue
     netbuf_t* netbuf_in = &temporary;
@@ -153,7 +153,7 @@ void nonblocking_datapump_loop(int sockfd, sockets_datapump_t& sockets_datapump)
         netbuf_in->advance(n);
 
         sockets_datapump.transport_in(
-#ifdef FEATURE_MCCOAP_DATAPUMP_INLINE
+#ifdef FEATURE_EMBR_DATAPUMP_INLINE
                     std::forward<netbuf_t>(temporary),
 #else
                     *netbuf_in,

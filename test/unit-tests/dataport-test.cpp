@@ -6,7 +6,7 @@
 #include <embr/dataport.hpp>
 #include "coap.h"
 
-#ifdef FEATURE_MCCOAP_DATAPUMP_INLINE
+#ifdef FEATURE_EMBR_DATAPUMP_INLINE
 
 struct LoopbackTransport
 {

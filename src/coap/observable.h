@@ -77,7 +77,7 @@ class ObservableMetaSession :
         {
             typedef typename TIterator::value_type value_type;
             value_type& v = *it;
-#ifdef FEATURE_MCCOAP_DATAPUMP_INLINE
+#ifdef FEATURE_EMBR_DATAPUMP_INLINE
             NetBufEncoder<netbuf_t> rewritten_header_and_token;
             netbuf_t& new_netbuf = rewritten_header_and_token.netbuf();
 #else
@@ -104,7 +104,7 @@ class ObservableMetaSession :
 
             rewritten_header_and_token.netbuf().complete();
 
-#ifdef FEATURE_MCCOAP_DATAPUMP_INLINE
+#ifdef FEATURE_EMBR_DATAPUMP_INLINE
             datapump.enqueue_out(std::forward(new_netbuf), it.addr);
 #else
             datapump.enqueue_out(*netbuf, it.addr);
@@ -213,7 +213,7 @@ public:
     void for_each(
         TDataPump& datapump,
         void (*emit_observe_fn)(
-#ifdef FEATURE_MCCOAP_DATAPUMP_INLINE
+#ifdef FEATURE_EMBR_DATAPUMP_INLINE
                             NetBufEncoder<typename TDataPump::netbuf_t>& encoder,
 #else
                             NetBufEncoder<typename TDataPump::netbuf_t&>& encoder,

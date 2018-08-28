@@ -26,7 +26,7 @@
 
 // utilize inline TNetBuf instead of pointer
 // NOTE: pointer is useful to avoid construction/destruction on non-active Items in the queue
-//#define FEATURE_MCCOAP_DATAPUMP_INLINE
+//#define FEATURE_EMBR_DATAPUMP_INLINE
 
 // +++ coap-dispatcher related:
 

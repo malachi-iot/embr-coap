@@ -3,7 +3,7 @@
 namespace embr {
 
 template <class TTransportDescriptor, class TPolicy>
-#ifdef FEATURE_MCCOAP_DATAPUMP_INLINE
+#ifdef FEATURE_EMBR_DATAPUMP_INLINE
 auto DataPump<TTransportDescriptor, TPolicy>::transport_in(netbuf_t&& in, const addr_t& addr) ->
     const Item&
 {

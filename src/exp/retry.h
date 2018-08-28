@@ -7,6 +7,7 @@
 #include <mc/memory-pool.h>
 #include "coap/decoder/netbuf.h"
 #include <stdint.h> // for uint8_t
+#include <embr/datapump.h>
 #include "datapump-observer.h" // for IDataPumpObserver
 
 #if defined(__unix__) || defined(__POSIX__) || defined(__MACH__)
@@ -385,7 +386,7 @@ public:
                     // to keep taking ownership of netbuf so that it doesn't
                     // get deleted until we're done with our resends (got ACK
                     // or == 3 retransmission)
-#ifdef FEATURE_MCCOAP_DATAPUMP_INLINE
+#ifdef FEATURE_EMBR_DATAPUMP_INLINE
                     datapump.enqueue_out(std::forward<netbuf_t>(f.netbuf()), f.addr, &always_consume_netbuf);
 #else
                     datapump.enqueue_out(f.netbuf(), f.addr, &always_consume_netbuf);
@@ -406,7 +407,7 @@ public:
                 {
                     // last retry attempt has no observer, which means datapump fully owns
                     // netbuf, which means it will be erased normally
-#ifdef FEATURE_MCCOAP_DATAPUMP_INLINE
+#ifdef FEATURE_EMBR_DATAPUMP_INLINE
                     datapump.enqueue_out(std::forward<netbuf_t>(f.netbuf()), f.addr);
 #else
                     datapump.enqueue_out(f.netbuf(), f.addr);

@@ -29,7 +29,7 @@ namespace embr {
 // temporary as we decouple / redo retry logic
 //using namespace moducom::coap;
 
-#ifdef FEATURE_MCCOAP_DATAPUMP_INLINE
+#ifdef FEATURE_EMBR_DATAPUMP_INLINE
 #ifndef FEATURE_CPP_MOVESEMANTIC
 #error Move semantic necessary for inline datapump
 #endif
@@ -48,6 +48,21 @@ struct TransportDescriptor
     typedef TAddr addr_t;
 };
 
+
+namespace experimental {
+
+template <class TAddr>
+struct address_traits
+{
+    // special compare which only compares pure addresses and excludes things like port number
+    static bool equals_fromto(const TAddr& from_addr, const TAddr& to_addr)
+    {
+        return from_addr == to_addr;
+    }
+};
+
+
+}
 
 template <size_t queue_depth = 10>
 struct InlineQueuePolicy
@@ -100,7 +115,7 @@ public:
     typedef TTransportDescriptor transport_descriptor_t;
     typedef typename transport_descriptor_t::addr_t addr_t;
     typedef typename transport_descriptor_t::netbuf_t netbuf_t;
-#ifdef FEATURE_MCCOAP_DATAPUMP_INLINE
+#ifdef FEATURE_EMBR_DATAPUMP_INLINE
     typedef netbuf_t pnetbuf_t;
 #else
     typedef netbuf_t* pnetbuf_t;
@@ -122,7 +137,7 @@ public:
     public:
         Item() {}
 
-#ifdef FEATURE_MCCOAP_DATAPUMP_INLINE
+#ifdef FEATURE_EMBR_DATAPUMP_INLINE
         Item(netbuf_t&& netbuf, const addr_t& addr) :
             m_netbuf(std::move(netbuf)),
 #else
@@ -141,7 +156,7 @@ public:
 
         }
 
-#if defined(FEATURE_CPP_MOVESEMANTIC) && defined(FEATURE_MCCOAP_DATAPUMP_INLINE)
+#if defined(FEATURE_CPP_MOVESEMANTIC) && defined(FEATURE_EMBR_DATAPUMP_INLINE)
         Item(Item&& move_from) :
             m_netbuf(std::move(move_from.m_netbuf)),
             m_addr(std::move(move_from.m_addr))
@@ -155,7 +170,7 @@ public:
 
         netbuf_t* netbuf()
         {
-#ifdef FEATURE_MCCOAP_DATAPUMP_INLINE
+#ifdef FEATURE_EMBR_DATAPUMP_INLINE
             return &m_netbuf;
 #else
             return m_netbuf;
@@ -173,7 +188,7 @@ private:
 
 public:
     // process data coming in from transport into coap queue
-#ifdef FEATURE_MCCOAP_DATAPUMP_INLINE
+#ifdef FEATURE_EMBR_DATAPUMP_INLINE
     const Item& transport_in(
             netbuf_t&& in,
 #else
@@ -198,7 +213,7 @@ public:
         outgoing.pop();
     }
 
-#ifdef FEATURE_MCCOAP_DATAPUMP_INLINE
+#ifdef FEATURE_EMBR_DATAPUMP_INLINE
     // enqueue complete netbuf for outgoing transport to pick up
     const Item& enqueue_out(netbuf_t&& out, const addr_t& addr_out)
     {
@@ -281,14 +296,14 @@ public:
         // marks end of input processing
         void deallocate_input()
         {
-#ifndef FEATURE_MCCOAP_DATAPUMP_INLINE
+#ifndef FEATURE_EMBR_DATAPUMP_INLINE
             // FIX: Need a much more cohesive way of doing this
             delete &this->decoder().netbuf();
 #endif
             datapump.dequeue_pop();
         }
 
-#ifdef FEATURE_MCCOAP_DATAPUMP_INLINE
+#ifdef FEATURE_EMBR_DATAPUMP_INLINE
         void respond(NetBufEncoder<netbuf_t>& encoder)
         {
             // lwip netbuf has a kind of 'shrink to fit' behavior which is best applied
