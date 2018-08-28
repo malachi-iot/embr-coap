@@ -4,14 +4,14 @@
 #include <estd/queue.h>
 #include <estd/vector.h>
 
-#include "coap-header.h"
-#include "coap-token.h"
-#include "coap/context.h"
-#include "coap/decoder/netbuf.h"
-#include "coap/encoder.h"
+//#include "coap-header.h"
+//#include "coap-token.h"
+//#include "coap/context.h"
+//#include "coap/decoder/netbuf.h"
+//#include "coap/encoder.h"
 #include "coap/observable.h"
 
-#include "../exp/datapump-observer.h"
+//#include "../exp/datapump-observer.h"
 #include "../exp/misc.h"
 
 #ifdef FEATURE_MCCOAP_RELIABLE
@@ -19,7 +19,7 @@
 #endif
 
 #ifdef FEATURE_CPP_MOVESEMANTIC
-#include <utility> // for std::forward
+#include <estd/utility.h> // for std::forward
 #endif
 
 namespace embr {
