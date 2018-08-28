@@ -12,7 +12,7 @@
 //#include "coap/observable.h"
 
 //#include "../exp/datapump-observer.h"
-#include "../exp/misc.h"
+//#include "../exp/misc.h"
 
 // FIX: reliable messaging currently broken due to Observer-pattern
 // refactor
@@ -27,7 +27,7 @@
 namespace embr {
 
 // temporary as we decouple / redo retry logic
-using namespace moducom::coap;
+//using namespace moducom::coap;
 
 #ifdef FEATURE_MCCOAP_DATAPUMP_INLINE
 #ifndef FEATURE_CPP_MOVESEMANTIC
@@ -59,8 +59,12 @@ struct InlineQueuePolicy
     };
 };
 
+// NOTE: Temporarily leaving this in here since RETRY/RELIABLE code is temporarily
+// disabled in need of a refactor
 struct CoapAppDataPolicy
 {
+    // user/app data tracked in each item of datapump queue, in addition
+    // to the necessities
     template <class TTransportDescriptor>
     struct AppData
     {
@@ -76,17 +80,20 @@ struct CoapAppDataPolicy
 };
 
 
-// just a convenient default for datapump
-struct CoapAndInlineQueuePolicy :
-        InlineQueuePolicy<>,
-        CoapAppDataPolicy
+
+struct EmptyAppDataInlineQueuePolicy :
+        InlineQueuePolicy<>
 {
+    // TODO: Eventually use SFINAE instead of this
+    template <class TTransportDescriptor>
+    struct AppData {};
 };
+
 
 // If this continues to be coap-inspecific, it would be reasonable to move this
 // datapump code out to mc-mem.  Until that decision is made, keeping this in
 // experimental area
-template <class TTransportDescriptor, class TPolicy = CoapAndInlineQueuePolicy >
+template <class TTransportDescriptor, class TPolicy = EmptyAppDataInlineQueuePolicy >
 class DataPump
 {
 public:

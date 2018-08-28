@@ -1,6 +1,6 @@
 #pragma once
 
-namespace moducom { namespace coap {
+namespace embr { namespace experimental {
 
 template <class TAddr>
 struct address_traits
@@ -12,10 +12,6 @@ struct address_traits
     }
 };
 
-}}
-
-
-namespace embr { namespace experimental {
 
 // can and should be used also to do semi-partial coap netbuf copies, so that we can
 // simulate a header rewrite.  As such, be mindful that default behavior is for this to NOT

@@ -2,6 +2,7 @@
 
 #include <coap/decoder/netbuf.h>
 #include <exp/misc.h>
+#include "exp/misc.hpp"
 #include <exp/netbuf.h>
 #include <embr/datapump.hpp>
 #if __cplusplus >= 201103L

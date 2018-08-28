@@ -40,6 +40,8 @@ include_directories(${EMBR_DIR})
 
 add_subdirectory(${MC_MEM_DIR} mem)
 
+add_subdirectory(${EMBR_DIR} embr)
+
 # using technique from https://coderwall.com/p/y3zzbq/use-cmake-enabled-libraries-in-your-cmake-project
 #include(ExternalProject)
 
@@ -70,6 +72,5 @@ set(SOURCE_FILES
 
 add_executable(mc-coap-test ${SOURCE_FILES})
 
-target_link_libraries(mc-coap-test moducom-coap-lib moducom_memory_lib)
-#embr-netbuf-lib)
+target_link_libraries(mc-coap-test moducom-coap-lib moducom_memory_lib embr-lib)
 

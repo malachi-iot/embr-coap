@@ -82,6 +82,7 @@ set(SOURCE_FILES
         exp/events.h
         exp/message-observer.h
         exp/misc.h
+        exp/misc.hpp
         exp/option-trait.h
         exp/retry.h
         exp/diagnostic-decoder-observer.h

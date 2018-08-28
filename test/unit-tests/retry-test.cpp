@@ -1,5 +1,6 @@
 #include <catch.hpp>
 
+#include "exp/misc.h"
 #include <embr/datapump.hpp>
 #include <exp/retry.h>
 
@@ -14,10 +15,6 @@
 #endif
 
 #include "test-data.h"
-
-// datapump observer pattern has been totally revamped since this was written, and
-// as such we need to disable it and either repair or rewrite the retry code
-#ifdef UNUSED
 
 struct fake_time_traits
 {
@@ -45,6 +42,8 @@ TEST_CASE("retry logic")
 
         REQUIRE(h->type() == Header::Acknowledgement);
     }
+// datapump observer pattern has been totally revamped since this was written, and
+// as such we need to disable it and either repair or rewrite the retry code
 #if __cplusplus >= 201103L
     SECTION("retry")
     {
@@ -87,6 +86,7 @@ TEST_CASE("retry logic")
 
             REQUIRE(metadata.delta() == 10000);
         }
+#ifdef UNUSED
         SECTION("retry.service - isolated case")
         {
             datapump_t datapump;
@@ -201,7 +201,7 @@ TEST_CASE("retry logic")
 
             retry.service_ack(datapump);
         }
+#endif
     }
 #endif
 }
-#endif

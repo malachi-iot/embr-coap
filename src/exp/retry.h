@@ -88,7 +88,7 @@ public:
     typedef typename TPolicy::time time_traits;
     typedef typename TPolicy::random random_policy;
     typedef typename time_traits::time_t time_t;
-    typedef coap::address_traits<addr_t> address_traits;
+    typedef embr::experimental::address_traits<addr_t> address_traits;
     typedef TNetBuf netbuf_t;
 
     struct AlwaysConsumeNetbuf : IDataPumpObserver<netbuf_t, addr_t>
