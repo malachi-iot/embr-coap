@@ -6,11 +6,12 @@
 #define MC_COAP_TEST_COAP_UINT_H
 
 #include <stdint.h>
-#include <estd/internal/dynamic_array.h>
+//#include <estd/internal/dynamic_array.h>
 #include <mc/mem/platform.h>
 #include "mc/memory-chunk.h"
 #include <estd/vector.h>
 #include <estd/span.h>
+#include <estd/array.h>
 
 namespace moducom { namespace coap {
 
@@ -25,7 +26,7 @@ inline TReturn uint_get(const uint8_t* value, const size_t len)
 
     TReturn v = *value;
 
-    for(int i = 1; i < len; i++)
+    for(size_t i = 1; i < len; i++)
     {
         v <<= 8;
         v |= value[i];
@@ -121,7 +122,7 @@ public:
         // if type is capable of holding values that large
         if(input == 0)
         {
-            for(int i = 0; i < output_size; i++)
+            for(size_t i = 0; i < output_size; i++)
                 output[i] = 0;
             return;
         }
@@ -139,15 +140,15 @@ public:
             bytes_used = 4; */
 
         // full output size - actual bytes used yields number of bytes to left-pad with 0
-        uint8_t bytes_pad = output_size - bytes_used;
+        size_t bytes_pad = output_size - bytes_used;
 
-        for(int i = 0; i < bytes_pad; i++)
+        for(size_t i = 0; i < bytes_pad; i++)
         {
             output[i] = 0;
         }
 
         // NOTE: Not yet tested
-        for(int i = output_size; i-- > bytes_pad;)
+        for(size_t i = output_size; i-- > bytes_pad;)
         {
             output[i] = input & 0xFF;
             input >>= 8;
@@ -183,15 +184,18 @@ public:
 namespace layer1 {
 
 template <size_t buffer_size>
-class UInt : public pipeline::layer1::MemoryChunk<buffer_size>
+class UInt : public estd::array<uint8_t, buffer_size>
+        //public pipeline::layer1::MemoryChunk<buffer_size>
 {
-    typedef pipeline::layer1::MemoryChunk<buffer_size> base_t;
+    //typedef pipeline::layer1::MemoryChunk<buffer_size> base_t;
+    typedef estd::array<uint8_t, buffer_size> base_t;
 
 public:
+    /*
     inline uint8_t operator[](size_t index) const
     {
         return *(base_t::data(index));
-    }
+    } */
 
     template <class TMemoryChunk>
     void set(const TMemoryChunk& chunk)

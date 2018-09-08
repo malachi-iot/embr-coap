@@ -6,6 +6,8 @@ namespace moducom { namespace coap {
 
 namespace experimental {
 
+// inspects state of incoming decoder+context, and fires off associated decoder events via
+// provided subject.
 // shall bear very strong resemblace to predecessor's DecoderSubjectBase dispatch_iterate
 template <class TSubject, class TContext>
 bool notify_from_decoder(TSubject& subject, Decoder& decoder, Decoder::Context& context, TContext& app_context)

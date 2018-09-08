@@ -153,13 +153,6 @@ public:
 
     bool process_iterate(uint8_t value, bool eof);
 
-#ifdef UNUSED
-    // only processes until the beginning of value (if present) and depends on caller to read in
-    // and advance pipeline past value.  Therefore, sets state machine to OptionValueDone "prematurely"
-    // FIX: Phase out this one
-    bool process_iterate(pipeline::IBufferedPipelineReader& reader, OptionExperimental* built_option);
-#endif
-
     // NOTE: this seems like the preferred method, here.  Could be problematic for option value
     // though (as would the preceding two versions of this function).  However, since caller
     // is one providing data, it may be reasonable to expect caller to assemble the value themselves
