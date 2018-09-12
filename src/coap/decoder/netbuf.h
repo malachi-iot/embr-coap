@@ -182,6 +182,9 @@ public:
     }
 };
 
+
+//#define FEATURE_MCCOAP_EMBR_NETBUF
+
 // standalone Decoder works well enough, so this is largely just a netbuf-capable
 // wrapper around it
 template <class TNetBuf>
@@ -250,7 +253,7 @@ public:
 #ifdef FEATURE_MCCOAP_EMBR_NETBUF
     // for legacy coap-netbuf version
     template <class TNetBuf2,
-                class = typename estd::enable_if<has_first_method<
+                class = typename estd::enable_if<has_end_method<
                             typename estd::remove_reference<TNetBuf2>::type
                         >::value>::type>
     NetBufDecoder(const TNetBuf2& netbuf) :

@@ -173,7 +173,7 @@ class Decoder;
 namespace experimental {
 
 template <class TSubject>
-bool notify_from_decoder(TSubject& subject, Decoder& decoder, internal::DecoderContext& context);
+bool decode_and_notify(TSubject& subject, Decoder& decoder, internal::DecoderContext& context);
 
 }
 
@@ -246,7 +246,7 @@ public:
     template <class TSubject>
     void process_iterate_experimental(TSubject& s, Context& context)
     {
-        experimental::notify_from_decoder(s, *this, context);
+        experimental::decode_and_notify(s, *this, context);
     }
 };
 

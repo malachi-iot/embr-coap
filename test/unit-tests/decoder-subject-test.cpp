@@ -148,16 +148,14 @@ TEST_CASE("CoAP decoder subject tests", "[coap-decoder-subject]")
 
             do
             {
-                notify_from_decoder(s, decoder, decoder.context);
+                decode_and_notify(s, decoder, decoder.context);
+
             } while (decoder.state() != Decoder::Done);
 
-            // FIX: the commented two do not get detected.  this implies we may
-            // have an issue detecting methods defined in a templated parent
-
-            // exp_tag_fn only works if NOT const, so there's hope for us
+            // sanity checks
             REQUIRE(decoder_type::has_exp_tag_fn_method<netbuf_t>::value);
-            //REQUIRE(decoder_type::has_first_method<netbuf_t>::value);
-            //REQUIRE(decoder_type::has_end_method<netbuf_t>::value);
+            REQUIRE(decoder_type::has_first_method<netbuf_t>::value);
+            REQUIRE(decoder_type::has_end_method<netbuf_t>::value);
         }
     }
 }

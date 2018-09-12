@@ -116,6 +116,15 @@ bool notify_from_decoder(TSubject& subject, Decoder& decoder, Decoder::Context& 
     return notify_from_decoder(subject, decoder, context, fake_app_context);
 }
 
+
+template <class TSubject>
+bool decode_and_notify(TSubject& subject, Decoder& decoder, Decoder::Context& context)
+{
+    int fake_app_context;
+
+    return notify_from_decoder(subject, decoder, context, fake_app_context);
+}
+
 }
 
 // Revamped "Dispatcher"
