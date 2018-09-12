@@ -127,5 +127,5 @@ public:
         return base_t::_chunk.length();
     }
 
-    bool exp_tag_fn() { return true; }
+    bool exp_tag_fn() const { return true; }
 };
