@@ -6,7 +6,8 @@
 #include "test-observer.h"
 
 #include <estd/vector.h>
-#include <estd/exp/observer.h>
+
+#include <embr/observer.h>
 
 using namespace moducom::coap;
 
@@ -21,36 +22,14 @@ static DecoderSubjectBase<moducom::coap::experimental::ContextDispatcherHandler<
 // FIX: putting this above causes compilation issues, clean that up
 #include "test-observer.h"
 
-// FIX: Nevermind, because inheritence ends up hiding overloaded names,
-// these dummy base classes won't help
-struct dummy_observer
-{
-    void on_notify(const header_event& e) {}
-    void on_notify(const token_event& e) {}
-    void on_notify(const option_event& e) {}
-    void on_notify(const payload_event& e) {}
-    void on_notify(const completed_event& e) {}
-};
-
-
-struct dummy_static_observer
-{
-    static void on_notify(const header_event& e) {}
-    static void on_notify(const token_event& e) {}
-    static void on_notify(const option_event& e) {}
-    static void on_notify(const payload_event& e) {}
-    static void on_notify(const completed_event& e) {}
-};
-
-
 // NOTE: Next generation subject/observe code, will replace the above EmptyObserver and friends
 struct test_static_observer
 {
     static int counter;
 
-    static void on_notify(const header_event& e) {}
-    static void on_notify(const token_event& e) {}
-    static void on_notify(const payload_event& e) {}
+    static void on_notify(const header_event&) {}
+    static void on_notify(const token_event&) {}
+    static void on_notify(const payload_event&) {}
 
     static void on_notify(const completed_event&)
     {
@@ -100,6 +79,7 @@ TEST_CASE("CoAP decoder subject tests", "[coap-decoder-subject]")
     }
     SECTION("payload only")
     {
+        // works well but outmoded by 'notify_from_decoder'
         ro_chunk_t chunk(buffer_payload_only);
 
         // TODO: Make an observer to evaluate that payload is appearing as expected
@@ -131,7 +111,8 @@ TEST_CASE("CoAP decoder subject tests", "[coap-decoder-subject]")
 
         SECTION("void subject")
         {
-            estd::experimental::void_subject s;
+            embr::void_subject s;
+
             do
             {
                 notify_from_decoder(s, decoder, context);
@@ -140,7 +121,8 @@ TEST_CASE("CoAP decoder subject tests", "[coap-decoder-subject]")
 #ifdef FEATURE_CPP_VARIADIC
         SECTION("stateless subject")
         {
-            estd::experimental::internal::stateless_subject<test_static_observer> s;
+            embr::layer0::subject<test_static_observer> s;
+
             do
             {
                 notify_from_decoder(s, decoder, context);
@@ -152,7 +134,7 @@ TEST_CASE("CoAP decoder subject tests", "[coap-decoder-subject]")
         {
             test_static_observer::counter = 0;
 
-            estd::experimental::internal::stateless_subject<test_static_observer> s;
+            embr::layer0::subject<test_static_observer> s;
             typedef NetBufReadOnlyMemory netbuf_t;
 
             netbuf_t nb(buffer_16bit_delta);
