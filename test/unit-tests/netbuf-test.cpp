@@ -11,6 +11,9 @@
 #include "test-data.h"
 #include "test-observer.h"
 
+#include <embr/netbuf-static.h>
+#include <embr/netbuf-dynamic.h>
+
 using namespace moducom::io::experimental;
 using namespace moducom::coap;
 using namespace embr::experimental;
@@ -175,5 +178,19 @@ TEST_CASE("netbuf+coap tests", "[netbuf-coap]")
 
             REQUIRE(decoder.state() == Decoder::Payload);
         }
+    }
+    SECTION("embr based netbuf")
+    {
+        typedef embr::mem::experimental::NetBufDynamic<> netbuf_t;
+        netbuf_t nb;
+
+        nb.expand(512, true);
+        REQUIRE(nb.data() != NULLPTR);
+        memcpy(nb.data(), buffer_16bit_delta, sizeof(buffer_16bit_delta));
+
+        // FIX: netbuf not reflecting proper size, need a kind of shrink operation
+        // *or* decoder needs to be smart enough to handle that
+        // *or* we have some kind of netbuf wrapper/reader
+        NetBufDecoder<netbuf_t&> decoder(nb);
     }
 }

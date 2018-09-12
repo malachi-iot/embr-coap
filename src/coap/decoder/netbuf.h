@@ -183,7 +183,7 @@ public:
 };
 
 
-//#define FEATURE_MCCOAP_EMBR_NETBUF
+#define FEATURE_MCCOAP_EMBR_NETBUF
 
 // standalone Decoder works well enough, so this is largely just a netbuf-capable
 // wrapper around it
@@ -238,7 +238,7 @@ protected:
 public:
 #endif
     // helpers to detect new embr style netbuf or not
-    ESTD_FN_HAS_METHOD(const uint8_t*, data,)
+    ESTD_FN_HAS_METHOD(uint8_t*, data,)
 
     ESTD_FN_HAS_METHOD(bool, exp_tag_fn,)
     ESTD_FN_HAS_METHOD(bool, end,)
@@ -256,7 +256,7 @@ public:
                 class = typename estd::enable_if<has_end_method<
                             typename estd::remove_reference<TNetBuf2>::type
                         >::value>::type>
-    NetBufDecoder(const TNetBuf2& netbuf) :
+    NetBufDecoder(TNetBuf2& netbuf) :
         // NOTE: Be advised that netbuf.end() differs from traditional iterator end
         // in that it is a bool indicating that we are ON the last chunk, not PAST it
         base_t(ro_chunk_t(netbuf.processed(), netbuf.length_processed()), netbuf.end()),
@@ -266,17 +266,18 @@ public:
     // for new embr-netbuf version
     template <class TNetBuf2,
             class = typename estd::enable_if<has_data_method<TNetBuf2>::value>::type>
-    NetBufDecoder(const TNetBuf2& netbuf, bool = true) :
+    NetBufDecoder(TNetBuf2& netbuf, bool = true) :
     // NOTE: Be advised that netbuf.end() differs from traditional iterator end
     // in that it is a bool indicating that we are ON the last chunk, not PAST it
-            base_t(ro_chunk_t(netbuf.data(), netbuf.size()), netbuf.last()),
+            base_t(ro_chunk_t(netbuf.data(), netbuf.size()),
+                   netbuf.last()),
             m_netbuf(netbuf)
     {}
 
     template <ptrdiff_t N>
-    NetBufDecoder(uint8_t (&array)[N]) :
+    NetBufDecoder(const uint8_t (&array)[N]) :
         base_t(ro_chunk_t(array, N), true),
-        m_netbuf(netbuf_t(array))
+        m_netbuf(array)
     {
 
     }
