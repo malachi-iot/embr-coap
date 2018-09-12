@@ -115,7 +115,9 @@ TEST_CASE("CoAP decoder subject tests", "[coap-decoder-subject]")
 
             do
             {
-                notify_from_decoder(s, decoder, context);
+                decoder.process_iterate_experimental(s, context);
+
+                //notify_from_decoder(s, decoder, context);
             } while (decoder.state() != Decoder::Done);
         }
 #ifdef FEATURE_CPP_VARIADIC

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "../decoder.h"
 #include "../../coap-dispatcher.h"
 
 #include <estd/span.h>
@@ -96,9 +97,10 @@ struct observer_wrapper : observer_base
 
 };
 
-// TSubject = one of the new estd::experimental::subject classes
+// TSubject = one of the new embr::*::subject classes
 // NOTE: Not perfect location, a global function, but not terrible either.  Perhaps
 // attaching it to Decoder, since TSubject is entirely ephemeral anyway?
+// Also be advised this actually does a process iterate as well as a notify
 template <class TSubject, class TContext>
 bool notify_from_decoder(TSubject& subject,
                          Decoder& decoder,

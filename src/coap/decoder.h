@@ -168,6 +168,15 @@ protected:
 };
 
 
+class Decoder;
+
+namespace experimental {
+
+template <class TSubject>
+bool notify_from_decoder(TSubject& subject, Decoder& decoder, internal::DecoderContext& context);
+
+}
+
 // TODO: As an optimization, make version of TokenDecoder which is zerocopy
 class Decoder :
     public DecoderBase<DefaultDecoderTraits>,
@@ -231,6 +240,13 @@ public:
     OptionDecoder::State option_state() const 
     { 
         return option_decoder().state();
+    }
+
+    // NOTE: notify_from_decoder a bit misleading because it processes and notifies
+    template <class TSubject>
+    void process_iterate_experimental(TSubject& s, Context& context)
+    {
+        experimental::notify_from_decoder(s, *this, context);
     }
 };
 
