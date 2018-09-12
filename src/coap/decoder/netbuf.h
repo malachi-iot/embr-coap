@@ -7,6 +7,7 @@
 #include "coap/context.h"
 
 #include <estd/type_traits.h>
+#include <estd/utility.h> // for ESTD_FN_HAS_METHOD
 
 namespace moducom { namespace coap {
 
@@ -230,18 +231,60 @@ protected:
         return true;
     }
 
+#ifdef UNIT_TESTING
+public:
+#endif
+    // helpers to detect new embr style netbuf or not
+    ESTD_FN_HAS_METHOD(const uint8_t*, data,)
+
+    ESTD_FN_HAS_METHOD(bool, exp_tag_fn,)
+    ESTD_FN_HAS_METHOD(bool, end,)
+    ESTD_FN_HAS_METHOD(void, first,)
+
     // internal call , needs to be mated to process_option_header_experimental
 public:
 
 
 
 public:
-    NetBufDecoder(const netbuf_t& netbuf) :
+#ifdef FEATURE_MCCOAP_EMBR_NETBUF
+    // for legacy coap-netbuf version
+    template <class TNetBuf2,
+                class = typename estd::enable_if<has_first_method<
+                            typename estd::remove_reference<TNetBuf2>::type
+                        >::value>::type>
+    NetBufDecoder(const TNetBuf2& netbuf) :
         // NOTE: Be advised that netbuf.end() differs from traditional iterator end
         // in that it is a bool indicating that we are ON the last chunk, not PAST it
         base_t(ro_chunk_t(netbuf.processed(), netbuf.length_processed()), netbuf.end()),
         m_netbuf(netbuf)
     {}
+
+    // for new embr-netbuf version
+    template <class TNetBuf2,
+            class = typename estd::enable_if<has_data_method<TNetBuf2>::value>::type>
+    NetBufDecoder(const TNetBuf2& netbuf, bool = true) :
+    // NOTE: Be advised that netbuf.end() differs from traditional iterator end
+    // in that it is a bool indicating that we are ON the last chunk, not PAST it
+            base_t(ro_chunk_t(netbuf.data(), netbuf.size()), netbuf.last()),
+            m_netbuf(netbuf)
+    {}
+
+    template <ptrdiff_t N>
+    NetBufDecoder(uint8_t (&array)[N]) :
+        base_t(ro_chunk_t(array, N), true),
+        m_netbuf(netbuf_t(array))
+    {
+
+    }
+#else
+    NetBufDecoder(const netbuf_t& netbuf) :
+    // NOTE: Be advised that netbuf.end() differs from traditional iterator end
+    // in that it is a bool indicating that we are ON the last chunk, not PAST it
+            base_t(ro_chunk_t(netbuf.processed(), netbuf.length_processed()), netbuf.end()),
+            m_netbuf(netbuf)
+    {}
+#endif
 
 
     typedef coap::option_iterator<NetBufDecoder<TNetBuf> > option_iterator;

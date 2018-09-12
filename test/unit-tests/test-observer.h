@@ -126,4 +126,6 @@ public:
     {
         return base_t::_chunk.length();
     }
+
+    bool exp_tag_fn() { return true; }
 };

@@ -138,17 +138,26 @@ TEST_CASE("CoAP decoder subject tests", "[coap-decoder-subject]")
 
             embr::layer0::subject<test_static_observer> s;
             typedef NetBufReadOnlyMemory netbuf_t;
+            typedef NetBufDecoder<netbuf_t&> decoder_type;
 
             netbuf_t nb(buffer_16bit_delta);
 
-            moducom::coap::DecoderContext<NetBufDecoder<netbuf_t&>> dc(nb);
+            moducom::coap::DecoderContext<decoder_type> dc(nb);
 
-            NetBufDecoder<netbuf_t&> decoder = dc.decoder();
+            decoder_type decoder = dc.decoder();
 
             do
             {
                 notify_from_decoder(s, decoder, decoder.context);
             } while (decoder.state() != Decoder::Done);
+
+            // FIX: the commented two do not get detected.  this implies we may
+            // have an issue detecting methods defined in a templated parent
+
+            // exp_tag_fn only works if NOT const, so there's hope for us
+            REQUIRE(decoder_type::has_exp_tag_fn_method<netbuf_t>::value);
+            //REQUIRE(decoder_type::has_first_method<netbuf_t>::value);
+            //REQUIRE(decoder_type::has_end_method<netbuf_t>::value);
         }
     }
 }
