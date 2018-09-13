@@ -1,9 +1,14 @@
+/**
+ *  @file
+ */
 #pragma once
 
 #include "coap/platform.h"
 #include <estd/forward_list.h>
 #include <estd/vector.h>
 #include <estd/queue.h>
+#include <estd/chrono.h>
+#include <estd/functional.h>
 #include <mc/memory-pool.h>
 #include "coap/decoder/netbuf.h"
 #include <stdint.h> // for uint8_t
@@ -16,10 +21,11 @@
 
 namespace moducom { namespace coap { namespace experimental {
 
-// FIX: Much more likely FRAB is a place for this, stuffing this in for now
-// so that we can be resilient with our time handling + facilitate unit tests
+// TODO: Do this with chrono
 struct TimePolicy
 {
+    typedef estd::chrono::steady_clock clock;
+
     // FIX: We're gonna need a proper mapping for platform specific timing, though
     // merely tracking as milliseconds might be enough
     typedef uint32_t time_t;
@@ -76,14 +82,37 @@ struct RetryPolicy
     typedef TRandomPolicy random;
 };
 
-// only CON messages live here, expected to be shuffled here right out of datapump
-// they are removed from our retry_list when an ACK is received, or when our backoff
-// logic finally expires
-// in support of https://tools.ietf.org/html/rfc7252#section-4.2
+/**
+ *
+ *  @details
+ *
+ * only CON messages live here, expected to be shuffled here right out of datapump
+ * they are removed from our retry_list when an ACK is received, or when our backof
+ * logic finally expires
+ * in support of https://tools.ietf.org/html/rfc7252#section-4.2
+ */
 template <class TNetBuf, class TAddr, class TPolicy = RetryPolicy<> >
 class Retry
 {
+    ///
+    /// \brief does a one-shot decode of netbuf just to extract header
+    ///
+    /// One can reasonably expect the decoder itself to be very efficient.  netbuf efficiency
+    /// is not under control of decoder
+    ///
+    /// \param netbuf
+    /// \return acquired header
+    ///
+    static Header header(TNetBuf& netbuf)
+    {
+        // TODO: optimize and use header decoder only and directly
+        NetBufDecoder<TNetBuf&> decoder(netbuf);
+
+        return decoder.header();
+    }
+
 public:
+    // TODO: Use TTransportDescriptor instead of discrete TNetBuf and TAddr
     typedef TAddr addr_t;
 
     typedef typename TPolicy::time time_traits;
@@ -92,6 +121,9 @@ public:
     typedef embr::experimental::address_traits<addr_t> address_traits;
     typedef TNetBuf netbuf_t;
 
+    ///
+    /// \brief Old-style listener.  Do not use
+    /// @deprecated
     struct AlwaysConsumeNetbuf : IDataPumpObserver<netbuf_t, addr_t>
     {
 
@@ -109,6 +141,9 @@ public:
 
     AlwaysConsumeNetbuf always_consume_netbuf;
 
+    ///
+    /// \brief Underlying data associated with any potential-retry item
+    ///
     struct Metadata
     {
         // from 0-4 (COAP_MAX_RETRANSMIT)
@@ -146,6 +181,11 @@ public:
     // proper MID and Token are buried in netbuf, so don't need to be carried
     // seperately
     // TODO: Utilize ObservableSession as a base once we resolve netbuf-inline behaviors here
+    ///
+    /// \brief Struct representing possibly-retrying outgoing message
+    ///
+    /// if 'due' deadline is exceeded
+    ///
     struct Item :
             Metadata
     {
@@ -155,10 +195,11 @@ public:
         addr_t addr;
 
         // what to send
-        // right now hard-wired to non-inline netbuf style
+        // right now hard-wired to non-inline netbuf style.  May have implications
+        // for memory management of netbuf - who destructs/deallocates it?
         TNetBuf* m_netbuf;
 
-        // when to send it by
+        // when to send it by.  absolute time
         time_t due;
 
         bool ack_received;
@@ -166,21 +207,14 @@ public:
         TNetBuf& netbuf() const { return *m_netbuf; }
 
     protected:
-        Header header() const
-        {
-            // TODO: optimize and use header decoder only and directly
-            NetBufDecoder<TNetBuf&> decoder(netbuf());
-
-            return decoder.header();
-        }
-
+        // NOTE: Not currently used, and would be nice to get rid of if we can
         Retry* parent;
 
     public:
         // get MID from sent netbuf, for incoming ACK comparison
         uint16_t mid() const
         {
-            return header().message_id();
+            return header(netbuf()).message_id();
         }
 
         // get Token from sent netbuf, for incoming ACK comparison
@@ -215,6 +249,9 @@ public:
         }
 
     public:
+        // used primarily for priority_queue to sort these items by
+        // eventually use an explicit static sort method as it is
+        // more explicit requiring less guesswork when glancing at code
         bool operator > (const Item& compare_to) const
         {
             return due > compare_to.due;
@@ -224,13 +261,18 @@ public:
 private:
     //Using raw linked list pool for now until we get a better sorted
     // solution in place
-    typedef moducom::mem::LinkedListPool<int, 10> llpool_t;
+    //typedef moducom::mem::LinkedListPool<int, 10> llpool_t;
     //typedef moducom::mem::LinkedListPoolNodeTraits<int, 10> node_traits_t;
 
-   typedef estd::layer1::vector<Item, 10> list_t;
-    typedef estd::priority_queue<Item, list_t, std::greater<Item> > priority_queue_t;
+    // TODO: make this policy-based also so that we can vary size and implementation of
+    // actual data container for retry queue
+    typedef estd::layer1::vector<Item, 10> list_t;
+    typedef estd::priority_queue<Item, list_t, estd::greater<Item> > priority_queue_t;
 
-    // sneak in and peer at container
+    ///
+    /// \brief Enhanced priority queue
+    ///
+    /// is-a queue so that we have visibility into underlying container
     struct RetryQueue : priority_queue_t
     {
         typedef priority_queue_t base_t;
@@ -245,25 +287,21 @@ private:
         }
     };
 
+    /// \brief main retry queue sorted based on 'due'
     RetryQueue retry_queue;
-
-    static Header header(TNetBuf& netbuf)
-    {
-        // TODO: optimize and use header decoder only and directly
-        NetBufDecoder<TNetBuf&> decoder(netbuf);
-
-        return decoder.header();
-    }
 
 public:
     Retry() {}
 
+    // NOTE: Not used and likely something like
+    // 'header(netbuf).is_confirmable' would be better
     static bool is_con(TNetBuf& netbuf)
     {
         return header(netbuf).type() == Header::Confirmable;
     }
 
-    // allocate a not-yet-sent retry slot
+    // allocate a not-yet-sent retry slot, inclusive of tracking
+    // netbuf and addr and due time
     void enqueue(TNetBuf& netbuf, const addr_t& addr)
     {
         // TODO: ensure it's sorted by 'due'
@@ -280,8 +318,14 @@ public:
         retry_queue.push(item);
     }
 
+    /// \brief returns whether or not there are any items in the retry queue
+    /// \return
     bool empty() const { return retry_queue.empty(); }
 
+
+    /// \brief returns first item from retry queue
+    ///
+    /// This shall be the soonest due item
     Item& front() const
     {
         // FIX: want accessor to be a little more transparent
@@ -289,9 +333,17 @@ public:
     }
 
 
-    // called when ACK is received to determine if we should remove anything from the
-    // retry_queue
-    void ack_received(const addr_t& from_addr, uint16_t mid, const coap::layer2::Token& token)
+    ///
+    /// \brief called when ACK is received to determine if we should remove anything from the retry_queue
+    ///
+    /// Remember, ACK means we don't want to retry any more
+    ///
+    /// \param from_addr
+    /// \param mid
+    /// \param token
+    /// \return true if we found and removed item from our queue, false otherwise
+    ///
+    bool ack_received(const addr_t& from_addr, uint16_t mid, const coap::layer2::Token& token)
     {
         typename RetryQueue::container_type&
                 c = retry_queue.get_container();
@@ -316,14 +368,27 @@ public:
                 // NOTE: probably more efficient to let it just sit
                 // in priority queue with a 'kill' flag on it
                 retry_queue.erase(i);
-                return;
+                return true;
             }
 
             ++i;
         }
+
+        return false;
     }
 
-    void service_ack(netbuf_t& netbuf, const addr_t& addr)
+
+    ///
+    /// \brief evaluates an incoming netbuf to see if it has an ack
+    ///
+    /// If so, call ack_received to see if it matches an addr+mid+token that
+    /// we are tracking
+    ///
+    /// \param netbuf
+    /// \param addr
+    /// @return if incoming ACK matched one we are tracking (and we no longer will attempt to retry it)
+    ///
+    bool service_ack(netbuf_t& netbuf, const addr_t& addr)
     {
         // TODO: optimize and use header decoder only and directly
         NetBufDecoder<TNetBuf&> decoder(netbuf);
@@ -334,10 +399,12 @@ public:
 
         if(h.type() == Header::Acknowledgement)
         {
-            ack_received(addr,
+            return ack_received(addr,
                          h.message_id(),
                          token);
         }
+
+        return false;
     }
 
     // a bit problematic because it's conceivable someone will eat the ack before we get it,
@@ -350,7 +417,10 @@ public:
 
         typedef typename TDataPump::Item item_t;
 
-        // we specifically are *not* poping this
+        // we specifically are *not* popping this, as we are not 100%
+        // sure if ACK actually is serviced by us.  It's likely
+        // though this is the only ACK processor in the system, in which
+        // case we DO want to pop it if we get a match
         item_t& item = datapump.dequeue_front();
         netbuf_t& netbuf = *item.netbuf();
 
