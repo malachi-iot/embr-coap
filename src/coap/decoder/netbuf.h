@@ -1,3 +1,8 @@
+/**
+ * @file
+ * @author  Malachi Burke
+ */
+
 #pragma once
 
 #include "coap/decoder.h"
@@ -191,10 +196,7 @@ template <class TNetBuf>
 class NetBufDecoder : public DecoderWithContext
 {
 public:
-    typedef TNetBuf netbuf_t;
-
-    // experimental because I am pretty sure I want netbuf_t itself to be this
-    typedef estd::remove_reference<TNetBuf> netbuf_experimental_value_t;
+    typedef typename estd::remove_reference<TNetBuf>::type netbuf_t;
 
 private:
     typedef DecoderWithContext base_t;
@@ -366,8 +368,8 @@ public:
 template <class TNetBufDecoder>
 class option_iterator
 {
-    typedef typename estd::remove_reference<typename TNetBufDecoder::netbuf_t>::type netbuf_t;
     typedef TNetBufDecoder decoder_t;
+    typedef typename decoder_t::netbuf_t netbuf_t;
     typedef Option::Numbers value_type;
     typedef estd::const_buffer ro_chunk_t;
 

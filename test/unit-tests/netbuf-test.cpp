@@ -184,7 +184,8 @@ TEST_CASE("netbuf+coap tests", "[netbuf-coap]")
         typedef embr::mem::experimental::NetBufDynamic<> netbuf_t;
         netbuf_t nb;
 
-        nb.expand(512, true);
+        // TODO: Consider instead a 'shrink' method like PBUF has
+        nb.expand(sizeof(buffer_16bit_delta), true);
         REQUIRE(nb.data() != NULLPTR);
         memcpy(nb.data(), buffer_16bit_delta, sizeof(buffer_16bit_delta));
 
@@ -192,5 +193,10 @@ TEST_CASE("netbuf+coap tests", "[netbuf-coap]")
         // *or* decoder needs to be smart enough to handle that
         // *or* we have some kind of netbuf wrapper/reader
         NetBufDecoder<netbuf_t&> decoder(nb);
+
+        // FIX: We actually pass an invalid size (128) in since nb.expand
+        // is subject to a minimum allocation size.  Still, this works
+        // since suite doesn't fully process payload
+        suite(decoder);
     }
 }

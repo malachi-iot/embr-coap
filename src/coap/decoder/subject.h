@@ -1,3 +1,8 @@
+/**
+ * @file
+ * @author  Malachi Burke
+ */
+
 #pragma once
 
 #include "../decoder.h"
@@ -102,7 +107,7 @@ struct observer_wrapper : observer_base
 // attaching it to Decoder, since TSubject is entirely ephemeral anyway?
 // Also be advised this actually does a process iterate as well as a notify
 template <class TSubject, class TContext>
-bool notify_from_decoder(TSubject& subject,
+bool decode_and_notify(TSubject& subject,
                          Decoder& decoder,
                          Decoder::Context& context,
                          TContext& app_context);
@@ -113,7 +118,7 @@ bool notify_from_decoder(TSubject& subject, Decoder& decoder, Decoder::Context& 
 {
     int fake_app_context = 0;
 
-    return notify_from_decoder(subject, decoder, context, fake_app_context);
+    return decode_and_notify(subject, decoder, context, fake_app_context);
 }
 
 
@@ -122,7 +127,7 @@ bool decode_and_notify(TSubject& subject, Decoder& decoder, Decoder::Context& co
 {
     int fake_app_context;
 
-    return notify_from_decoder(subject, decoder, context, fake_app_context);
+    return decode_and_notify(subject, decoder, context, fake_app_context);
 }
 
 }

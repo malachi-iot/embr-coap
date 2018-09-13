@@ -1,3 +1,8 @@
+/**
+ * @file
+ * @author  Malachi Burke
+ */
+
 #pragma once
 
 #include "subject.h"
@@ -9,8 +14,9 @@ namespace experimental {
 // inspects state of incoming decoder+context, and fires off associated decoder events via
 // provided subject.
 // shall bear very strong resemblace to predecessor's DecoderSubjectBase dispatch_iterate
+/// @return true when at end of context buffer, false otherwise
 template <class TSubject, class TContext>
-bool notify_from_decoder(TSubject& subject, Decoder& decoder, Decoder::Context& context, TContext& app_context)
+bool decode_and_notify(TSubject& subject, Decoder& decoder, Decoder::Context& context, TContext& app_context)
 {
     typedef event_base::buffer_t buffer_t;
 

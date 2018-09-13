@@ -244,9 +244,19 @@ public:
 
     // NOTE: notify_from_decoder a bit misleading because it processes and notifies
     template <class TSubject>
-    void process_iterate_experimental(TSubject& s, Context& context)
+    bool process_iterate_experimental(TSubject& s, Context& context)
     {
-        experimental::decode_and_notify(s, *this, context);
+        return experimental::decode_and_notify(s, *this, context);
+    }
+
+    /// @brief process entire remainder of context, firing events via TSubject
+    /// \tparam TSubject The event sink type
+    /// \param s The event sink
+    /// \param context
+    template <class TSubject>
+    void process_experimental(TSubject& s, Context& context)
+    {
+        while(!process_iterate_experimental(s, context));
     }
 };
 
