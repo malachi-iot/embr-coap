@@ -126,7 +126,10 @@ TEST_CASE("CoAP decoder subject tests", "[coap-decoder-subject]")
 #ifdef FEATURE_CPP_VARIADIC
         SECTION("stateless subject")
         {
-            embr::layer0::subject<test_static_observer> s;
+            //embr::layer0::subject<test_static_observer> s;
+            test_observer o, o2;
+            o2.counter = 4;
+            auto s = embr::layer1::make_subject(test_static_observer(), o, o2);
 
             // FIX: this does not get counter to 3, because
             // on_completed event is never fired (process
@@ -139,6 +142,8 @@ TEST_CASE("CoAP decoder subject tests", "[coap-decoder-subject]")
             } while (decoder.state() != Decoder::Done);
 
             REQUIRE(test_static_observer::counter == 3);
+            REQUIRE(o.counter == 3);
+            REQUIRE(o2.counter == 7);
         }
 #endif
         SECTION("DecoderContext / subject observe test")

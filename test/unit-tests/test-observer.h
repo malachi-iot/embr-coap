@@ -1,3 +1,7 @@
+/**
+ * @file
+ * @author  Malachi Burke
+ */
 #pragma once
 
 #include <catch.hpp>
@@ -13,7 +17,10 @@ using namespace moducom::coap;
 using namespace moducom::coap::experimental;
 using namespace moducom::pipeline;
 
-// designed specifically to test against "buffer_16bit_delta" buffer
+/// @brief designed specifically to test against "buffer_16bit_delta" buffer
+/// @remarks the whole DecoderObserverBase chain is deprecated
+/// @deprecated
+/// \tparam TRequestContext
 template <class TRequestContext>
 class Buffer16BitDeltaObserver : public DecoderObserverBase<TRequestContext>
 {
@@ -127,3 +134,25 @@ public:
         return base_t::_chunk.length();
     }
 };
+
+
+struct test_observer
+{
+    int counter;
+
+    test_observer() : counter(0) {}
+
+    void on_notify(completed_event)
+    {
+        REQUIRE(counter >= 2);
+        counter++;
+    }
+
+    void on_notify(const option_event& e)
+    {
+        REQUIRE(e.option_number >= 270);
+        counter++;
+    }
+};
+
+
