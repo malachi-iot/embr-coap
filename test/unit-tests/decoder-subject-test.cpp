@@ -113,22 +113,31 @@ TEST_CASE("CoAP decoder subject tests", "[coap-decoder-subject]")
         {
             embr::void_subject s;
 
+            decoder.process_experimental(s, context);
+
+            /*
             do
             {
                 decoder.process_iterate_experimental(s, context);
 
                 //notify_from_decoder(s, decoder, context);
-            } while (decoder.state() != Decoder::Done);
+            } while (decoder.state() != Decoder::Done); */
         }
 #ifdef FEATURE_CPP_VARIADIC
         SECTION("stateless subject")
         {
             embr::layer0::subject<test_static_observer> s;
 
+            // FIX: this does not get counter to 3, because
+            // on_completed event is never fired (process
+            // iterates until buffer end, not until state machine yields Decoder::Done)
+            //decoder.process_experimental(s, context);
+
             do
             {
                 notify_from_decoder(s, decoder, context);
             } while (decoder.state() != Decoder::Done);
+
             REQUIRE(test_static_observer::counter == 3);
         }
 #endif
@@ -152,10 +161,8 @@ TEST_CASE("CoAP decoder subject tests", "[coap-decoder-subject]")
 
             } while (decoder.state() != Decoder::Done);
 
-            // sanity checks
-            REQUIRE(decoder_type::has_exp_tag_fn_method<netbuf_t>::value);
-            REQUIRE(decoder_type::has_first_method<netbuf_t>::value);
             REQUIRE(decoder_type::has_end_method<netbuf_t>::value);
+            REQUIRE(!decoder_type::has_data_method<netbuf_t>::value);
         }
     }
 }

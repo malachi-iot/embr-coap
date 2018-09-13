@@ -1,6 +1,7 @@
 #define CLEANUP
 
 #include <catch.hpp>
+#include <embr/observer.h>
 
 #include "coap_transmission.h"
 #include "coap/decoder.h"
@@ -30,8 +31,6 @@ TEST_CASE("CoAP low level tests", "[coap-lowlevel]")
     }
     SECTION("Basic parsing")
     {
-        typedef moducom::coap::Decoder parser_t;
-
         uint8_t buffer[] = {
                 0x40, 0x00, 0x00, 0x00, // 1-4: fully blank header
                 0x11, // 5: option with delta 1 length 1
@@ -42,15 +41,16 @@ TEST_CASE("CoAP low level tests", "[coap-lowlevel]")
                 0x05  // 9: value byte of data #2
         };
 
-        parser_t parser;
+        Decoder parser;
         typedef internal::_root_state_t _state_t;
 
         for (int i = 0; i < sizeof(buffer); i++)
         {
-            // A little clunky but should work, just to stay 1:1 with old test
-            //moducom::pipeline::MemoryChunk temp_chunk(&buffer[i], 1);
             estd::const_buffer temp_chunk(&buffer[i], 1);
-            parser.process_deprecated(temp_chunk, i == sizeof(buffer) - 1);
+
+            embr::void_subject s;
+            Decoder::Context context(temp_chunk, i == sizeof(buffer) - 1);
+            parser.process_experimental(s, context);
 
             switch (i + 1)
             {

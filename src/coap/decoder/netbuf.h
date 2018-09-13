@@ -242,9 +242,7 @@ public:
     // helpers to detect new embr style netbuf or not
     ESTD_FN_HAS_METHOD(uint8_t*, data,)
 
-    ESTD_FN_HAS_METHOD(bool, exp_tag_fn,)
     ESTD_FN_HAS_METHOD(bool, end,)
-    ESTD_FN_HAS_METHOD(void, first,)
 
     // internal call , needs to be mated to process_option_header_experimental
 public:

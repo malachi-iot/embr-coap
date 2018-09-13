@@ -1,6 +1,11 @@
-//
+/**
+ * @file
+ * @author  Malachi Burke
+ * @date    11/25/17
+ * @brief
+ * decoders take raw bytes as input and create meaningful output from them
+ */
 // Created by Malachi Burke on 11/25/17.
-// decoders take raw bytes as input and create meaningful output from them
 //
 
 #ifndef MC_COAP_TEST_COAP_DECODER_H
@@ -228,16 +233,7 @@ public:
     // the last_chunk.  State may or may not change in this circumstance
     bool process_iterate(Context& context);
 
-    // Of limited to no use, since we blast through chunk without caller having a chance
-    // to inspect what's going on.  Only keeping around for coap_lowlevel test
-    void process_deprecated(const estd::const_buffer& chunk, bool last_chunk = true)
-    {
-        Context context(chunk, last_chunk);
-
-        while(!process_iterate(context));
-    }
-
-    OptionDecoder::State option_state() const 
+    OptionDecoder::State option_state() const
     { 
         return option_decoder().state();
     }
@@ -249,7 +245,8 @@ public:
         return experimental::decode_and_notify(s, *this, context);
     }
 
-    /// @brief process entire remainder of context, firing events via TSubject
+    /// @brief process entire remainder of context, firing events via TSubject.  Runs until
+    ///        buffer is exhausted
     /// \tparam TSubject The event sink type
     /// \param s The event sink
     /// \param context
