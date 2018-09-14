@@ -2,6 +2,7 @@
 
 #include "exp/misc.h"
 #include <embr/datapump.hpp>
+#include <embr/netbuf-dynamic.h>
 #include <exp/retry.h>
 
 #include <exp/message-observer.h>
@@ -32,15 +33,22 @@ struct UnitTestRetryRandPolicy
 
 fake_time_traits::time_t fake_time_traits::m_now = 2000;
 
+//
+//#define USE_EMBR_NETBUF
+
 TEST_CASE("retry logic")
 {
     typedef uint32_t addr_t;
+#ifdef USE_EMBR_NETBUF
+    typedef embr::mem::experimental::NetBufDynamic<> netbuf_t;
+#else
     typedef NetBufDynamicExperimental netbuf_t;
+#endif
     typedef embr::TransportDescriptor<netbuf_t, addr_t> transport_descriptor_t;
 
     SECTION("Ensure ack test data is right")
     {
-        Header* h = (Header*) buffer_ack;
+        const Header* h = reinterpret_cast<const Header*>(buffer_ack);
 
         REQUIRE(h->type() == Header::Acknowledgement);
     }
@@ -55,14 +63,26 @@ TEST_CASE("retry logic")
         typedef embr::DataPump<transport_descriptor_t> datapump_t;
         addr_t fakeaddr;
         netbuf_t netbuf;
+#ifdef USE_EMBR_NETBUF
+        // like a PBUF we need to preallocate some memory and usually we can't be 100%
+        // sure how much we're gonna need
+        netbuf.expand(128, false);
+        auto netbuf_data = [&]() { return netbuf.data(); };
+#else
+        auto netbuf_data = [&]() { return netbuf.unprocessed(); };
+#endif
 
-        memcpy(netbuf.unprocessed(), buffer_16bit_delta, sizeof(buffer_16bit_delta));
-        Header *header = new (netbuf.unprocessed()) Header;;
+        memcpy(netbuf_data(), buffer_16bit_delta, sizeof(buffer_16bit_delta));
+        Header *header = new (netbuf_data()) Header;;
 
         header->type(Header::Confirmable);
         REQUIRE(header->message_id() == 0x123);
 
+#ifdef USE_EMBR_NETBUF
+        #error NOT READY YET - need a shrink operation
+#else
         netbuf.advance(sizeof(buffer_16bit_delta));
+#endif
 
         retry_t retry;
 
@@ -197,8 +217,15 @@ TEST_CASE("retry logic")
 
             netbuf_t simulated_ack;
 
+#ifdef USE_EMBR_NETBUF
+#error NOT READY YET - need a shrink operation
+            simulated_ack.expand(128, false);
+            memcpy(simulated_ack.data(), buffer_ack, sizeof(buffer_ack));
+            //simulated_ack.shrink(sizeof(buffer_ack));
+#else
             memcpy(simulated_ack.unprocessed(), buffer_ack, sizeof(buffer_ack));
             simulated_ack.advance(sizeof(buffer_ack));
+#endif
 
 #ifdef FEATURE_EMBR_DATAPUMP_INLINE
             datapump.transport_in(std::move(simulated_ack), fakeaddr);
