@@ -44,7 +44,6 @@ TEST_CASE("retry logic")
     }
 // datapump observer pattern has been totally revamped since this was written, and
 // as such we need to disable it and either repair or rewrite the retry code
-#if __cplusplus >= 201103L
     SECTION("retry")
     {
         typedef NetBufDynamicExperimental netbuf_t;
@@ -86,7 +85,6 @@ TEST_CASE("retry logic")
 
             REQUIRE(metadata.delta() == 10000);
         }
-#ifdef UNUSED
         SECTION("retry.service - isolated case")
         {
             datapump_t datapump;
@@ -105,8 +103,10 @@ TEST_CASE("retry logic")
             {
                 datapump_t::Item& datapump_item = datapump.transport_front();
                 REQUIRE(datapump_item.addr() == fakeaddr);
+#ifdef UNUSED
                 bool retain = datapump_item.on_message_transmitted(); // pretend we sent it and invoke observer
                 REQUIRE(retain); // expect we are retaining netbuf
+#endif
             }
             // simulate transport send
             datapump.transport_pop();
@@ -122,8 +122,10 @@ TEST_CASE("retry logic")
             {
                 datapump_t::Item& datapump_item = datapump.transport_front();
                 REQUIRE(datapump_item.addr() == fakeaddr);
+#ifdef UNUSED
                 bool retain = datapump_item.on_message_transmitted(); // pretend we sent it and invoke observer
                 REQUIRE(retain); // expect we are retaining netbuf
+#endif
             }
             datapump.transport_pop(); // make believe we sent it somewhere
 
@@ -146,8 +148,10 @@ TEST_CASE("retry logic")
             REQUIRE(!datapump.transport_empty());
             {
                 datapump_t::Item& datapump_item = datapump.transport_front();
+#ifdef UNUSED
                 bool retain = datapump_item.on_message_transmitted(); // pretend we sent it and invoke observer
                 REQUIRE(!retain); // final transmit does NOT retain netbuf
+#endif
             }
             // simulate transport send
             datapump.transport_pop();
@@ -170,16 +174,18 @@ TEST_CASE("retry logic")
             // simulate queue to send.  assumes (correctly so, always)
             // that this is a CON message
 #ifdef FEATURE_EMBR_DATAPUMP_INLINE
-            datapump.enqueue_out(std::move(netbuf), fakeaddr, &retry.always_consume_netbuf);
+            datapump.enqueue_out(std::move(netbuf), fakeaddr);
 #else
-            datapump.enqueue_out(netbuf, fakeaddr, &retry.always_consume_netbuf);
+            datapump.enqueue_out(netbuf, fakeaddr);
 #endif
 
             {
                 datapump_t::Item& datapump_item = datapump.transport_front();
                 REQUIRE(datapump_item.addr() == fakeaddr);
+#ifdef UNUSED
                 bool retain = datapump_item.on_message_transmitted(); // pretend we sent it and invoke observer
                 REQUIRE(retain); // expect we are retaining netbuf
+#endif
             }
             // simulate transport send
             datapump.transport_pop();
@@ -201,7 +207,5 @@ TEST_CASE("retry logic")
 
             retry.service_ack(datapump);
         }
-#endif
     }
-#endif
 }

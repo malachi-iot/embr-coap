@@ -37,7 +37,7 @@ struct TimePolicy
 #if defined(__unix__) || defined(__POSIX__) || defined(__MACH__)
         // NOTE: this doesn't seem to be working right.  milli is returning values like 134, 14, etc.
         timeval curTime;
-        gettimeofday(&curTime, NULL);
+        gettimeofday(&curTime, NULLPTR);
         int milli = curTime.tv_usec / 1000;
         return milli;
 #else
@@ -121,6 +121,7 @@ public:
     typedef embr::experimental::address_traits<addr_t> address_traits;
     typedef TNetBuf netbuf_t;
 
+#ifdef UNUSED
     ///
     /// \brief Old-style listener.  Do not use
     /// @deprecated
@@ -138,8 +139,7 @@ public:
             return true;
         }
     };
-
-    AlwaysConsumeNetbuf always_consume_netbuf;
+#endif
 
     ///
     /// \brief Underlying data associated with any potential-retry item
@@ -457,9 +457,9 @@ public:
                     // get deleted until we're done with our resends (got ACK
                     // or == 3 retransmission)
 #ifdef FEATURE_EMBR_DATAPUMP_INLINE
-                    datapump.enqueue_out(std::forward<netbuf_t>(f.netbuf()), f.addr, &always_consume_netbuf);
+                    datapump.enqueue_out(std::forward<netbuf_t>(f.netbuf()), f.addr);
 #else
-                    datapump.enqueue_out(f.netbuf(), f.addr, &always_consume_netbuf);
+                    datapump.enqueue_out(f.netbuf(), f.addr);
 #endif
                     // NOTE: Just putting this here to keep things consistent - so that
                     // retransmissio_counter *really does* represent that netbuf is queued
