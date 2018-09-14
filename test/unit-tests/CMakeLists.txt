@@ -61,7 +61,6 @@ set(SOURCE_FILES
         coap-token-test.cpp
         coap-observable-test.cpp
         blockwise-test.cpp
-        dataport-test.cpp
         experimental-test.cpp
         decoder-subject-test.cpp
         mc/opts.h
