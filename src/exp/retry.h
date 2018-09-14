@@ -26,24 +26,13 @@ struct TimePolicy
 {
     typedef estd::chrono::steady_clock clock;
 
-    // FIX: We're gonna need a proper mapping for platform specific timing, though
-    // merely tracking as milliseconds might be enough
-    typedef uint32_t time_t;
+    typedef clock::time_point time_t;
+
+
 
     // FIX: convenience function since there isn't quite a unified cross platform time acqusition fn
     // specifically this retrieves number of milliseconds since a fixed point in time
-    static time_t now()
-    {
-#if defined(__unix__) || defined(__POSIX__) || defined(__MACH__)
-        // NOTE: this doesn't seem to be working right.  milli is returning values like 134, 14, etc.
-        timeval curTime;
-        gettimeofday(&curTime, NULLPTR);
-        int milli = curTime.tv_usec / 1000;
-        return milli;
-#else
-#error Needs implementation for this platform
-#endif
-    }
+    static time_t now() { return clock::now(); }
 };
 
 // eventually use http://en.cppreference.com/w/cpp/numeric/random

@@ -2,8 +2,9 @@ cmake_minimum_required(VERSION 3.6)
 
 project(mc-coap-test)
 
-set(CMAKE_CXX_STANDARD 11)
+#set(CMAKE_CXX_STANDARD 11)
 #set(CMAKE_CXX_STANDARD 98)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
 
 add_definitions(-DUNIT_TESTING)
 #add_definitions(-DDEBUG)

@@ -35,6 +35,8 @@ fake_time_traits::time_t fake_time_traits::m_now = 2000;
 TEST_CASE("retry logic")
 {
     typedef uint32_t addr_t;
+    typedef NetBufDynamicExperimental netbuf_t;
+    typedef embr::TransportDescriptor<netbuf_t, addr_t> transport_descriptor_t;
 
     SECTION("Ensure ack test data is right")
     {
@@ -42,12 +44,13 @@ TEST_CASE("retry logic")
 
         REQUIRE(h->type() == Header::Acknowledgement);
     }
-// datapump observer pattern has been totally revamped since this was written, and
-// as such we need to disable it and either repair or rewrite the retry code
+    SECTION("retry (raw)")
+    {
+        Retry<netbuf_t, addr_t> retry;
+    }
+    // datapump being externalized as much as possible from retry code
     SECTION("retry")
     {
-        typedef NetBufDynamicExperimental netbuf_t;
-        typedef embr::TransportDescriptor<netbuf_t, addr_t> transport_descriptor_t;
         typedef Retry<netbuf_t, addr_t, RetryPolicy<fake_time_traits, UnitTestRetryRandPolicy> > retry_t;
         typedef embr::DataPump<transport_descriptor_t> datapump_t;
         addr_t fakeaddr;
