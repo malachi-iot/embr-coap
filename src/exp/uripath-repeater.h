@@ -26,6 +26,8 @@ struct triad
 //typedef estd::pair<const char*, int> UriPathMap;
 typedef triad<const char*, int, int> UriPathMap;
 
+typedef estd::pair<const char*, int> UriPathMap2;
+
 struct UriPathMatcher
 {
     estd::layer3::const_string match_to;
@@ -55,6 +57,34 @@ inline UriPathMap* match(UriPathMap* items, int count, estd::layer3::const_strin
     return NULLPTR;
 }
 
+
+inline int match(UriPathMap2* items, int count, estd::layer3::const_string s)
+{
+    while(count--)
+    {
+        UriPathMap2* candidate = items++;
+
+        if(s == candidate->first)
+        {
+            return candidate->second;
+        }
+    }
+
+    return MCCOAP_URIPATH_NONE;
+}
+
+inline triad<int, UriPathMap2*, int>* match(triad<int, UriPathMap2*, int>* items, int count,
+                                            int key)
+{
+    while(count--)
+    {
+        triad<int, UriPathMap2*, int>* candidate = items++;
+
+        if(candidate->first == key) return candidate;
+    }
+
+    return NULLPTR;
+}
 
 
 // rebroadcasts events sourced either from decoder subject or

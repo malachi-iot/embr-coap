@@ -105,20 +105,66 @@ TEST_CASE("experimental 2 tests")
     }
     SECTION("factory test")
     {
+        constexpr int id_path_v1 = 0;
+        constexpr int id_path_v1_api = 1;
+        constexpr int id_path_v1_api_power = 2;
+        constexpr int id_path_dummy = 3;
+
         // best bet is to have this pre sorted alphabetically first, then by parent ID next
         // traditionally one would use a multimap here, since it's conceivable that different
         // tree uri nodes may have the same name (think v2/api)
         UriPathMap map[] =
         {
-            { "api", 1, 0 },
-            { "power", 2, 1 },
-            { "v1", 0, MCCOAP_URIPATH_NONE }
+            { "api",    id_path_v1_api,         id_path_v1 },
+            { "power",  id_path_v1_api_power,   id_path_v1_api },
+            { "v1",     id_path_v1,             MCCOAP_URIPATH_NONE }
+        };
+
+        UriPathMap2 map_root[] =
+        {
+            { "v1", id_path_v1 }
+        };
+
+        UriPathMap2 map_v1[] =
+        {
+            { "api", id_path_v1_api }
+        };
+
+        UriPathMap2 map_v1_api[] =
+        {
+            { "power", id_path_v1_api_power }
+        };
+
+        // first = parent
+        // second = list of children
+        // third = count of children
+        triad<int, UriPathMap2*, int> relations[]
+        {
+            { MCCOAP_URIPATH_NONE,  map_root, 1 },
+            { id_path_v1,           map_v1, 1 },
+            { id_path_v1_api,       map_v1_api, 1 }
         };
 
         UriPathMap* found = match(map, 3, "api", 0);
 
         REQUIRE(found != NULLPTR);
         REQUIRE(found->second == 1);
+
+        // match up incoming uri-path chunk
+        // (in production we'd be tracking where we left off, so 'map_root'
+        // wouldn't be hardcoded)
+        int id = match(map_root, 1, "v1");
+
+        if(id >= 0)
+        {
+            auto hit = match(relations, sizeof(relations), id);
+
+            REQUIRE(hit);
+            REQUIRE(hit->second == map_v1);
+            //auto hit = std::find(relations, &relations[2], id);
+
+            //REQUIRE(hit->second == map_v1);
+        }
 
         struct test_factory
         {
