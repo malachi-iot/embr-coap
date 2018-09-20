@@ -18,6 +18,8 @@
 #include "exp/events.h"
 #include <exp/uripath-repeater.h>
 
+#include <estd/map.h>
+
 #include "test-data.h"
 
 using namespace moducom::coap;
@@ -103,6 +105,21 @@ TEST_CASE("experimental 2 tests")
     }
     SECTION("factory test")
     {
+        // best bet is to have this pre sorted alphabetically first, then by parent ID next
+        // traditionally one would use a multimap here, since it's conceivable that different
+        // tree uri nodes may have the same name (think v2/api)
+        UriPathMap map[] =
+        {
+            { "api", 1, 0 },
+            { "power", 2, 1 },
+            { "v1", 0, MCCOAP_URIPATH_NONE }
+        };
+
+        UriPathMap* found = match(map, 3, "api", 0);
+
+        REQUIRE(found != NULLPTR);
+        REQUIRE(found->second == 1);
+
         struct test_factory
         {
             int key;

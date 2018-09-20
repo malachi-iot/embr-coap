@@ -12,6 +12,20 @@ namespace moducom { namespace coap {
 
 namespace experimental {
 
+#define MCCOAP_URIPATH_NONE -1
+#define MCCOAP_URIPATH_UNSPECIFIED -2
+
+template <class T1, class T2, class T3>
+struct triad
+{
+    T1 first;
+    T2 second;
+    T3 third;
+};
+
+//typedef estd::pair<const char*, int> UriPathMap;
+typedef triad<const char*, int, int> UriPathMap;
+
 struct UriPathMatcher
 {
     estd::layer3::const_string match_to;
@@ -24,6 +38,22 @@ struct UriPathMatcher
         }
     }
 };
+
+
+inline UriPathMap* match(UriPathMap* items, int count, estd::layer3::const_string s, int parent_id)
+{
+    while(count--)
+    {
+        UriPathMap* candidate = items++;
+
+        if(s == candidate->first && candidate->third == parent_id)
+        {
+            return candidate;
+        }
+    }
+
+    return NULLPTR;
+}
 
 
 
