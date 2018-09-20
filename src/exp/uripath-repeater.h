@@ -52,6 +52,12 @@ struct known_uri_event
     known_uri_event(const UriPathMap& path_map) : path_map(path_map) {}
 };
 
+template <class T, ptrdiff_t N>
+estd::layer2::array<T, N> make_layer2_array(T (&a)[N])
+{
+    return estd::layer2::array<T, N>(a);
+}
+
 // kind of like a multimap
 // incoming container expected to be sorted based primarily on
 // parent id ('third')
@@ -69,36 +75,62 @@ struct UriPathMatcher2
     // probably *do not* want to track this state in here, but just for
     // experimentation gonna toss it in
     int last_found;
+    iterator last_pos;
 
     template <class TParam1>
     UriPathMatcher2(TParam1& p1) :
         container(p1),
-        last_found(MCCOAP_URIPATH_NONE)
+        last_found(MCCOAP_URIPATH_NONE),
+        last_pos(container.begin())
     {}
 
 #ifdef FEATURE_CPP_MOVESEMANTIC
     UriPathMatcher2(container_type&& container) :
         container(std::move(container)),
-        last_found(MCCOAP_URIPATH_NONE)
+        last_found(MCCOAP_URIPATH_NONE),
+        last_pos(container.begin())
         {}
 #endif
 
-    int find(estd::layer3::const_string uri_piece, int within)
+    ///
+    /// \param uri_piece
+    /// \param within which parent uri group to search in
+    /// \param start_from slight abuse, we pass back how far we got via this also
+    /// \param end end of search items.  mainly used to make this a static call
+    /// \return id of node matching uri_piece + within, or MCCOAP_URIPATH_NONE
+    static int find(
+            estd::layer3::const_string uri_piece, int within,
+            iterator& start_from,
+            iterator end)
     {
-        iterator i = container.begin();
+        iterator& i = start_from;
 
-        for(;i != container.end(); i++)
+        for(;i != end; i++)
         {
             if(uri_piece == (*i).first && (*i).third == within)
             {
                 return (*i).second;
             }
         }
+
+        return MCCOAP_URIPATH_NONE;
     }
 
+    // this is 'standalone' one and doesn't leverage tracked state
+    // FIX: confusing, easy to call wrong one
+    int find(estd::layer3::const_string uri_piece, int within)
+    {
+        iterator i = container.begin();
+        return find(uri_piece, within, i, container.end());
+    }
+
+    ///
+    /// \brief stateful search
+    /// \param uri_piece
+    /// \return
     int find(estd::layer3::const_string uri_piece)
     {
-        return last_found = find(uri_piece, last_found);
+        return last_found = find(uri_piece, last_found, last_pos, container.end());
     }
 
 

@@ -150,7 +150,9 @@ TEST_CASE("experimental 2 tests")
         REQUIRE(found != NULLPTR);
         REQUIRE(found->second == 1);
 
-        estd::layer2::array<UriPathMap, 3> _map(map);
+        //estd::layer2::array<UriPathMap, 3> _map(map);
+        auto _map = make_layer2_array(map);
+        estd::layer3::array<UriPathMap> __map(map);
         UriPathMatcher2<decltype(_map)> matcher(std::move(map));
 
         int result = matcher.find("v1", MCCOAP_URIPATH_NONE);
@@ -165,13 +167,19 @@ TEST_CASE("experimental 2 tests")
 
         REQUIRE(result == id_path_v1_api);
 
+        result = matcher.find("power");
+
+        REQUIRE(result == id_path_v1_api_power);
+
         struct sax_responder
         {
+            int last_parent;
             int last_pos;
             int indent;
 
             sax_responder() :
                 last_pos(MCCOAP_URIPATH_NONE),
+                last_parent(MCCOAP_URIPATH_NONE),
                 indent(0)
                 {}
 
@@ -184,7 +192,9 @@ TEST_CASE("experimental 2 tests")
 
                 // second = current node id
                 int current_id = e.path_map.second;
+                int parent_id = e.path_map.third;
                 last_pos = e.path_map.second;
+                last_parent = parent_id;
             }
         };
 
