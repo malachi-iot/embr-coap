@@ -110,14 +110,14 @@ TEST_CASE("experimental 2 tests")
         constexpr int id_path_v1_api_power = 2;
         constexpr int id_path_dummy = 3;
 
-        // best bet is to have this pre sorted alphabetically first, then by parent ID next
-        // traditionally one would use a multimap here, since it's conceivable that different
-        // tree uri nodes may have the same name (think v2/api)
+        // sort by parent id first, then by node id
+        // this way we can easily optimize incoming request parsing by remembering
+        // where we left off on found node id position
         UriPathMap map[] =
         {
+            { "v1",     id_path_v1,             MCCOAP_URIPATH_NONE },
             { "api",    id_path_v1_api,         id_path_v1 },
-            { "power",  id_path_v1_api_power,   id_path_v1_api },
-            { "v1",     id_path_v1,             MCCOAP_URIPATH_NONE }
+            { "power",  id_path_v1_api_power,   id_path_v1_api }
         };
 
         UriPathMap2 map_root[] =
@@ -149,6 +149,49 @@ TEST_CASE("experimental 2 tests")
 
         REQUIRE(found != NULLPTR);
         REQUIRE(found->second == 1);
+
+        estd::layer2::array<UriPathMap, 3> _map(map);
+        UriPathMatcher2<decltype(_map)> matcher(std::move(map));
+
+        int result = matcher.find("v1", MCCOAP_URIPATH_NONE);
+
+        REQUIRE(result == id_path_v1);
+
+        result = matcher.find("v1");
+
+        REQUIRE(result == id_path_v1);
+
+        result = matcher.find("api");
+
+        REQUIRE(result == id_path_v1_api);
+
+        struct sax_responder
+        {
+            int last_pos;
+            int indent;
+
+            sax_responder() :
+                last_pos(MCCOAP_URIPATH_NONE),
+                indent(0)
+                {}
+
+            void on_notify(const known_uri_event& e)
+            {
+                std::cout << "Known path: ";
+                //std::cout << std::setfill(' ') << std::setw(indent);
+                std::cout << std::setw(10) << e.path_map.first;
+                std::cout << ", parent=" << e.path_map.third << std::endl;
+
+                // second = current node id
+                int current_id = e.path_map.second;
+                last_pos = e.path_map.second;
+            }
+        };
+
+        //embr::void_subject subject;
+        sax_responder observer;
+        auto subject = embr::layer1::make_subject(observer);
+        matcher.notify(subject);
 
         // match up incoming uri-path chunk
         // (in production we'd be tracking where we left off, so 'map_root'
