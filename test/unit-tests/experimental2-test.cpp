@@ -2,6 +2,7 @@
 
 #include "exp/misc.h"
 #include <embr/datapump.hpp>
+#include <embr/observer.h>
 #include <exp/retry.h>
 
 #include <exp/message-observer.h>
@@ -15,6 +16,7 @@
 #endif
 
 #include "exp/events.h"
+#include <exp/uripath-repeater.h>
 
 #include "test-data.h"
 
@@ -94,5 +96,34 @@ TEST_CASE("experimental 2 tests")
             REQUIRE(value >= 100);
             REQUIRE(value <= 200);
         }
+    }
+    SECTION("uripath repeater")
+    {
+        moducom::coap::experimental::UriPathRepeater<embr::void_subject> upr;
+    }
+    SECTION("factory test")
+    {
+        struct test_factory
+        {
+            int key;
+
+            test_factory(int key) : key(key) {}
+
+            bool can_create(int key)
+            {
+                return this->key == key;
+            }
+
+            int create(int key)
+            {
+                return 5;
+            }
+        };
+
+        //auto t = estd::make_tuple(1, 2, 3, 4);
+        auto t = estd::make_tuple(test_factory(2), test_factory(1));
+        moducom::coap::experimental::FactoryAggregator<int, decltype (t)&> fa(t);
+
+        fa.create(1);
     }
 }

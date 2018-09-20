@@ -75,12 +75,14 @@ set(SOURCE_FILES
 
         exp/datapump-observer.h
         exp/events.h
+        exp/factory.h
         exp/message-observer.h
         exp/misc.h
         exp/misc.hpp
         exp/option-trait.h
         exp/retry.h
         exp/diagnostic-decoder-observer.h
+        exp/uripath-repeater.h
 
         exp/prototype/observer-idea1.h
 

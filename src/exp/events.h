@@ -1,6 +1,7 @@
 #pragma once
 
 #include <estd/span.h>
+#include <estd/string_view.h>
 #include "../coap.h"
 
 namespace moducom { namespace coap {
@@ -76,6 +77,13 @@ struct token_event : chunk_event_base
             bool last_chunk) :
             chunk_event_base(chunk, last_chunk)
     {}
+};
+
+
+// this event applies to a different set of code, the revised version of uripath-dispatcher
+struct uri_path_event
+{
+    estd::string_view path;
 };
 
 }
