@@ -113,7 +113,12 @@ TEST_CASE("experimental 2 tests")
         // sort by parent id first, then by node id
         // this way we can easily optimize incoming request parsing by remembering
         // where we left off on found node id position
-        UriPathMap map[] =
+        // NOTE: might be better to sort by uri_path secondly instead of node_id,
+        // as it potentially could speed up searching for said path.  However,
+        // any of the secondary sorting the benefit is limited by our ability to know
+        // how large the 'parent' region is in which we are sorting, which so far
+        // is elusive
+        const UriPathMap map[] =
         {
             { "v1",     id_path_v1,             MCCOAP_URIPATH_NONE },
             { "api",    id_path_v1_api,         id_path_v1 },
@@ -145,14 +150,14 @@ TEST_CASE("experimental 2 tests")
             { id_path_v1_api,       map_v1_api, 1 }
         };
 
-        UriPathMap* found = match(map, 3, "api", 0);
+        const UriPathMap* found = match(map, 3, "api", 0);
 
         REQUIRE(found != NULLPTR);
         REQUIRE(found->second == 1);
 
         //estd::layer2::array<UriPathMap, 3> _map(map);
-        auto _map = make_layer2_array(map);
-        estd::layer3::array<UriPathMap> __map(map);
+        auto _map = estd::layer2::make_array(map);
+        //estd::layer3::array<const UriPathMap> __map(map);
         UriPathMatcher2<decltype(_map)> matcher(std::move(map));
 
         int result = matcher.find("v1", MCCOAP_URIPATH_NONE);

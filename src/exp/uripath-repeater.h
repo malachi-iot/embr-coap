@@ -5,6 +5,7 @@
 
 #include "events.h"
 #include "factory.h"
+#include <estd/optional.h>
 
 // embr subject/observer version of uripath handlers
 // hangs off new embr-based decoder subject
@@ -52,11 +53,21 @@ struct known_uri_event
     known_uri_event(const UriPathMap& path_map) : path_map(path_map) {}
 };
 
-template <class T, ptrdiff_t N>
-estd::layer2::array<T, N> make_layer2_array(T (&a)[N])
+inline const UriPathMap* match(const UriPathMap* items, int count, estd::layer3::const_string s, int parent_id)
 {
-    return estd::layer2::array<T, N>(a);
+    while(count--)
+    {
+        const UriPathMap* candidate = items++;
+
+        if(s == candidate->first && candidate->third == parent_id)
+        {
+            return candidate;
+        }
+    }
+
+    return NULLPTR;
 }
+
 
 // kind of like a multimap
 // incoming container expected to be sorted based primarily on
@@ -71,6 +82,12 @@ struct UriPathMatcher2
     typedef typename estd::remove_reference<TContainer>::type container_type;
     typedef typename container_type::iterator iterator;
     typedef typename container_type::value_type value_type;
+
+#ifdef FEATURE_CPP_STATIC_ASSERT
+    static_assert (estd::is_same<
+                   typename estd::remove_const<value_type>::type,
+                   UriPathMap>::value, "Expect a container of UriPathMap");
+#endif
 
     // probably *do not* want to track this state in here, but just for
     // experimentation gonna toss it in
@@ -98,6 +115,7 @@ struct UriPathMatcher2
     /// \param start_from slight abuse, we pass back how far we got via this also
     /// \param end end of search items.  mainly used to make this a static call
     /// \return id of node matching uri_piece + within, or MCCOAP_URIPATH_NONE
+    /// \remarks identical to preceding 'match' operation
     static int find(
             estd::layer3::const_string uri_piece, int within,
             iterator& start_from,
@@ -152,20 +170,6 @@ struct UriPathMatcher2
 };
 
 
-inline UriPathMap* match(UriPathMap* items, int count, estd::layer3::const_string s, int parent_id)
-{
-    while(count--)
-    {
-        UriPathMap* candidate = items++;
-
-        if(s == candidate->first && candidate->third == parent_id)
-        {
-            return candidate;
-        }
-    }
-
-    return NULLPTR;
-}
 
 
 inline int match(UriPathMap2* items, int count, estd::layer3::const_string s)
