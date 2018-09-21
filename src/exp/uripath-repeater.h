@@ -82,6 +82,7 @@ struct UriPathMatcher2
     typedef typename estd::remove_reference<TContainer>::type container_type;
     typedef typename container_type::iterator iterator;
     typedef typename container_type::value_type value_type;
+    typedef typename estd::layer1::optional<int, MCCOAP_URIPATH_NONE> optional_int_type;
 
 #ifdef FEATURE_CPP_STATIC_ASSERT
     static_assert (estd::is_same<
@@ -91,7 +92,7 @@ struct UriPathMatcher2
 
     // probably *do not* want to track this state in here, but just for
     // experimentation gonna toss it in
-    estd::optional<int> last_found;
+    optional_int_type last_found;
     iterator last_pos;
 
     template <class TParam1>
@@ -113,7 +114,7 @@ struct UriPathMatcher2
     {
         last_pos = container.begin();
         // TODO: make this assign to nullopt once we get assignment operator doing that
-        new (&last_found) estd::optional<int>();
+        new (&last_found) optional_int_type();
     }
 
     ///
@@ -123,7 +124,7 @@ struct UriPathMatcher2
     /// \param end end of search items.  mainly used to make this a static call
     /// \return id of node matching uri_piece + within, or MCCOAP_URIPATH_NONE
     /// \remarks identical to preceding 'match' operation
-    static estd::optional<int> find(
+    static optional_int_type find(
             estd::layer3::const_string uri_piece, int within,
             iterator& start_from,
             iterator end)
@@ -146,6 +147,7 @@ struct UriPathMatcher2
 
     // this is 'standalone' one and doesn't leverage tracked state
     // FIX: confusing, easy to call wrong one
+    // FIX: can't yet enable optional_int_type here, it's glitchy
     estd::optional<int> find(estd::layer3::const_string uri_piece, int within) const
     {
         iterator i = container.begin();
@@ -156,6 +158,7 @@ struct UriPathMatcher2
     /// \brief stateful search
     /// \param uri_piece
     /// \return
+    // FIX: can't yet enable optional_int_type here, it's glitchy
     estd::optional<int> find(estd::layer3::const_string uri_piece)
     {
         // NOTE: this optional behavior will mean if it can't find the uri_piece,
