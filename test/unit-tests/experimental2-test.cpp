@@ -155,26 +155,33 @@ TEST_CASE("experimental 2 tests")
         REQUIRE(found != NULLPTR);
         REQUIRE(found->second == 1);
 
-        //estd::layer2::array<UriPathMap, 3> _map(map);
         auto _map = estd::layer2::make_array(map);
         //estd::layer3::array<const UriPathMap> __map(map);
         UriPathMatcher2<decltype(_map)> matcher(std::move(map));
 
-        int result = matcher.find("v1", MCCOAP_URIPATH_NONE);
+        estd::optional<int> result;
 
-        REQUIRE(result == id_path_v1);
+        // NOTE: this particular class doesn't modify matcher state
+        // but it's confusing which ones do and which ones don't.  more fuel
+        // for the fire of making a distinct stateful variant of the matcher class
+        result = matcher.find("v1", MCCOAP_URIPATH_NONE);
+
+        REQUIRE(result.has_value());
+        REQUIRE(result.value() == id_path_v1);
+
+        //matcher.reset();
 
         result = matcher.find("v1");
 
-        REQUIRE(result == id_path_v1);
+        REQUIRE(result.value() == id_path_v1);
 
         result = matcher.find("api");
 
-        REQUIRE(result == id_path_v1_api);
+        REQUIRE(result.value() == id_path_v1_api);
 
         result = matcher.find("power");
 
-        REQUIRE(result == id_path_v1_api_power);
+        REQUIRE(result.value() == id_path_v1_api_power);
 
         struct sax_responder
         {

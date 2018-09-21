@@ -91,23 +91,30 @@ struct UriPathMatcher2
 
     // probably *do not* want to track this state in here, but just for
     // experimentation gonna toss it in
-    int last_found;
+    estd::optional<int> last_found;
     iterator last_pos;
 
     template <class TParam1>
     UriPathMatcher2(TParam1& p1) :
         container(p1),
-        last_found(MCCOAP_URIPATH_NONE),
         last_pos(container.begin())
     {}
 
 #ifdef FEATURE_CPP_MOVESEMANTIC
     UriPathMatcher2(container_type&& container) :
         container(std::move(container)),
-        last_found(MCCOAP_URIPATH_NONE),
         last_pos(container.begin())
         {}
 #endif
+
+    // artifact of unrefined architecutre.  production class shouldn't need this
+    // although may always be useful for unit testing
+    void reset()
+    {
+        last_pos = container.begin();
+        // TODO: make this assign to nullopt once we get assignment operator doing that
+        new (&last_found) estd::optional<int>();
+    }
 
     ///
     /// \param uri_piece
@@ -116,27 +123,30 @@ struct UriPathMatcher2
     /// \param end end of search items.  mainly used to make this a static call
     /// \return id of node matching uri_piece + within, or MCCOAP_URIPATH_NONE
     /// \remarks identical to preceding 'match' operation
-    static int find(
+    static estd::optional<int> find(
             estd::layer3::const_string uri_piece, int within,
             iterator& start_from,
             iterator end)
     {
+        // NOTE: this means if we don't find anything, our iterator is all the way at the end
+        // which may actually not be what we want
         iterator& i = start_from;
 
         for(;i != end; i++)
         {
             if(uri_piece == (*i).first && (*i).third == within)
             {
-                return (*i).second;
+                int node_id = (*i).second;
+                return node_id;
             }
         }
 
-        return MCCOAP_URIPATH_NONE;
+        return estd::nullopt;
     }
 
     // this is 'standalone' one and doesn't leverage tracked state
     // FIX: confusing, easy to call wrong one
-    int find(estd::layer3::const_string uri_piece, int within)
+    estd::optional<int> find(estd::layer3::const_string uri_piece, int within) const
     {
         iterator i = container.begin();
         return find(uri_piece, within, i, container.end());
@@ -146,9 +156,14 @@ struct UriPathMatcher2
     /// \brief stateful search
     /// \param uri_piece
     /// \return
-    int find(estd::layer3::const_string uri_piece)
+    estd::optional<int> find(estd::layer3::const_string uri_piece)
     {
-        return last_found = find(uri_piece, last_found, last_pos, container.end());
+        // NOTE: this optional behavior will mean if it can't find the uri_piece,
+        // it's going to restart since !has_value means MCCOAP_URIPATH_NONE, which
+        // is used by root (i.e. v1) paths
+        return last_found = find(uri_piece,
+                                 last_found ? last_found.value() : MCCOAP_URIPATH_NONE,
+                                 last_pos, container.end());
     }
 
 
