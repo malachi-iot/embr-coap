@@ -1,8 +1,11 @@
 #include <catch.hpp>
 
 #include "exp/misc.h"
+
 #include <embr/datapump.hpp>
 #include <embr/observer.h>
+#include <embr/netbuf-static.h>
+
 #include <exp/retry.h>
 
 #include <exp/message-observer.h>
@@ -173,15 +176,18 @@ TEST_CASE("experimental 2 tests")
 
         result = matcher.find("v1");
 
-        REQUIRE(result.value() == id_path_v1);
+        REQUIRE(result);
+        REQUIRE(*result == id_path_v1);
 
         result = matcher.find("api");
 
-        REQUIRE(result.value() == id_path_v1_api);
+        REQUIRE(result);
+        REQUIRE(*result == id_path_v1_api);
 
         result = matcher.find("power");
 
-        REQUIRE(result.value() == id_path_v1_api_power);
+        REQUIRE(result);
+        REQUIRE(*result == id_path_v1_api_power);
 
         struct sax_responder
         {
@@ -253,5 +259,27 @@ TEST_CASE("experimental 2 tests")
         moducom::coap::experimental::FactoryAggregator<int, decltype (t)&> fa(t);
 
         fa.create(1);
+
+        SECTION("decoder interaction")
+        {
+            // NOTE: layer2 not what I expected (remembered).  layer2 for netbuf is preallocated
+            // memory with a variable size parameter
+            //embr::mem::layer2::NetBuf<sizeof(buffer_plausible)> netbuf(buffer_plausible);
+            embr::mem::layer1::NetBuf<sizeof(buffer_plausible)> netbuf;
+
+            memcpy(netbuf.data(), buffer_plausible, sizeof(buffer_plausible));
+
+            typedef decltype(netbuf) netbuf_type;
+            typedef decltype(netbuf)& netbuf_ref_type;
+
+            // FIX: these fail still.  thought I had repaired it
+            /*
+            REQUIRE(NetBufDecoder<netbuf_type>::has_data_method<netbuf_type>::value);
+            REQUIRE(NetBufDecoder<netbuf_ref_type>::has_data_method<
+                    typename estd::remove_reference<netbuf_ref_type&>::type>::value);
+            */
+            //embr::s
+            //NetBufDecoder<decltype(netbuf)&> decoder(netbuf);
+        }
     }
 }

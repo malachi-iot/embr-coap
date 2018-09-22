@@ -68,6 +68,10 @@ inline const UriPathMap* match(const UriPathMap* items, int count, estd::layer3:
     return NULLPTR;
 }
 
+template <class TContainer>
+struct UriPathMatcherBase
+{
+};
 
 // kind of like a multimap
 // incoming container expected to be sorted based primarily on
@@ -75,7 +79,7 @@ inline const UriPathMap* match(const UriPathMap* items, int count, estd::layer3:
 // NOTE: designed to be used after the container has been created,
 // and MAYBE to help track state when retrieving the URI
 template <class TContainer>
-struct UriPathMatcher2
+struct UriPathMatcher2 : UriPathMatcherBase<TContainer>
 {
     TContainer container;
 

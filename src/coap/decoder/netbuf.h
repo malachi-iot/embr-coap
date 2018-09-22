@@ -265,7 +265,12 @@ public:
 
     // for new embr-netbuf version
     template <class TNetBuf2,
-            class = typename estd::enable_if<has_data_method<TNetBuf2>::value>::type>
+            class = typename estd::enable_if<
+                    has_data_method<
+                            typename estd::remove_reference<TNetBuf2>::type
+                        >
+                        ::value>
+                    ::type>
     NetBufDecoder(TNetBuf2& netbuf, bool = true) :
     // NOTE: Be advised that netbuf.end() differs from traditional iterator end
     // in that it is a bool indicating that we are ON the last chunk, not PAST it
