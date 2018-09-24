@@ -117,8 +117,7 @@ struct UriPathMatcher2 : UriPathMatcherBase<TContainer>
     void reset()
     {
         last_pos = container.begin();
-        // TODO: make this assign to nullopt once we get assignment operator doing that
-        new (&last_found) optional_int_type();
+        last_found = estd::nullopt;
     }
 
     ///
@@ -151,8 +150,7 @@ struct UriPathMatcher2 : UriPathMatcherBase<TContainer>
 
     // this is 'standalone' one and doesn't leverage tracked state
     // FIX: confusing, easy to call wrong one
-    // FIX: can't yet enable optional_int_type here, it's glitchy
-    estd::optional<int> find(estd::layer3::const_string uri_piece, int within) const
+    optional_int_type find(estd::layer3::const_string uri_piece, int within) const
     {
         iterator i = container.begin();
         return find(uri_piece, within, i, container.end());
@@ -163,7 +161,7 @@ struct UriPathMatcher2 : UriPathMatcherBase<TContainer>
     /// \param uri_piece
     /// \return
     // FIX: can't yet enable optional_int_type here, it's glitchy
-    estd::optional<int> find(estd::layer3::const_string uri_piece)
+    optional_int_type find(estd::layer3::const_string uri_piece)
     {
         // NOTE: this optional behavior will mean if it can't find the uri_piece,
         // it's going to restart since !has_value means MCCOAP_URIPATH_NONE, which
