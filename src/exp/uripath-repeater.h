@@ -30,6 +30,13 @@ typedef triad<estd::layer2::const_string, int, int> UriPathMap;
 
 typedef estd::pair<const char*, int> UriPathMap2;
 
+struct CoREData
+{
+    int node;
+    estd::layer2::const_string resource_type;
+    estd::layer2::const_string interface_description;
+};
+
 struct UriPathMatcher
 {
     estd::layer3::const_string match_to;

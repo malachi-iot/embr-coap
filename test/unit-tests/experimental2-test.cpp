@@ -22,6 +22,8 @@
 #include <exp/uripath-repeater.h>
 
 //#include <estd/map.h>
+//#include <estd/stack.h>
+#include <estd/sstream.h>
 
 #include "test-data.h"
 
@@ -221,10 +223,74 @@ TEST_CASE("experimental 2 tests")
             }
         };
 
+        CoREData coredata[] =
+        {
+            { id_path_v1_api_power, "star-power", "switch" }
+        };
+
+        auto _coredata = estd::layer2::make_array(coredata);
+
+        // foundational/poc for emitter of CoRE for /.well-known/core responder
+        struct core_observer
+        {
+            //estd::layer1::stringbuf<256> buf;
+            estd::experimental::ostringstream<256> buf;
+            // TODO: Need an estd::stack to track 'last' parent (by UriPathMap)
+
+            // TODO: A map would be better instead of a layer3 array
+            estd::layer3::array<CoREData, uint8_t> coredata;
+
+            core_observer(estd::layer3::array<CoREData, uint8_t> coredata) :
+                coredata(coredata) {}
+
+            void on_notify(const known_uri_event& e)
+            {
+                // FIX: Something's keeping us from piping this right into buf itself
+                const char* uri_segment = e.path_map.first.clock();
+                //estd::layer3::const_string s = e.path_map.first;
+                const auto& result = std::find_if(coredata.begin(), coredata.end(),
+                                            [&](const CoREData& value)
+                {
+                    return value.node == e.path_map.second;
+                });
+
+                // only spit out CoRE results for nodes with proper metadata.  Eventually
+                // maybe we can auto-deduce based on some other clues reflecting that we
+                // service a particular uri-path chain
+                if(result != coredata.end())
+                {
+                    buf << "</" << uri_segment << '>';
+
+                    if(!result->resource_type.empty())
+                    {
+                        const char* s = result->resource_type.clock();
+                        // FIX: same string-piping problem as above
+                        buf << ";rt=" << s;
+                    }
+
+                    if(!result->interface_description.empty())
+                    {
+                        const char* s = result->interface_description.clock();
+                        buf << ";if=" << s;
+                    }
+                }
+                buf << estd::endl;
+                //e.path_map.first
+            }
+        };
+
         sax_responder observer;
+        // TODO: fixup layer3::array so that it can copy between different size_t
+        // variations of itself (especially upcasting to higher precision)
+        core_observer observer2(estd::layer3::make_array(coredata));
         // this will make a subject with a reference to 'observer'
-        auto subject = embr::layer1::make_subject(observer);
+        auto subject = embr::layer1::make_subject(observer, observer2);
         matcher.notify(subject);
+
+        const auto& underlying_string = observer2.buf.rdbuf()->str();
+
+        std::cout << underlying_string;
+        //REQUIRE(underlying_string == "v1\napi\npower\n");
 
         // match up incoming uri-path chunk
         // (in production we'd be tracking where we left off, so 'map_root'
