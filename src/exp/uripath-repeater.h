@@ -83,11 +83,18 @@ struct UriPathMatcherBase
     static optional_int_type find(
             estd::layer3::const_string uri_piece, int within,
             TIterator& start_from,
-            TIterator end)
+            const TIterator& end)
     {
+        typedef typename estd::remove_reference<TIterator>::type iterator;
+
+#ifdef FEATURE_CPP_STATIC_ASSERT
+        /* doesn't work because iterator can be UriPathMap*
+        static_assert (estd::is_same<typename iterator::value_type, UriPathMap>::value,
+                       "Requires iterator which reflects a UriPathMap"); */
+#endif
         // NOTE: this means if we don't find anything, our iterator is all the way at the end
         // which may actually not be what we want
-        TIterator& i = start_from;
+        iterator& i = start_from;
 
         for(;i != end; i++)
         {
@@ -136,7 +143,8 @@ void iterate_and_notify(TSubject& subject, const TContainer& container)
 // parent id ('third')
 // NOTE: designed to be used after the container has been created,
 // and MAYBE to help track state when retrieving the URI
-template <class TContainer, class TProviderBase = estd::experimental::instance_provider<TContainer> >
+template <class TContainer,
+          class TProviderBase = estd::experimental::instance_provider<const TContainer> >
 struct UriPathMatcher2 :
         UriPathMatcherBase,
         TProviderBase
@@ -150,7 +158,7 @@ struct UriPathMatcher2 :
     typedef typename container_type::iterator iterator;
     typedef typename container_type::value_type value_type;
 
-    container_type& container() { return provider_type::value(); }
+    //container_type& container() { return provider_type::value(); }
     const container_type& container() const { return provider_type::value(); }
 
 #ifdef FEATURE_CPP_STATIC_ASSERT
@@ -206,7 +214,7 @@ struct UriPathMatcher2 :
     // (useful for CoRE processing)
     // not 100% required for container to be in order, but highly recommended
     template <class TSubject>
-    void notify(TSubject& subject)
+    void notify(TSubject& subject) const
     {
         iterate_and_notify<known_uri_event>(subject, container());
 
