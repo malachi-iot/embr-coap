@@ -249,16 +249,20 @@ TEST_CASE("experimental 2 tests")
 
             void on_notify(const known_uri_event& e)
             {
-                // FIX: Not exactly right for the parents stack, but close
                 if(!parents.empty())
                 {
-                    // FIX: dequeue has a bug here, returning NULL
-                    const UriPathMap* front = parents.front();
-                    /*
-                    if(front->third != e.parent_id())
+                    // get the 'back' aka the last/current parent
+                    const UriPathMap* back = parents.back();
+                    int last_parent_id = back->third;
+
+                    // FIX: Not quite right but close
+                    // 'last'/'current' parent is no longer being observed, so swap it out
+                    if(last_parent_id != e.parent_id())
                     {
-                        parents.push_front(&e.path_map);
-                    } */
+                        // FIX: whoops, missing a pop_back
+                        //parents.pop_back();
+                        parents.push_back(&e.path_map);
+                    }
                 }
                 else
                 {
@@ -276,10 +280,15 @@ TEST_CASE("experimental 2 tests")
                 // service a particular uri-path chain
                 if(result != coredata.end())
                 {
-                    // FIX: need whole uri, not just last part
-                    // eventually we'll get this from iterating through 'parents'
-                    buf << "</" << e.uri_part() << '>';
-                    buf << *result;
+                    buf << '<';
+
+                    // in atypical queue/stack usage we push to the back but evaluate (but not
+                    // pop) the front.  This way we can tack on more and more uri's to reflect
+                    // our hierarchy level, then pop them off as we leave
+                    for(auto& parent_node : parents)
+                        buf << '/' << parent_node->first;
+
+                    buf << '>' << *result;
                 }
 
                 // TODO: We'll need to intelligently spit out a comma
