@@ -68,57 +68,9 @@ inline const UriPathMap* match(const UriPathMap* items, int count, estd::layer3:
     return NULLPTR;
 }
 
-template <class TContainer>
 struct UriPathMatcherBase
 {
-};
-
-// kind of like a multimap
-// incoming container expected to be sorted based primarily on
-// parent id ('third')
-// NOTE: designed to be used after the container has been created,
-// and MAYBE to help track state when retrieving the URI
-template <class TContainer>
-struct UriPathMatcher2 : UriPathMatcherBase<TContainer>
-{
-    TContainer container;
-
-    typedef typename estd::remove_reference<TContainer>::type container_type;
-    typedef typename container_type::iterator iterator;
-    typedef typename container_type::value_type value_type;
     typedef typename estd::layer1::optional<int, MCCOAP_URIPATH_NONE> optional_int_type;
-
-#ifdef FEATURE_CPP_STATIC_ASSERT
-    static_assert (estd::is_same<
-                   typename estd::remove_const<value_type>::type,
-                   UriPathMap>::value, "Expect a container of UriPathMap");
-#endif
-
-    // probably *do not* want to track this state in here, but just for
-    // experimentation gonna toss it in
-    optional_int_type last_found;
-    iterator last_pos;
-
-    template <class TParam1>
-    UriPathMatcher2(TParam1& p1) :
-        container(p1),
-        last_pos(container.begin())
-    {}
-
-#ifdef FEATURE_CPP_MOVESEMANTIC
-    UriPathMatcher2(container_type&& container) :
-        container(std::move(container)),
-        last_pos(container.begin())
-        {}
-#endif
-
-    // artifact of unrefined architecutre.  production class shouldn't need this
-    // although may always be useful for unit testing
-    void reset()
-    {
-        last_pos = container.begin();
-        last_found = estd::nullopt;
-    }
 
     ///
     /// \param uri_piece
@@ -127,14 +79,15 @@ struct UriPathMatcher2 : UriPathMatcherBase<TContainer>
     /// \param end end of search items.  mainly used to make this a static call
     /// \return id of node matching uri_piece + within, or MCCOAP_URIPATH_NONE
     /// \remarks identical to preceding 'match' operation
+    template <class TIterator>
     static optional_int_type find(
             estd::layer3::const_string uri_piece, int within,
-            iterator& start_from,
-            iterator end)
+            TIterator& start_from,
+            TIterator end)
     {
         // NOTE: this means if we don't find anything, our iterator is all the way at the end
         // which may actually not be what we want
-        iterator& i = start_from;
+        TIterator& i = start_from;
 
         for(;i != end; i++)
         {
@@ -148,27 +101,104 @@ struct UriPathMatcher2 : UriPathMatcherBase<TContainer>
         return estd::nullopt;
     }
 
+};
+
+
+
+template <class TEvent, class TSubject, class TIterator>
+///
+/// \brief iterate from begin to end and notify subject for each element iterated over
+/// \param subject
+/// \param begin
+/// \param end
+///
+void iterate_and_notify(TSubject& subject,
+                        const TIterator& begin,
+                        const TIterator& end)
+{
+    for(TIterator i = begin;i != end; i++)
+        subject.notify(TEvent(*i));
+}
+
+template <class TEvent, class TSubject, class TContainer>
+///
+/// \brief notify subject for each element in container
+/// \param subject
+/// \param container
+///
+void iterate_and_notify(TSubject& subject, const TContainer& container)
+{
+    iterate_and_notify<TEvent>(subject, container.begin(), container.end());
+}
+
+// kind of like a multimap
+// incoming container expected to be sorted based primarily on
+// parent id ('third')
+// NOTE: designed to be used after the container has been created,
+// and MAYBE to help track state when retrieving the URI
+template <class TContainer, class TProviderBase = estd::experimental::instance_provider<TContainer> >
+struct UriPathMatcher2 :
+        UriPathMatcherBase,
+        TProviderBase
+{
+    typedef UriPathMatcherBase base_type;
+    typedef TProviderBase provider_type;
+
+    //TContainer container;
+
+    typedef typename estd::remove_reference<TContainer>::type container_type;
+    typedef typename container_type::iterator iterator;
+    typedef typename container_type::value_type value_type;
+
+    container_type& container() { return provider_type::value(); }
+    const container_type& container() const { return provider_type::value(); }
+
+#ifdef FEATURE_CPP_STATIC_ASSERT
+    static_assert (estd::is_same<
+                   typename estd::remove_const<value_type>::type,
+                   UriPathMap>::value, "Expect a container of UriPathMap");
+#endif
+
+    // probably *do not* want to track this state in here, but just for
+    // experimentation gonna toss it in
+    optional_int_type last_found;
+    iterator last_pos;
+
+    template <class TParam1>
+    UriPathMatcher2(const TParam1& p1) :
+        provider_type(p1),
+        //container(p1),
+        last_pos(container().begin())
+    {}
+
+#ifdef FEATURE_CPP_MOVESEMANTIC
+    UriPathMatcher2(container_type&& container) :
+        provider_type(std::move(container)),
+        //container(std::move(container)),
+        last_pos(container().begin())
+        {}
+#endif
+
     // this is 'standalone' one and doesn't leverage tracked state
     // FIX: confusing, easy to call wrong one
     optional_int_type find(estd::layer3::const_string uri_piece, int within) const
     {
-        iterator i = container.begin();
-        return find(uri_piece, within, i, container.end());
+        iterator i = container().begin();
+        return base_type::find(uri_piece, within, i, container().end());
     }
 
     ///
     /// \brief stateful search
     /// \param uri_piece
     /// \return
-    // FIX: can't yet enable optional_int_type here, it's glitchy
     optional_int_type find(estd::layer3::const_string uri_piece)
     {
         // NOTE: this optional behavior will mean if it can't find the uri_piece,
         // it's going to restart since !has_value means MCCOAP_URIPATH_NONE, which
         // is used by root (i.e. v1) paths
-        return last_found = find(uri_piece,
+        return last_found = base_type::find(uri_piece,
                                  last_found ? last_found.value() : MCCOAP_URIPATH_NONE,
-                                 last_pos, container.end());
+                                 last_pos, container().end());
     }
 
 
@@ -178,14 +208,17 @@ struct UriPathMatcher2 : UriPathMatcherBase<TContainer>
     template <class TSubject>
     void notify(TSubject& subject)
     {
-        iterator i = container.begin();
+        iterate_and_notify<known_uri_event>(subject, container());
 
-        for(;i != container.end(); i++)
+        /*
+        iterator i = container().begin();
+
+        for(;i != container().end(); i++)
         {
             const value_type& v = *i;
 
             subject.notify(known_uri_event(v));
-        }
+        } */
     }
 };
 

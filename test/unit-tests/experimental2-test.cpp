@@ -158,21 +158,26 @@ TEST_CASE("experimental 2 tests")
         REQUIRE(found != NULLPTR);
         REQUIRE(found->second == 1);
 
+        // layer2 arrays are the size of a pointer, so we don't
+        // need to go to lengths to shrink the size for UriPathMatcher2
         auto _map = estd::layer2::make_array(map);
+
+        REQUIRE(sizeof(_map) == sizeof(void*));
+
         //estd::layer3::array<const UriPathMap> __map(map);
+        // FIX: does not invoke move constructor like it should
         UriPathMatcher2<decltype(_map)> matcher(std::move(map));
 
-        estd::optional<int> result;
+        // TODO: Should be able to make a global vs instance version of UriPathMatcher2,
+        // but would mean a non-stack version of 'map'
 
         // NOTE: this particular class doesn't modify matcher state
         // but it's confusing which ones do and which ones don't.  more fuel
         // for the fire of making a distinct stateful variant of the matcher class
-        result = matcher.find("v1", MCCOAP_URIPATH_NONE);
+        estd::optional<int> result = matcher.find("v1", MCCOAP_URIPATH_NONE);
 
         REQUIRE(result.has_value());
         REQUIRE(result.value() == id_path_v1);
-
-        //matcher.reset();
 
         result = matcher.find("v1");
 
@@ -216,8 +221,8 @@ TEST_CASE("experimental 2 tests")
             }
         };
 
-        //embr::void_subject subject;
         sax_responder observer;
+        // this will make a subject with a reference to 'observer'
         auto subject = embr::layer1::make_subject(observer);
         matcher.notify(subject);
 
