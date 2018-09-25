@@ -84,6 +84,8 @@ struct known_uri_event
     const UriPathMap& path_map;
 
     const estd::layer2::const_string& uri_part() const { return path_map.first; }
+    int node_id() const { return path_map.second; }
+    int parent_id() const { return path_map.third; }
 
     known_uri_event(const UriPathMap& path_map) : path_map(path_map) {}
 };

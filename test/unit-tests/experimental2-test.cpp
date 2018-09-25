@@ -235,16 +235,36 @@ TEST_CASE("experimental 2 tests")
         struct core_observer
         {
             estd::experimental::ostringstream<256> buf;
-            // TODO: Need an estd::stack to track 'last' parent (by UriPathMap)
+            // NOTE: Needed an estd::stack to track 'last' parent (by UriPathMap)
+            // but actually double-ended queue is a better match, once it gets its
+            // iterators sorted out.  estd::stack doesn't let you get at 'back'
 
             // TODO: A map would be better instead of a layer3 array
             estd::layer3::array<CoREData, uint8_t> coredata;
+
+            estd::layer1::deque<const UriPathMap*, 10> parents;
 
             core_observer(estd::layer3::array<CoREData, uint8_t> coredata) :
                 coredata(coredata) {}
 
             void on_notify(const known_uri_event& e)
             {
+                // FIX: Not exactly right for the parents stack, but close
+                if(!parents.empty())
+                {
+                    // FIX: dequeue has a bug here, returning NULL
+                    const UriPathMap* front = parents.front();
+                    /*
+                    if(front->third != e.parent_id())
+                    {
+                        parents.push_front(&e.path_map);
+                    } */
+                }
+                else
+                {
+                    parents.push_front(&e.path_map);
+                }
+
                 const auto& result = std::find_if(coredata.begin(), coredata.end(),
                                             [&](const CoREData& value)
                 {
@@ -257,6 +277,7 @@ TEST_CASE("experimental 2 tests")
                 if(result != coredata.end())
                 {
                     // FIX: need whole uri, not just last part
+                    // eventually we'll get this from iterating through 'parents'
                     buf << "</" << e.uri_part() << '>';
                     buf << *result;
                 }
