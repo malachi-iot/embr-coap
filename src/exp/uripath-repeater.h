@@ -6,6 +6,7 @@
 #include "events.h"
 #include "factory.h"
 #include <estd/optional.h>
+#include <estd/ostream.h>
 
 // embr subject/observer version of uripath handlers
 // hangs off new embr-based decoder subject
@@ -37,6 +38,31 @@ struct CoREData
     estd::layer2::const_string interface_description;
 };
 
+
+template <class TStreambuf, class TBase>
+///
+/// \brief emits CoRE specific formatted link suffix
+///
+/// Conformant to https://tools.ietf.org/html/rfc6690#section-5
+///
+/// \param out
+/// \param value
+/// \return
+///
+estd::internal::basic_ostream<TStreambuf, TBase>& operator<<(
+        estd::internal::basic_ostream<TStreambuf, TBase>& out,
+        const CoREData& value
+        )
+{
+    if(!value.resource_type.empty())
+        out << ";rt=" << value.resource_type;
+
+    if(!value.interface_description.empty())
+        out << ";if=" << value.interface_description;
+
+    return out;
+}
+
 struct UriPathMatcher
 {
     estd::layer3::const_string match_to;
@@ -56,6 +82,8 @@ struct known_uri_event
 {
     //estd::layer3::string uri_part;
     const UriPathMap& path_map;
+
+    const estd::layer2::const_string& uri_part() const { return path_map.first; }
 
     known_uri_event(const UriPathMap& path_map) : path_map(path_map) {}
 };

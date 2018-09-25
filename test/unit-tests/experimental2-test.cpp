@@ -24,6 +24,7 @@
 //#include <estd/map.h>
 //#include <estd/stack.h>
 #include <estd/sstream.h>
+#include <estd/internal/ostream_basic_string.hpp>
 
 #include "test-data.h"
 
@@ -228,12 +229,11 @@ TEST_CASE("experimental 2 tests")
             { id_path_v1_api_power, "star-power", "switch" }
         };
 
-        auto _coredata = estd::layer2::make_array(coredata);
+        //auto _coredata = estd::layer2::make_array(coredata);
 
         // foundational/poc for emitter of CoRE for /.well-known/core responder
         struct core_observer
         {
-            //estd::layer1::stringbuf<256> buf;
             estd::experimental::ostringstream<256> buf;
             // TODO: Need an estd::stack to track 'last' parent (by UriPathMap)
 
@@ -245,9 +245,6 @@ TEST_CASE("experimental 2 tests")
 
             void on_notify(const known_uri_event& e)
             {
-                // FIX: Something's keeping us from piping this right into buf itself
-                const char* uri_segment = e.path_map.first.clock();
-                //estd::layer3::const_string s = e.path_map.first;
                 const auto& result = std::find_if(coredata.begin(), coredata.end(),
                                             [&](const CoREData& value)
                 {
@@ -259,23 +256,14 @@ TEST_CASE("experimental 2 tests")
                 // service a particular uri-path chain
                 if(result != coredata.end())
                 {
-                    buf << "</" << uri_segment << '>';
-
-                    if(!result->resource_type.empty())
-                    {
-                        const char* s = result->resource_type.clock();
-                        // FIX: same string-piping problem as above
-                        buf << ";rt=" << s;
-                    }
-
-                    if(!result->interface_description.empty())
-                    {
-                        const char* s = result->interface_description.clock();
-                        buf << ";if=" << s;
-                    }
+                    // FIX: need whole uri, not just last part
+                    buf << "</" << e.uri_part() << '>';
+                    buf << *result;
                 }
+
+                // TODO: We'll need to intelligently spit out a comma
+                // and NOT endl unless we specifically are in a debug mode
                 buf << estd::endl;
-                //e.path_map.first
             }
         };
 
