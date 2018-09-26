@@ -114,7 +114,10 @@ TEST_CASE("experimental 2 tests")
         constexpr int id_path_v1 = 0;
         constexpr int id_path_v1_api = 1;
         constexpr int id_path_v1_api_power = 2;
+        constexpr int id_path_v1_api_test = 6;
         constexpr int id_path_dummy = 3;
+        constexpr int id_path_v2 = 4;
+        constexpr int id_path_v2_api = 5;
 
         // sort by parent id first, then by node id
         // this way we can easily optimize incoming request parsing by remembering
@@ -128,7 +131,11 @@ TEST_CASE("experimental 2 tests")
         {
             { "v1",     id_path_v1,             MCCOAP_URIPATH_NONE },
             { "api",    id_path_v1_api,         id_path_v1 },
-            { "power",  id_path_v1_api_power,   id_path_v1_api }
+            { "power",  id_path_v1_api_power,   id_path_v1_api },
+            { "test",   id_path_v1_api_test,    id_path_v1_api },
+
+            { "v2",     id_path_v2,             MCCOAP_URIPATH_NONE },
+            { "api",    id_path_v2_api,         id_path_v2 }
         };
 
         UriPathMap2 map_root[] =
@@ -226,7 +233,9 @@ TEST_CASE("experimental 2 tests")
 
         CoREData coredata[] =
         {
-            { id_path_v1_api_power, "star-power", "switch" }
+            { id_path_v1_api_power, "star-power", "switch" },
+            { id_path_v1_api_test, "star-power", "sensor" },
+            { id_path_v2_api, "dummy-path", "noop" }
         };
 
         //auto _coredata = estd::layer2::make_array(coredata);
@@ -234,45 +243,41 @@ TEST_CASE("experimental 2 tests")
         // foundational/poc for emitter of CoRE for /.well-known/core responder
         struct core_observer
         {
+            // in non-proof of concept, this won't be inline with the observer
             estd::experimental::ostringstream<256> buf;
-            // NOTE: Needed an estd::stack to track 'last' parent (by UriPathMap)
-            // but actually double-ended queue is a better match, once it gets its
-            // iterators sorted out.  estd::stack doesn't let you get at 'back'
 
+            // all uripath nodes which actually have CoRE data associated
+            // with them
             // TODO: A map would be better instead of a layer3 array
             estd::layer3::array<CoREData, uint8_t> coredata;
 
+            // breadcrumb tracker for hierarchical navigation of nodes
+            // TODO: when layer1::stack becomes available, use that
+            // (plan for it to have iterators , unlike regular std::stack)
             estd::layer1::deque<const UriPathMap*, 10> parents;
 
             core_observer(estd::layer3::array<CoREData, uint8_t> coredata) :
                 coredata(coredata) {}
 
+            // NOTE: doing this via notify but perhaps could easily do a more straight
+            // ahead sequential version
             void on_notify(const known_uri_event& e)
             {
-                if(!parents.empty())
-                {
-                    // get the 'back' aka the last/current parent
-                    const UriPathMap* back = parents.back();
-                    int last_parent_id = back->third;
+                // 'back' aka the last/current parent
 
-                    // FIX: Not quite right but close
-                    // 'last'/'current' parent is no longer being observed, so swap it out
-                    if(last_parent_id != e.parent_id())
-                    {
-                        // FIX: whoops, missing a pop_back
-                        //parents.pop_back();
-                        parents.push_back(&e.path_map);
-                    }
-                }
-                else
-                {
-                    parents.push_front(&e.path_map);
-                }
+                // if the last parent id we are looking at doesn't match incoming
+                // observed one, back it out until it does match the observed one
+                while(!parents.empty() && parents.back()->second != e.parent_id())
+                    parents.pop_back();
+
+                // when we arrive here, we're either positioned in 'parents' at the
+                // matching parent OR it's empty
+                parents.push_back(&e.path_map);
 
                 const auto& result = std::find_if(coredata.begin(), coredata.end(),
                                             [&](const CoREData& value)
                 {
-                    return value.node == e.path_map.second;
+                    return value.node == e.node_id();
                 });
 
                 // only spit out CoRE results for nodes with proper metadata.  Eventually
@@ -289,11 +294,11 @@ TEST_CASE("experimental 2 tests")
                         buf << '/' << parent_node->first;
 
                     buf << '>' << *result;
-                }
 
-                // TODO: We'll need to intelligently spit out a comma
-                // and NOT endl unless we specifically are in a debug mode
-                buf << estd::endl;
+                    // TODO: We'll need to intelligently spit out a comma
+                    // and NOT endl unless we specifically are in a debug mode
+                    buf << estd::endl;
+                }
             }
         };
 
