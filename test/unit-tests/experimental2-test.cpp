@@ -22,7 +22,7 @@
 #include <exp/uripath-repeater.h>
 
 //#include <estd/map.h>
-//#include <estd/stack.h>
+#include <estd/stack.h>
 #include <estd/sstream.h>
 #include <estd/internal/ostream_basic_string.hpp>
 
@@ -252,9 +252,7 @@ TEST_CASE("experimental 2 tests")
             estd::layer3::array<CoREData, uint8_t> coredata;
 
             // breadcrumb tracker for hierarchical navigation of nodes
-            // TODO: when layer1::stack becomes available, use that
-            // (plan for it to have iterators , unlike regular std::stack)
-            estd::layer1::deque<const UriPathMap*, 10> parents;
+            estd::layer1::stack<const UriPathMap*, 10> parents;
 
             core_observer(estd::layer3::array<CoREData, uint8_t> coredata) :
                 coredata(coredata) {}
@@ -263,16 +261,16 @@ TEST_CASE("experimental 2 tests")
             // ahead sequential version
             void on_notify(const known_uri_event& e)
             {
-                // 'back' aka the last/current parent
+                // 'top' aka the back/last/current parent
 
                 // if the last parent id we are looking at doesn't match incoming
                 // observed one, back it out until it does match the observed one
-                while(!parents.empty() && parents.back()->second != e.parent_id())
-                    parents.pop_back();
+                while(!parents.empty() && parents.top()->second != e.parent_id())
+                    parents.pop();
 
                 // when we arrive here, we're either positioned in 'parents' at the
                 // matching parent OR it's empty
-                parents.push_back(&e.path_map);
+                parents.push(&e.path_map);
 
                 const auto& result = std::find_if(coredata.begin(), coredata.end(),
                                             [&](const CoREData& value)
@@ -288,9 +286,10 @@ TEST_CASE("experimental 2 tests")
                     buf << '<';
 
                     // in atypical queue/stack usage we push to the back but evaluate (but not
-                    // pop) the front.  This way we can tack on more and more uri's to reflect
+                    // pop) the front/bottom.  This way we can tack on more and more uri's to reflect
                     // our hierarchy level, then pop them off as we leave
-                    for(auto& parent_node : parents)
+                    // NOTE: our layer1::stack can do this but the default stack cannot
+                    for(const auto& parent_node : parents)
                         buf << '/' << parent_node->first;
 
                     buf << '>' << *result;
