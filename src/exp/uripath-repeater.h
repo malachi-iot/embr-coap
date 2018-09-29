@@ -31,12 +31,76 @@ typedef triad<estd::layer2::const_string, int, int> UriPathMap;
 
 typedef estd::pair<const char*, int> UriPathMap2;
 
+// various Link Target Attributes are available, outlined here
+// https://tools.ietf.org/html/rfc6690#section-2 and also ;ct= for content type
 struct CoREData
 {
     int node;
     estd::layer2::const_string resource_type;
     estd::layer2::const_string interface_description;
+
+    // "65000-65535 are reserved for experiments"
+    // if we keep this internal meaning NULL, should be acceptable use case
+    estd::layer1::optional<uint16_t, 65000> content_type;
+    void* test_empty;
+    // NOTE: has no default constructor, and probably shouldn't - but would
+    // be convenient for this use case
+    //estd::layer2::const_string test;
 };
+
+
+template <class TValue = estd::layer2::const_string>
+struct CoREData2Item
+{
+    typedef TValue value_type;
+
+    int node;
+    TValue value;
+};
+
+// this experimental approach goes vertically, database style and we pick up
+// nodes along the way
+// since it's an aggregate of the same particular attribute, TCollection could be
+// an array, vector, etc.
+template <class TCollection>
+struct CoREData2
+{
+    // Link Target Attribute name (ala https://tools.ietf.org/html/rfc6690#section-7.4)
+    estd::layer2::const_string attribute;
+
+    TCollection items; // should be a collection of CoREData2Item
+};
+
+
+template <class TValue = estd::layer2::const_string>
+struct CoreData3Item
+{
+    // Link Target Attribute name (ala https://tools.ietf.org/html/rfc6690#section-7.4)
+    // Since everything's so templaty-strongly typed anyway maybe this can become a
+    // compile time constant
+    estd::layer2::const_string attribute;
+
+    TValue value;
+};
+
+// this experimental approach goes horizontally
+// in this case TCollection will probably have to be a tuple
+template <class TCollection>
+struct CoreData3
+{
+    int node;
+    TCollection attributes;
+};
+
+// NOTE: What might be best is a simpler registry of CoRE responders to an output stream
+// invoked per service.  That was kind of my original idea, very C# like.  Like this:
+struct CoREResponder
+{
+    virtual void generate(estd::layer3::string output) = 0;
+};
+// ^^ it's cleaner but we're gonna get a lot of virtual function overhead.  Especially because
+// cramming to estd::layer3::string is not a good long term solution, we'll need to map to
+// netbuf and/or ostream
 
 
 template <class TStreambuf, class TBase>
@@ -55,10 +119,10 @@ estd::internal::basic_ostream<TStreambuf, TBase>& operator<<(
         )
 {
     if(!value.resource_type.empty())
-        out << ";rt=" << value.resource_type;
+        out << ";rt=\"" << value.resource_type << '"';
 
     if(!value.interface_description.empty())
-        out << ";if=" << value.interface_description;
+        out << ";if=\"" << value.interface_description << '"';
 
     return out;
 }

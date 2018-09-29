@@ -272,6 +272,8 @@ TEST_CASE("experimental 2 tests")
                 // matching parent OR it's empty
                 parents.push(&e.path_map);
 
+                // TODO: Need a way to aggregate CoRE datasources here
+                // and maybe some should be stateful vs the current semi-global
                 const auto& result = std::find_if(coredata.begin(), coredata.end(),
                                             [&](const CoREData& value)
                 {
