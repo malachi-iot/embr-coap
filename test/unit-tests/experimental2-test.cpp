@@ -56,6 +56,9 @@ template <class TStream>
 /// reported in the CoRE response (i.e. you can use ostream to spit out ';title="something"' or
 /// similar
 ///
+/// Also has experimental helpers (title, content_type, size) which further compound the unusual
+/// aspect of semi-writing-to an event
+///
 struct node_core_event : ostream_event<TStream>
 {
     const int node_id;
@@ -65,6 +68,22 @@ struct node_core_event : ostream_event<TStream>
         base_type(ostream),
         node_id(node_id)
     {}
+
+    template <class T>
+    void title(const T& value) const
+    {
+        base_type::ostream << ";title=\"" << value << '"';
+    }
+
+    void content_type(unsigned value) const
+    {
+        base_type::ostream << ";ct=" << value;
+    }
+
+    void size(unsigned value) const
+    {
+        base_type::ostream << ";sz=" << value;
+    }
 };
 
 
@@ -75,7 +94,9 @@ struct title_tacker
     template <class TStream>
     void on_notify(const node_core_event<TStream>& e)
     {
-        e.ostream << ";title=\"test\"";
+        e.title("test");
+        // FIX: As is the case also with SAMD chips, the numeric output is broken
+        //e.size(e.node_id * 100);
     }
 };
 
