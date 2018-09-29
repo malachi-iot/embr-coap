@@ -22,7 +22,6 @@
 #include <exp/uripath-repeater.h>
 
 //#include <estd/map.h>
-#include <estd/stack.h>
 #include <estd/sstream.h>
 #include <estd/internal/ostream_basic_string.hpp>
 
@@ -184,6 +183,8 @@ TEST_CASE("experimental 2 tests")
         constexpr int id_path_dummy = 3;
         constexpr int id_path_v2 = 4;
         constexpr int id_path_v2_api = 5;
+        constexpr int id_path_well_known = 7;
+        constexpr int id_path_well_known_core = 8;
 
         // sort by parent id first, then by node id
         // this way we can easily optimize incoming request parsing by remembering
@@ -201,9 +202,13 @@ TEST_CASE("experimental 2 tests")
             { "test",   id_path_v1_api_test,    id_path_v1_api },
 
             { "v2",     id_path_v2,             MCCOAP_URIPATH_NONE },
-            { "api",    id_path_v2_api,         id_path_v2 }
+            { "api",    id_path_v2_api,         id_path_v2 },
+
+            { ".well-known",    id_path_well_known,         0 },
+            { "core",           id_path_well_known_core,    id_path_well_known }
         };
 
+        // NOTE: Not favoring this discrete UriPathMap2 method, it's a little verbose
         UriPathMap2 map_root[] =
         {
             { "v1", id_path_v1 }

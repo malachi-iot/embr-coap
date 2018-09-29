@@ -7,6 +7,7 @@
 #include "factory.h"
 #include <estd/optional.h>
 #include <estd/ostream.h>
+#include <estd/stack.h>
 
 // embr subject/observer version of uripath handlers
 // hangs off new embr-based decoder subject
@@ -309,6 +310,12 @@ struct UriPathMatcher2 :
                                  last_found ? last_found.value() : MCCOAP_URIPATH_NONE,
                                  last_pos, container().end());
     }
+
+    // breadcrumb tracker for hierarchical navigation of nodes
+    // NOTE: inactive here, just a proof of concept but seems listeners from notify/stateful
+    // tracking of where we are in the hierarchy would be interesting to most listeners
+    estd::layer1::stack<const UriPathMap*, 10> parents;
+
 
 
     // do a SAX-like notification walk over all known nodes
