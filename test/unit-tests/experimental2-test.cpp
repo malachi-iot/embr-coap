@@ -35,6 +35,51 @@ typedef moducom::pipeline::MemoryChunk::readonly_t ro_chunk_t;
 typedef moducom::pipeline::MemoryChunk chunk_t;
 
 
+template <class TStream>
+struct ostream_event
+{
+#ifdef FEATURE_CPP_STATIC_ASSERT
+    // TODO: assert that we really are getting an ostream here
+#endif
+
+    TStream& ostream;
+
+    ostream_event(TStream& ostream) : ostream(ostream) {}
+};
+
+
+template <class TStream>
+///
+/// \brief Event for evaluating a well-known CoRE request against a particular service node
+///
+/// In particular this event is used for producing specialized output for the distinct URI node
+/// reported in the CoRE response (i.e. you can use ostream to spit out ';title="something"' or
+/// similar
+///
+struct node_core_event : ostream_event<TStream>
+{
+    const int node_id;
+    typedef ostream_event<TStream> base_type;
+
+    node_core_event(int node_id, TStream& ostream) :
+        base_type(ostream),
+        node_id(node_id)
+    {}
+};
+
+
+struct title_tacker
+{
+    // FIX: May be slight abuse because events are supposed to be read only,
+    // but this ostream use isn't quite that.  Works, though
+    template <class TStream>
+    void on_notify(const node_core_event<TStream>& e)
+    {
+        e.ostream << ";title=\"test\"";
+    }
+};
+
+
 TEST_CASE("experimental 2 tests")
 {
     typedef uint32_t addr_t;
@@ -243,8 +288,12 @@ TEST_CASE("experimental 2 tests")
         // foundational/poc for emitter of CoRE for /.well-known/core responder
         struct core_observer
         {
+            embr::void_subject link_attribute_evaluator;
+
+            typedef estd::experimental::ostringstream<256> ostream_type;
+
             // in non-proof of concept, this won't be inline with the observer
-            estd::experimental::ostringstream<256> buf;
+            ostream_type buf;
 
             // all uripath nodes which actually have CoRE data associated
             // with them
@@ -295,6 +344,13 @@ TEST_CASE("experimental 2 tests")
                         buf << '/' << parent_node->first;
 
                     buf << '>' << *result;
+
+                    // tack on other link attributes
+                    node_core_event<ostream_type> _e(result->node, buf);
+                    link_attribute_evaluator.notify(_e);
+
+                    auto link_attribute_evaluator2 = embr::layer1::make_subject(title_tacker());
+                    link_attribute_evaluator2.notify(_e);
 
                     // TODO: We'll need to intelligently spit out a comma
                     // and NOT endl unless we specifically are in a debug mode
