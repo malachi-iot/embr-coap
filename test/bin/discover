@@ -1,0 +1,5 @@
+#!/bin/bash
+
+ALL_NODES=224.0.1.187
+
+coap -c get coap://$ALL_NODES/.well-known/core
