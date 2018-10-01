@@ -3,7 +3,7 @@
 #include <stdint.h>
 
 static uint8_t buffer_16bit_delta[] = {
-        0x40, 0x00, 0x01, 0x23, // 4: mid = 123, tkl = 0, GET
+        0x40, 0x01, 0x01, 0x23, // 4: mid = 123, tkl = 0, GET
         0xE1, // 5: option with 16-bit delta 1 length 1
         0x00, // 6: delta ext byte #1
         0x01, // 7: delta ext byte #2

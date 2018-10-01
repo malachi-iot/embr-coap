@@ -61,6 +61,9 @@ public:
     // ostream-style
     streambuf_type* rdbuf() { return &streambuf; }
 
+    // NOTE: might prefer instead to present entire encoder as a minimal
+    // (non flaggable) basic_ostream.  Brings along some useful functionality
+    // without adding any overhead
     ostream_type ostream() { return ostream_type(streambuf); }
 
     void header(const moducom::coap::Header& header)

@@ -12,6 +12,7 @@
 #include "exp/netbuf.h"
 
 #include <coap/streambuf-encoder.h>
+#include <estd/string.h>
 
 #include "test-data.h"
 
@@ -19,6 +20,20 @@ using namespace moducom::coap;
 using namespace moducom::pipeline;
 
 #include <stdio.h>
+
+// Only for catch comparison
+template <class TLeft, class TRight>
+void compare_array(const TLeft& left, const TRight& right)
+{
+    for(int i = 0; i < sizeof(TLeft); i++)
+    {
+        const auto& l = left[i];
+        const auto& r = right[i];
+
+        INFO("Comparing at: " << i);
+        REQUIRE(l == r);
+    }
+}
 
 
 TEST_CASE("CoAP encoder tests", "[coap-encoder]")
@@ -207,9 +222,7 @@ TEST_CASE("CoAP encoder tests", "[coap-encoder]")
         estd::span<uint8_t> span(buffer, 128);
         Header header(Header::TypeEnum::Confirmable);
 
-        // FIX: pretty sure buffer_16bit_delta is labelled wrong and it is not
-        // a GET operation after all - but should be
-        //header.code(Header::Code::Codes::Get);
+        header.code(Header::Code::Codes::Get);
         header.message_id(0x0123);
 
         SECTION("Test 1")
@@ -227,6 +240,35 @@ TEST_CASE("CoAP encoder tests", "[coap-encoder]")
             REQUIRE(buffer_16bit_delta[1] == buffer[1]);
             REQUIRE(buffer_16bit_delta[2] == buffer[2]);
             REQUIRE(buffer_16bit_delta[3] == buffer[3]);
+        }
+        SECTION("Regenerate buffer_16bit_delta")
+        {
+            embr::coap::experimental::StreambufEncoder encoder(span);
+            //estd::layer1::string<2, true> s = { 0, 1 };
+            // NOTE: this doesn't work because non-null terminated tracks a distinct
+            // size variable
+            //estd::layer1::string<2, false> s;
+
+            //s[0] = 4;
+            //s[1] = 5;
+            estd::array<char, 2> v = { 4, 5 };
+
+            encoder.header(header);
+            encoder.option((Option::Numbers)270, 1);
+            encoder.rdbuf()->sputc(3);
+            // Not quite as interesting because strings always maintain a runtime
+            // size
+            //encoder.option((Option::Numbers)271, s);
+            // Doesn't work yet since array doesn't share allocated_array base (yet)
+            //encoder.option((Option::Numbers)271, v);
+            encoder.option((Option::Numbers)271, 2);
+            encoder.rdbuf()->sputc(4);
+            encoder.rdbuf()->sputc(5);
+            encoder.payload();
+            for(char i = 0x10; i <= 0x16; i++)
+                encoder.rdbuf()->sputc(i);
+
+            compare_array(buffer_16bit_delta, buffer);
         }
     }
 }
