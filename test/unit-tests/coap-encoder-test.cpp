@@ -11,6 +11,8 @@
 
 #include "exp/netbuf.h"
 
+#include <coap/streambuf-encoder.h>
+
 using namespace moducom::coap;
 using namespace moducom::pipeline;
 
@@ -194,5 +196,25 @@ TEST_CASE("CoAP encoder tests", "[coap-encoder]")
         REQUIRE(netbuf.processed()[7] == token[3]);
         REQUIRE(netbuf.processed()[8] == 0xFF);
         REQUIRE(netbuf.processed()[9] == s[0]);
+    }
+    SECTION("streambuf encoder")
+    {
+        estd::layer2::const_string test_str = "hi2u";
+
+        uint8_t buffer[128];
+        estd::span<uint8_t> span(buffer, 128);
+        Header header;
+
+        header.type(Header::TypeEnum::NonConfirmable);
+        header.message_id(0x1234);
+
+        SECTION("Test 1")
+        {
+            embr::coap::experimental::StreambufEncoder encoder(span);
+
+            encoder.header(header);
+            encoder.option(Option::Numbers::UriPath, "hello");
+            encoder.option(Option::Numbers::UriPath, test_str);
+        }
     }
 }

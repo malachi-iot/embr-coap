@@ -30,6 +30,8 @@ public:
     static CONSTEXPR output_t signal_continue = -1;
 
     uint16_t current_option_number;
+    // FIX: pos probably needs to be a uint16_t unless we eschew
+    // value-processing OR accept a hard limit of 255 bytes
     uint8_t pos;
     const option_base_t* option_base;
 
