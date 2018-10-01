@@ -20,6 +20,7 @@ typedef NetBufDynamicExperimental netbuf_t;
 
 namespace moducom { namespace coap {
 
+// TODO: this global variable is nearly phased out now
 sockets_datapump_t sockets_datapump;
 
 }}

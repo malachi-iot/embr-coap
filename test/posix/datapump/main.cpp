@@ -21,9 +21,9 @@ int main()
 
     for(;;)
     {
-        sdh.loop();
+        sdh.loop(sockets_datapump);
 
-        simple_ping_responder(sdh, sockets_datapump);
+        simple_ping_responder(sockets_datapump);
     }
 
     return 0;

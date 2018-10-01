@@ -67,7 +67,7 @@ public:
         nonblocking_datapump_shutdown(sockfd);
     }
 
-    void loop(sockets_datapump_t& datapump = sockets_datapump)
+    void loop(sockets_datapump_t& datapump)
     {
         nonblocking_datapump_loop(sockfd, datapump);
 #ifdef FEATURE_MCCOAP_RELIABLE
@@ -83,19 +83,19 @@ public:
 
     // dequeue input that was previously queued up from transport
     // returns NULL if no item queued
-    netbuf_t* front(addr_t* addr_in, sockets_datapump_t& datapump = sockets_datapump)
+    netbuf_t* front(addr_t* addr_in, sockets_datapump_t& datapump)
     {
         return datapump.dequeue_in(addr_in);
     }
 
     // remove netbuf from transport in queue
-    void pop(sockets_datapump_t& datapump = sockets_datapump)
+    void pop(sockets_datapump_t& datapump)
     {
         datapump.dequeue_pop();
     }
 
     // indicates whether any netbufs have queued up from transport in
-    bool empty(sockets_datapump_t& datapump = sockets_datapump)
+    bool empty(sockets_datapump_t& datapump)
     {
         return datapump.dequeue_empty();
     }
@@ -118,7 +118,7 @@ public:
 #else
     void enqueue(
             netbuf_t& netbuf,
-            const addr_t& addr_out, sockets_datapump_t& datapump = sockets_datapump)
+            const addr_t& addr_out, sockets_datapump_t& datapump)
     {
 #ifdef FEATURE_MCCOAP_RELIABLE
         bool is_con = retry.is_con(netbuf);

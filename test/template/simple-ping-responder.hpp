@@ -8,20 +8,28 @@
 using namespace std;
 using namespace moducom::coap;
 
-template <class TDataPumpHelper>
-void simple_ping_responder(TDataPumpHelper& sdh, typename TDataPumpHelper::datapump_t& datapump)
+template <class TDataPump>
+void simple_ping_responder(TDataPump& datapump)
 {
-    typedef typename TDataPumpHelper::netbuf_t netbuf_t;
-    typedef typename TDataPumpHelper::addr_t addr_t;
+    typedef TDataPump datapump_t;
+    typedef typename datapump_t::netbuf_t netbuf_t;
+    typedef typename datapump_t::addr_t addr_t;
+    typedef typename datapump_t::Item item_t;
     typedef NetBufDecoder<netbuf_t&> decoder_t;
     //typedef typename moducom::pipeline::MemoryChunk::readonly_t ro_chunk_t;
 
     // echo back out a raw ACK, with no trickery just raw decoding/encoding
-    if(!sdh.empty(datapump))
+    //if(!sdh.empty(datapump))
+    if(!datapump.dequeue_empty())
     {
-        addr_t ipaddr;
+        item_t& item = datapump.dequeue_front();
 
-        decoder_t decoder(*sdh.front(&ipaddr, datapump));
+        // hold on to ipaddr for when we enqueue a response
+        addr_t ipaddr = item.addr();
+
+        //decoder_t decoder(*sdh.front(&ipaddr, datapump));
+        decoder_t decoder(*item.netbuf());
+
         layer2::Token token;
 
         //clog << " ip=" << ipaddr.sin_addr.s_addr << endl;
@@ -54,7 +62,8 @@ void simple_ping_responder(TDataPumpHelper& sdh, typename TDataPumpHelper::datap
         NetBufEncoder<netbuf_t&> encoder(* new netbuf_t);
 #endif
 
-        sdh.pop(datapump);
+        datapump.dequeue_pop();
+        //sdh.pop(datapump);
 
         //clog << "mid out=" << header.message_id() << endl;
 
@@ -66,9 +75,11 @@ void simple_ping_responder(TDataPumpHelper& sdh, typename TDataPumpHelper::datap
         encoder.complete();
 
 #ifdef FEATURE_EMBR_DATAPUMP_INLINE
-        sdh.enqueue(std::move(encoder.netbuf()), ipaddr, datapump);
+        datapump.enqueue_out(std::move(encoder.netbuf()), ipaddr);
+        //sdh.enqueue(std::move(encoder.netbuf()), ipaddr, datapump);
 #else
-        sdh.enqueue(encoder.netbuf(), ipaddr, datapump);
+        datapump.enqueue_out(encoder.netbuf(), ipaddr);
+        //sdh.enqueue(encoder.netbuf(), ipaddr, datapump);
 #endif
     }
 }
