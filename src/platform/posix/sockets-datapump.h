@@ -13,6 +13,11 @@ typedef moducom::coap::experimental::Retry<moducom::coap::NetBufDynamicExperimen
 
 extern sockets_datapump_t sockets_datapump;
 
+}}
+
+
+namespace embr { namespace experimental {
+
 template <>
 struct address_traits<sockaddr_in>
 {
@@ -21,6 +26,7 @@ struct address_traits<sockaddr_in>
         return from.sin_addr.s_addr == to.sin_addr.s_addr;
     }
 };
+
 
 
 }}
@@ -45,7 +51,7 @@ public:
     typedef sockets_datapump_t::addr_t addr_t;
     typedef sockets_datapump_t::netbuf_t netbuf_t;
     typedef sockets_datapump_t datapump_t;
-    typedef sockets_datapump_t::datapump_observer_t datapump_observer_t;
+    //typedef sockets_datapump_t::datapump_observer_t datapump_observer_t;
 
     SocketsDatapumpHelper() :
         sockfd(nonblocking_datapump_setup())
@@ -98,9 +104,9 @@ public:
     {
 #ifdef FEATURE_MCCOAP_RELIABLE
         bool is_con = retry.is_con(netbuf);
-        datapump_observer_t* observer = &retry.enqueue(netbuf, addr_out);
+        //datapump_observer_t* observer = &retry.enqueue(netbuf, addr_out);
 #else
-        datapump_observer_t* observer = NULLPTR;
+        //datapump_observer_t* observer = NULLPTR;
 #endif
 
         datapump.enqueue_out(std::forward<netbuf_t>(netbuf), addr_out, observer);
@@ -112,12 +118,12 @@ public:
     {
 #ifdef FEATURE_MCCOAP_RELIABLE
         bool is_con = retry.is_con(netbuf);
-        datapump_observer_t* observer = &retry.enqueue(netbuf, addr_out);
+        //datapump_observer_t* observer = &retry.enqueue(netbuf, addr_out);
 #else
-        datapump_observer_t* observer = NULLPTR;
+        //datapump_observer_t* observer = NULLPTR;
 #endif
 
-        datapump.enqueue_out(netbuf, addr_out, observer);
+        datapump.enqueue_out(netbuf, addr_out);
     }
 #endif
 };

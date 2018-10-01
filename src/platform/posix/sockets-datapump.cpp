@@ -68,7 +68,7 @@ void nonblocking_datapump_loop(int sockfd, sockets_datapump_t& sockets_datapump)
 
         cli_addr = item.addr();
 
-        item.on_message_transmitting();
+        //item.on_message_transmitting();
 
         netbuf_t* netbuf_out = item.netbuf(); // an item *always* has a valid netbuf at this point
 
