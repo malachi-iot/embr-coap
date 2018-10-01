@@ -13,6 +13,8 @@
 
 #include <coap/streambuf-encoder.h>
 
+#include "test-data.h"
+
 using namespace moducom::coap;
 using namespace moducom::pipeline;
 
@@ -203,10 +205,12 @@ TEST_CASE("CoAP encoder tests", "[coap-encoder]")
 
         uint8_t buffer[128];
         estd::span<uint8_t> span(buffer, 128);
-        Header header;
+        Header header(Header::TypeEnum::Confirmable);
 
-        header.type(Header::TypeEnum::NonConfirmable);
-        header.message_id(0x1234);
+        // FIX: pretty sure buffer_16bit_delta is labelled wrong and it is not
+        // a GET operation after all - but should be
+        //header.code(Header::Code::Codes::Get);
+        header.message_id(0x0123);
 
         SECTION("Test 1")
         {
@@ -215,6 +219,14 @@ TEST_CASE("CoAP encoder tests", "[coap-encoder]")
             encoder.header(header);
             encoder.option(Option::Numbers::UriPath, "hello");
             encoder.option(Option::Numbers::UriPath, test_str);
+            encoder.option(Option::Numbers::Size1); // synthetic size 0
+            encoder.payload();
+            encoder.rdbuf()->sputn("PAYLOAD", 7);
+
+            REQUIRE(buffer_16bit_delta[0] == buffer[0]);
+            REQUIRE(buffer_16bit_delta[1] == buffer[1]);
+            REQUIRE(buffer_16bit_delta[2] == buffer[2]);
+            REQUIRE(buffer_16bit_delta[3] == buffer[3]);
         }
     }
 }
