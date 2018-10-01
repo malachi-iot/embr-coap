@@ -11,6 +11,7 @@
 #include <poll.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include <arpa/inet.h>  // for inet_addr
 #include <signal.h> // for POLL_IN
 
 using namespace moducom::coap;
@@ -31,7 +32,7 @@ static void error(const char *msg)
     exit(1);
 }
 
-static int initialize_udp_socket(int port)
+static int initialize_udp_socket(int port, bool multicast_listen = true)
 {
     int sockfd = socket(AF_INET, SOCK_DGRAM, 0);
     sockaddr_in serv_addr;
@@ -45,6 +46,23 @@ static int initialize_udp_socket(int port)
     if (bind(sockfd, (sockaddr *) &serv_addr,
              sizeof(serv_addr)) < 0)
         error("ERROR on binding");
+
+    // from https://gist.github.com/hostilefork/f7cae3dc33e7416f2dd25a402857b6c6
+    // here's multicast magic
+    if(multicast_listen)
+    {
+        struct ip_mreq mreq;
+        const char* group = "224.0.1.187"; // hardcoded to CoAP group listener address
+        mreq.imr_multiaddr.s_addr = inet_addr(group);
+        mreq.imr_interface.s_addr = htonl(INADDR_ANY);
+        if (
+                setsockopt(
+                        sockfd, IPPROTO_IP, IP_ADD_MEMBERSHIP, (char*) &mreq, sizeof(mreq)
+                ) < 0
+                ){
+            error("setsockopt");
+        }
+    }
 
     return sockfd;
 }
@@ -150,6 +168,7 @@ void nonblocking_datapump_loop(int sockfd, sockets_datapump_t& sockets_datapump)
         //std::clog << " port=" << cli_addr.sin_port;
         std::clog << std::endl;
 
+        // indicate to netbuf exactly how many bytes are present for consumer to process
         netbuf_in->advance(n);
 
         sockets_datapump.transport_in(
