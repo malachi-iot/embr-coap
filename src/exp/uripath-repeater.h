@@ -9,6 +9,12 @@
 #include <estd/ostream.h>
 #include <estd/stack.h>
 
+#include <estd/sstream.h>
+#include <estd/internal/ostream_basic_string.hpp>
+#include <estd/optional.h>
+
+#include <embr/observer.h>
+
 // embr subject/observer version of uripath handlers
 // hangs off new embr-based decoder subject
 namespace moducom { namespace coap {
@@ -393,6 +399,175 @@ struct UriPathRepeater
     }
 };
 
+
+
+template <class TStream>
+struct ostream_event
+{
+#ifdef FEATURE_CPP_STATIC_ASSERT
+    // TODO: assert that we really are getting an ostream here
+#endif
+
+    TStream& ostream;
+
+    ostream_event(TStream& ostream) : ostream(ostream) {}
+};
+
+
+
+template <class TStream>
+///
+/// \brief Event for evaluating a well-known CoRE request against a particular service node
+///
+/// In particular this event is used for producing specialized output for the distinct URI node
+/// reported in the CoRE response (i.e. you can use ostream to spit out ';title="something"' or
+/// similar
+///
+/// Also has experimental helpers (title, content_type, size) which further compound the unusual
+/// aspect of semi-writing-to an event
+///
+struct node_core_event : ostream_event<TStream>
+{
+    const int node_id;
+    typedef ostream_event<TStream> base_type;
+
+    node_core_event(int node_id, TStream& ostream) :
+        base_type(ostream),
+        node_id(node_id)
+    {}
+
+    template <class T>
+    void title(const T& value) const
+    {
+        base_type::ostream << ";title=\"" << value << '"';
+    }
+
+    void content_type(unsigned value) const
+    {
+        base_type::ostream << ";ct=" << value;
+    }
+
+    void size(unsigned value) const
+    {
+        base_type::ostream << ";sz=" << value;
+    }
+};
+
+
+struct title_tacker
+{
+    // FIX: May be slight abuse because events are supposed to be read only,
+    // but this ostream use isn't quite that.  Works, though
+    template <class TStream>
+    void on_notify(const node_core_event<TStream>& e)
+    {
+        e.title("test");
+        // FIX: As is the case also with SAMD chips, the numeric output is broken
+        //e.size(e.node_id * 100);
+    }
+};
+
+
+
+
+// foundational/poc for emitter of CoRE for /.well-known/core responder
+struct core_evaluator
+{
+    // all uripath nodes which actually have CoRE data associated
+    // with them
+    // TODO: A map would be better instead of a layer3 array
+    estd::layer3::array<CoREData, uint8_t> coredata;
+
+    // breadcrumb tracker for hierarchical navigation of nodes
+    estd::layer1::stack<const UriPathMap*, 10> parents;
+
+    core_evaluator(estd::layer3::array<CoREData, uint8_t> coredata) :
+        coredata(coredata) {}
+
+    template <class TOStream>
+    // NOTE: Does not include delimiter
+    // returns true if this node actually is present in coredata list
+    bool
+    //estd::optional<int>  // FIX: estd::optional int broken, can't assign int to it
+    evaluate(const known_uri_event& e, TOStream& out)
+    {
+        typedef typename estd::remove_reference<TOStream>::type ostream_type;
+        // 'top' aka the back/last/current parent
+
+        // if the last parent id we are looking at doesn't match incoming
+        // observed one, back it out until it does match the observed one
+        while(!parents.empty() && parents.top()->second != e.parent_id())
+            parents.pop();
+
+        // when we arrive here, we're either positioned in 'parents' at the
+        // matching parent OR it's empty
+        parents.push(&e.path_map);
+
+        // TODO: Need a way to aggregate CoRE datasources here
+        // and maybe some should be stateful vs the current semi-global
+        const auto& result = std::find_if(coredata.begin(), coredata.end(),
+                                    [&](const CoREData& value)
+        {
+            return value.node == e.node_id();
+        });
+
+        // only spit out CoRE results for nodes with proper metadata.  Eventually
+        // maybe we can auto-deduce based on some other clues reflecting that we
+        // service a particular uri-path chain
+        if(result != coredata.end())
+        {
+            out << '<';
+
+            // in atypical queue/stack usage we push to the back but evaluate (but not
+            // pop) the front/bottom.  This way we can tack on more and more uri's to reflect
+            // our hierarchy level, then pop them off as we leave
+            // NOTE: our layer1::stack can do this but the default stack cannot
+#ifdef FEATURE_CPP_RANGED_FORLOOP
+            for(const auto& parent_node : parents)
+                out << '/' << parent_node->first;
+#else
+#error Not yet supported
+#endif
+
+            out << '>' << *result;
+
+            //return result->node;
+            return true;
+        }
+
+        //return estd::nullopt;
+        return false;
+    }
+};
+
+struct core_observer : core_evaluator
+{
+    core_observer(estd::layer3::array<CoREData, uint8_t> coredata) :
+        core_evaluator(coredata) {}
+
+    typedef estd::experimental::ostringstream<256> ostream_type;
+
+    // in non-proof of concept, this won't be inline with the observer
+    ostream_type buf;
+
+    // NOTE: doing this via notify but perhaps could easily do a more straight
+    // ahead sequential version
+    void on_notify(const known_uri_event& e)
+    {
+        // if false, this node isn't a CoRE participator
+        if(!evaluate(e, buf)) return;
+
+        // tack on other link attributes
+        node_core_event<ostream_type> _e(e.node_id(), buf);
+
+        auto link_attribute_evaluator2 = embr::layer1::make_subject(title_tacker());
+        link_attribute_evaluator2.notify(_e);
+
+        // TODO: We'll need to intelligently spit out a comma
+        // and NOT endl unless we specifically are in a debug mode
+        buf << estd::endl;
+    }
+};
 
 }
 
