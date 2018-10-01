@@ -2,7 +2,7 @@
 #include <coap/decoder.h>
 #include <coap/decoder/subject.h>
 #include <mc/memory-chunk.h>
-#include <exp/datapump.h>
+#include <embr/datapump.h>
 #include <estd/string.h>
 
 using namespace std;
@@ -45,7 +45,7 @@ void simple_ping_responder(TDataPumpHelper& sdh, typename TDataPumpHelper::datap
         }
 #endif
 
-#ifdef FEATURE_MCCOAP_DATAPUMP_INLINE
+#ifdef FEATURE_EMBR_DATAPUMP_INLINE
         NetBufEncoder<netbuf_t> encoder;
 #else
         // FIX: Need a much more cohesive way of doing this
@@ -65,8 +65,8 @@ void simple_ping_responder(TDataPumpHelper& sdh, typename TDataPumpHelper::datap
         // size - a mechanism which is fully outside the scope of the encoder
         encoder.complete();
 
-#ifdef FEATURE_MCCOAP_DATAPUMP_INLINE
-        sdh.enqueue(std::forward<netbuf_t>(encoder.netbuf()), ipaddr, datapump);
+#ifdef FEATURE_EMBR_DATAPUMP_INLINE
+        sdh.enqueue(std::move(encoder.netbuf()), ipaddr, datapump);
 #else
         sdh.enqueue(encoder.netbuf(), ipaddr, datapump);
 #endif

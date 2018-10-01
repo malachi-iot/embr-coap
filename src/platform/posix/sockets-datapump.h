@@ -5,6 +5,10 @@
 #include <netinet/in.h>
 #include "../generic/malloc_netbuf.h"
 
+// NOTE: sockets datapump, at its core, is actually a typedef of embr::DataPump with a sockets-specific
+// transport descriptor.  The meat of the sockets-datapump.* files actually contain SocketsDatapumpHelper
+// which works more with the transport than anything (could eventually be rolled into transport & dataport
+// code probably)
 namespace moducom { namespace coap {
 
 typedef embr::TransportDescriptor<moducom::coap::NetBufDynamicExperimental, sockaddr_in> transport_descriptor_t;
