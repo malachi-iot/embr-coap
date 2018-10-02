@@ -105,6 +105,12 @@ int main()
                     // One bad path and we're back to not found again
                     found_id = path != NULLPTR ? path->second : -1;
                 }
+                else if(number == Option::UriQuery)
+                {
+                    // Just for debug purposes to inspect incoming UriQuery - we
+                    // don't do anything with it yet
+                    estd::layer3::const_string s = it.string();
+                }
             }
 
 #ifdef FEATURE_EMBR_DATAPUMP_INLINE
@@ -124,9 +130,10 @@ int main()
             encoder.token(token);
             encoder.payload_header();
 
+            // if in fact uripath == /.well-known/core
             if(found_id == id_wellknown_core)
             {
-                // setup CoRE evaluator which only responds to paths who actually
+                // setup CoRE evaluator which only finds paths who actually
                 // are associated with CoRE data
                 experimental::core_evaluator ce(coredata);
 
@@ -143,7 +150,10 @@ int main()
                 {
                     bool is_core = ce.evaluate(experimental::known_uri_event(path), out);
 
-                    is_core |= extra_link_attribute_handler(path, out);
+                    // NOTE: 'paths' treated as canonical source for what CoRE paths are
+                    // revealed, but doesn't have to be
+                    if(is_core)
+                        extra_link_attribute_handler(path, out);
 
                     if(is_core)
                         out << ',';

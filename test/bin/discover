@@ -1,5 +1,6 @@
 #!/bin/bash
 
 ALL_NODES=224.0.1.187
+SUFFIX=?rt=test_rt
 
-coap -c get coap://$ALL_NODES/.well-known/core
+coap -c get coap://$ALL_NODES/.well-known/core$SUFFIX
