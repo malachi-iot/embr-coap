@@ -11,14 +11,16 @@
 
 using namespace moducom::coap;
 
+constexpr int id_test1 = 2;
+constexpr int id_test2 = 3;
 constexpr int id_wellknown_core = 5;
 
 static experimental::UriPathMap paths[] =
 {
-    { "v1",     0,      -1 },
-    { "api",    1,      0 },
-    { "test1",  2,      1 },
-    { "test2",  3,      1 },
+    { "v1",     0,          -1 },
+    { "api",    1,          0 },
+    { "test1",  id_test1,   1 },
+    { "test2",  id_test2,   1 },
 
     { ".well-known",    4,      -1 },
     { "core",           id_wellknown_core,      4 }
@@ -26,9 +28,24 @@ static experimental::UriPathMap paths[] =
 
 static experimental::CoREData coredata[] =
 {
-    { 2, "test1_resource", "test_interface" },
-    { 3, "test2_resource", "test_interface" }
+    { id_test1, "test1_resource", "test_interface" },
+    { id_test2, "test2_resource", "test_interface" }
 };
+
+
+template <class TOStream>
+static bool extra_link_attribute_handler(experimental::UriPathMap& path, TOStream& out)
+{
+    switch(path.second)
+    {
+        case id_test1:
+            out << ";title=\"test title 1\"";
+            return true;
+
+        default:
+            return false;
+    }
+}
 
 int main()
 {
@@ -115,6 +132,8 @@ int main()
             // here
             if(*found_id == id_wellknown_core)
             {
+                // setup CoRE evaluator which only responds to paths who actually
+                // are associated with CoRE data
                 experimental::core_evaluator ce(coredata);
 
                 // sorta-wrap-up netbuf with a streambuf (span won't be able to advance or
@@ -128,7 +147,11 @@ int main()
                 //  at which point it's too late)
                 for(auto& path : paths)
                 {
-                    if(ce.evaluate(experimental::known_uri_event(path), out))
+                    bool is_core = ce.evaluate(experimental::known_uri_event(path), out);
+
+                    is_core |= extra_link_attribute_handler(path, out);
+
+                    if(is_core)
                         out << ',';
                 }
 

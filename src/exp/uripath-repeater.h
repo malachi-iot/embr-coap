@@ -471,6 +471,8 @@ struct title_tacker
 
 
 // foundational/poc for emitter of CoRE for /.well-known/core responder
+// mainly has advantage of decoupling programmer from fiddling with specific
+// TOStream types
 struct core_evaluator
 {
     // all uripath nodes which actually have CoRE data associated
@@ -484,6 +486,18 @@ struct core_evaluator
     core_evaluator(estd::layer3::array<CoREData, uint8_t> coredata) :
         coredata(coredata) {}
 
+    void parent_handler(const known_uri_event& e)
+    {
+        // if the last parent id we are looking at doesn't match incoming
+        // observed one, back it out until it does match the observed one
+        while(!parents.empty() && parents.top()->second != e.parent_id())
+            parents.pop();
+
+        // when we arrive here, we're either positioned in 'parents' at the
+        // matching parent OR it's empty
+        parents.push(&e.path_map);
+    }
+
     template <class TOStream>
     // NOTE: Does not include delimiter
     // returns true if this node actually is present in coredata list
@@ -494,14 +508,7 @@ struct core_evaluator
         typedef typename estd::remove_reference<TOStream>::type ostream_type;
         // 'top' aka the back/last/current parent
 
-        // if the last parent id we are looking at doesn't match incoming
-        // observed one, back it out until it does match the observed one
-        while(!parents.empty() && parents.top()->second != e.parent_id())
-            parents.pop();
-
-        // when we arrive here, we're either positioned in 'parents' at the
-        // matching parent OR it's empty
-        parents.push(&e.path_map);
+        parent_handler(e);
 
         // TODO: Need a way to aggregate CoRE datasources here
         // and maybe some should be stateful vs the current semi-global
