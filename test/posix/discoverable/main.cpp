@@ -4,7 +4,6 @@
 
 #include <coap/encoder.h>
 #include <coap/decoder.h>
-#include <coap/decoder/subject.h>
 
 using namespace moducom::coap;
 
@@ -33,7 +32,6 @@ int main()
             // hold on to ipaddr for when we enqueue a response
             addr_t ipaddr = item.addr();
 
-            //decoder_t decoder(*sdh.front(&ipaddr, datapump));
             decoder_t decoder(*item.netbuf());
 
             Header header_in = decoder.header();
@@ -61,9 +59,6 @@ int main()
 
             encoder.header(create_response(header_in, Header::Code::Content));
             encoder.token(token);
-            // optional and experimental.  Really I think we can do away with encoder.complete()
-            // because coap messages are indicated complete mainly by reaching the transport packet
-            // size - a mechanism which is fully outside the scope of the encoder
             encoder.complete();
 
 #ifdef FEATURE_EMBR_DATAPUMP_INLINE
