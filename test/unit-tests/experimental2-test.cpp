@@ -251,12 +251,12 @@ TEST_CASE("experimental 2 tests")
         sax_responder observer;
         // TODO: fixup layer3::array so that it can copy between different size_t
         // variations of itself (especially upcasting to higher precision)
-        core_observer observer2(estd::layer3::make_array(coredata));
+        core_observer<> observer2(estd::layer3::make_array(coredata));
         // this will make a subject with a reference to 'observer'
         auto subject = embr::layer1::make_subject(observer, observer2);
         matcher.notify(subject);
 
-        const auto& underlying_string = observer2.buf.rdbuf()->str();
+        const auto& underlying_string = observer2.out.rdbuf()->str();
 
         std::cout << underlying_string;
         //REQUIRE(underlying_string == "v1\napi\npower\n");

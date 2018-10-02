@@ -104,9 +104,6 @@ int main()
 
                     // One bad path and we're back to not found again
                     found_id = path != NULLPTR ? path->second : -1;
-                    // TODO: Make a found_id reset, though we wouldn't use it here
-                    // anyway
-                    //found_id.reset();
                 }
             }
 
@@ -127,10 +124,7 @@ int main()
             encoder.token(token);
             encoder.payload_header();
 
-            // TODO: Make 'optional' external == (and friends)
-            // for now we do this - it's OK, since a -1 won't enter
-            // here
-            if(*found_id == id_wellknown_core)
+            if(found_id == id_wellknown_core)
             {
                 // setup CoRE evaluator which only responds to paths who actually
                 // are associated with CoRE data

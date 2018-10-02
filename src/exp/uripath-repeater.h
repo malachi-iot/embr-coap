@@ -547,32 +547,33 @@ struct core_evaluator
     }
 };
 
+template <class TOStream = estd::experimental::ostringstream<256> >
 struct core_observer : core_evaluator
 {
     core_observer(estd::layer3::array<CoREData, uint8_t> coredata) :
         core_evaluator(coredata) {}
 
-    typedef estd::experimental::ostringstream<256> ostream_type;
+    typedef TOStream ostream_type;
 
     // in non-proof of concept, this won't be inline with the observer
-    ostream_type buf;
+    ostream_type out;
 
     // NOTE: doing this via notify but perhaps could easily do a more straight
     // ahead sequential version
     void on_notify(const known_uri_event& e)
     {
         // if false, this node isn't a CoRE participator
-        if(!evaluate(e, buf)) return;
+        if(!evaluate(e, out)) return;
 
         // tack on other link attributes
-        node_core_event<ostream_type> _e(e.node_id(), buf);
+        node_core_event<ostream_type> _e(e.node_id(), out);
 
         auto link_attribute_evaluator2 = embr::layer1::make_subject(title_tacker());
         link_attribute_evaluator2.notify(_e);
 
         // TODO: We'll need to intelligently spit out a comma
         // and NOT endl unless we specifically are in a debug mode
-        buf << estd::endl;
+        out << estd::endl;
     }
 };
 
