@@ -19,11 +19,13 @@ int main()
 
     SocketsDatapumpHelper sdh;
 
+    sockets_datapump_t datapump;
+
     for(;;)
     {
-        sdh.loop(sockets_datapump);
+        sdh.loop(datapump);
 
-        simple_ping_responder(sockets_datapump);
+        simple_ping_responder(datapump);
     }
 
     return 0;

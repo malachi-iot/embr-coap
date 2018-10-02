@@ -18,15 +18,17 @@ using namespace moducom::coap;
 
 typedef NetBufDynamicExperimental netbuf_t;
 
-namespace moducom { namespace coap {
-
-// TODO: this global variable is nearly phased out now
-sockets_datapump_t sockets_datapump;
-
-}}
-
 #define COAP_UDP_PORT 5683
 
+// FIX: cheap and nasty way to semi-deduce C++11
+// really we should do this more properly up in the platform.h file
+#ifdef FEATURE_CPP_DECLTYPE
+#define FEATURE_CPP_ATTRIBUTE
+#endif
+
+#ifdef FEATURE_CPP_ATTRIBUTE
+[[noreturn]]
+#endif
 static void error(const char *msg)
 {
     perror(msg);
@@ -198,12 +200,12 @@ int nonblocking_datapump_shutdown(int sockfd)
 
 // goes into loop to listen manage datapump + sockets
 // NOTE: technically with just a bit of templating this could be non-datapump specific
-int blocking_datapump_handler(volatile const bool& service_active)
+int blocking_datapump_handler(volatile const bool& service_active, sockets_datapump_t& datapump)
 {
     int sockfd = nonblocking_datapump_setup();
 
     while(service_active)
-        nonblocking_datapump_loop(sockfd);
+        nonblocking_datapump_loop(sockfd, datapump);
 
     return nonblocking_datapump_shutdown(sockfd);
 }

@@ -15,8 +15,6 @@ typedef embr::TransportDescriptor<moducom::coap::NetBufDynamicExperimental, sock
 typedef embr::DataPump<transport_descriptor_t> sockets_datapump_t;
 typedef moducom::coap::experimental::Retry<moducom::coap::NetBufDynamicExperimental, sockaddr_in> sockets_retry_t;
 
-extern sockets_datapump_t sockets_datapump;
-
 }}
 
 
@@ -36,7 +34,7 @@ struct address_traits<sockaddr_in>
 }}
 
 int nonblocking_datapump_setup();
-void nonblocking_datapump_loop(int h, moducom::coap::sockets_datapump_t& datapump = moducom::coap::sockets_datapump);
+void nonblocking_datapump_loop(int h, moducom::coap::sockets_datapump_t& datapump);
 int nonblocking_datapump_shutdown(int);
 
 namespace moducom { namespace coap {
