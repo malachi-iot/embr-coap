@@ -179,6 +179,20 @@ TEST_CASE("netbuf+coap tests", "[netbuf-coap]")
             REQUIRE(decoder.state() == Decoder::Payload);
         }
     }
+    SECTION("token decoding")
+    {
+        NetBufDecoder<NetBufReadOnlyMemory> decoder(buffer_with_token);
+
+        Header header = decoder.header();
+
+        REQUIRE(header.token_length() == 2);
+
+        moducom::coap::layer3::Token token = decoder.token();
+
+        REQUIRE(token.size() == 2);
+        REQUIRE(token.data()[0] == 0x77);
+        REQUIRE(token.data()[1] == 0x78);
+    }
     SECTION("embr based netbuf")
     {
         typedef embr::mem::experimental::NetBufDynamic<> netbuf_t;

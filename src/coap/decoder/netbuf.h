@@ -114,6 +114,9 @@ protected:
         // assert we're starting at headerdone, and expect to move to end of TokenDone
         process_iterate(Decoder::HeaderDone);
 
+        if(tkl > 0)
+            ASSERT_ERROR(Decoder::Token, state(), "Expected token state here");
+
         // won't proceed unless enough bytes have been processed to form a complete token
         // (we queue it up in this decoder)
         // if token bytes are present, we'll move through Decoder::Token state
@@ -139,7 +142,9 @@ public:
 
         process_until_experimental(Decoder::HeaderDone);
 
-        return header_decoder();
+        coap::Header header = header_decoder();
+
+        return header;
     }
 
     // returns true if we consumed enough bytes to produce a complete token.  NOTE this

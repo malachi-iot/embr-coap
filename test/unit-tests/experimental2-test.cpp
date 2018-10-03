@@ -246,8 +246,8 @@ TEST_CASE("experimental 2 tests")
 
         //auto _coredata = estd::layer2::make_array(coredata);
 
-
-
+        SECTION("main")
+        {
         sax_responder observer;
         // TODO: fixup layer3::array so that it can copy between different size_t
         // variations of itself (especially upcasting to higher precision)
@@ -299,6 +299,7 @@ TEST_CASE("experimental 2 tests")
         moducom::coap::experimental::FactoryAggregator<int, decltype (t)&> fa(t);
 
         fa.create(1);
+        }
 
         SECTION("decoder interaction")
         {

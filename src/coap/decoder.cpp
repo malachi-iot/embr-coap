@@ -75,6 +75,11 @@ bool Decoder::process_iterate(Context& context)
                 state(TokenDone);
             break;
 
+        // NOTE: Dormant
+        case TokenStart:
+            state(Token);
+            break;
+
         case Token:
         {
             bool process_done = decoder_base_t::token_process_iterate(context);

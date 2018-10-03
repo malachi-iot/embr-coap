@@ -174,6 +174,7 @@ public:
         Uninitialized,
         Header,
         HeaderDone,
+        TokenStart, // currently unused
         Token,
         TokenDone,
         OptionsStart,

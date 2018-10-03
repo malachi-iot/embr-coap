@@ -30,6 +30,14 @@ static uint8_t buffer_plausible[] = {
         0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16
 };
 
+static uint8_t buffer_with_token[] = {
+    0x42, 0x01, 0x01, 0x23, // 4: mid = 123, tkl = 2, GET
+    0x77, 0x78,             // 2: token of 0x7778
+
+    0xFF,
+    'h', 'i'
+};
+
 
 const static uint8_t buffer_payload_only[] =
 {
