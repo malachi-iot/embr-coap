@@ -124,6 +124,17 @@ public:
         return true;
     }
 
+
+    ///
+    /// \brief output payload marker
+    ///
+    /// better name than payload header... header you have to infer the meaning, but marker
+    /// is the actual proper name of the 0xFF
+    ///
+    /// \return
+    ///
+    bool payload_marker() { return payload_header(); }
+
     // ensures payload marker is written and then returns current netbuf unprocessed
     // chunk ptr
     uint8_t* payload()

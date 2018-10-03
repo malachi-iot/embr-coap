@@ -217,6 +217,18 @@ public:
     }
 
 
+    // semi-experimental, could be fat copying ctx around.  However,
+    // pretty sure RVO will kick in
+    TokenAndHeaderContext<true, false> header_and_token()
+    {
+        TokenAndHeaderContext<true, false> ctx;
+
+        ctx.header(header());
+        ctx.token(token());
+
+        return ctx;
+    }
+
     ro_chunk_t option(bool* completed = NULLPTR)
     {
         return base_t::option(context, completed);

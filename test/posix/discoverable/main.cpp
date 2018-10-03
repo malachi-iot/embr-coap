@@ -76,12 +76,7 @@ int main()
 
             decoder_t decoder(*item.netbuf());
 
-            Header header_in = decoder.header();
-
-            layer2::Token token;
-
-            // populate token, if present.  Expects decoder to be at HeaderDone phase
-            decoder.token(&token);
+            auto ctx = decoder.header_and_token();
 
             // evaluate options
             option_iterator<decoder_t> it(decoder);
@@ -128,9 +123,8 @@ int main()
 
             Header::Code::Codes code = found_id ? Header::Code::Content : Header::Code::NotFound;
 
-            encoder.header(create_response(header_in, code));
-            encoder.token(token);
-            encoder.payload_header();
+            encoder.header_and_token(ctx, code);
+            encoder.payload_marker();
 
             // if in fact uripath == /.well-known/core
             if(found_id == id_wellknown_core)
