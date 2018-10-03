@@ -63,9 +63,7 @@ bool Decoder::process_iterate(Context& context)
         case HeaderDone:
             if(header_decoder().token_length() > 0)
             {
-                state(Token);
-                // TODO: May want a TokenStart state
-                init_token_decoder();
+                state(TokenStart);
             }
             else
                 // We used to skip this and go direct to OptionsStart, which is not a terrible idea
@@ -78,6 +76,7 @@ bool Decoder::process_iterate(Context& context)
         // NOTE: Dormant
         case TokenStart:
             state(Token);
+            init_token_decoder();
             break;
 
         case Token:

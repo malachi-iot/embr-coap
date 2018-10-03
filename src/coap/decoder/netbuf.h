@@ -8,6 +8,7 @@
 #include "coap/decoder.h"
 #include "coap-token.h"
 #include <estd/string.h>
+#include <estd/optional.h>
 #include "coap-uint.h"
 #include "coap/context.h"
 
@@ -107,21 +108,25 @@ protected:
         return false;
     }
 
-    int8_t preprocess_token()
+    // evaluate if we are on TokenStart or TokenDone
+    // (new utilization of existing state machine we eagerly
+    //  move to next 'start')
+    estd::layer1::optional<int8_t, -1> preprocess_token()
     {
-        int8_t tkl = header_decoder().token_length();
+        // escape route for no-token scenario
+        if(state() == Decoder::TokenDone) return estd::nullopt;
 
-        // assert we're starting at headerdone, and expect to move to end of TokenDone
-        process_iterate(Decoder::HeaderDone);
+        estd::layer1::optional<int8_t, -1> tkl = header_decoder().token_length();
 
-        if(tkl > 0)
-            ASSERT_ERROR(Decoder::Token, state(), "Expected token state here");
+        // assert we're starting at TokenStart, and expect to move to end of TokenDone
+        process_iterate(Decoder::TokenStart);
+
 
         // won't proceed unless enough bytes have been processed to form a complete token
         // (we queue it up in this decoder)
         // if token bytes are present, we'll move through Decoder::Token state
         // if no token bytes are present, we'll move directly to Decoder::TokenDone
-        if(!process_until_experimental(Decoder::TokenDone)) return -1;
+        if(!process_until_experimental(Decoder::TokenDone)) return estd::nullopt;
 
         return tkl;
     }
@@ -144,6 +149,10 @@ public:
 
         coap::Header header = header_decoder();
 
+        // will move us to TokenStart if token is present, or TokenDone immediately
+        // if no token is present
+        process_iterate();
+
         return header;
     }
 
@@ -152,12 +161,12 @@ public:
     // returnse false otherwise
     bool token(layer2::Token* token)
     {
-        int tkl = preprocess_token();
+        estd::layer1::optional<int8_t, -1> tkl = preprocess_token();
 
-        if(tkl < 0) return false;
+        if(!tkl) return false;
 
-        if(tkl > 0)
-            new (token) layer2::Token(token_decoder().data(), tkl);
+        if(*tkl > 0)
+            new (token) layer2::Token(token_decoder().data(), *tkl);
         else
             new (token) layer2::Token(NULLPTR, 0);
 
@@ -175,14 +184,14 @@ public:
     //   are a non-fragmented header+token
     layer3::Token token(bool* completed = NULLPTR)
     {
-        int tkl = preprocess_token();
+        estd::layer1::optional<int8_t, -1> tkl = preprocess_token();
 
-        if(completed != NULLPTR) *completed = tkl >= 0;
+        if(completed != NULLPTR) *completed = tkl.has_value();
 
-        // NOTE: We'll be assembling a layer3::Token with a -1 length here if completed isn't
-        // set to true.  So a 2nd way to detect unfinished token processing, but a bit more
-        // obscure
-        return layer3::Token(token_decoder().data(), tkl);
+        if(tkl)
+            return layer3::Token(token_decoder().data(), *tkl);
+        else
+            return layer3::Token(NULLPTR, 0);
     }
 
 

@@ -78,6 +78,7 @@ TEST_CASE("netbuf+coap tests", "[netbuf-coap]")
         Header header = decoder.header();
 
         REQUIRE(header.message_id() == 0x0123);
+        REQUIRE(header.token_length() == 0);
 
         moducom::coap::layer3::Token token = decoder.token();
 
