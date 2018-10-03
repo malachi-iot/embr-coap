@@ -111,23 +111,20 @@ protected:
     // evaluate if we are on TokenStart or TokenDone
     // (new utilization of existing state machine we eagerly
     //  move to next 'start')
-    estd::layer1::optional<int8_t, -1> preprocess_token()
+    estd::layer1::optional<uint8_t, 255> preprocess_token()
     {
         // escape route for no-token scenario.  We actually blast by TokenDone
         // so also OptionsStart would abort scenario.   All these abort scenarios
         // produce null/empty tokens which loosely corresponds to spec (spec
         // indicates a token is always present.... even if it's 0 length)
-        if(state() == Decoder::TokenDone) return estd::nullopt;
-
-        if(state() == Decoder::OptionsStart)
-        {
-            //ASSERT_ERROR(false, true, "Attempted token processing when none was available")
-            return estd::nullopt;
-        }
+        // Because it's a spec thing, we'll not issue warnings when generating
+        // a 0 length token here
+        if(state() == Decoder::TokenDone) return 0;
+        if(state() == Decoder::OptionsStart) return 0;
 
         // hold onto tkl here because once we start token processing, token_decoder() may clobber
         // the value
-        estd::layer1::optional<int8_t, -1> tkl = header_decoder().token_length();
+        estd::layer1::optional<uint8_t, 255> tkl = header_decoder().token_length();
 
         // assert we're starting at TokenStart, and expect to move to end of TokenDone
         process_iterate(Decoder::TokenStart);
@@ -180,16 +177,18 @@ public:
     // returnse false otherwise
     bool token(layer2::Token* token)
     {
-        estd::layer1::optional<int8_t, -1> tkl = preprocess_token();
+        // -1/no value means only partial token available
+        estd::layer1::optional<uint8_t, 255> tkl = preprocess_token();
 
-        if(!tkl) return false;
-
-        if(*tkl > 0)
+        if(tkl)
             new (token) layer2::Token(token_decoder().data(), *tkl);
-        else
-            new (token) layer2::Token(NULLPTR, 0);
 
-        return true;
+        // after yanking out token, this will move us from OptionsStart
+        // to either Options or OptionsDone.  More eagerness, so that
+        // we're 100% positioned on any interesting option(s)
+        //process_iterate();
+
+        return tkl;
     }
 
     // by its nature, this will be less efficient than a layer2::Token
@@ -203,14 +202,18 @@ public:
     //   are a non-fragmented header+token
     layer3::Token token(bool* completed = NULLPTR)
     {
-        estd::layer1::optional<int8_t, -1> tkl = preprocess_token();
+        estd::layer1::optional<uint8_t, 255> tkl = preprocess_token();
 
         if(completed != NULLPTR) *completed = tkl.has_value();
 
-        if(tkl)
-            return layer3::Token(token_decoder().data(), *tkl);
-        else
-            return layer3::Token(NULLPTR, 0);
+        // NOTE: May want to pass in a layer3::Token* instead, so that we
+        // can return false like above
+        layer3::Token t(token_decoder().data(), tkl ? *tkl : 0);
+
+        // cannot embark into options here because it clobbers token_decoder().data()
+        //process_iterate();
+
+        return t;
     }
 
 
@@ -250,6 +253,9 @@ public:
         // move past header
         process_iterate();
 
+        // FIX: This could break if chunk boundary hits us in the middle of the number
+        // & value-length.  Should be as simple as repeating the process_iterate with
+        // the next context chunk populated from netbuf
         ASSERT_WARN(OptionDecoder::ValueStart, option_decoder().state(), "Must be at OptionValueStart");
     }
 protected:
@@ -353,21 +359,22 @@ public:
         return state() == Payload;
     }
 
-    ro_chunk_t payload(bool* completed = NULLPTR)
+    // NOTE: since context only reveals one buffer's worth of information,
+    // at this point we can't know if a payload is chunked or not
+    ro_chunk_t payload()
     {
         if(state() == OptionsDone)
             process_payload_header_experimental();
 
         ASSERT_WARN(Decoder::Payload, state(), "Expected to be in payload state");
 
-        //if(partial != NULLPTR)
-          //  *partial = !netbuf().eol();
-
         return context.remainder();
     }
 
 
-    // kicks off option processing
+    // kicks off option processing.  We do this explicitly so that
+    // the layer3::Token may be used (because initializing the
+    // options decoder will clobber it)
     void begin_option_experimental()
     {
         // we should be at OptionsStart here
@@ -378,11 +385,17 @@ public:
     }
 
 
-    // continues with option processing
-    void option_next_experimental()
+    ///
+    /// \brief continues with option processing
+    ///
+    /// Must be preceded by option_begin
+    ///
+    /// \return true if another option is available, false otherwise
+    ///
+    bool option_next()
     {
         // move forward past value portion / past option value start
-        process_iterate();
+        process_iterate(Decoder::Options);
 
         ASSERT_WARN(Option::OptionValueDone, option_decoder().state(), "Unexpected state");
 
@@ -393,6 +406,8 @@ public:
             // expected to be at DeltaAndLengthDone here
             process_iterate();
         }
+
+        return state() == Decoder::Options;
     }
 };
 
@@ -419,6 +434,7 @@ class option_iterator
         // as OptionsStart and then we iterate forward ourselves
         if(decoder.state() == Decoder::OptionsDone) return;
 
+        // chew on and decode option number and length
         decoder.process_option_header_experimental();
 
         value_type number = (value_type) decoder.option_number();
@@ -452,10 +468,18 @@ public:
         return decoder.state() == Decoder::Options;
     }
 
+    ///
+    /// \brief Specifically there is no postfix version
+    ///
+    /// ... since this aliases out to an underlying state machine whose state
+    /// includes a potentially forward-only netbuf
+    ///
+    /// \return
+    ///
     option_iterator& operator ++()
     {
-        decoder.option_next_experimental();
-        if(valid())
+        bool valid = decoder.option_next();
+        if(valid)
         {
 #ifdef FEATURE_ESTD_IOSTREAM_NATIVE
             std::clog << std::endl;
@@ -481,19 +505,29 @@ public:
         return temp;
     } */
 
-    operator value_type()
+    Option::Numbers number() const
     {
-        return (value_type) decoder.option_number();
+        return decoder.option_number();
     }
 
-    ro_chunk_t opaque() { return decoder.option(); }
+    operator value_type() const
+    {
+        return number();
+    }
 
+    ro_chunk_t opaque(bool* completed = NULLPTR) const
+    {
+        return decoder.option(completed);
+    }
+
+    // NOTE: if this gets chunked, right now you'll have to manually reassemble
+    // it
     template <typename TUInt>
-    TUInt uint()
+    TUInt uint(bool* completed = NULLPTR) const
     {
         // opaque will read in the entire value, no matter if the
         // int is big enough to hold it
-        ro_chunk_t v = opaque();
+        ro_chunk_t v = opaque(completed);
 
         TUInt retval = UInt::get<TUInt>(v);
 
@@ -504,7 +538,7 @@ public:
         return retval;
     }
 
-    uint8_t uint8()
+    uint8_t uint8() const
     {
         ro_chunk_t v = opaque();
 
@@ -519,12 +553,12 @@ public:
         return retval;
     }
 
-    uint16_t uint16() { return uint<uint16_t>(); }
-    uint32_t uint32() { return uint<uint32_t>(); }
+    uint16_t uint16() const { return uint<uint16_t>(); }
+    uint32_t uint32() const { return uint<uint32_t>(); }
 
-    estd::layer3::const_string string()
+    estd::layer3::const_string string(bool* completed = NULLPTR) const
     {
-        estd::layer3::const_string s = opaque();
+        estd::layer3::const_string s = opaque(completed);
 
 #ifdef FEATURE_ESTD_IOSTREAM_NATIVE
         std::clog << " (";
