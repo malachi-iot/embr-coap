@@ -83,9 +83,11 @@ int main()
             // populate token, if present.  Expects decoder to be at HeaderDone phase
             decoder.token(&token);
 
-            // skip any options
+            // evaluate options
             option_iterator<decoder_t> it(decoder, true);
-            estd::layer1::optional<int, -1> found_id;
+
+            // NOTE: if no UriPath options are present, this goes unused
+            experimental::UriPathMatcher3 uri_path_matcher(paths);
 
             for(;it.valid();++it)
             {
@@ -96,14 +98,7 @@ int main()
 
                 if(number == Option::UriPath)
                 {
-                    estd::layer3::const_string s = it.string();
-
-                    const experimental::UriPathMap* path = experimental::match(
-                                paths, sizeof(paths) / sizeof(paths[0]),
-                                s, *found_id);
-
-                    // One bad path and we're back to not found again
-                    found_id = path != NULLPTR ? path->second : -1;
+                    uri_path_matcher.find(it.string());
                 }
                 else if(number == Option::UriQuery)
                 {
@@ -112,6 +107,14 @@ int main()
                     estd::layer3::const_string s = it.string();
                 }
             }
+
+            // found_id = found node id
+            auto& found_id = uri_path_matcher.last_found();
+
+            if(found_id)
+                std::cout << "Found node #" << *found_id << std::endl;
+            else
+                std::cout << "Couldn't match node" << std::endl;
 
 #ifdef FEATURE_EMBR_DATAPUMP_INLINE
             NetBufEncoder<netbuf_t> encoder;

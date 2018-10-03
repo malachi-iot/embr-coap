@@ -321,5 +321,26 @@ TEST_CASE("experimental 2 tests")
             //embr::s
             //NetBufDecoder<decltype(netbuf)&> decoder(netbuf);
         }
+        SECTION("UriPathMatcher3")
+        {
+            moducom::coap::experimental::UriPathMatcher3 m(map);
+
+            auto v = m.find("v2");
+
+            REQUIRE(v);
+            REQUIRE(v->second == id_path_v2);
+
+            v = m.find("api");
+
+            REQUIRE(v);
+            REQUIRE(v->second == id_path_v2_api);
+
+            new (&m) moducom::coap::experimental::UriPathMatcher3(map);
+
+            v = m.find("v3");
+
+            REQUIRE(!v);
+
+        }
     }
 }
