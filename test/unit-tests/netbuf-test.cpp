@@ -44,11 +44,6 @@ static void suite(NetBufDecoder<TNetBuf>& decoder)
     while(it.valid()) ++it;
 
     INFO(decoder.state());
-    REQUIRE(decoder.state() == Decoder::OptionsDone);
-
-    decoder.process_iterate();
-
-    INFO(decoder.state());
     REQUIRE((decoder.state() == Decoder::Payload || decoder.state() == Decoder::Done));
 }
 

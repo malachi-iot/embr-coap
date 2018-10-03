@@ -375,13 +375,23 @@ public:
     // kicks off option processing.  We do this explicitly so that
     // the layer3::Token may be used (because initializing the
     // options decoder will clobber it)
-    void begin_option_experimental()
+    bool begin_option_experimental()
     {
         // we should be at OptionsStart here
         // move us into Options or OptionsDone
         process_iterate(Decoder::OptionsStart);
 
+        // if we zoom right to options done, then no options are present
+        if(state() == Decoder::OptionsDone)
+        {
+            // with no options present, move straight away to payload or
+            // done
+            process_iterate();
+            return false; // indicate no options present
+        }
+
         // expected to be at DeltaAndLengthDone here
+        return true; // indicate options are present
     }
 
 
@@ -400,12 +410,13 @@ public:
         ASSERT_WARN(Option::OptionValueDone, option_decoder().state(), "Unexpected state");
 
         // if we have more options to process, sneak into 'em a bit
-        if(state() != OptionsDone)
-        {
-            // this actually moves into domain of next option,
-            // expected to be at DeltaAndLengthDone here
+        // this actually moves into domain of next option,
+        // expected to be at DeltaAndLengthDone here
+        process_iterate();
+        // if this marks the end of option processing, eagerly move into
+        // next state which will be either Payload or Done
+        if(state() == OptionsDone)
             process_iterate();
-        }
 
         return state() == Decoder::Options;
     }
@@ -425,23 +436,23 @@ class option_iterator
 
     decoder_t& decoder;
 
+public:
+    Option::Numbers number() const
+    {
+        return static_cast<Option::Numbers>(decoder.option_number());
+    }
+
+private:
     void partial_advance_and_get_number()
     {
         using namespace moducom::coap;
 
-        // We presume this means there were no options
-        // NOTE: might prefer that we always demand to come in with this
-        // as OptionsStart and then we iterate forward ourselves
-        if(decoder.state() == Decoder::OptionsDone) return;
-
         // chew on and decode option number and length
         decoder.process_option_header_experimental();
 
-        value_type number = (value_type) decoder.option_number();
-
 #ifdef FEATURE_ESTD_IOSTREAM_NATIVE
         std::clog << "Option: ";// << number;
-        ::operator <<(std::clog, number); // why do I have to do this??
+        ::operator <<(std::clog, number()); // why do I have to do this??
 #endif
     }
 
@@ -449,17 +460,15 @@ public:
     option_iterator(decoder_t& decoder) :
         decoder(decoder)
     {
-        decoder.begin_option_experimental();
-
-        partial_advance_and_get_number();
+        if(decoder.begin_option_experimental())
+            partial_advance_and_get_number();
     }
 
     option_iterator(DecoderContext<decoder_t>& context) :
         decoder(context.decoder())
     {
-        decoder.begin_option_experimental();
-
-        partial_advance_and_get_number();
+        if(decoder.begin_option_experimental())
+            partial_advance_and_get_number();
     }
 
 
@@ -504,11 +513,6 @@ public:
         operator ++();
         return temp;
     } */
-
-    Option::Numbers number() const
-    {
-        return decoder.option_number();
-    }
 
     operator value_type() const
     {
