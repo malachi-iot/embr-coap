@@ -33,6 +33,12 @@ public:
         uint16_t number_delta;
         // length of option value portion
         uint16_t length;
+
+        void reset()
+        {
+            number_delta = 0;
+            length = 0;
+        }
     };
 
 private:

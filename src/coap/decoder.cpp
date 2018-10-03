@@ -93,9 +93,10 @@ bool Decoder::process_iterate(Context& context)
             state(OptionsStart);
             break;
 
+        // OptionsStart is always reached.  We determine here if we
+        // need to process any options
         case OptionsStart:
         {
-            //ro_chunk_t remainder = chunk.remainder(pos);
             ro_chunk_t remainder = context.remainder();
 
             // if we're at EOF (happens with header+token only messages)
@@ -107,13 +108,15 @@ bool Decoder::process_iterate(Context& context)
             else
             {
                 init_option_decoder();
-                optionHolder.number_delta = 0;
-                optionHolder.length = 0;
+                optionHolder.reset();
+
                 // We have to do some level of processing on OptionsStart to know
                 // whether we have any optons at all.  So remember
                 pos += option_decoder().process_iterate(remainder, &optionHolder, last_chunk);
-                // hit payload immediately (no options, but followed by payload)
+                // hit payload immediately (no options, just a payload marker presumably
+                // followed by a payload)
                 if (option_state() == OptionDecoder::Payload)
+                    // we'll continue to handle payload marker within OptionsDone
                     state(OptionsDone);
                 else
                     state(Options);
@@ -125,11 +128,10 @@ bool Decoder::process_iterate(Context& context)
         {
             pos += option_decoder().process_iterate(context.remainder(), &optionHolder, last_chunk);
 
-            // FIX: Payload now discovered and heeded in optionDecoder, do so out here
-            // as well
             // handle option a.1), a.2) or b.1) described below
             if (option_state() == OptionDecoder::Payload)
             {
+                // we'll continue to handle payload marker within OptionsDone
                 state(OptionsDone);
             }
             // reach here under circumstance where there is no payload at all -
@@ -140,39 +142,6 @@ bool Decoder::process_iterate(Context& context)
                 // this is as simple as waiting until we get OptionValueDone
                 if(option_state() == OptionDecoder::OptionValueDone)
                     state(OptionsDone);
-
-                /*
-                ASSERT_ERROR(true,
-                             (optionDecoder.state() == OptionDecoder::OptionValueDone) ||
-                             (optionDecoder.state() == OptionDecoder::ValueStart),
-                             "Must be either ValueStart or OptionValueDone.  Got: " << optionDecoder.state()); */
-
-                //if(optionDecoder.state() == OptionDecoder::ValueStart)
-                  //  optionDecoder.process_iterate(0, true); // special EOF processing to get us to ValueDone
-
-                //ASSERT_ERROR(OptionDecoder::OptionValueDone, optionDecoder.state(), "Must be @ option value done");
-                /*
-                // OptionsValueDone = processing one option, and reached the end of the entire option
-                // Payload = never even processed an option, but instead hit payload marker immediately
-                //           [this needs work, as Payload marker technically can appear even when actual
-                //            options were encountered]
-                // OptionDeltaAndLengthDone = TODO: not sure why we allow this here, seems like a partial state thing
-                //                            perhaps to accomodate chunking
-                ASSERT_ERROR(true,
-                             (optionDecoder.state() == OptionDecoder::OptionValueDone) ||
-                             (optionDecoder.state() == OptionDecoder::OptionDeltaAndLengthDone),
-                             "Must be either optionValueDone or optionDeltaAndlengthDone.  Got: " << optionDecoder.state()); */
-                // will check again for 0xFF if necessary
-                //state(OptionsDone);
-            }
-            // reach here when we are not at last chunk but still in mid-options processing
-            else
-            {
-                //ASSERT_ERROR(false, optionDecoder.state() == OptionDecoder::OptionValueDone, "dummy test");
-                // UNSUPPORTED
-                // b.2 means we are not sure if another option or an incoming chunk[0] == 0xFF is coming
-                // MAY need an OptionsBoundary state, but hopefully not
-                // better would be to beef up OptionDecoder awareness of Payload marker
             }
 
             break;
