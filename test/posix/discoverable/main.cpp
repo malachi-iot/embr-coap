@@ -84,27 +84,26 @@ int main()
             decoder.token(&token);
 
             // evaluate options
-            option_iterator<decoder_t> it(decoder, true);
+            option_iterator<decoder_t> it(decoder);
 
             // NOTE: if no UriPath options are present, this goes unused
             experimental::UriPathMatcher3 uri_path_matcher(paths);
 
             for(;it.valid();++it)
             {
-                // FIX: This feels a little clumsy, only because
-                // option number itself is implicitly-available but value is explicit
-                // (how would that be obvious to anyone?)
-                Option::Numbers number = it;
+                switch(it.number())
+                {
+                    case Option::UriPath:
+                        uri_path_matcher.find(it.string());
+                        break;
 
-                if(number == Option::UriPath)
-                {
-                    uri_path_matcher.find(it.string());
-                }
-                else if(number == Option::UriQuery)
-                {
-                    // Just for debug purposes to inspect incoming UriQuery - we
-                    // don't do anything with it yet
-                    estd::layer3::const_string s = it.string();
+                    case Option::UriQuery:
+                        // Just for debug purposes to inspect incoming UriQuery - we
+                        // don't do anything with it yet
+                        it.string();
+                        break;
+
+                    default: break;
                 }
             }
 

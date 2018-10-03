@@ -339,6 +339,7 @@ public:
 
     netbuf_t& netbuf() { return m_netbuf; }
 
+#ifdef UNUSED
     void process_payload_header_experimental()
     {
         ASSERT_WARN(Decoder::OptionsDone, state(), "Expected to be at end of option processing");
@@ -358,13 +359,16 @@ public:
         // TODO: Assert that this is Payload or Done state, otherwise undefined operation
         return state() == Payload;
     }
+#endif
 
     // NOTE: since context only reveals one buffer's worth of information,
     // at this point we can't know if a payload is chunked or not
     ro_chunk_t payload()
     {
+#ifdef UNUSED
         if(state() == OptionsDone)
             process_payload_header_experimental();
+#endif
 
         ASSERT_WARN(Decoder::Payload, state(), "Expected to be in payload state");
 
