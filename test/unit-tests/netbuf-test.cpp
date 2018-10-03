@@ -39,7 +39,7 @@ static void suite(NetBufDecoder<TNetBuf>& decoder)
     // NOTE: Flawed, because option_iterator sometimes wants
     // a reference for its parameter into NetBufDecoder.  Though in this
     // unit test, that is so far not the case
-    option_iterator<NetBufDecoder<TNetBuf> > it(decoder, true);
+    option_iterator<NetBufDecoder<TNetBuf> > it(decoder);
 
     while(it.valid()) ++it;
 
@@ -86,7 +86,7 @@ TEST_CASE("netbuf+coap tests", "[netbuf-coap]")
 
         // from RFC7252
         // "(Note that every message carries a token, even if it is of zero length.)"
-        REQUIRE(decoder.state() == Decoder::TokenDone);
+        REQUIRE(decoder.state() == Decoder::OptionsStart);
     }
     SECTION("'simplest' (data) incoming decoder")
     {

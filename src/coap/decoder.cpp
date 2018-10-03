@@ -73,8 +73,9 @@ bool Decoder::process_iterate(Context& context)
                 state(TokenDone);
             break;
 
-        // NOTE: Dormant
         case TokenStart:
+            // Being that we initialize token decoder just after reaching TokenStart,
+            // tkl in header_decoder() is still there until we get here, if we want it
             state(Token);
             init_token_decoder();
             break;

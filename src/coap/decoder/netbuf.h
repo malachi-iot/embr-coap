@@ -116,17 +116,24 @@ protected:
         // escape route for no-token scenario
         if(state() == Decoder::TokenDone) return estd::nullopt;
 
+        if(state() == Decoder::OptionsStart)
+        {
+            //ASSERT_ERROR(false, true, "Attempted token processing when none was available")
+            return estd::nullopt;
+        }
+
         estd::layer1::optional<int8_t, -1> tkl = header_decoder().token_length();
 
         // assert we're starting at TokenStart, and expect to move to end of TokenDone
         process_iterate(Decoder::TokenStart);
-
 
         // won't proceed unless enough bytes have been processed to form a complete token
         // (we queue it up in this decoder)
         // if token bytes are present, we'll move through Decoder::Token state
         // if no token bytes are present, we'll move directly to Decoder::TokenDone
         if(!process_until_experimental(Decoder::TokenDone)) return estd::nullopt;
+
+        process_iterate();
 
         return tkl;
     }
@@ -152,6 +159,11 @@ public:
         // will move us to TokenStart if token is present, or TokenDone immediately
         // if no token is present
         process_iterate();
+
+        // if we do arrivate at TokenDone (no token),
+        // move right by it into OptionsStart
+        if(state() == Decoder::TokenDone)
+            process_iterate();
 
         return header;
     }
@@ -349,18 +361,17 @@ public:
 
 
     // kicks off option processing
-    bool begin_option_experimental()
+    void begin_option_experimental()
     {
-        // move us into OptionsStart, asserting we're starting at TokenDone
-        process_iterate(Decoder::TokenDone);
+        // we should be at OptionsStart here
         // move us into Options or OptionsDone
-        process_iterate();
+        process_iterate(Decoder::OptionsStart);
 
         // expected to be at DeltaAndLengthDone here
-        return true;
     }
 
 
+    // continues with option processing
     void option_next_experimental()
     {
         // move forward past value portion / past option value start
@@ -412,22 +423,18 @@ class option_iterator
     }
 
 public:
-    option_iterator(decoder_t& decoder, bool begin_option = false) :
+    option_iterator(decoder_t& decoder) :
         decoder(decoder)
     {
-        // NOT repeatable
-        if(begin_option)
-            decoder.begin_option_experimental();
+        decoder.begin_option_experimental();
 
         partial_advance_and_get_number();
     }
 
-    option_iterator(DecoderContext<decoder_t>& context, bool begin_option = false) :
+    option_iterator(DecoderContext<decoder_t>& context) :
         decoder(context.decoder())
     {
-        // NOT repeatable
-        if(begin_option)
-            decoder.begin_option_experimental();
+        decoder.begin_option_experimental();
 
         partial_advance_and_get_number();
     }
