@@ -113,7 +113,10 @@ protected:
     //  move to next 'start')
     estd::layer1::optional<int8_t, -1> preprocess_token()
     {
-        // escape route for no-token scenario
+        // escape route for no-token scenario.  We actually blast by TokenDone
+        // so also OptionsStart would abort scenario.   All these abort scenarios
+        // produce null/empty tokens which loosely corresponds to spec (spec
+        // indicates a token is always present.... even if it's 0 length)
         if(state() == Decoder::TokenDone) return estd::nullopt;
 
         if(state() == Decoder::OptionsStart)
@@ -122,6 +125,8 @@ protected:
             return estd::nullopt;
         }
 
+        // hold onto tkl here because once we start token processing, token_decoder() may clobber
+        // the value
         estd::layer1::optional<int8_t, -1> tkl = header_decoder().token_length();
 
         // assert we're starting at TokenStart, and expect to move to end of TokenDone
@@ -161,7 +166,9 @@ public:
         process_iterate();
 
         // if we do arrivate at TokenDone (no token),
-        // move right by it into OptionsStart
+        // move right by it into OptionsStart.  Consumers should know based on header
+        // whether any token consumption is necessary - and if for some reason they don't,
+        // they can fall back and see if we're at TokenStart or OptionsStart
         if(state() == Decoder::TokenDone)
             process_iterate();
 
