@@ -216,6 +216,9 @@ TEST_CASE("CoAP encoder tests", "[coap-encoder]")
     }
     SECTION("streambuf encoder")
     {
+        typedef estd::internal::streambuf<
+                estd::internal::impl::out_span_streambuf<uint8_t> > streambuf_type;
+
         estd::layer2::const_string test_str = "hi2u";
 
         uint8_t buffer[128];
@@ -227,7 +230,7 @@ TEST_CASE("CoAP encoder tests", "[coap-encoder]")
 
         SECTION("Test 1")
         {
-            embr::coap::experimental::StreambufEncoder encoder(span);
+            embr::coap::experimental::StreambufEncoder<streambuf_type> encoder(span);
 
             encoder.header(header);
             encoder.option(Option::Numbers::UriPath, "hello");
@@ -243,7 +246,7 @@ TEST_CASE("CoAP encoder tests", "[coap-encoder]")
         }
         SECTION("Regenerate buffer_16bit_delta")
         {
-            embr::coap::experimental::StreambufEncoder encoder(span);
+            embr::coap::experimental::StreambufEncoder<streambuf_type> encoder(span);
             //estd::layer1::string<2, true> s = { 0, 1 };
             // NOTE: this doesn't work because non-null terminated tracks a distinct
             // size variable

@@ -10,17 +10,32 @@
 #include "../coap-header.h"
 #include "../coap-encoder.h"
 #include "../coap_transmission.h"
+#include "../coap/context.h"
 
 namespace embr { namespace coap { namespace experimental {
 
 // experimental replacement for netbuf encoder.  it's possible streambufs
 // are an all around replacement for netbufs, or at least most of the time
 // TODO: Still need to address partial (chunked) writes
+template <class TStreambuf>
 class StreambufEncoder
 {
+    typedef moducom::coap::internal::Root::State state_type;
+
+#ifdef DEBUG
+    void _assert(state_type s)
+    {
+        // TODO:
+    }
+#else
+    void _assert(state_type s) {}
+    /// \brief Only used for debug purposes.  noop in release mode
+    /// \param s
+    void state(state_type s) {}
+#endif
+
 public:
-    typedef estd::internal::streambuf<
-            estd::internal::impl::out_span_streambuf<uint8_t> > streambuf_type;
+    typedef TStreambuf streambuf_type;
     typedef estd::internal::basic_ostream<streambuf_type&> ostream_type;
     typedef moducom::coap::experimental::layer2::OptionBase option_type;
 
@@ -35,10 +50,7 @@ protected:
 
     estd::streamsize remaining()
     {
-        // FIX: eptr is broken, so fake this
-        estd::streamsize max_size = 20;
-        //size_t max_size = rdbuf()->epptr() - rdbuf()->pptr();
-        return max_size;
+        return rdbuf()->epptr() - rdbuf()->pptr();
     }
 
     // returns true when a byte is generated
@@ -68,7 +80,9 @@ public:
 
     void header(const moducom::coap::Header& header)
     {
+        _assert(state_type::Uninitialized);
         sputn(header.bytes, 4);
+        state(state_type::HeaderDone);
     }
 
 
@@ -76,6 +90,15 @@ public:
     void token(const estd::const_buffer token)
     {
         sputn(token.data(), token.size());
+    }
+
+
+    template <bool inline_token, bool simple_buffer>
+    void header_and_token(const moducom::coap::TokenAndHeaderContext<inline_token, simple_buffer>&
+            ctx)
+    {
+        header(ctx.header());
+        token(ctx.token());
     }
 
     void option(moducom::coap::Option::Numbers number, uint16_t length = 0)
