@@ -234,6 +234,7 @@ TEST_CASE("CoAP encoder tests", "[coap-encoder]")
 
             encoder.header(header);
             encoder.option(Option::Numbers::UriPath, "hello");
+            // FIX: No pbump yet means this just won't work
             encoder.option(Option::Numbers::UriPath, test_str);
             encoder.option(Option::Numbers::Size1); // synthetic size 0
             encoder.payload();
@@ -243,6 +244,15 @@ TEST_CASE("CoAP encoder tests", "[coap-encoder]")
             REQUIRE(buffer_16bit_delta[1] == buffer[1]);
             REQUIRE(buffer_16bit_delta[2] == buffer[2]);
             REQUIRE(buffer_16bit_delta[3] == buffer[3]);
+
+            estd::layer3::const_string s((char*)&buffer[5], 5);
+
+            REQUIRE(s == "hello");
+
+            new (&s) estd::layer3::const_string((char*)&buffer[5+5+1], test_str.size());
+
+            REQUIRE(s.size() == test_str.size());
+            //REQUIRE(s == test_str);
         }
         SECTION("Regenerate buffer_16bit_delta")
         {

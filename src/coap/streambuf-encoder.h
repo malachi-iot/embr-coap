@@ -131,6 +131,8 @@ public:
 
         int copied = a.copy(rdbuf()->pptr(), remaining());
         // FIX: pbump not yet defined for span output streambuf
+        // furthermore might have to actually do this with pubseekoff/seekoff
+        // since pbump is not supposed to be public
         //rdbuf()->pbump(copied);
     }
 
