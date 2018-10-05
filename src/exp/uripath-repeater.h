@@ -558,7 +558,7 @@ struct core_evaluator
     //estd::optional<int>  // FIX: estd::optional int broken, can't assign int to it
     evaluate(const known_uri_event& e, TOStream& out)
     {
-        typedef typename estd::remove_reference<TOStream>::type ostream_type;
+        //typedef typename estd::remove_reference<TOStream>::type ostream_type;
         // 'top' aka the back/last/current parent
 
         parent_handler(e);
