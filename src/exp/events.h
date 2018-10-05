@@ -44,7 +44,17 @@ struct option_event : chunk_event_base
             chunk_event_base(chunk, last_chunk),
             option_number((option_number_t)n)
     {}
+
+    estd::layer3::const_string string() const
+    {
+        return chunk;
+    }
 };
+
+struct option_start_event {};
+
+// FIX: naming inconsistency with Decoder::OptionsDone
+struct option_completed_event {};
 
 // doing struct instead of typedef to ensure it overloads as
 // a different type during on_notify

@@ -42,6 +42,10 @@ bool decode_and_notify(TSubject& subject, Decoder& decoder, Decoder::Context& co
             break;
         }
 
+        case Decoder::OptionsStart:
+            subject.notify(option_start_event{}, app_context);
+            break;
+
         case Decoder::Options:
             switch(decoder.option_state())
             {
@@ -67,6 +71,10 @@ bool decode_and_notify(TSubject& subject, Decoder& decoder, Decoder::Context& co
 
                 default: break;
             }
+            break;
+
+        case Decoder::OptionsDone:
+            subject.notify(option_completed_event{}, app_context);
             break;
 
         case Decoder::Payload:
