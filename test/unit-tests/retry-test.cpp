@@ -54,12 +54,12 @@ TEST_CASE("retry logic")
     }
     SECTION("retry (raw)")
     {
-        Retry<netbuf_t, addr_t> retry;
+        Retry<transport_descriptor_t> retry;
     }
     // datapump being externalized as much as possible from retry code
     SECTION("retry")
     {
-        typedef Retry<netbuf_t, addr_t, RetryPolicy<fake_time_traits, UnitTestRetryRandPolicy> > retry_t;
+        typedef Retry<transport_descriptor_t, RetryPolicy<fake_time_traits, UnitTestRetryRandPolicy> > retry_t;
         typedef embr::DataPump<transport_descriptor_t> datapump_t;
         addr_t fakeaddr;
         netbuf_t netbuf;
@@ -251,6 +251,18 @@ TEST_CASE("retry logic")
             REQUIRE(!datapump.dequeue_empty());
 
             retry.service_ack(datapump);
+        }
+        SECTION("Retry Observer")
+        {
+            typedef typename embr::event::Transport<transport_descriptor_t>::transport_sent transport_sent;
+            RetryObserver<retry_t> ro;
+
+            transport_sent e(netbuf, fakeaddr);
+
+            ro.on_notify(e);
+
+            // NOTE: I saw a crash happen on scope close here one time, indicating an issue
+            // with my netbuf movement+deallocation
         }
     }
 }

@@ -91,9 +91,21 @@ struct RetryPolicy
  * logic finally expires
  * in support of https://tools.ietf.org/html/rfc7252#section-4.2
  */
-template <class TNetBuf, class TAddr, class TPolicy = RetryPolicy<> >
+template <class TTransportDescriptor, class TPolicy = RetryPolicy<> >
 class Retry
 {
+public:
+    typedef TTransportDescriptor transport_descriptor_t;
+    // TODO: Use TTransportDescriptor instead of discrete TNetBuf and TAddr
+    typedef typename transport_descriptor_t::addr_t addr_t;
+
+    typedef typename TPolicy::time time_traits;
+    typedef typename TPolicy::random random_policy;
+    typedef typename time_traits::time_t time_t;
+    typedef embr::experimental::address_traits<addr_t> address_traits;
+    typedef typename transport_descriptor_t::netbuf_t netbuf_t;
+
+private:
     ///
     /// \brief does a one-shot decode of netbuf just to extract header
     ///
@@ -103,23 +115,13 @@ class Retry
     /// \param netbuf
     /// \return acquired header
     ///
-    static Header header(TNetBuf& netbuf)
+    static Header header(netbuf_t& netbuf)
     {
         // TODO: optimize and use header decoder only and directly
-        NetBufDecoder<TNetBuf&> decoder(netbuf);
+        NetBufDecoder<netbuf_t&> decoder(netbuf);
 
         return decoder.header();
     }
-
-public:
-    // TODO: Use TTransportDescriptor instead of discrete TNetBuf and TAddr
-    typedef TAddr addr_t;
-
-    typedef typename TPolicy::time time_traits;
-    typedef typename TPolicy::random random_policy;
-    typedef typename time_traits::time_t time_t;
-    typedef embr::experimental::address_traits<addr_t> address_traits;
-    typedef TNetBuf netbuf_t;
 
 #ifdef UNUSED
     ///
@@ -141,6 +143,7 @@ public:
     };
 #endif
 
+public:
     ///
     /// \brief Underlying data associated with any potential-retry item
     ///
@@ -213,9 +216,9 @@ public:
         // what to send
         // right now hard-wired to non-inline netbuf style.  May have implications
         // for memory management of netbuf - who destructs/deallocates it?
-        TNetBuf* m_netbuf;
+        netbuf_t* m_netbuf;
 
-        TNetBuf& netbuf() const { return *m_netbuf; }
+        netbuf_t& netbuf() const { return *m_netbuf; }
 #endif
 
         // when to send it by.  absolute time
@@ -241,7 +244,7 @@ public:
         coap::layer2::Token token() const
         {
             // TODO: optimize and use header & token decoder only and directly
-            NetBufDecoder<TNetBuf&> decoder(netbuf());
+            NetBufDecoder<netbuf_t&> decoder(netbuf());
             coap::layer2::Token token;
 
             decoder.header();
@@ -255,11 +258,11 @@ public:
 
         Item(Retry* parent, const addr_t& a,
 #ifdef FEATURE_MCCOAP_RETRY_INLINE
-                TNetBuf&& netbuf) :
+                netbuf_t&& netbuf) :
                 // FIX: that particular provider still needs a constructor
                 //m_raw_netbuf(std::move(netbuf)),
 #else
-                TNetBuf* netbuf) :
+                netbuf_t* netbuf) :
                 m_netbuf(netbuf),
 #endif
                 addr(a),
@@ -322,7 +325,7 @@ public:
 
     // NOTE: Not used and likely something like
     // 'header(netbuf).is_confirmable' would be better
-    static bool is_con(TNetBuf& netbuf)
+    static bool is_con(netbuf_t& netbuf)
     {
         return header(netbuf).type() == Header::Confirmable;
     }
@@ -330,13 +333,13 @@ public:
     // allocate a not-yet-sent retry slot, inclusive of tracking
     // netbuf and addr and due time
 #ifdef FEATURE_MCCOAP_RETRY_INLINE
-    void enqueue(TNetBuf&& netbuf, const addr_t& addr)
+    void enqueue(netbuf_t&& netbuf, const addr_t& addr)
     {
         // TODO: ensure it's sorted by 'due'
         // for now just brute force things
         Item item(this, addr, std::move(netbuf));
 #else
-    void enqueue(TNetBuf& netbuf, const addr_t& addr)
+    void enqueue(netbuf_t& netbuf, const addr_t& addr)
     {
         // TODO: ensure it's sorted by 'due'
         // for now just brute force things
@@ -426,7 +429,7 @@ public:
     bool service_ack(netbuf_t& netbuf, const addr_t& addr)
     {
         // TODO: optimize and use header decoder only and directly
-        NetBufDecoder<TNetBuf&> decoder(netbuf);
+        NetBufDecoder<netbuf_t&> decoder(netbuf);
 
         Header h = decoder.header();
         coap::layer2::Token token;
@@ -548,16 +551,37 @@ public:
 };
 
 
-template <class TTransportDescriptor>
+// TRetry = retry manager.  can be inline or a ref whatever is convenient
+template <class TRetry>//, class TDataport>
 class RetryObserver
 {
-    typedef TTransportDescriptor transport_descriptor_t;
+    typedef typename estd::remove_reference<TRetry>::type retry_type;
+    typedef typename retry_type::transport_descriptor_t transport_descriptor_t;
+    //typedef TTransportDescriptor transport_descriptor_t;
     typedef typename embr::event::Transport<transport_descriptor_t>::transport_sent transport_sent;
+    //typedef embr::event::ReceiveDequeued<
+
+    //typedef typename TDataport::event event;
+
+    TRetry retry_manager;
 
 public:
-    static void on_notify(transport_sent)
+    // transport events are wrong, we want dataport events so that we can precisely time
+    // the netbuf move.  transport_sent probably is OK too... feel better about dataport
+    // event
+    // WAIT: never mind, transport_sent is only ever sent by dataport, and at the exact
+    // time.
+    void on_notify(transport_sent e)
     {
-
+        if(retry_type::is_con(e.netbuf))
+        {
+#ifdef FEATURE_MCCOAP_RETRY_INLINE
+            retry_manager.enqueue(std::move(e.netbuf), e.addr);
+#else
+            // WARN: Not tested, design not thought out for this context
+            retry_manager.enqueue(e.netbuf, e.addr);
+#endif
+        }
     }
 };
 
