@@ -21,14 +21,11 @@
 
 namespace moducom { namespace coap { namespace experimental {
 
-// TODO: Do this with chrono
 struct TimePolicy
 {
     typedef estd::chrono::steady_clock clock;
 
     typedef clock::time_point time_t;
-
-
 
     // FIX: convenience function since there isn't quite a unified cross platform time acqusition fn
     // specifically this retrieves number of milliseconds since a fixed point in time
@@ -70,6 +67,17 @@ struct RetryPolicy
     typedef TTimePolicy time;
     typedef TRandomPolicy random;
 };
+
+// uses move semantic so that someone always owns the netbuf, somewhat
+// sidestepping shared_ptr/ref counters (even though implementations
+// like PBUF have inbuilt ref counters)
+//#define FEATURE_MCCOAP_RETRY_INLINE
+// ^^ disabled because the priority_queue stuff needs copy/swap capabilities
+//    for the Item holding netbuf
+
+#if defined(FEATURE_MCCOAP_RETRY_INLINE) && !defined(FEATURE_CPP_MOVESEMANTIC)
+#error Move semantic required for inline retry mode
+#endif
 
 /**
  *
@@ -183,17 +191,29 @@ public:
         // where to send retry
         addr_t addr;
 
+#ifdef FEATURE_EMBR_DATAPUMP_INLINE
+// (but soon)
+#error Not yet supported
+#endif
+
+#ifdef FEATURE_MCCOAP_RETRY_INLINE
+        netbuf_t m_netbuf;
+
+        netbuf_t& netbuf() { return m_netbuf; }
+        const netbuf_t& netbuf() const { return m_netbuf; }
+#else
         // what to send
         // right now hard-wired to non-inline netbuf style.  May have implications
         // for memory management of netbuf - who destructs/deallocates it?
         TNetBuf* m_netbuf;
 
+        TNetBuf& netbuf() const { return *m_netbuf; }
+#endif
+
         // when to send it by.  absolute time
         time_t due;
 
         bool ack_received;
-
-        TNetBuf& netbuf() const { return *m_netbuf; }
 
     protected:
         // NOTE: Not currently used, and would be nice to get rid of if we can
@@ -225,8 +245,14 @@ public:
         // needed for unallocated portions of vector
         Item() {}
 
-        Item(Retry* parent, const addr_t& a, TNetBuf* netbuf) :
+        Item(Retry* parent, const addr_t& a,
+#ifdef FEATURE_MCCOAP_RETRY_INLINE
+                TNetBuf&& netbuf) :
+                m_netbuf(std::move(netbuf)),
+#else
+                TNetBuf* netbuf) :
                 m_netbuf(netbuf),
+#endif
                 addr(a),
                 parent(parent)
         {
@@ -291,11 +317,19 @@ public:
 
     // allocate a not-yet-sent retry slot, inclusive of tracking
     // netbuf and addr and due time
+#ifdef FEATURE_MCCOAP_RETRY_INLINE
+    void enqueue(TNetBuf&& netbuf, const addr_t& addr)
+    {
+        // TODO: ensure it's sorted by 'due'
+        // for now just brute force things
+        Item item(this, addr, std::move(netbuf));
+#else
     void enqueue(TNetBuf& netbuf, const addr_t& addr)
     {
         // TODO: ensure it's sorted by 'due'
         // for now just brute force things
         Item item(this, addr, &netbuf);
+#endif
 
         // FIX: Really need to set due either during service call or on
         // on_transmitted call.  Setting here is just a stop gap and will
@@ -400,9 +434,10 @@ public:
     // so for now be sure to call service_ack before calling others.  Problematic also because
     // of redundant header/token decoding
     template <class TDataPump>
-    void service_ack(TDataPump& datapump)
+    /// @return if incoming ACK matched one we are tracking (and we no longer will attempt to retry it)
+    bool service_ack(TDataPump& datapump)
     {
-        if(datapump.dequeue_empty()) return;
+        if(datapump.dequeue_empty()) return false;
 
         typedef typename TDataPump::Item item_t;
 
@@ -413,7 +448,8 @@ public:
         item_t& item = datapump.dequeue_front();
         netbuf_t& netbuf = *item.netbuf();
 
-        service_ack(netbuf, item.addr());
+        // for now, caller is responsible for popping the item -
+        return service_ack(netbuf, item.addr());
     }
 
     // call this after front() is called and its contained 'due' has passed
@@ -433,8 +469,12 @@ public:
             if(current_time >= front().due)
             {
                 // doing a copy here because we're going to need to pop and push
-                // it back again
+                // it back again to instigate a resort of this item
+#ifdef FEATURE_MCCOAP_RETRY_INLINE
+                Item f = std::move(front());
+#else
                 Item f = front();
+#endif
 
                 // and if we're still interested in retransmissions
                 // (retry #1 and retry #2) - going to be counter values 0 and 1

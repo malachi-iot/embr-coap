@@ -112,7 +112,11 @@ TEST_CASE("retry logic")
         {
             datapump_t datapump;
 
+#ifdef FEATURE_MCCOAP_RETRY_INLINE
+            retry.enqueue(std::move(netbuf), fakeaddr);
+#else
             retry.enqueue(netbuf, fakeaddr);
+#endif
 
             // simulate queue to send.  assumes (correctly so, always)
             // that this is a CON message.  This is our first (non retry)
@@ -190,7 +194,11 @@ TEST_CASE("retry logic")
         {
             datapump_t datapump;
 
+#ifdef FEATURE_MCCOAP_RETRY_INLINE
+            retry.enqueue(std::move(netbuf), fakeaddr);
+#else
             retry.enqueue(netbuf, fakeaddr);
+#endif
 
             //REQUIRE(item.mid() == 0x123);
 
