@@ -112,12 +112,6 @@ TEST_CASE("retry logic")
         {
             datapump_t datapump;
 
-#ifdef FEATURE_MCCOAP_RETRY_INLINE
-            retry.enqueue(std::move(netbuf), fakeaddr);
-#else
-            retry.enqueue(netbuf, fakeaddr);
-#endif
-
             // simulate queue to send.  assumes (correctly so, always)
             // that this is a CON message.  This is our first (non retry)
             // send
@@ -135,6 +129,16 @@ TEST_CASE("retry logic")
                 REQUIRE(retain); // expect we are retaining netbuf
 #endif
             }
+
+            // if using inline verion, order is important.  You shouldn't ever
+            // enqueue until transport has sent item from datapump's out queue
+#ifdef FEATURE_MCCOAP_RETRY_INLINE
+            retry.enqueue(std::move(netbuf), fakeaddr);
+#else
+            retry.enqueue(netbuf, fakeaddr);
+#endif
+
+
             // simulate transport send
             datapump.transport_pop();
 
@@ -194,12 +198,6 @@ TEST_CASE("retry logic")
         {
             datapump_t datapump;
 
-#ifdef FEATURE_MCCOAP_RETRY_INLINE
-            retry.enqueue(std::move(netbuf), fakeaddr);
-#else
-            retry.enqueue(netbuf, fakeaddr);
-#endif
-
             //REQUIRE(item.mid() == 0x123);
 
             // simulate queue to send.  assumes (correctly so, always)
@@ -218,6 +216,15 @@ TEST_CASE("retry logic")
                 REQUIRE(retain); // expect we are retaining netbuf
 #endif
             }
+
+            // order is important, have to enqueue into retry after we finish a transport send
+            // but before the pop operation so that netbuf doesn't deallocate
+#ifdef FEATURE_MCCOAP_RETRY_INLINE
+            retry.enqueue(std::move(netbuf), fakeaddr);
+#else
+            retry.enqueue(netbuf, fakeaddr);
+#endif
+
             // simulate transport send
             datapump.transport_pop();
 

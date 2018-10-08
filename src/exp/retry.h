@@ -12,7 +12,10 @@
 #include <mc/memory-pool.h>
 #include "coap/decoder/netbuf.h"
 #include <stdint.h> // for uint8_t
+
 #include <embr/datapump.h>
+#include <embr/events.h>
+
 #include "datapump-observer.h" // for IDataPumpObserver
 
 #if defined(__unix__) || defined(__POSIX__) || defined(__MACH__)
@@ -71,7 +74,7 @@ struct RetryPolicy
 // uses move semantic so that someone always owns the netbuf, somewhat
 // sidestepping shared_ptr/ref counters (even though implementations
 // like PBUF have inbuilt ref counters)
-//#define FEATURE_MCCOAP_RETRY_INLINE
+#define FEATURE_MCCOAP_RETRY_INLINE
 // ^^ disabled because the priority_queue stuff needs copy/swap capabilities
 //    for the Item holding netbuf
 
@@ -197,10 +200,15 @@ public:
 #endif
 
 #ifdef FEATURE_MCCOAP_RETRY_INLINE
-        netbuf_t m_netbuf;
+        // Doing this to sidestep lack of copy constructors (so that sorting can work)
+        // Could be dangerous!
+        // I don't think so though
+        estd::experimental::raw_instance_provider<netbuf_t> m_raw_netbuf;
+        //netbuf_t m_netbuf;
 
-        netbuf_t& netbuf() { return m_netbuf; }
-        const netbuf_t& netbuf() const { return m_netbuf; }
+        // FIX: brute forcing constness, for now.  Obviously that's bad
+        netbuf_t& netbuf() const { return (netbuf_t&)m_raw_netbuf.value(); }
+        //const netbuf_t& netbuf() const { return m_raw_netbuf.value(); }
 #else
         // what to send
         // right now hard-wired to non-inline netbuf style.  May have implications
@@ -248,7 +256,8 @@ public:
         Item(Retry* parent, const addr_t& a,
 #ifdef FEATURE_MCCOAP_RETRY_INLINE
                 TNetBuf&& netbuf) :
-                m_netbuf(std::move(netbuf)),
+                // FIX: that particular provider still needs a constructor
+                //m_raw_netbuf(std::move(netbuf)),
 #else
                 TNetBuf* netbuf) :
                 m_netbuf(netbuf),
@@ -256,6 +265,9 @@ public:
                 addr(a),
                 parent(parent)
         {
+#ifdef FEATURE_MCCOAP_RETRY_INLINE
+            new (m_raw_netbuf.buf) netbuf_t(std::move(netbuf));
+#endif
             this->retransmission_counter = 0;
             this->initial_timeout_ms =
                     random_policy::rand(
@@ -471,6 +483,10 @@ public:
                 // doing a copy here because we're going to need to pop and push
                 // it back again to instigate a resort of this item
 #ifdef FEATURE_MCCOAP_RETRY_INLINE
+                // NOTE: We can actually clean this up, since we're only
+                // using f specifically to get at netbuf until we then
+                // want to really make a new-ish one, in which case maybe even an
+                // emplace can work for us
                 Item f = std::move(front());
 #else
                 Item f = front();
@@ -486,7 +502,7 @@ public:
                     // get deleted until we're done with our resends (got ACK
                     // or == 3 retransmission)
 #ifdef FEATURE_EMBR_DATAPUMP_INLINE
-                    datapump.enqueue_out(std::forward<netbuf_t>(f.netbuf()), f.addr);
+                    datapump.enqueue_out(std::move(f.netbuf()), f.addr);
 #else
                     datapump.enqueue_out(f.netbuf(), f.addr);
 #endif
@@ -507,7 +523,7 @@ public:
                     // last retry attempt has no observer, which means datapump fully owns
                     // netbuf, which means it will be erased normally
 #ifdef FEATURE_EMBR_DATAPUMP_INLINE
-                    datapump.enqueue_out(std::forward<netbuf_t>(f.netbuf()), f.addr);
+                    datapump.enqueue_out(std::move(f.netbuf()), f.addr);
 #else
                     datapump.enqueue_out(f.netbuf(), f.addr);
 #endif
@@ -531,5 +547,18 @@ public:
     }
 };
 
+
+template <class TTransportDescriptor>
+class RetryObserver
+{
+    typedef TTransportDescriptor transport_descriptor_t;
+    typedef typename embr::event::Transport<transport_descriptor_t>::transport_sent transport_sent;
+
+public:
+    static void on_notify(transport_sent)
+    {
+
+    }
+};
 
 }}}
