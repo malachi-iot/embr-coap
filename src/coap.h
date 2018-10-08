@@ -84,8 +84,8 @@ public:
         ApplicationLinkFormat   = 40,
         ApplicationXml          = 41,
         ApplicationOctetStream  = 42,
-        ApplicationExi          = 43,
-        ApplicationJson         = 44,
+        ApplicationExi          = 47,
+        ApplicationJson         = 50,
 
         // RFC 7049
         ApplicationCbor         = 60
