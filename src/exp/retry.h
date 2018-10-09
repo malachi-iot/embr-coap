@@ -371,17 +371,18 @@ public:
     }
 
 
-    ///
-    /// \brief called when ACK is received to determine if we should remove anything from the retry_queue
-    ///
-    /// Remember, ACK means we don't want to retry any more
-    ///
+    /// \brief given address, mid and token see if we're tracking this message
     /// \param from_addr
     /// \param mid
     /// \param token
-    /// \return true if we found and removed item from our queue, false otherwise
-    ///
-    bool ack_received(const addr_t& from_addr, uint16_t mid, const coap::layer2::Token& token)
+    /// \return returns iterator to found tracked item
+    /// \remarks we may end up using this to aid in shuffling ownership back and forth
+    /// between Retry and Datapump of netbuf in an attempt to sidestep using shared_ptr
+    /// or similar (we'd semi-reenque a just-sent item if already queued here)
+    estd::optional<typename list_t::iterator> match(
+            const addr_t& from_addr,
+            uint16_t mid,
+            const coap::layer2::Token& token)
     {
         typename RetryQueue::container_type&
                 c = retry_queue.get_container();
@@ -400,16 +401,43 @@ public:
             // out, only compare against token and mid - this will work in the short term but
             // will ultimately fail when multiple IPs are involved
             if(
-                address_traits::equals_fromto(from_addr, v.addr) &&
-                v_token == token && v_mid == mid)
+                    address_traits::equals_fromto(from_addr, v.addr) &&
+                    v_token == token && v_mid == mid)
             {
-                // NOTE: probably more efficient to let it just sit
-                // in priority queue with a 'kill' flag on it
-                retry_queue.erase(i);
-                return true;
+                estd::optional<typename list_t::iterator> matched;
+
+                matched = i;
+                // FIX: lingering issue, can't return i directly yet
+                return matched;
             }
 
             ++i;
+        }
+
+        return estd::nullopt;
+    }
+
+
+    ///
+    /// \brief called when ACK is received to determine if we should remove anything from the retry_queue
+    ///
+    /// Remember, ACK means we don't want to retry any more
+    ///
+    /// \param from_addr
+    /// \param mid
+    /// \param token
+    /// \return true if we found and removed item from our queue, false otherwise
+    ///
+    bool ack_received(const addr_t& from_addr, uint16_t mid, const coap::layer2::Token& token)
+    {
+        estd::optional<typename list_t::iterator> matched = match(from_addr, mid, token);
+
+        if(matched)
+        {
+            // NOTE: probably more efficient to let it just sit
+            // in priority queue with a 'kill' flag on it
+            retry_queue.erase(*matched);
+            return true;
         }
 
         return false;
