@@ -107,8 +107,8 @@ public:
 #ifdef FEATURE_CPP_MOVESEMANTIC
     NetBufDynamicExperimental(NetBufDynamicExperimental&& move_from) :
         base_t(move_from),
-        chunks(std::forward<list_t>(move_from.chunks)),
-        it(std::forward<list_t::iterator>(move_from.it))
+        chunks(std::move(move_from.chunks)),
+        it(std::move(move_from.it))
     {
     }
 #endif

@@ -252,6 +252,24 @@ TEST_CASE("retry logic")
 
             retry.service_ack(datapump);
         }
+        SECTION("con_sent_experimental")
+        {
+#ifdef FEATURE_EMBR_DATAPUMP_INLINE
+            datapump_t datapump;
+
+            // make believe we sent this netbuf already and queue it for a retry
+            retry.enqueue(std::move(netbuf), fakeaddr);
+
+            // simulate that the proper time has passed and queue for a send
+            datapump.enqueue_out(std::move(netbuf), fakeaddr);
+
+            retry.con_sent_experimental(std::move(netbuf), fakeaddr);
+
+            // simulate that we have fully serviced the enqueued item, and pop
+            // it - watch deallocation closely
+            datapump.transport_pop();
+#endif
+        }
         SECTION("Retry Observer")
         {
             typedef typename embr::event::Transport<transport_descriptor_t>::transport_sent transport_sent;

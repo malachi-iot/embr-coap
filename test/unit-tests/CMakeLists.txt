@@ -7,15 +7,19 @@ project(mc-coap-test)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
 
 add_definitions(-DUNIT_TESTING)
+# NOTE: Normally this would go into an 'opts' but 'mc/opts.h', while a good idea, is no longer
+# ubiquitous
+add_definitions(-DFEATURE_EMBR_DATAPUMP_INLINE)
 #add_definitions(-DDEBUG)
 
 set(ROOT_DIR ../..)
 set(MC_COAP_DIR ${ROOT_DIR}/src)
 
+# this must come first so that it picks up proper opts.h file
+include_directories(${PROJECT_SOURCE_DIR})
+
 include_directories(${MC_COAP_DIR})
 add_subdirectory(${MC_COAP_DIR} coap)
-
-include_directories(${PROJECT_SOURCE_DIR})
 
 #message(${PROJECT_SOURCE_DIR})
 

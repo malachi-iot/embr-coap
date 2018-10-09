@@ -74,12 +74,19 @@ struct RetryPolicy
 // uses move semantic so that someone always owns the netbuf, somewhat
 // sidestepping shared_ptr/ref counters (even though implementations
 // like PBUF have inbuilt ref counters)
-#define FEATURE_MCCOAP_RETRY_INLINE
+//#define FEATURE_MCCOAP_RETRY_INLINE
 // ^^ disabled because the priority_queue stuff needs copy/swap capabilities
 //    for the Item holding netbuf
 
-#if defined(FEATURE_MCCOAP_RETRY_INLINE) && !defined(FEATURE_CPP_MOVESEMANTIC)
-#error Move semantic required for inline retry mode
+#if defined(FEATURE_MCCOAP_RETRY_INLINE)
+#if !defined(FEATURE_CPP_MOVESEMANTIC)
+#error "Move semantic required for inline retry mode"
+#endif
+
+#ifndef FEATURE_EMBR_DATAPUMP_INLINE
+#error "embr inline datapump should also be on when using inline retry"
+#endif
+
 #endif
 
 /**
@@ -90,8 +97,10 @@ struct RetryPolicy
  * they are removed from our retry_list when an ACK is received, or when our backof
  * logic finally expires
  * in support of https://tools.ietf.org/html/rfc7252#section-4.2
- */
-template <class TTransportDescriptor, class TPolicy = RetryPolicy<> >
+ **/
+template <
+        class TTransportDescriptor,
+        class TPolicy = RetryPolicy<> >
 class Retry
 {
 public:
@@ -196,11 +205,6 @@ public:
 
         // where to send retry
         addr_t addr;
-
-#ifdef FEATURE_EMBR_DATAPUMP_INLINE
-// (but soon)
-#error Not yet supported
-#endif
 
 #ifdef FEATURE_MCCOAP_RETRY_INLINE
         // Doing this to sidestep lack of copy constructors (so that sorting can work)
@@ -417,6 +421,42 @@ public:
         return estd::nullopt;
     }
 
+    // NOTE: should be enabled by movesemantic, not by this feature flag
+#ifdef FEATURE_MCCOAP_RETRY_INLINE
+    /// \brief Called after we've sent the netbuf
+    ///
+    /// semi-requeues the netbuf into our list.  We already are tracking it actually,
+    /// but this specifically invokes the move semantics so that we have just one
+    /// truly 'active' netbuf in memory - kind of an implicit unique_ptr scenario
+    ///
+    /// \param netbuf
+    /// \param to_addr
+    /// \return
+    bool con_sent_experimental(netbuf_t&& netbuf, const addr_t& to_addr)
+    {
+        NetBufDecoder<netbuf_t&> decoder(netbuf);
+
+        Header h = decoder.header();
+        coap::layer2::Token token;
+        decoder.token(&token);
+
+        estd::optional<typename list_t::iterator> matched =
+                match(to_addr, h.message_id(), token);
+
+        if(matched)
+        {
+            typename list_t::iterator i = *matched;
+            Item& item = *i;
+            netbuf_t& nb = item.netbuf();
+
+            // move netbuf ownership back into existing slot
+            new (&nb) netbuf_t(std::move(netbuf));
+            return true;
+        }
+
+        return false;
+    }
+#endif
 
     ///
     /// \brief called when ACK is received to determine if we should remove anything from the retry_queue
