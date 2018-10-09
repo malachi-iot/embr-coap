@@ -573,6 +573,9 @@ public:
                     // get deleted until we're done with our resends (got ACK
                     // or == 3 retransmission)
 #ifdef FEATURE_EMBR_DATAPUMP_INLINE
+                    // FIX: The problem is that moving out this netbuf means that
+                    // message_id and Header aren't available now - unless we
+                    // copy them out separately.  Would rather do ref counters than that
                     datapump.enqueue_out(std::move(f.netbuf()), f.addr);
 #else
                     datapump.enqueue_out(f.netbuf(), f.addr);
