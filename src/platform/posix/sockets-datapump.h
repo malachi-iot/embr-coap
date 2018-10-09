@@ -13,7 +13,7 @@ namespace moducom { namespace coap {
 
 typedef embr::TransportDescriptor<moducom::coap::NetBufDynamicExperimental, sockaddr_in> transport_descriptor_t;
 typedef embr::DataPump<transport_descriptor_t> sockets_datapump_t;
-typedef moducom::coap::experimental::Retry<moducom::coap::NetBufDynamicExperimental, sockaddr_in> sockets_retry_t;
+typedef moducom::coap::experimental::Retry<transport_descriptor_t> sockets_retry_t;
 
 }}
 
@@ -102,7 +102,7 @@ public:
 #ifdef FEATURE_EMBR_DATAPUMP_INLINE
     void enqueue(
             netbuf_t&& netbuf,
-            const addr_t& addr_out, sockets_datapump_t& datapump = sockets_datapump)
+            const addr_t& addr_out, sockets_datapump_t& datapump)
     {
 #ifdef FEATURE_MCCOAP_RELIABLE
         bool is_con = retry.is_con(netbuf);
@@ -111,7 +111,7 @@ public:
         //datapump_observer_t* observer = NULLPTR;
 #endif
 
-        datapump.enqueue_out(std::forward<netbuf_t>(netbuf), addr_out, observer);
+        datapump.enqueue_out(std::move(netbuf), addr_out);
     }
 #else
     void enqueue(

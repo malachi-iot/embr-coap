@@ -21,6 +21,7 @@ int main()
     cout << "Requesting from " << COAP_SERVER << endl;
 
     SocketsDatapumpHelper sdh;
+    sockets_datapump_t datapump;
 
     // construct a confirmable ping
     NetBufEncoder<netbuf_t> encoder;
@@ -48,7 +49,7 @@ int main()
     addr_out.sin_port = htons(COAP_PORT);
     addr_out.sin_addr.s_addr = inet_addr(COAP_SERVER);
 
-    sdh.enqueue(std::forward<netbuf_t>(encoder.netbuf()), addr_out);
+    sdh.enqueue(std::move(encoder.netbuf()), addr_out, datapump);
 
     for(;;)
     {
