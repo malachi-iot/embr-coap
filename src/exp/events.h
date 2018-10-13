@@ -29,6 +29,11 @@ struct chunk_event_base : event_base
     chunk_event_base(const buffer_t& chunk, bool last_chunk) :
             chunk(chunk),
             last_chunk(last_chunk) {}
+
+    estd::layer3::const_string string() const
+    {
+        return chunk;
+    }
 };
 
 struct option_event : chunk_event_base
@@ -44,11 +49,6 @@ struct option_event : chunk_event_base
             chunk_event_base(chunk, last_chunk),
             option_number((option_number_t)n)
     {}
-
-    estd::layer3::const_string string() const
-    {
-        return chunk;
-    }
 };
 
 struct option_start_event {};
