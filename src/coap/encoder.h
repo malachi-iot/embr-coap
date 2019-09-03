@@ -1,5 +1,6 @@
 #pragma once
 
+#include "encoder/option.h"
 #include "../coap-encoder.h"
 #include "mc/netbuf.h"
 #include "../coap-uint.h"
