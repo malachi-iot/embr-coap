@@ -432,6 +432,7 @@ inline const char* to_string(Header::TypeEnum type)
         case Header::NonConfirmable:    return "NonConfirmable";
         case Header::Acknowledgement:   return "Acknowledgement";
         case Header::Reset:             return "Reset";
+        default:                        return NULLPTR;
     }
 }
 
