@@ -103,7 +103,7 @@ TEST_CASE("CoAP decoder subject tests", "[coap-decoder-subject]")
         //AggregateDecoderObserver<ObserverContext, estd::layer2::vector<IDecoderObserver<ObserverContext>*, 10> >
           //      ado = preset;
     }
-    SECTION("new estd::experimental::subject flavor of things")
+    SECTION("embr subject flavor of things")
     {
         ro_chunk_t chunk(buffer_16bit_delta);
         Decoder decoder;

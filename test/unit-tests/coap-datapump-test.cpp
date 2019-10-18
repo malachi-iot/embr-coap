@@ -1,15 +1,12 @@
 #include <catch.hpp>
 
-//#define FEATURE_ESTD_EXPLICIT_OBSERVER
-
 #include <platform/generic/datapump-messageobserver.hpp>
 #include <embr/datapump.hpp>
+#include <embr/observer.h>
 #include "coap/decoder/subject.hpp"
 
 #include "test-data.h"
 #include "test-observer.h"
-
-#include <estd/exp/observer.h>
 
 //#define putchar(c) put_value(c)
 
@@ -141,7 +138,7 @@ TEST_CASE("Data pump tests", "[datapump]")
 
         SECTION("Experimental datapump dequeuing test")
         {
-            estd::experimental::internal::stateless_subject<DatapumpObserver> s;
+            embr::layer0::subject<DatapumpObserver> s;
 
             process_messageobserver2(datapump, s);
         }
