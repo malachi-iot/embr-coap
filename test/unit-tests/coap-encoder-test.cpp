@@ -223,6 +223,8 @@ TEST_CASE("CoAP encoder tests", "[coap-encoder]")
 
         uint8_t buffer[128];
         estd::span<uint8_t> span(buffer, 128);
+
+        // Match up header to what we do in buffer_16bit_delta
         Header header(Header::TypeEnum::Confirmable);
 
         header.code(Header::Code::Codes::Get);
@@ -232,27 +234,53 @@ TEST_CASE("CoAP encoder tests", "[coap-encoder]")
         {
             embr::coap::experimental::StreambufEncoder<streambuf_type> encoder(span);
 
+            const char* hello_str = "hello";
+            const int hello_str_len = 5;
+            const estd::layer2::const_string payload_str = payload_str;
+            uint8_t* b = buffer;
+
             encoder.header(header);
-            encoder.option(Option::Numbers::UriPath, "hello");
+            encoder.option(Option::Numbers::UriPath, hello_str);
             // FIX: No pbump yet means this just won't work
             encoder.option(Option::Numbers::UriPath, test_str);
             encoder.option(Option::Numbers::Size1); // synthetic size 0
             encoder.payload();
-            encoder.rdbuf()->sputn("PAYLOAD", 7);
+            encoder.rdbuf()->sputn(payload_str.data(), payload_str.length());
 
             REQUIRE(buffer_16bit_delta[0] == buffer[0]);
             REQUIRE(buffer_16bit_delta[1] == buffer[1]);
             REQUIRE(buffer_16bit_delta[2] == buffer[2]);
             REQUIRE(buffer_16bit_delta[3] == buffer[3]);
 
-            estd::layer3::const_string s((char*)&buffer[5], 5);
+            b += 4;
+            // --- option #1
+            REQUIRE(*b++ == ((Option::Numbers::UriPath << 4) | hello_str_len) );
 
-            REQUIRE(s == "hello");
+            estd::layer3::const_string s((char*)b, hello_str_len);
 
-            new (&s) estd::layer3::const_string((char*)&buffer[5+5+1], test_str.size());
+            REQUIRE(s == hello_str);
+
+            b += hello_str_len;
+            // --- option #2
+            REQUIRE(*b++ == ((Option::Numbers::UriPath << 4) | test_str.size()) );
+
+            /*
+            new (&s) estd::layer3::const_string((char*)++b, test_str.size());
 
             REQUIRE(s.size() == test_str.size());
-            //REQUIRE(s == test_str);
+            REQUIRE(s == test_str);
+            b += test_str.size(); */
+
+            // --- option #3
+            REQUIRE(*b++ == (Option::ExtendedMode::Extended8Bit << 4));
+            REQUIRE(*b++ == Option::Numbers::Size1 - 13);
+
+            // PAYLOAD
+            REQUIRE(*b++ == 0xFF);
+
+            new (&s) estd::layer3::const_string((char*)b, payload_str.size());
+
+            REQUIRE(s == payload_str);
         }
         SECTION("Regenerate buffer_16bit_delta")
         {
