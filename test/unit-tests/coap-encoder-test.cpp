@@ -236,16 +236,22 @@ TEST_CASE("CoAP encoder tests", "[coap-encoder]")
 
             const char* hello_str = "hello";
             const int hello_str_len = 5;
-            const estd::layer2::const_string payload_str = payload_str;
+            const estd::layer2::const_string payload_str = "PAYLOAD";
             uint8_t* b = buffer;
+            streambuf_type* sb = encoder.rdbuf();
 
             encoder.header(header);
             encoder.option(Option::Numbers::UriPath, hello_str);
-            // FIX: No pbump yet means this just won't work
+
+            // FIX: No pbump or pubseekoff yet means this just won't work
             encoder.option(Option::Numbers::UriPath, test_str);
+            // FIX: Because pbump isn't available and pubseekoff is broken, we abuse
+            // accidentally-exposed 'pos' here to achieve the same thing
+            sb->pos += test_str.size();
+
             encoder.option(Option::Numbers::Size1); // synthetic size 0
             encoder.payload();
-            encoder.rdbuf()->sputn(payload_str.data(), payload_str.length());
+            sb->sputn(payload_str.data(), payload_str.length());
 
             REQUIRE(buffer_16bit_delta[0] == buffer[0]);
             REQUIRE(buffer_16bit_delta[1] == buffer[1]);
@@ -264,12 +270,11 @@ TEST_CASE("CoAP encoder tests", "[coap-encoder]")
             // --- option #2
             REQUIRE(*b++ == ((Option::Numbers::UriPath << 4) | test_str.size()) );
 
-            /*
-            new (&s) estd::layer3::const_string((char*)++b, test_str.size());
+            new (&s) estd::layer3::const_string((char*)b, test_str.size());
 
             REQUIRE(s.size() == test_str.size());
             REQUIRE(s == test_str);
-            b += test_str.size(); */
+            b += test_str.size();
 
             // --- option #3
             REQUIRE(*b++ == (Option::ExtendedMode::Extended8Bit << 4));

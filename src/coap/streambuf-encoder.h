@@ -129,11 +129,15 @@ public:
     {
         option(number, a.size());
 
-        int copied = a.copy(rdbuf()->pptr(), remaining());
+        streambuf_type* sb = rdbuf();
+
+        int copied = a.copy(sb->pptr(), remaining());
         // FIX: pbump not yet defined for span output streambuf
         // furthermore might have to actually do this with pubseekoff/seekoff
         // since pbump is not supposed to be public
         //rdbuf()->pbump(copied);
+        // FIX: pubseekoff is broken and doesn't resolve
+        sb->pubseekoff(copied, estd::ios_base::cur, estd::ios_base::in);
     }
 
     void option(moducom::coap::Option::Numbers number, const char* str)
