@@ -242,12 +242,7 @@ TEST_CASE("CoAP encoder tests", "[coap-encoder]")
 
             encoder.header(header);
             encoder.option(Option::Numbers::UriPath, hello_str);
-
-            // FIX: No pbump or pubseekoff yet means this just won't work
             encoder.option(Option::Numbers::UriPath, test_str);
-            // FIX: Because pbump isn't available and pubseekoff is broken, we abuse
-            // accidentally-exposed 'pos' here to achieve the same thing
-            sb->pos += test_str.size();
 
             encoder.option(Option::Numbers::Size1); // synthetic size 0
             encoder.payload();
