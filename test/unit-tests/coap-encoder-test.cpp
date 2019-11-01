@@ -238,7 +238,6 @@ TEST_CASE("CoAP encoder tests", "[coap-encoder]")
             const int hello_str_len = 5;
             const estd::layer2::const_string payload_str = "PAYLOAD";
             uint8_t* b = buffer;
-            streambuf_type* sb = encoder.rdbuf();
 
             encoder.header(header);
             encoder.option(Option::Numbers::UriPath, hello_str);
@@ -246,7 +245,10 @@ TEST_CASE("CoAP encoder tests", "[coap-encoder]")
 
             encoder.option(Option::Numbers::Size1); // synthetic size 0
             encoder.payload();
-            sb->sputn(payload_str.data(), payload_str.length());
+
+            auto out = encoder.ostream();
+            // FIX: layer2::const_string not playing nice with << operator, so needing to do .data()
+            out << payload_str.data();
 
             REQUIRE(buffer_16bit_delta[0] == buffer[0]);
             REQUIRE(buffer_16bit_delta[1] == buffer[1]);
