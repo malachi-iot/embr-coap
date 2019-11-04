@@ -21,7 +21,14 @@ bool StreambufDecoder<TStreambuf>::process_iterate_streambuf()
 
         case Header:
         {
-            bool process_done = decoder_base_t::header_process_iterate(context);
+            //bool process_done = decoder_base_t::header_process_iterate(context);
+            bool process_done = false;
+
+            uint8_t ch;
+
+            while(!process_done &&
+                (ch = streambuf.sbumpc()) != traits_type::eof())
+                process_done = header_decoder().process_iterate(ch);
 
             if (process_done) state(HeaderDone);
 
@@ -50,7 +57,16 @@ bool StreambufDecoder<TStreambuf>::process_iterate_streambuf()
 
         case Token:
         {
-            bool process_done = decoder_base_t::token_process_iterate(context);
+            bool process_done = false;
+
+            uint8_t ch;
+            uint8_t tkl = header_decoder().token_length();
+
+            while(!process_done &&
+                  (ch = streambuf.sbumpc()) != traits_type::eof())
+                process_done = token_decoder().process_iterate(ch, tkl);
+
+            if (process_done) state(HeaderDone);
 
             if(process_done) state(TokenDone);
 

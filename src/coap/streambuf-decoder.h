@@ -36,6 +36,7 @@ private:
     // on in_avail(), underflow() and friends directly in the decoder
     size_type total_size_remaining;
 
+public:
     // FIX: temporary name until we decouple from legacy context/chunk style decoding.  Once we finish that,
     // _streambuf suffix is dropped
     // NOTE: We may find existing Decoder::process_iterate is fully sufficient in its current form, so this
@@ -43,8 +44,6 @@ private:
     // NOTE: This has a diverging behavior in that it's .hpp not .cpp, so we may be facing code bloat this way
     // Without analysis, unknown if this is a real, imagined, good or bad thing
     bool process_iterate_streambuf();
-
-public:
 
 #ifdef FEATURE_CPP_VARIADIC
     template <class ...TArgs>

@@ -194,6 +194,7 @@ class Decoder :
     typedef internal::_root_state_t _state_t;
     typedef DecoderBase<DefaultDecoderTraits> decoder_base_t;
 
+protected:
     // NOTE: This is necessary to use because OptionDecoder in due course of its
     // operation *might* clobber its option_number() before it fully evaluates option_length()
     // the 'length' field in optionHolder isn't *technically* necessary, as that doesn't
@@ -262,6 +263,7 @@ public:
 
 }}
 
+// NOTE: Reverse this?  decoder.hpp includes decoder.h?
 #include "decoder.hpp"
 
 #endif //MC_COAP_TEST_COAP_DECODER_H
