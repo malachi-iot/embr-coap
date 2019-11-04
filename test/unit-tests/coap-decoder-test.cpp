@@ -159,6 +159,12 @@ TEST_CASE("CoAP decoder tests", "[coap-decoder]")
             REQUIRE(decoder.state() == Decoder::Options);
             REQUIRE(decoder.option_decoder().state() == OptionDecoder::OptionLengthDone);
             REQUIRE(decoder.option_length() == 1);
+
+            REQUIRE(!decoder.process_iterate_streambuf());
+            // Would really prefer OptionDeltaDone or OptionLengthAndDeltaDone were exposed here
+            REQUIRE(decoder.option_decoder().state() == OptionDecoder::ValueStart);
+            // TODO: Not working yet
+            //REQUIRE(decoder.option_number() == 270);
         }
     }
 }
