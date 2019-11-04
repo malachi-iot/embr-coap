@@ -1,4 +1,5 @@
 #include "streambuf.h"
+#include "option.h"
 
 namespace moducom { namespace coap { namespace experimental {
 
@@ -105,12 +106,16 @@ bool StreambufDecoder<TStreambuf>::process_iterate_streambuf()
 
                 // We have to do some level of processing on OptionsStart to know
                 // whether we have any optons at all.  So remember
+                int count = option_decoder().process_iterate_streambuf(streambuf, &optionHolder);
+
+                /*
                 int count = option_decoder().process_iterate(remainder, &optionHolder, last_chunk);
                 // Skip those characters we iterated over, since process_iterate call above is raw
                 // chunk and not streambuf oeriented
-                streambuf.pubseekoff(count, estd::ios_base::cur);
+                streambuf.pubseekoff(count, estd::ios_base::cur); */
+
                 pos += count;
-                
+
                 // hit payload immediately (no options, just a payload marker presumably
                 // followed by a payload)
                 if (option_state() == OptionDecoder::Payload)
@@ -222,4 +227,95 @@ bool StreambufDecoder<TStreambuf>::process_iterate_streambuf()
     return pos == chunk.size();
 }
 
-}}}
+}
+
+// EXPERIMENTAL
+// copied from OptionDecoder::process_iterate
+template <class TStreambuf>
+size_t OptionDecoder::process_iterate_streambuf(TStreambuf& streambuf, OptionExperimental* built_option)
+{
+    size_t length = streambuf.in_avail(); // represents remaining length to be processed
+    int underflow = streambuf.underflow();  // only valid if length <= 0
+    bool last_chunk = underflow == -1;
+
+    // last chunk + length == 0 means special EOF processing mode
+    if(length <= 0 && last_chunk)
+    {
+        process_iterate(0, true);
+        return 0;
+    }
+
+    estd::const_buffer chunk((const uint8_t*) streambuf.gptr(), length);
+
+    int count = process_iterate(chunk, built_option);
+
+    // basically ignore/move past those processed characters
+    streambuf.pubseekoff(count, estd::ios_base::cur);
+
+    return count;
+
+    // --- was experimenting with a full copy/paste but I think calling upon existing const_buffer code is better
+    // though there's an awkwardness still with 'last_chunk', though quite diminished
+
+    //size_t value_processed = 0;
+    const uint8_t* const data_start = (const uint8_t*) streambuf.gptr();
+    const uint8_t* data = data_start;
+
+    // NOTE: semi-copy paste of above iterate, for now
+    // NOTE: Beef up state machine a lot, since we are putting a lot of faith into this semi-infinite-loop
+    while(length > 0)
+    {
+        // processed represents specifically whether byte was consumed,
+        // but not whether it was evaluated (bytes are always assumed to
+        // be evaluated)
+        // FIX: pass proper eof flag in here
+        bool processed = process_iterate(*data, false);
+
+        if(processed)
+        {
+            data++;
+            length--;
+        }
+
+        // take special actions during particular states during chunk processing
+        switch(state())
+        {
+            case OptionDeltaDone:
+                built_option->number_delta += option_delta();
+                break;
+
+            case OptionDeltaAndLengthDone:
+                built_option->number_delta += option_delta();
+
+            case OptionLengthDone:
+                built_option->length = option_length();
+                // we stop here, since caller will likely want to take prepatory action
+                // now that option number/delta and option length are available
+                return data - data_start;
+
+                // pause here so consumer has a chance to act on a completed delta/length gather
+            case ValueStart:
+                return data - data_start;
+
+                // remember option value processing amounts to skipping past the number of option value
+                // bytes present
+
+                // for now, also indicates completion of entire option.  Splitting out a separate OptionDone
+                // state would be a little more cycling around, but better organized
+            case OptionValueDone:
+                return data - data_start;
+
+            case Payload:
+                return data - data_start;
+
+                // OptionValue gets eaten here, but data position
+                // does move forward and is ultimately recorded
+            default: break;
+        }
+    }
+
+    return data - data_start;
+}
+
+
+}}

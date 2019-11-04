@@ -178,6 +178,11 @@ public:
     size_t process_iterate(const estd::const_buffer& input,
                            OptionExperimental* built_option,
                            bool last_chunk);
+    size_t process_iterate(const estd::const_buffer& input,
+                           OptionExperimental* built_option);
+
+    template <class TStreambuf>
+    size_t process_iterate_streambuf(TStreambuf& streambuf, OptionExperimental* built_option);
 };
 
 }}

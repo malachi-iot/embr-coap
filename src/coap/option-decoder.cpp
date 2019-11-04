@@ -270,14 +270,20 @@ size_t OptionDecoder::process_iterate(const estd::const_buffer& chunk,
                                       OptionExperimental* built_option,
                                       bool last_chunk)
 {
-    size_t length = chunk.size(); // represents remaining length to be processed
-
     // last chunk + length == 0 means special EOF processing mode
-    if(length == 0 && last_chunk)
+    if(chunk.size() == 0 && last_chunk)
     {
         process_iterate(0, true);
         return 0;
     }
+
+    return process_iterate(chunk, built_option);
+}
+
+size_t OptionDecoder::process_iterate(const estd::const_buffer& chunk,
+                                      OptionExperimental* built_option)
+{
+    size_t length = chunk.size(); // represents remaining length to be processed
 
     //size_t value_processed = 0;
     const uint8_t* data = chunk.data();
