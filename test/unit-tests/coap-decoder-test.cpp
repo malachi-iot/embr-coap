@@ -115,13 +115,27 @@ TEST_CASE("CoAP decoder tests", "[coap-decoder]")
         typedef estd::internal::streambuf<
                 estd::internal::impl::in_span_streambuf<uint8_t> > streambuf_type;
 
-        uint8_t buffer[128];
-        estd::span<uint8_t> span(buffer);
+        estd::span<uint8_t> span(buffer_16bit_delta);
 
         // FIX: in theory we can std::forward buffer directly down into out_span_streambuf, but it isn't happy
-        // FIX: traits_type not being revealed yet for in_span_streambuf
         moducom::coap::experimental::StreambufDecoder<streambuf_type> decoder(span);
 
-        decoder.process_iterate();
+        // somewhat a copy/paste from "16 bit delta test"
+        REQUIRE(!decoder.process_iterate());
+        REQUIRE(decoder.state() == Decoder::Header);
+        REQUIRE(!decoder.process_iterate());
+        REQUIRE(decoder.state() == Decoder::HeaderDone);
+        uint16_t message_id = decoder.header_decoder().message_id();
+        REQUIRE(message_id == 0x0123);
+
+        REQUIRE(!decoder.process_iterate());
+        REQUIRE(decoder.state() == Decoder::TokenDone);
+        REQUIRE(!decoder.process_iterate());
+        REQUIRE(decoder.state() == Decoder::OptionsStart);
+
+        REQUIRE(!decoder.process_iterate());
+        REQUIRE(decoder.state() == Decoder::Options);
+        REQUIRE(decoder.option_decoder().state() == OptionDecoder::OptionLengthDone);
+        REQUIRE(decoder.option_length() == 1);
     }
 }

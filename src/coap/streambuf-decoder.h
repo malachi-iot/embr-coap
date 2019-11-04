@@ -22,6 +22,8 @@ public:
     typedef typename estd::remove_reference<TStreambuf>::type streambuf_type;
     typedef estd::internal::basic_istream<streambuf_type&> istream_type;
     typedef moducom::coap::experimental::layer2::OptionBase option_type;
+    typedef typename streambuf_type::int_type int_type;
+    typedef typename streambuf_type::traits_type traits_type;
 
 #ifdef FEATURE_CPP_VARIADIC
     template <class ...TArgs>
@@ -58,16 +60,12 @@ public:
             // do whatever trickery needed to push streambuf forward.  If that is unsuccessful,
             // then we really do reach the end.  Still need to decide if that's *really* the end
             // or if it's a non-blocking-maybe-more-data-is-coming scenario
-            // FIX: still needs implementation underneath
-            //streambuf.underflow();
-        }
-        else
-        {
+            int_type ch = streambuf.underflow();
 
+            return ch == traits_type::eof();
         }
 
-        // FIX: Not quite right, just suppressing return warning
-        return end_reached;
+        return false;
     }
 };
 
