@@ -120,6 +120,8 @@ TEST_CASE("CoAP decoder tests", "[coap-decoder]")
 
         // FIX: in theory we can std::forward buffer directly down into out_span_streambuf, but it isn't happy
         // FIX: traits_type not being revealed yet for in_span_streambuf
-        //moducom::coap::experimental::StreambufDecoder<streambuf_type> decoder(span);
+        moducom::coap::experimental::StreambufDecoder<streambuf_type> decoder(span);
+
+        decoder.process_iterate();
     }
 }

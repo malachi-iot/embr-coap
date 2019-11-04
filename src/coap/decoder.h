@@ -231,6 +231,9 @@ public:
     // of presented chunk, then stops
     // returns true when context.chunk is fully processed, even if it is not
     // the last_chunk.  State may or may not change in this circumstance
+    ///
+    /// \param context
+    /// \return true when end of context is reached, false otherwise
     bool process_iterate(Context& context);
 
     OptionDecoder::State option_state() const
