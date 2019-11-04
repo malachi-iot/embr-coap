@@ -30,7 +30,8 @@ public:
     StreambufDecoder(TArgs... args) :
         streambuf(std::forward<TArgs>(args)...),
         // FIX: Need proper size of incoming stream buffer
-        context(estd::const_buffer((const uint8_t*)streambuf.gptr(), 100), true)
+        // FIX: Need better assessment of 'last_chunk'
+        context(estd::const_buffer((const uint8_t*)streambuf.gptr(), 100), false)
         {}
 #endif
 
@@ -62,7 +63,14 @@ public:
             // or if it's a non-blocking-maybe-more-data-is-coming scenario
             int_type ch = streambuf.underflow();
 
-            return ch == traits_type::eof();
+            if(ch != traits_type::eof())
+            {
+                // NOTE: A bit rule bending here to force a re-construction of context.  Violates
+                // the spirit of the const_buffer
+                // FIX: Need better assessment of 'last_chunk'
+                new (&context) internal::DecoderContext(
+                        estd::const_buffer((const uint8_t*)streambuf.gptr(), 100), false);
+            }
         }
 
         return false;
