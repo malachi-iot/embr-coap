@@ -149,6 +149,16 @@ TEST_CASE("CoAP decoder tests", "[coap-decoder]")
             REQUIRE(decoder.state() == Decoder::HeaderDone);
             uint16_t message_id = decoder.header_decoder().message_id();
             REQUIRE(message_id == 0x0123);
+
+            REQUIRE(!decoder.process_iterate_streambuf());
+            REQUIRE(decoder.state() == Decoder::TokenDone);
+            REQUIRE(!decoder.process_iterate_streambuf());
+            REQUIRE(decoder.state() == Decoder::OptionsStart);
+
+            REQUIRE(!decoder.process_iterate_streambuf());
+            REQUIRE(decoder.state() == Decoder::Options);
+            REQUIRE(decoder.option_decoder().state() == OptionDecoder::OptionLengthDone);
+            REQUIRE(decoder.option_length() == 1);
         }
     }
 }

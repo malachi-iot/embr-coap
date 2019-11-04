@@ -81,7 +81,16 @@ bool StreambufDecoder<TStreambuf>::process_iterate_streambuf()
             // need to process any options
         case OptionsStart:
         {
-            ro_chunk_t remainder = context.remainder();
+            // FIX: this is going to glitch when in_avail reports '-1' when we are expecting
+            // '0'
+            size_type in_avail = streambuf.in_avail();
+            // NOTE: yes, somewhat kludgey reassigning last_chunk here
+            last_chunk = total_size_remaining <= in_avail;
+
+            estd::const_buffer remainder(
+                    (const uint8_t*)streambuf.gptr(),
+                    in_avail);
+
 
             // if we're at EOF (happens with header+token only messages)
             if(remainder.size() == 0 && last_chunk)
