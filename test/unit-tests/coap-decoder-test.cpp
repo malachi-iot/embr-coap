@@ -118,7 +118,7 @@ TEST_CASE("CoAP decoder tests", "[coap-decoder]")
         estd::span<uint8_t> span(buffer_16bit_delta);
 
         // FIX: in theory we can std::forward buffer directly down into out_span_streambuf, but it isn't happy
-        moducom::coap::experimental::StreambufDecoder<streambuf_type> decoder(span);
+        moducom::coap::experimental::StreambufDecoder<streambuf_type> decoder(span.size(), span);
 
         // somewhat a copy/paste from "16 bit delta test"
         REQUIRE(!decoder.process_iterate());
