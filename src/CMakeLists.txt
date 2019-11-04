@@ -55,6 +55,10 @@ set(SOURCE_FILES
         coap/decoder/observer-aggregate.hpp
         coap/decoder/option.h
         coap/decoder/simple.h
+
+        coap/decoder/streambuf.h
+        coap/decoder/streambuf.hpp
+
         coap/decoder/subject.h
         coap/decoder/subject.hpp
 

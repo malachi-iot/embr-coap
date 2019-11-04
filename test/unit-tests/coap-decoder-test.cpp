@@ -1,7 +1,7 @@
 #include <catch.hpp>
 
 #include "coap/decoder.h"
-#include "coap/streambuf-decoder.h"
+#include "coap/decoder/streambuf.hpp"
 #include "test-data.h"
 //#include "../mc/pipeline.h"
 
