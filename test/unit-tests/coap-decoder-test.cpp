@@ -1,6 +1,7 @@
 #include <catch.hpp>
 
 #include "coap/decoder.h"
+#include "coap/streambuf-decoder.h"
 #include "test-data.h"
 //#include "../mc/pipeline.h"
 
@@ -108,5 +109,9 @@ TEST_CASE("CoAP decoder tests", "[coap-decoder]")
         REQUIRE(decoder.state() == Decoder::HeaderDone);
         decoder.process_iterate(context);
         decoder.process_iterate(context);
+    }
+    SECTION("streambuf decoder")
+    {
+
     }
 }

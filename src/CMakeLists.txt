@@ -115,6 +115,8 @@ set(SOURCE_FILES
         mc/experimental.cpp
         mc/experimental-factory.h
 
-        coap/streambuf-encoder.h)
+        coap/streambuf-encoder.h
+        coap/streambuf-decoder.h
+        )
 
 add_library(moducom-coap-lib ${SOURCE_FILES})
