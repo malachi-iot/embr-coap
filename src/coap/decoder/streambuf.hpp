@@ -105,7 +105,12 @@ bool StreambufDecoder<TStreambuf>::process_iterate_streambuf()
 
                 // We have to do some level of processing on OptionsStart to know
                 // whether we have any optons at all.  So remember
-                pos += option_decoder().process_iterate(remainder, &optionHolder, last_chunk);
+                int count = option_decoder().process_iterate(remainder, &optionHolder, last_chunk);
+                // Skip those characters we iterated over, since process_iterate call above is raw
+                // chunk and not streambuf oeriented
+                streambuf.pubseekoff(count, estd::ios_base::cur);
+                pos += count;
+                
                 // hit payload immediately (no options, just a payload marker presumably
                 // followed by a payload)
                 if (option_state() == OptionDecoder::Payload)
@@ -119,7 +124,23 @@ bool StreambufDecoder<TStreambuf>::process_iterate_streambuf()
 
         case Options:
         {
-            pos += option_decoder().process_iterate(context.remainder(), &optionHolder, last_chunk);
+            // FIX: this is going to glitch when in_avail reports '-1' when we are expecting
+            // '0'
+            size_type in_avail = streambuf.in_avail();
+            // NOTE: yes, somewhat kludgey reassigning last_chunk here
+            last_chunk = total_size_remaining <= in_avail;
+
+            estd::const_buffer remainder(
+                    (const uint8_t*)streambuf.gptr(),
+                    in_avail);
+
+            int count = option_decoder().process_iterate(remainder, &optionHolder, last_chunk);
+
+            // Skip those characters we iterated over, since process_iterate call above is raw
+            // chunk and not streambuf oeriented
+            streambuf.pubseekoff(count, estd::ios_base::cur);
+
+            pos += count;
 
             // handle option a.1), a.2) or b.1) described below
             if (option_state() == OptionDecoder::Payload)
