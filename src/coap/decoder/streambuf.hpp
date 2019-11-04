@@ -252,6 +252,7 @@ size_t OptionDecoder::process_iterate_streambuf(TStreambuf& streambuf, OptionExp
     int count = process_iterate(chunk, built_option);
 
     // basically ignore/move past those processed characters
+    // FIX: in_span_streambuf doesn't have a working pubseekoff yet
     streambuf.pubseekoff(count, estd::ios_base::cur);
 
     return count;
