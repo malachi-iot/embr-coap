@@ -5,7 +5,7 @@
 #pragma once
 
 #include "../coap-token.h"
-#include "../coap-header.h"
+#include "header.h"
 #include "../coap-features.h"
 #include "mc/objstack.h"
 #include <estd/type_traits.h>

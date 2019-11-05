@@ -216,6 +216,8 @@ TEST_CASE("CoAP encoder tests", "[coap-encoder]")
     }
     SECTION("streambuf encoder")
     {
+        using namespace embr::coap::experimental;
+
         typedef estd::internal::streambuf<
                 estd::internal::impl::out_span_streambuf<uint8_t> > streambuf_type;
 
@@ -232,7 +234,7 @@ TEST_CASE("CoAP encoder tests", "[coap-encoder]")
 
         SECTION("Test 1")
         {
-            embr::coap::experimental::StreambufEncoder<streambuf_type> encoder(span);
+            StreambufEncoder<streambuf_type> encoder(span);
 
             const char* hello_str = "hello";
             const int hello_str_len = 5;
@@ -286,7 +288,7 @@ TEST_CASE("CoAP encoder tests", "[coap-encoder]")
         }
         SECTION("Regenerate buffer_16bit_delta")
         {
-            embr::coap::experimental::StreambufEncoder<streambuf_type> encoder(span);
+            StreambufEncoder<streambuf_type> encoder(span);
             //estd::layer1::string<2, true> s = { 0, 1 };
             // NOTE: this doesn't work because non-null terminated tracks a distinct
             // size variable
@@ -296,20 +298,22 @@ TEST_CASE("CoAP encoder tests", "[coap-encoder]")
             //s[1] = 5;
             estd::array<char, 2> v = { 4, 5 };
 
+            auto rdbuf = encoder.rdbuf();
+
             encoder.header(header);
             encoder.option((Option::Numbers)270, 1);
-            encoder.rdbuf()->sputc(3);
+            rdbuf->sputc(3);
             // Not quite as interesting because strings always maintain a runtime
             // size
             //encoder.option((Option::Numbers)271, s);
             // Doesn't work yet since array doesn't share allocated_array base (yet)
             //encoder.option((Option::Numbers)271, v);
             encoder.option((Option::Numbers)271, 2);
-            encoder.rdbuf()->sputc(4);
-            encoder.rdbuf()->sputc(5);
+            rdbuf->sputc(4);
+            rdbuf->sputc(5);
             encoder.payload();
             for(char i = 0x10; i <= 0x16; i++)
-                encoder.rdbuf()->sputc(i);
+                rdbuf->sputc(i);
 
             compare_array(buffer_16bit_delta, buffer);
         }

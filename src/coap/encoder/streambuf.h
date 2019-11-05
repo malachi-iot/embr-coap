@@ -12,6 +12,7 @@
 #include "../../coap_transmission.h"
 #include "../context.h"
 
+// used 'embr' here since we might consider phasing out 'moducom' namespace
 namespace embr { namespace coap { namespace experimental {
 
 // experimental replacement for netbuf encoder.  it's possible streambufs
