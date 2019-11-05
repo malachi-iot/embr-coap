@@ -63,6 +63,8 @@ set(SOURCE_FILES
         coap/decoder/subject.hpp
 
         coap/encoder.h coap/encoder.hpp
+        coap/encoder/streambuf.h
+
 #        coap/experimental.cpp
         coap/experimental-observer.h
         coap/observable.h coap/observable.hpp
@@ -118,8 +120,6 @@ set(SOURCE_FILES
 
         mc/experimental.cpp
         mc/experimental-factory.h
-
-        coap/streambuf-encoder.h
         )
 
 add_library(moducom-coap-lib ${SOURCE_FILES})

@@ -11,7 +11,7 @@
 
 #include "exp/netbuf.h"
 
-#include <coap/streambuf-encoder.h>
+#include "coap/encoder/streambuf.h"
 #include <estd/string.h>
 
 #include "test-data.h"

@@ -7,10 +7,10 @@
 #include <estd/streambuf.h>
 #include <estd/ostream.h>
 
-#include "../coap-header.h"
-#include "../coap-encoder.h"
-#include "../coap_transmission.h"
-#include "../coap/context.h"
+#include "../header.h"
+#include "../../coap-encoder.h"
+#include "../../coap_transmission.h"
+#include "../context.h"
 
 namespace embr { namespace coap { namespace experimental {
 
@@ -95,7 +95,7 @@ public:
 
     template <bool inline_token, bool simple_buffer>
     void header_and_token(const moducom::coap::TokenAndHeaderContext<inline_token, simple_buffer>&
-            ctx)
+    ctx)
     {
         header(ctx.header());
         token(ctx.token());
