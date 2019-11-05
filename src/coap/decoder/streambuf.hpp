@@ -6,11 +6,14 @@ namespace moducom { namespace coap { namespace experimental {
 template <class TStreambuf>
 bool StreambufDecoder<TStreambuf>::process_iterate_streambuf()
 {
+    // NOTE: pos' days are numbered, only using this for compatibility with non streambuf decoder
     size_t& pos = context.pos;
-    bool last_chunk = context.last_chunk;
-    //typedef pipeline::MemoryChunk::readonly_t ro_chunk_t;
-    typedef Context::chunk_t ro_chunk_t;
-    const ro_chunk_t& chunk = context.chunk;
+
+    // FIX: this is going to glitch when in_avail reports '-1' when we are expecting
+    // '0'
+    estd::streamsize in_avail = streambuf.in_avail();
+    // TODO: use underflow to determine last_chunk rather than total_size_remaining
+    bool last_chunk = total_size_remaining <= in_avail;
 
     switch (state())
     {
@@ -22,7 +25,6 @@ bool StreambufDecoder<TStreambuf>::process_iterate_streambuf()
 
         case Header:
         {
-            //bool process_done = decoder_base_t::header_process_iterate(context);
             bool process_done = false;
 
             uint8_t ch;
@@ -67,8 +69,6 @@ bool StreambufDecoder<TStreambuf>::process_iterate_streambuf()
                   (ch = streambuf.sbumpc()) != traits_type::eof())
                 process_done = token_decoder().process_iterate(ch, tkl);
 
-            if (process_done) state(HeaderDone);
-
             if(process_done) state(TokenDone);
 
             break;
@@ -82,17 +82,6 @@ bool StreambufDecoder<TStreambuf>::process_iterate_streambuf()
             // need to process any options
         case OptionsStart:
         {
-            // FIX: this is going to glitch when in_avail reports '-1' when we are expecting
-            // '0'
-            size_type in_avail = streambuf.in_avail();
-            // NOTE: yes, somewhat kludgey reassigning last_chunk here
-            last_chunk = total_size_remaining <= in_avail;
-
-            /*
-            estd::const_buffer remainder(
-                    (const uint8_t*)streambuf.gptr(),
-                    in_avail); */
-
             // if we're at EOF (happens with header+token only messages)
             //if(remainder.size() == 0 && last_chunk)
             if(in_avail <= 0 && last_chunk)
@@ -108,12 +97,6 @@ bool StreambufDecoder<TStreambuf>::process_iterate_streambuf()
                 // We have to do some level of processing on OptionsStart to know
                 // whether we have any optons at all.  So remember
                 int count = option_decoder().process_iterate_streambuf(streambuf, &optionHolder);
-
-                /*
-                int count = option_decoder().process_iterate(remainder, &optionHolder, last_chunk);
-                // Skip those characters we iterated over, since process_iterate call above is raw
-                // chunk and not streambuf oeriented
-                streambuf.pubseekoff(count, estd::ios_base::cur); */
 
                 pos += count;
 
@@ -136,7 +119,7 @@ bool StreambufDecoder<TStreambuf>::process_iterate_streambuf()
 
             // FIX: this is going to glitch when in_avail reports '-1' when we are expecting
             // '0'
-            size_type in_avail = streambuf.in_avail();
+            in_avail = streambuf.in_avail();
             // NOTE: yes, somewhat kludgey reassigning last_chunk here
             last_chunk = total_size_remaining <= in_avail;
 
@@ -161,12 +144,6 @@ bool StreambufDecoder<TStreambuf>::process_iterate_streambuf()
 
         case OptionsDone:
         {
-            // FIX: this is going to glitch when in_avail reports '-1' when we are expecting
-            // '0'
-            size_type in_avail = streambuf.in_avail();
-            // NOTE: yes, somewhat kludgey reassigning last_chunk here
-            last_chunk = total_size_remaining <= in_avail;
-
             // Encounters this when we lead with a payload, eventually all payload markers
             // I want handled this way so we can eliminate the explicit 0xFF later
             if(option_state() == OptionDecoder::Payload)
@@ -182,16 +159,16 @@ bool StreambufDecoder<TStreambuf>::process_iterate_streambuf()
                 // b.2) end of chunk - only partial chunk present
                 // c) as-yet-to-be-determined streaming end of chunk marker
             if (in_avail <= 0 && last_chunk)
-            //if (pos == chunk.size() && last_chunk)
             {
                 // this is for condition b.1)
                 state(Done);
             }
-            else if (chunk[pos] == 0xFF)
+            else if (streambuf.sgetc() == COAP_PAYLOAD_MARKER)
             {
                 // FIX: This code should no longer be called, but it still getting activated by
                 // Dispatcher.  Address this with new DecoderSubject class, leave dispatcher alone
                 pos++;
+                streambuf.sbumpc(); // toss the character
 
                 // this is for condition a.1 or 1.2
                 state(Payload);
@@ -209,7 +186,9 @@ bool StreambufDecoder<TStreambuf>::process_iterate_streambuf()
         case Payload:
             // fast forward pos to end of chunk since here on out it
             // only contains payload information
-            pos = chunk.size();
+            // NOTE: this only works for payloads which don't span chunks
+            // NOTE: this only matters for compatibility with non-streambuf-decoder, which is only temporary
+            pos += in_avail;
             if(last_chunk)  state(PayloadDone);
             break;
 
@@ -223,10 +202,7 @@ bool StreambufDecoder<TStreambuf>::process_iterate_streambuf()
 
     }
 
-    // TODO: Do an assert to make sure pos never exceeds chunk boundary
-    ASSERT_ERROR(true, pos <= chunk.size(), "pos should never exceed chunk length");
-
-    estd::streamsize in_avail = streambuf.in_avail();
+    in_avail = streambuf.in_avail();
 
     // if we have indeterminate characters left or no characters left
     if(in_avail <= 0)

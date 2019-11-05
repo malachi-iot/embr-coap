@@ -10,12 +10,15 @@ using namespace moducom::pipeline;
 
 // +++ EXPERIMENTAL
 template <class TStreambuf>
-inline estd::span<TStreambuf::char_type> sgetn(TStreambuf& s, estd::streamsize len)
+inline estd::span<const typename TStreambuf::char_type> sgetn(TStreambuf& s, estd::streamsize len)
 {
     len = estd::min(s.in_avail(), len);
 
     // TODO: consider using estd::optional if len <= 0
-    estd::span<TStreambuf::char_type> span(s.gptr(), len);
+    estd::span<const typename TStreambuf::char_type> span(s.gptr(), len);
+
+    s.pubseekoff(len, estd::ios_base::cur);
+
     return span;
 }
 // ---
@@ -205,16 +208,12 @@ TEST_CASE("CoAP decoder tests", "[coap-decoder]")
 
             auto& rdbuf = *decoder.rdbuf();
 
-            estd::const_buffer payload(
-                    rdbuf.gptr(),
-                    rdbuf.in_avail());
+            estd::const_buffer payload = sgetn(rdbuf, rdbuf.in_avail());
 
             estd::const_buffer original_payload(&buffer_16bit_delta[12], sizeof(buffer_16bit_delta) - 12);
 
             REQUIRE(payload.size() == 7);
             REQUIRE(payload[0] == buffer_16bit_delta[12]);
-
-            rdbuf.pubseekoff(payload.size(), estd::ios_base::cur);
 
             //REQUIRE(payload == original_payload);
             //decoder.rdbuf()->gptr();
