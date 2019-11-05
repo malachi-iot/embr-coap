@@ -163,8 +163,48 @@ TEST_CASE("CoAP decoder tests", "[coap-decoder]")
             REQUIRE(!decoder.process_iterate_streambuf());
             // Would really prefer OptionDeltaDone or OptionLengthAndDeltaDone were exposed here
             REQUIRE(decoder.option_decoder().state() == OptionDecoder::ValueStart);
-            // TODO: Not working yet
-            //REQUIRE(decoder.option_number() == 270);
+            REQUIRE(decoder.option_number() == 270);
+            REQUIRE(decoder.option_decoder().option_delta() == 270);
+
+            REQUIRE(!decoder.process_iterate_streambuf());
+            REQUIRE(decoder.state() == Decoder::Options);
+            REQUIRE(decoder.option_decoder().state() == OptionDecoder::OptionValueDone);
+
+            REQUIRE(!decoder.process_iterate_streambuf());
+            REQUIRE(decoder.state() == Decoder::Options);
+            REQUIRE(decoder.option_decoder().state() == OptionDecoder::OptionDeltaAndLengthDone);
+            REQUIRE(decoder.option_length() == 2);
+            REQUIRE(decoder.option_number() == 271);
+            REQUIRE(decoder.option_decoder().option_delta() == 1);
+
+            REQUIRE(!decoder.process_iterate_streambuf());
+            REQUIRE(decoder.state() == Decoder::Options);
+            REQUIRE(decoder.option_decoder().state() == OptionDecoder::ValueStart);
+
+            REQUIRE(!decoder.process_iterate_streambuf());
+            REQUIRE(decoder.state() == Decoder::Options);
+            REQUIRE(decoder.option_decoder().state() == OptionDecoder::OptionValueDone);
+
+            REQUIRE(!decoder.process_iterate_streambuf());
+            REQUIRE(decoder.state() == Decoder::OptionsDone);
+
+            REQUIRE(!decoder.process_iterate_streambuf());
+            REQUIRE(decoder.state() == Decoder::Payload);
+
+            estd::const_buffer payload(
+                    decoder.rdbuf()->gptr(),
+                    decoder.rdbuf()->in_avail());
+
+            estd::const_buffer original_payload(&buffer_16bit_delta[12], sizeof(buffer_16bit_delta) - 12);
+
+            REQUIRE(payload.size() == 7);
+            REQUIRE(payload[0] == buffer_16bit_delta[12]);
+
+            //REQUIRE(payload == original_payload);
+            //decoder.rdbuf()->gptr();
+
+            REQUIRE(decoder.process_iterate_streambuf());
+            REQUIRE(decoder.state() == Decoder::PayloadDone);
         }
     }
 }
