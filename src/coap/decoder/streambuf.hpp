@@ -226,7 +226,18 @@ bool StreambufDecoder<TStreambuf>::process_iterate_streambuf()
     // TODO: Do an assert to make sure pos never exceeds chunk boundary
     ASSERT_ERROR(true, pos <= chunk.size(), "pos should never exceed chunk length");
 
-    return pos == chunk.size();
+    estd::streamsize in_avail = streambuf.in_avail();
+
+    // if we have indeterminate characters left or no characters left
+    if(in_avail <= 0)
+    {
+        // underflow to grab the next buffer, and if that comes back eof
+        if(streambuf.underflow() == traits_type::eof())
+            // then return 'true' signifying end of data
+            return true;
+    }
+    return false;
+    //return pos == chunk.size();
 }
 
 }
