@@ -145,10 +145,46 @@ public:
     }
 
     // NOTE: Only generates payload marker
+    // TODO: Make state machine participate too, maybe with a default flag to turn off if we really really don't
+    // want those extra few bytes generated
     void payload()
     {
-        rdbuf()->sputc(0xFF);
+        rdbuf()->sputc(COAP_PAYLOAD_MARKER);
     }
 };
+
+template <class TStreambuf>
+StreambufEncoder<TStreambuf>& operator<<(StreambufEncoder<TStreambuf>& encoder, moducom::coap::Header header)
+{
+    encoder.header(header);
+
+    return encoder;
+}
+
+// manipulators
+/*
+struct _Payload {};
+
+template <class TStreambuf>
+StreambufEncoder<TStreambuf>& operator<<(StreambufEncoder<TStreambuf>& encoder, _Payload)
+{
+    encoder.payload();
+
+    return encoder;
+} */
+
+// NOTE: almost definitely have something laying about in our options area to fill this role
+struct _Option
+{
+    moducom::coap::Option::Numbers number;
+};
+
+template <class TStreambuf>
+inline StreambufEncoder<TStreambuf>& payload(StreambufEncoder<TStreambuf>& encoder)
+{
+    encoder.payload();
+
+    return encoder;
+}
 
 }}}

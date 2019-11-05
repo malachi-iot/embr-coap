@@ -224,7 +224,7 @@ TEST_CASE("CoAP encoder tests", "[coap-encoder]")
         estd::layer2::const_string test_str = "hi2u";
 
         uint8_t buffer[128];
-        estd::span<uint8_t> span(buffer, 128);
+        estd::span<uint8_t> span(buffer);
 
         // Match up header to what we do in buffer_16bit_delta
         Header header(Header::TypeEnum::Confirmable);
@@ -232,10 +232,10 @@ TEST_CASE("CoAP encoder tests", "[coap-encoder]")
         header.code(Header::Code::Codes::Get);
         header.message_id(0x0123);
 
+        StreambufEncoder<streambuf_type> encoder(span);
+
         SECTION("Test 1")
         {
-            StreambufEncoder<streambuf_type> encoder(span);
-
             const char* hello_str = "hello";
             const int hello_str_len = 5;
             const estd::layer2::const_string payload_str = "PAYLOAD";
@@ -288,7 +288,6 @@ TEST_CASE("CoAP encoder tests", "[coap-encoder]")
         }
         SECTION("Regenerate buffer_16bit_delta")
         {
-            StreambufEncoder<streambuf_type> encoder(span);
             //estd::layer1::string<2, true> s = { 0, 1 };
             // NOTE: this doesn't work because non-null terminated tracks a distinct
             // size variable
@@ -316,6 +315,12 @@ TEST_CASE("CoAP encoder tests", "[coap-encoder]")
                 rdbuf->sputc(i);
 
             compare_array(buffer_16bit_delta, buffer);
+        }
+        SECTION("stream operators")
+        {
+            encoder << header;
+            // TODO: need to do that wacky fn*/endl trick that ostream does
+            //encoder << payload;
         }
     }
 }
