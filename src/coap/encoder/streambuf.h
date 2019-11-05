@@ -179,6 +179,20 @@ struct _Option
     moducom::coap::Option::Numbers number;
 };
 
+_Option option_experimental(moducom::coap::Option::Numbers number)
+{
+    return _Option { number };
+}
+
+
+template <class TStreambuf>
+StreambufEncoder<TStreambuf>& operator<<(StreambufEncoder<TStreambuf>& encoder, _Option o)
+{
+    encoder.option(o.number, 0);
+
+    return encoder;
+}
+
 template <class TStreambuf>
 inline StreambufEncoder<TStreambuf>& payload(StreambufEncoder<TStreambuf>& encoder)
 {
