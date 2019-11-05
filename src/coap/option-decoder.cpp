@@ -57,8 +57,7 @@ bool OptionDecoder::process_iterate(uint8_t value, bool eof)
             if(eof) state(OptionValueDone);
              */
 
-            // NOTE: Not yet activated by current Dispatcher as it aborts before we reach here
-            if(value == 0xFF)
+            if(value == COAP_PAYLOAD_MARKER)
             {
                 // Set state to payload marker.  Also designates as processed, so this
                 // implies a tiny bit of payload processing responsibility is on OptionDecoder

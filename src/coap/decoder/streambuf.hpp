@@ -9,11 +9,8 @@ bool StreambufDecoder<TStreambuf>::process_iterate_streambuf()
     // NOTE: pos' days are numbered, only using this for compatibility with non streambuf decoder
     size_t& pos = context.pos;
 
-    // FIX: this is going to glitch when in_avail reports '-1' when we are expecting
-    // '0'
     estd::streamsize in_avail = streambuf.in_avail();
-    // TODO: use underflow to determine last_chunk rather than total_size_remaining
-    bool last_chunk = total_size_remaining <= in_avail;
+    bool eof = in_avail <= 0 ? streambuf.underflow() == traits_type::eof() : false;
 
     switch (state())
     {
@@ -83,8 +80,7 @@ bool StreambufDecoder<TStreambuf>::process_iterate_streambuf()
         case OptionsStart:
         {
             // if we're at EOF (happens with header+token only messages)
-            //if(remainder.size() == 0 && last_chunk)
-            if(in_avail <= 0 && last_chunk)
+            if(eof)
             {
                 // then never go through an options processing phase at all
                 state(OptionsDone);
@@ -117,11 +113,8 @@ bool StreambufDecoder<TStreambuf>::process_iterate_streambuf()
 
             pos += count;
 
-            // FIX: this is going to glitch when in_avail reports '-1' when we are expecting
-            // '0'
             in_avail = streambuf.in_avail();
-            // NOTE: yes, somewhat kludgey reassigning last_chunk here
-            last_chunk = total_size_remaining <= in_avail;
+            eof = in_avail <= 0 ? streambuf.underflow() == traits_type::eof() : false;
 
             // handle option a.1), a.2) or b.1) described below
             if (option_state() == OptionDecoder::Payload)
@@ -131,7 +124,7 @@ bool StreambufDecoder<TStreambuf>::process_iterate_streambuf()
             }
                 // reach here under circumstance where there is no payload at all -
                 // we're at the end of the buffer and no payload marker seen
-            else if (in_avail <= 0 && last_chunk)
+            else if (eof)
             {
                 // now that optionDecoder.process_iterate can iterate at EOF with no characters,
                 // this is as simple as waiting until we get OptionValueDone
@@ -158,7 +151,7 @@ bool StreambufDecoder<TStreambuf>::process_iterate_streambuf()
                 // b.1) end of datagram - entire chunk present
                 // b.2) end of chunk - only partial chunk present
                 // c) as-yet-to-be-determined streaming end of chunk marker
-            if (in_avail <= 0 && last_chunk)
+            if (eof)
             {
                 // this is for condition b.1)
                 state(Done);
@@ -188,8 +181,12 @@ bool StreambufDecoder<TStreambuf>::process_iterate_streambuf()
             // only contains payload information
             // NOTE: this only works for payloads which don't span chunks
             // NOTE: this only matters for compatibility with non-streambuf-decoder, which is only temporary
+            // NOTE: in_avail is occasionally -1, that's gonna goof up things.  Again, since this is temporary
+            //   we'll let the bug exist
             pos += in_avail;
-            if(last_chunk)  state(PayloadDone);
+            // NOTE: Counting on external party to fast forward the streambuf (i.e. read out the payload)
+            // otherwise eof won't be true
+            if(eof)  state(PayloadDone);
             break;
 
         case PayloadDone:
@@ -202,18 +199,7 @@ bool StreambufDecoder<TStreambuf>::process_iterate_streambuf()
 
     }
 
-    in_avail = streambuf.in_avail();
-
-    // if we have indeterminate characters left or no characters left
-    if(in_avail <= 0)
-    {
-        // underflow to grab the next buffer, and if that comes back eof
-        if(streambuf.underflow() == traits_type::eof())
-            // then return 'true' signifying end of data
-            return true;
-    }
-    return false;
-    //return pos == chunk.size();
+    return eof;
 }
 
 }
