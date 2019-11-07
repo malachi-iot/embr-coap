@@ -18,7 +18,7 @@ bool StreambufDecoder<TStreambuf>::process_iterate_streambuf()
     // TODO: sbumpc ultimately is a blocking call, it's been too long now I don't recall what our
     // non-standard "no further data ...yet" trait counterpart to eof() was, but that's what we need
     // in these calls
-    // Underflow reports this back as value 0
+    // 'in_avail' reports this back as value 0
 
     switch (state())
     {
