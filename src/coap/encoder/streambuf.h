@@ -18,6 +18,8 @@ namespace embr { namespace coap { namespace experimental {
 // experimental replacement for netbuf encoder.  it's possible streambufs
 // are an all around replacement for netbufs, or at least most of the time
 // TODO: Still need to address partial (chunked) writes
+// NOTE: header and token no chunking is not planned, we'd have to employ HeaderEncoder and
+// TokenEncoder.  That use case is an edge case, since maximum size of header + token = 12 bytes
 template <class TStreambuf>
 class StreambufEncoder
 {
@@ -44,6 +46,7 @@ public:
 
 protected:
     typedef typename streambuf_type::char_type char_type;
+    typedef typename streambuf_type::traits_type traits_type;
 
     TStreambuf streambuf;
     moducom::coap::OptionEncoder option_encoder;
@@ -86,6 +89,7 @@ public:
     void header(const moducom::coap::Header& header)
     {
         _assert(state_type::Uninitialized);
+        // TODO: Chunked not handled, but we could still check for fail to write
         sputn(header.bytes, 4);
         state(state_type::HeaderDone);
     }
@@ -94,6 +98,7 @@ public:
     // NOTE: token size must have already been specified in header!
     void token(const estd::const_buffer token)
     {
+        // TODO: Chunked not handled, but we could still check for fail to write
         sputn(token.data(), token.size());
     }
 
@@ -106,7 +111,10 @@ public:
         token(ctx.token());
     }
 
-    void option(moducom::coap::Option::Numbers number, uint16_t length = 0)
+    // returns false if chunking is needed
+    // returns true if entire data was output
+    // NOTE: interrogating option state may be a better way to ascertain that info
+    bool option(moducom::coap::Option::Numbers number, uint16_t length = 0)
     {
         option_type option(number);
 
@@ -120,40 +128,59 @@ public:
         do
         {
             result = option_encoder.generate_iterate();
-            if(result != -1) rdbuf()->sputc(result);
+            if(result != -1)
+            {
+                if(rdbuf()->sputc(result) == traits_type::eof())
+                {
+                    return false;
+                }
+            }
 
         }   while(
                 (option_encoder.state() != option_encoder.OptionDeltaAndLengthDone) &&
                 (option_encoder.state() != option_encoder.OptionLengthDone));
 
+        return true;
     }
 
 
     template <class TImpl>
-    void option(moducom::coap::Option::Numbers number, estd::internal::allocated_array<TImpl>& a)
+    bool option(moducom::coap::Option::Numbers number, estd::internal::allocated_array<TImpl>& a)
     {
-        option(number, a.size());
+        if(!option(number, a.size())) return false;
 
+        // FIX: following code is limited.  Firstly, we do it to avoid
+        // having to do a lock/unlock on a, but really, is it that big a deal?
+        // Secondly, since we're interacting with buffers directly, no sync/underflow
+        // and friends get to run, so something like a netbuf-expand never can happen
         streambuf_type* sb = rdbuf();
 
         int copied = a.copy(sb->pptr(), remaining());
 
         sb->pubseekoff(copied, estd::ios_base::cur, estd::ios_base::out);
+
+        // FIX: we definitely don't have gaurunteed success here
+        // and we don't address chunking yet at all (I don't remember if OptionsEncoder helped us
+        // with that... I think it does)
+        return true;
     }
 
-    void option(moducom::coap::Option::Numbers number, const char* str)
+    bool option(moducom::coap::Option::Numbers number, const char* str)
     {
         int n = strlen(str);
         option(number, n);
-        rdbuf()->sputn(str, n);
+        estd::streamsize written = rdbuf()->sputn(str, n);
+        // FIX: we don't address chunking yet at all, even with this (how does it know
+        // where in the string to resume from?)
+        return written == n;
     }
 
     // NOTE: Only generates payload marker
     // TODO: Make state machine participate too, maybe with a default flag to turn off if we really really don't
     // want those extra few bytes generated
-    void payload()
+    bool payload()
     {
-        rdbuf()->sputc(COAP_PAYLOAD_MARKER);
+        return rdbuf()->sputc(COAP_PAYLOAD_MARKER) != traits_type::eof();
     }
 
     this_type& operator<<(this_type& (*__pf)(this_type&))
