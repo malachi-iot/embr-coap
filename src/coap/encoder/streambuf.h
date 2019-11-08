@@ -38,17 +38,19 @@ class StreambufEncoder
     typedef StreambufEncoder<TStreambuf> this_type;
 
 public:
-    typedef TStreambuf streambuf_type;
+    typedef typename estd::remove_reference<TStreambuf>::type streambuf_type;
     typedef estd::internal::basic_ostream<streambuf_type&> ostream_type;
     typedef moducom::coap::experimental::layer2::OptionBase option_type;
 
 protected:
-    streambuf_type streambuf;
+    typedef typename streambuf_type::char_type char_type;
+
+    TStreambuf streambuf;
     moducom::coap::OptionEncoder option_encoder;
 
     estd::streamsize sputn(const uint8_t* bytes, estd::streamsize n)
     {
-        return rdbuf()->sputn(reinterpret_cast<const char*>(bytes), n);
+        return rdbuf()->sputn(reinterpret_cast<const char_type*>(bytes), n);
     }
 
     estd::streamsize remaining()

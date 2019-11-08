@@ -288,6 +288,10 @@ TEST_CASE("CoAP encoder tests", "[coap-encoder]")
         }
         SECTION("Regenerate buffer_16bit_delta")
         {
+            // TODO: make an estd::fill and use that instead
+            // clear this out to avoid false successes
+            memset(buffer, 0, sizeof(buffer));
+
             //estd::layer1::string<2, true> s = { 0, 1 };
             // NOTE: this doesn't work because non-null terminated tracks a distinct
             // size variable
@@ -297,7 +301,7 @@ TEST_CASE("CoAP encoder tests", "[coap-encoder]")
             //s[1] = 5;
             estd::array<char, 2> v = { 4, 5 };
 
-            auto rdbuf = encoder.rdbuf();
+            auto const rdbuf = encoder.rdbuf();
 
             encoder.header(header);
             encoder.option((Option::Numbers)270, 1);
@@ -318,13 +322,33 @@ TEST_CASE("CoAP encoder tests", "[coap-encoder]")
         }
         SECTION("stream operators")
         {
+            // TODO: make an estd::fill and use that instead
+            // clear this out to avoid false successes
+            memset(buffer, 0, sizeof(buffer));
+
             estd::const_buffer empty(NULLPTR, 0);
 
+            // Consider making encode_type *itself* an ostream rather than generating one
+            // this would be particularly useful for the ostream-style of tracking eof, erroneous
+            // conditions etc.  Maybe call it EncoderStream?
+            auto out = encoder.ostream();
+
             // Be aware this technique may employ blocking, though of course it depends on the underlying
-            // streambuf
+            // streambuf.  Because of this, it deviates from 'streambuf' things because in estd world
+            // streambuf is, if you so choose, fully free from blocking (once we nail down the architure).
+            // So this is further reason to morph StreambufEncoder into EncoderStream.
+            // Be aware if we do go the EncoderStream route, we have to think about whether a DecoderStream
+            // makes sense for 1:1 so that the APIs aren't so different
             encoder << header << token(empty);
             encoder << option((Option::Numbers)270, 1);
-            encoder << option((Option::Numbers)271, 2) << payload;
+            out.put(3);
+            encoder << option((Option::Numbers)271, 2);
+            out.put(4);
+            out.put(5);
+            encoder << payload;
+            for(char i = 0x10; i <= 0x16; i++) out.put(i);
+
+            compare_array(buffer_16bit_delta, buffer);
         }
     }
 }
