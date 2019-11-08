@@ -318,9 +318,13 @@ TEST_CASE("CoAP encoder tests", "[coap-encoder]")
         }
         SECTION("stream operators")
         {
-            encoder << header;
-            encoder << option_experimental((Option::Numbers)271, 0);
-            encoder << payload;
+            estd::const_buffer empty(NULLPTR, 0);
+
+            // Be aware this technique may employ blocking, though of course it depends on the underlying
+            // streambuf
+            encoder << header << token(empty);
+            encoder << option((Option::Numbers)270, 1);
+            encoder << option((Option::Numbers)271, 2) << payload;
         }
     }
 }

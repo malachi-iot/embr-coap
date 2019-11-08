@@ -169,16 +169,6 @@ StreambufEncoder<TStreambuf>& operator<<(StreambufEncoder<TStreambuf>& encoder, 
 }
 
 // manipulators
-/*
-struct _Payload {};
-
-template <class TStreambuf>
-StreambufEncoder<TStreambuf>& operator<<(StreambufEncoder<TStreambuf>& encoder, _Payload)
-{
-    encoder.payload();
-
-    return encoder;
-} */
 
 // NOTE: almost definitely have something laying about in our options area to fill this role
 struct _Option
@@ -187,9 +177,20 @@ struct _Option
     uint16_t sz;
 };
 
-_Option option_experimental(moducom::coap::Option::Numbers number, uint16_t sz)
+_Option option(moducom::coap::Option::Numbers number, uint16_t sz)
 {
     return _Option { number, sz };
+}
+
+
+struct _Token
+{
+    estd::const_buffer raw;
+};
+
+_Token token(estd::const_buffer raw)
+{
+    return _Token { raw };
 }
 
 
@@ -200,6 +201,15 @@ StreambufEncoder<TStreambuf>& operator<<(StreambufEncoder<TStreambuf>& encoder, 
 
     return encoder;
 }
+
+template <class TStreambuf>
+StreambufEncoder<TStreambuf>& operator<<(StreambufEncoder<TStreambuf>& encoder, _Token o)
+{
+    encoder.token(o.raw);
+
+    return encoder;
+}
+
 
 template <class TStreambuf>
 inline StreambufEncoder<TStreambuf>& payload(StreambufEncoder<TStreambuf>& encoder)
