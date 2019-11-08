@@ -319,9 +319,8 @@ TEST_CASE("CoAP encoder tests", "[coap-encoder]")
         SECTION("stream operators")
         {
             encoder << header;
-            //encoder << option_experimental((Option::Numbers)271);
-            // TODO: need to do that wacky fn*/endl trick that ostream does
-            //encoder << payload;
+            encoder << option_experimental((Option::Numbers)271, 0);
+            encoder << payload;
         }
     }
 }

@@ -17,7 +17,7 @@ bool StreambufDecoder<TStreambuf>::process_iterate_streambuf()
     // 'false' to denote more processing (might) be required.  We call underflow to "pull"
     // from underlying stream just to see if an active check yields more data.
     // FIX: that underflow() API is blocking, even though so far my implementation isn't.  Check out
-    // estdlib branch exp/nonblocking-streambuf
+    // estdlib branch exp/streambuf-nonblocking
     bool eof = in_avail == 0 ? streambuf.underflow() == traits_type::eof() : in_avail == -1;
 
     // FIX: sbumpc ultimately is a blocking call too, just like underflow.  Same note applies as above

@@ -35,6 +35,8 @@ class StreambufEncoder
     void state(state_type s) {}
 #endif
 
+    typedef StreambufEncoder<TStreambuf> this_type;
+
 public:
     typedef TStreambuf streambuf_type;
     typedef estd::internal::basic_ostream<streambuf_type&> ostream_type;
@@ -151,6 +153,11 @@ public:
     {
         rdbuf()->sputc(COAP_PAYLOAD_MARKER);
     }
+
+    this_type& operator<<(this_type& (*__pf)(this_type&))
+    {
+        return __pf(*this);
+    }
 };
 
 template <class TStreambuf>
@@ -177,18 +184,19 @@ StreambufEncoder<TStreambuf>& operator<<(StreambufEncoder<TStreambuf>& encoder, 
 struct _Option
 {
     moducom::coap::Option::Numbers number;
+    uint16_t sz;
 };
 
-_Option option_experimental(moducom::coap::Option::Numbers number)
+_Option option_experimental(moducom::coap::Option::Numbers number, uint16_t sz)
 {
-    return _Option { number };
+    return _Option { number, sz };
 }
 
 
 template <class TStreambuf>
 StreambufEncoder<TStreambuf>& operator<<(StreambufEncoder<TStreambuf>& encoder, _Option o)
 {
-    encoder.option(o.number, 0);
+    encoder.option(o.number, o.sz);
 
     return encoder;
 }
