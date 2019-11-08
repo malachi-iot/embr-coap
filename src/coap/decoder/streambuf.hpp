@@ -10,15 +10,17 @@ bool StreambufDecoder<TStreambuf>::process_iterate_streambuf()
     size_t& pos = context.pos;
 
     estd::streamsize in_avail = streambuf.in_avail();
-    // TODO: Handle eof differently than "no further data ... yet" - CoAP is very end-of-packet
+    // remember in_avail == 0 = "no further data ... yet?", while -1 means "no further data, for sure"
+    // in std-world, that might mean more data coming later, but in our world it's EOF for real.
+    // CoAP is very end-of-packet
     // dependent, so if we aren't *sure* we're at the end of a packet then we need to be returning
-    // 'false' to denote more processing (might) be required
-    bool eof = in_avail <= 0 ? streambuf.underflow() == traits_type::eof() : false;
+    // 'false' to denote more processing (might) be required.  We call underflow to "pull"
+    // from underlying stream just to see if an active check yields more data.
+    // FIX: that underflow() API is blocking, even though so far my implementation isn't.  Check out
+    // estdlib branch exp/nonblocking-streambuf
+    bool eof = in_avail == 0 ? streambuf.underflow() == traits_type::eof() : in_avail == -1;
 
-    // TODO: sbumpc ultimately is a blocking call, it's been too long now I don't recall what our
-    // non-standard "no further data ...yet" trait counterpart to eof() was, but that's what we need
-    // in these calls
-    // 'in_avail' reports this back as value 0
+    // FIX: sbumpc ultimately is a blocking call too, just like underflow.  Same note applies as above
 
     switch (state())
     {
@@ -122,7 +124,7 @@ bool StreambufDecoder<TStreambuf>::process_iterate_streambuf()
             pos += count;
 
             in_avail = streambuf.in_avail();
-            eof = in_avail <= 0 ? streambuf.underflow() == traits_type::eof() : false;
+            eof = in_avail == 0 ? streambuf.underflow() == traits_type::eof() : in_avail == -1;
 
             // handle option a.1), a.2) or b.1) described below
             if (option_state() == OptionDecoder::Payload)
