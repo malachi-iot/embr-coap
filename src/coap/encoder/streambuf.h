@@ -45,6 +45,7 @@ public:
     typedef moducom::coap::experimental::layer2::OptionBase option_type;
 
 protected:
+    // DEBT: Must assert that char_type is an 8-bit type
     typedef typename streambuf_type::char_type char_type;
     typedef typename streambuf_type::traits_type traits_type;
 

@@ -22,6 +22,8 @@ public:
     typedef typename streambuf_type::int_type int_type;
     typedef typename streambuf_type::size_type size_type;
     typedef typename streambuf_type::traits_type traits_type;
+    // DEBT: Must assert that char_type is an 8-bit type
+    typedef typename traits_type::char_type char_type;
 
 private:
     // Represents total size remaining of incoming stream/packet data to be decoded

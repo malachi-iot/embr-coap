@@ -34,7 +34,7 @@ bool StreambufDecoder<TStreambuf>::process_iterate_streambuf()
         {
             bool process_done = false;
 
-            uint8_t ch;
+            char_type ch;
 
             while(!process_done &&
                 (ch = streambuf.sbumpc()) != traits_type::eof())
@@ -69,7 +69,7 @@ bool StreambufDecoder<TStreambuf>::process_iterate_streambuf()
         {
             bool process_done = false;
 
-            uint8_t ch;
+            char_type ch;
             uint8_t tkl = header_decoder().token_length();
 
             while(!process_done &&
