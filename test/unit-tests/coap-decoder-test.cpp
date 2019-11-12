@@ -127,11 +127,12 @@ TEST_CASE("CoAP decoder tests", "[coap-decoder]")
     }
     SECTION("streambuf decoder")
     {
-        typedef uint8_t char_type;
+        typedef char char_type;
         typedef estd::internal::streambuf<
                 estd::internal::impl::in_span_streambuf<char_type> > streambuf_type;
 
-        estd::span<char_type> span(buffer_16bit_delta);
+        estd::span<char_type> span((char_type*)buffer_16bit_delta, sizeof(buffer_16bit_delta));
+        typedef estd::span<const char_type> const_buffer;
 
         // FIX: in theory we can std::forward buffer directly down into out_span_streambuf, but it isn't happy
         moducom::coap::experimental::StreambufDecoder<streambuf_type> decoder(span.size(), span);
@@ -209,9 +210,9 @@ TEST_CASE("CoAP decoder tests", "[coap-decoder]")
 
             auto& rdbuf = *decoder.rdbuf();
 
-            estd::const_buffer payload = sgetn(rdbuf, rdbuf.in_avail());
+            const_buffer payload = sgetn(rdbuf, rdbuf.in_avail());
 
-            estd::const_buffer original_payload(&buffer_16bit_delta[12], sizeof(buffer_16bit_delta) - 12);
+            const_buffer original_payload((char_type*)&buffer_16bit_delta[12], sizeof(buffer_16bit_delta) - 12);
 
             REQUIRE(payload.size() == 7);
             REQUIRE(payload[0] == buffer_16bit_delta[12]);
