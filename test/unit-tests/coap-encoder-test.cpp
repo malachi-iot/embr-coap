@@ -218,13 +218,17 @@ TEST_CASE("CoAP encoder tests", "[coap-encoder]")
     {
         using namespace embr::coap::experimental;
 
+        typedef char char_type;
         typedef estd::internal::streambuf<
-                estd::internal::impl::out_span_streambuf<uint8_t> > streambuf_type;
+                estd::internal::impl::out_span_streambuf<char_type> > streambuf_type;
 
         estd::layer2::const_string test_str = "hi2u";
 
-        uint8_t buffer[128];
-        estd::span<uint8_t> span(buffer);
+        union
+        {
+            char_type buffer[128];
+            unsigned char ubuffer[128];
+        };
 
         // Match up header to what we do in buffer_16bit_delta
         Header header(Header::TypeEnum::Confirmable);
@@ -232,14 +236,14 @@ TEST_CASE("CoAP encoder tests", "[coap-encoder]")
         header.code(Header::Code::Codes::Get);
         header.message_id(0x0123);
 
-        StreambufEncoder<streambuf_type> encoder(span);
+        StreambufEncoder<streambuf_type> encoder(buffer);
 
         SECTION("Test 1")
         {
             const char* hello_str = "hello";
             const int hello_str_len = 5;
             const estd::layer2::const_string payload_str = "PAYLOAD";
-            uint8_t* b = buffer;
+            uint8_t* b = ubuffer;
 
             encoder.header(header);
             encoder.option(Option::Numbers::UriPath, hello_str);
@@ -251,6 +255,8 @@ TEST_CASE("CoAP encoder tests", "[coap-encoder]")
             auto out = encoder.ostream();
             // FIX: layer2::const_string not playing nice with << operator, so needing to do .data()
             out << payload_str.data();
+            // FIX: Perhaps ostream should be char not unsigned char?
+            //out.write((uint8_t *)payload_str.data(), payload_str.size());
 
             REQUIRE(buffer_16bit_delta[0] == buffer[0]);
             REQUIRE(buffer_16bit_delta[1] == buffer[1]);
@@ -315,10 +321,10 @@ TEST_CASE("CoAP encoder tests", "[coap-encoder]")
             rdbuf->sputc(4);
             rdbuf->sputc(5);
             encoder.payload();
-            for(char i = 0x10; i <= 0x16; i++)
+            for(char_type i = 0x10; i <= 0x16; i++)
                 rdbuf->sputc(i);
 
-            compare_array(buffer_16bit_delta, buffer);
+            compare_array(buffer_16bit_delta, ubuffer);
         }
         SECTION("stream operators")
         {
@@ -346,9 +352,9 @@ TEST_CASE("CoAP encoder tests", "[coap-encoder]")
             out.put(4);
             out.put(5);
             encoder << payload;
-            for(char i = 0x10; i <= 0x16; i++) out.put(i);
+            for(char_type i = 0x10; i <= 0x16; i++) out.put(i);
 
-            compare_array(buffer_16bit_delta, buffer);
+            compare_array(buffer_16bit_delta, ubuffer);
         }
     }
 }

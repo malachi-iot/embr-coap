@@ -76,7 +76,7 @@ protected:
     }
 
 public:
-    StreambufEncoder(const estd::span<uint8_t>& span) : streambuf(span) {}
+    StreambufEncoder(const estd::span<char_type>& span) : streambuf(span) {}
 
     // ostream-style
     streambuf_type* rdbuf() { return &streambuf; }
