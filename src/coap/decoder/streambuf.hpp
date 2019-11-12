@@ -4,11 +4,8 @@
 namespace moducom { namespace coap { namespace experimental {
 
 template <class TStreambuf>
-bool StreambufDecoder<TStreambuf>::process_iterate_streambuf()
+bool StreambufDecoder<TStreambuf>::process_iterate_streambuf(size_t& pos)
 {
-    // NOTE: pos' days are numbered, only using this for compatibility with non streambuf decoder
-    size_t& pos = context.pos;
-
     estd::streamsize in_avail = streambuf.in_avail();
     // remember in_avail == 0 = "no further data ... yet?", while -1 means "no further data, for sure"
     // in std-world, that might mean more data coming later, but in our world it's EOF for real.

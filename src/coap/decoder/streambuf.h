@@ -42,7 +42,16 @@ public:
     // function is considered experimental
     // NOTE: This has a diverging behavior in that it's .hpp not .cpp, so we may be facing code bloat this way
     // Without analysis, unknown if this is a real, imagined, good or bad thing
-    bool process_iterate_streambuf();
+    // NOTE: pos' days are numbered, only using this for compatibility with non streambuf decoder
+    // TODO: Consider passing in streambuf also and moving this into Decoder base class
+    bool process_iterate_streambuf(size_t& pos);
+
+    bool process_iterate_streambuf()
+    {
+        size_t& pos = context.pos;
+
+        return process_iterate_streambuf(pos);
+    }
 
 #ifdef FEATURE_CPP_VARIADIC
     template <class ...TArgs>
