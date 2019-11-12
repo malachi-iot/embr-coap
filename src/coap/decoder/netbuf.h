@@ -291,7 +291,7 @@ protected:
 public:
 #endif
     // helpers to detect new embr style netbuf or not
-    ESTD_FN_HAS_METHOD(uint8_t*, data,)
+    ESTD_FN_HAS_METHOD(void*, data,)
 
     ESTD_FN_HAS_METHOD(bool, end,)
 
@@ -325,7 +325,7 @@ public:
     NetBufDecoder(TNetBuf2& netbuf, bool = true) :
     // NOTE: Be advised that netbuf.end() differs from traditional iterator end
     // in that it is a bool indicating that we are ON the last chunk, not PAST it
-            base_t(ro_chunk_t(netbuf.data(), netbuf.size()),
+            base_t(ro_chunk_t((uint8_t*)netbuf.data(), netbuf.size()),
                    netbuf.last()),
             m_netbuf(netbuf)
     {}
