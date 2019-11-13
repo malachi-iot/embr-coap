@@ -36,6 +36,9 @@ private:
     size_type total_size_remaining;
 
 public:
+    // Copy/adapted from decoder.h context flavor
+    ro_chunk_t option(bool* completed = NULLPTR);
+
     // FIX: temporary name until we decouple from legacy context/chunk style decoding.  Once we finish that,
     // _streambuf suffix is dropped
     // NOTE: We may find existing Decoder::process_iterate is fully sufficient in its current form, so this
@@ -55,7 +58,7 @@ public:
 
 #ifdef FEATURE_CPP_VARIADIC
     template <class ...TArgs>
-    StreambufDecoder(size_type  total_size, TArgs... args) :
+    StreambufDecoder(size_type  total_size, TArgs&&... args) :
             streambuf(std::forward<TArgs>(args)...),
             // FIX: in_avail() can come back with a '0' or '-1' , still need to address that
             // FIX: Need better assessment of 'last_chunk'

@@ -6,6 +6,7 @@
 #pragma once
 
 #include "../decoder.h"
+#include "streambuf.h"
 #include "../../coap-dispatcher.h"
 
 #include <estd/span.h>
@@ -14,7 +15,6 @@
 namespace moducom { namespace coap {
 
 namespace experimental {
-
 
 // TODO: If we like these observer helpers, move them into (estd) observer.h not subject.h
 template <class TNotifier1, class TNotifier2 = void, class TNotifier3 = void, class TNotifier4 = void, class TNotifier5 = void, class TDecider = void>
@@ -128,6 +128,15 @@ bool decode_and_notify(TSubject& subject, Decoder& decoder, Decoder::Context& co
     int fake_app_context;
 
     return decode_and_notify(subject, decoder, context, fake_app_context);
+}
+
+
+template <class TSubject, class TStreambuf>
+bool decode_and_notify(TSubject& subject, StreambufDecoder<TStreambuf>& decoder)
+{
+    int fake_app_context;
+
+    return decode_and_notify_streambuf(subject, decoder, fake_app_context);
 }
 
 }

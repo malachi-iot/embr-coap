@@ -92,6 +92,92 @@ bool decode_and_notify(TSubject& subject, Decoder& decoder, Decoder::Context& co
     return at_end;
 }
 
+
+// inspects state of incoming decoder+context, and fires off associated decoder events via
+// provided subject.
+// copy/paste of existing context-based decode_and_notify
+// TODO: deduce actual streambuf by SFINAE looking for in_avail, etc
+/// @return true when at end of context buffer, false otherwise
+template <class TSubject, class TStreambuf, class TContext>
+bool decode_and_notify_streambuf(TSubject& subject, StreambufDecoder<TStreambuf>& decoder, TContext& app_context)
+{
+    typedef event_base::buffer_t buffer_t;
+
+    // NOTE: We deviate from norm and do state machine processing before then evaluating
+    // state.  This means we'll miss out on responding to 'Uninitialized' state (oh no)
+    // and importantly, means that we can consistently respond to 'done' state
+    bool at_end = decoder.process_iterate_streambuf();
+
+    switch(decoder.state())
+    {
+        case Decoder::HeaderDone:
+            subject.notify(header_event(decoder.header_decoder()), app_context);
+            break;
+
+        case Decoder::TokenDone:
+        {
+            // FIX: Not 100% sure token_length is available at this point
+            buffer_t chunk(decoder.token_decoder().data(),
+                           decoder.header_decoder().token_length());
+
+            // TODO: Do chunking
+            subject.notify(token_event(chunk, true), app_context);
+            break;
+        }
+
+        case Decoder::OptionsStart:
+            subject.notify(option_start_event{}, app_context);
+            break;
+
+        case Decoder::Options:
+            switch(decoder.option_state())
+            {
+                // a lot of option states pass by, but we always latch on to the ValueStart state
+                // remember, this state is seen even with "0-length" values
+                case OptionDecoder::ValueStart:
+                {
+                    uint16_t option_number = decoder.option_number();
+
+                    if (decoder.option_length() > 0)
+                    {
+                        bool completed;
+
+                        // will take more work than commented code, and not as fast,
+                        // but this way it's code reuse & dogfooding
+                        buffer_t b = decoder.option(&completed);
+                        subject.notify(option_event(option_number, b, completed),
+                                       app_context);
+                    }
+                    else
+                        subject.notify(option_event(option_number), app_context);
+                }
+
+                default: break;
+            }
+            break;
+
+        case Decoder::OptionsDone:
+            subject.notify(option_completed_event{}, app_context);
+            break;
+
+        case Decoder::Payload:
+            // TODO: Going to do payload differently, since reading payload out of a
+            // stream is more sensible than trying to send a big buffer (what if it's
+            // chunked?)
+            //subject.notify(payload_event(context.remainder(), context.last_chunk),
+            //               app_context);
+            break;
+
+        case Decoder::Done:
+            subject.notify(completed_event(), app_context);
+            break;
+
+        default: break;
+    }
+
+    return at_end;
+}
+
 }
 
 // TODO: Eventually clean up dispatch_option and then

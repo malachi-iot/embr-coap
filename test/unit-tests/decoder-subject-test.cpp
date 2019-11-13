@@ -1,5 +1,6 @@
 #include <catch.hpp>
 #include "coap/decoder/subject.hpp"
+#include "coap/decoder/streambuf.hpp"
 #include "coap/decoder/observer-aggregate.hpp"
 #include <exp/diagnostic-decoder-observer.h>
 #include "test-data.h"
@@ -168,6 +169,24 @@ TEST_CASE("CoAP decoder subject tests", "[coap-decoder-subject]")
 
             REQUIRE(decoder_type::has_end_method<netbuf_t>::value);
             REQUIRE(!decoder_type::has_data_method<netbuf_t>::value);
+        }
+    }
+    SECTION("embr + streambuf decoder")
+    {
+        //ro_chunk_t chunk(buffer_16bit_delta);
+        typedef
+            estd::internal::streambuf<
+            estd::internal::impl::in_span_streambuf<char> >
+                    streambuf_type;
+
+        estd::span<char> chunk((char*)buffer_16bit_delta, sizeof(buffer_16bit_delta));
+        StreambufDecoder<streambuf_type> decoder(0, chunk);
+
+        SECTION("void subject")
+        {
+            embr::void_subject s;
+
+            decode_and_notify(s, decoder);
         }
     }
 }
