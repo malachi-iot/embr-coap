@@ -30,6 +30,10 @@ const char* get_description(internal::Root::State state)
     {
         case Root::Done:            return "Done";
         case Root::Header:          return "Header";
+        case Root::HeaderDone:      return "Header Done";
+        case Root::Token:           return "Token";
+        case Root::TokenStart:      return "Token Start";
+        case Root::TokenDone:       return "Token Done";
         case Root::OptionsStart:    return "Options Start";
         case Root::Options:         return "Options";
         case Root::OptionsDone:     return "Options Done";

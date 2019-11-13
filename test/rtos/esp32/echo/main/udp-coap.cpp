@@ -14,6 +14,7 @@
 
 using namespace embr;
 using namespace embr::mem;
+using namespace moducom::coap;
 using namespace moducom::coap::experimental;
 
 typedef embr::lwip::PbufNetbuf netbuf_type;
@@ -35,7 +36,28 @@ void udp_coap_recv(void *arg,
         int dummy_length = 0;
 
         //pbuf_istream in(p, false); // will auto-free p since it's not bumping reference
-        StreambufDecoder<in_pbuf_streambuf>(0, p, false) decoder;
+        StreambufDecoder<in_pbuf_streambuf> decoder(0, p, false);
+
+        bool eof;
+
+        eof = decoder.process_iterate_streambuf();
+        ESP_LOGI(TAG, "state = %s", get_description(decoder.state()));
+        eof = decoder.process_iterate_streambuf();
+        Header header = decoder.header_decoder();
+        ESP_LOGI(TAG, "state = %s / mid = %d / tkl = %d", 
+            get_description(decoder.state()),
+            header.message_id(),
+            header.token_length());
+        eof = decoder.process_iterate_streambuf();
+        ESP_LOGI(TAG, "state = %s", get_description(decoder.state()));
+        eof = decoder.process_iterate_streambuf();
+        ESP_LOGI(TAG, "state = %s", get_description(decoder.state()));
+        eof = decoder.process_iterate_streambuf();
+        ESP_LOGI(TAG, "state = %s", get_description(decoder.state()));
+        const uint8_t* token = decoder.token_decoder().data();
+        ESP_LOG_BUFFER_HEX(TAG, token, header.token_length());
+        eof = decoder.process_iterate_streambuf();
+        ESP_LOGI(TAG, "state = %s", get_description(decoder.state()));
     }
 }
 
