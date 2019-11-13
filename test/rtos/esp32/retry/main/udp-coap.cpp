@@ -7,6 +7,10 @@
 #include <estd/ostream.h>
 #include <estd/istream.h>
 
+#include <coap/header.h>
+
+#define COAP_UDP_PORT 5683
+
 using namespace embr;
 using namespace embr::mem;
 
@@ -41,8 +45,8 @@ void udp_coap_init(void)
         return;
     }
 
-    /* bind to any IP address on port 7 */
-    if (udp_bind(pcb, IP_ADDR_ANY, 7) != ERR_OK) {
+    /* bind to any IP address */
+    if (udp_bind(pcb, IP_ADDR_ANY, COAP_UDP_PORT) != ERR_OK) {
         LWIP_DEBUGF(UDP_DEBUG, ("udp_bind failed!\n"));
         return;
     }
