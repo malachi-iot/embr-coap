@@ -3,6 +3,8 @@
 #include "esp_system.h"
 #include "esp_wifi.h"
 
+void udp_coap_init();
+
 extern "C" void app_main()
 {
     init_flash();
@@ -12,5 +14,7 @@ extern "C" void app_main()
 #else
     wifi_init_sta(event_handler);
 #endif
+
+    udp_coap_init();
 }
 
