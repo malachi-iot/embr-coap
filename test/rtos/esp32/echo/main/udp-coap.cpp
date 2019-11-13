@@ -8,11 +8,13 @@
 #include <estd/istream.h>
 
 #include <coap/header.h>
+#include <coap/decoder/streambuf.hpp>
 
 #define COAP_UDP_PORT 5683
 
 using namespace embr;
 using namespace embr::mem;
+using namespace moducom::coap::experimental;
 
 typedef embr::lwip::PbufNetbuf netbuf_type;
 typedef out_netbuf_streambuf<char, netbuf_type> out_pbuf_streambuf;
@@ -29,8 +31,11 @@ void udp_coap_recv(void *arg,
     if (p != NULL)
     {
         ESP_LOGI(TAG, "entry: p->len=%d", p->len);
+        // Not required for latest streambuf decoder code, and will be phased out
+        int dummy_length = 0;
 
-        pbuf_istream in(p, false); // will auto-free p since it's not bumping reference
+        //pbuf_istream in(p, false); // will auto-free p since it's not bumping reference
+        StreambufDecoder<in_pbuf_streambuf>(0, p, false) decoder;
     }
 }
 
