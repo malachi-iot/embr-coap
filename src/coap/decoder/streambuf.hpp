@@ -1,3 +1,5 @@
+#include <estd/algorithm.h>
+
 #include "streambuf.h"
 #include "option.h"
 
@@ -213,7 +215,8 @@ bool StreambufDecoder<TStreambuf>::process_iterate_streambuf(size_t& pos)
 // code between the two (and that way we can also de-templatize the bulk of the code)
 // TODO: Change to not use context
 template <class TStreambuf>
-Decoder::ro_chunk_t StreambufDecoder<TStreambuf>::option(bool* completed)
+estd::span<const typename StreambufDecoder<TStreambuf>::char_type>
+        StreambufDecoder<TStreambuf>::option(bool* completed)
 {
     ASSERT_WARN(Decoder::Options, state(), "Must be in options processing mode");
 
@@ -222,7 +225,20 @@ Decoder::ro_chunk_t StreambufDecoder<TStreambuf>::option(bool* completed)
 
     // NOTE: Safe to grab this, option_decoder().option_length() doesn't get clobbered for a while still
     int value_length = option_decoder().option_length();
-    ro_chunk_t ret = context.remainder();
+    // TODO: Make in_avail size_type - not doing so because current estd::min flips out on signed/unsigned
+    // compare
+    int in_avail = streambuf.in_avail();
+
+    // TODO: Compare in_avail to value_length and if in_avail is not sufficient, read into temporary option
+    // buffer (though we can't make that temp buffer here in this function, so it will need to be passed in)
+
+    //ro_chunk_t ret = context.remainder();
+
+    estd::span<const char_type> ret(streambuf.gptr(),
+            estd::min(value_length, in_avail));
+
+    streambuf.pubseekoff(ret.size(), estd::ios_base::cur);
+
     bool _completed = value_length <= ret.size();
 
     if(completed != NULLPTR)
@@ -231,10 +247,6 @@ Decoder::ro_chunk_t StreambufDecoder<TStreambuf>::option(bool* completed)
     {
         ASSERT_WARN(true, _completed, "Partial data encountered but potentially ignored");
     }
-
-    // if completed, be sure we resize down the remainder to a maximum
-    // value_length size rather than the entire remaining buffer
-    if(_completed)   ret.resize(value_length);
 
     return ret;
 }

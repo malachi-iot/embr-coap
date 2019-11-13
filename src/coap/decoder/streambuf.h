@@ -24,6 +24,7 @@ public:
     typedef typename streambuf_type::traits_type traits_type;
     // DEBT: Must assert that char_type is an 8-bit type
     typedef typename traits_type::char_type char_type;
+    typedef typename estd::span<const char_type> span_type;
 
 private:
     // Represents total size remaining of incoming stream/packet data to be decoded
@@ -37,7 +38,7 @@ private:
 
 public:
     // Copy/adapted from decoder.h context flavor
-    ro_chunk_t option(bool* completed = NULLPTR);
+    span_type option(bool* completed = NULLPTR);
 
     // FIX: temporary name until we decouple from legacy context/chunk style decoding.  Once we finish that,
     // _streambuf suffix is dropped

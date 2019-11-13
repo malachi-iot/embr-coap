@@ -102,6 +102,8 @@ template <class TSubject, class TStreambuf, class TContext>
 bool decode_and_notify_streambuf(TSubject& subject, StreambufDecoder<TStreambuf>& decoder, TContext& app_context)
 {
     typedef event_base::buffer_t buffer_t;
+    typedef StreambufDecoder<TStreambuf> decoder_type;
+    typedef typename decoder_type::span_type span_type;
 
     // NOTE: We deviate from norm and do state machine processing before then evaluating
     // state.  This means we'll miss out on responding to 'Uninitialized' state (oh no)
@@ -144,7 +146,8 @@ bool decode_and_notify_streambuf(TSubject& subject, StreambufDecoder<TStreambuf>
 
                         // will take more work than commented code, and not as fast,
                         // but this way it's code reuse & dogfooding
-                        buffer_t b = decoder.option(&completed);
+                        span_type _b = decoder.option(&completed);
+                        buffer_t b((uint8_t*)_b.data(), _b.size());
                         subject.notify(option_event(option_number, b, completed),
                                        app_context);
                     }
