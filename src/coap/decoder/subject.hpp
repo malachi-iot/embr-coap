@@ -164,12 +164,22 @@ bool decode_and_notify_streambuf(TSubject& subject, StreambufDecoder<TStreambuf>
             break;
 
         case Decoder::Payload:
+        {
+            typename decoder_type::streambuf_type& rdbuf = *decoder.rdbuf();
             // TODO: Going to do payload differently, since reading payload out of a
             // stream is more sensible than trying to send a big buffer (what if it's
             // chunked?)
-            //subject.notify(payload_event(context.remainder(), context.last_chunk),
-            //               app_context);
+            subject.notify(streambuf_payload_event<typename decoder_type::streambuf_type>(rdbuf),
+                           app_context);
+
+            // NOTE: fast forwarding *if necessary* after payload notification so that
+            // if event handler ignored payload, external loops don't infinitely wait for
+            // payload to be consumed
+            int in_avail = rdbuf.in_avail();
+            if (in_avail > 0)
+                rdbuf.pubseekoff(in_avail, estd::ios_base::cur);
             break;
+        }
 
         case Decoder::Done:
             subject.notify(completed_event(), app_context);

@@ -200,8 +200,8 @@ TEST_CASE("CoAP decoder subject tests", "[coap-decoder-subject]")
             } while (decoder.state() != Decoder::Done);
 
             // TODO: Figure out why these don't match old context-driven version
-            //REQUIRE(o.counter == 3);
-            //REQUIRE(o2.counter == 7);
+            REQUIRE(o.counter == 3);
+            REQUIRE(o2.counter == 7);
         }
     }
 }

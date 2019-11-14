@@ -17,6 +17,16 @@ struct event_base
     typedef internal::option_number_t option_number_t;
 };
 
+template <class TStreambuf>
+struct streambuf_event_base
+{
+    typedef typename estd::remove_reference<TStreambuf>::type streambuf_type;
+
+    streambuf_type& streambuf;
+
+    streambuf_event_base(streambuf_type& streambuf) : streambuf(streambuf) {}
+};
+
 struct chunk_event_base : event_base
 {
     buffer_t chunk;
@@ -65,6 +75,16 @@ struct payload_event : chunk_event_base
             bool last_chunk) :
             chunk_event_base(chunk, last_chunk)
     {}
+};
+
+
+template <class TStreambuf>
+struct streambuf_payload_event : streambuf_event_base<TStreambuf>
+{
+    typedef streambuf_event_base<TStreambuf> base_type;
+    typedef typename base_type::streambuf_type streambuf_type;
+
+    streambuf_payload_event(streambuf_type& streambuf) : base_type(streambuf) {}
 };
 
 

@@ -193,8 +193,9 @@ bool StreambufDecoder<TStreambuf>::process_iterate_streambuf(size_t& pos)
             // NOTE: in_avail is occasionally -1, that's gonna goof up things.  Again, since this is temporary
             //   we'll let the bug exist
             pos += in_avail;
+
             // NOTE: Counting on external party to fast forward the streambuf (i.e. read out the payload)
-            // otherwise eof won't be true
+            // otherwise eof won't be true and we will infinite loop
             if(eof)  state(PayloadDone);
             break;
 
@@ -237,7 +238,9 @@ estd::span<const typename StreambufDecoder<TStreambuf>::char_type>
     estd::span<const char_type> ret(streambuf.gptr(),
             estd::min(value_length, in_avail));
 
-    streambuf.pubseekoff(ret.size(), estd::ios_base::cur);
+    // NOTE: critically, old option helper did NOT advance buffer forward.  Doing so here
+    // indeed causes problems, but if we don't move forward we are stuck in an infinite loop
+    //streambuf.pubseekoff(ret.size(), estd::ios_base::cur);
 
     bool _completed = value_length <= ret.size();
 
@@ -275,7 +278,6 @@ size_t OptionDecoder::process_iterate_streambuf(TStreambuf& streambuf, OptionExp
     int count = process_iterate(chunk, built_option);
 
     // basically ignore/move past those processed characters
-    // FIX: in_span_streambuf doesn't have a working pubseekoff yet
     streambuf.pubseekoff(count, estd::ios_base::cur);
 
     return count;
