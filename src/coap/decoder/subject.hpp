@@ -161,6 +161,13 @@ bool decode_and_notify_streambuf(TSubject& subject, StreambufDecoder<TStreambuf>
                     //     mechanism...... though, to be fair, this decode-notify itself is exactly that, so
                     //     perhaps make the notification compile-time optional.  For that to work, it might require
                     //     observer attach at runtime though, which currently is not really supported.
+                    // 11/14/2019 UPDATE
+                    // After pondering above, I realize that for options, re-evaluation of an option is a capability
+                    // we may want.  i.e. two different observers look at the same option value.  A stream approach is
+                    // not well suited to that, as we'd have to be able to rewind streams that are chunked.  So instead,
+                    // we'll continue as we've been doing (implicitly a 1) but plan to add in a chunk-helper buffer
+                    // to pull in one option which may span many chunks.  We'll make this externally provided so that
+                    // it can survive non-blocking underflow scenarios also.
                     if (decoder.option_length() > 0)
                     {
                         bool completed;
