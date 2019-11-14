@@ -140,6 +140,27 @@ bool decode_and_notify_streambuf(TSubject& subject, StreambufDecoder<TStreambuf>
                 {
                     uint16_t option_number = decoder.option_number();
 
+                    // TODO: This is the legacy context way, but the streambuf way we'd prefer to
+                    // send out a 'streambuf_option_event' similar to the payload_option_event and
+                    // let the consumer fiddle with yanking out of the stream the way they see fit.
+                    // This will be harder than the payload style though, because the payload very
+                    // easily can tell that the payload was read or not since EOF is easy to detect,
+                    // but knowing if we properly skipped the option value is not that trivial.
+                    // Some options are:
+                    // 1.  Never expect consumer to forward through the stream (only use gptr, etc)
+                    //     But this would hamstring consumer's ability to chunk data, making the streambuf
+                    //     not so helpful
+                    // 2.  Always demand consumer forward through the stream, which is reasonable except
+                    //     the penalty for failure is a screwed up state machine as it moves on to the 'next'
+                    //     option while the data sits on the unconsumed option value
+                    // 3.  Magically know how much data the consumer read, so we can keep the state machine
+                    //     sync'd always.  Since chunking (moving between bufs) is a reality, we can't just
+                    //     do a pbuf/in_avail on things.
+                    //     a) Perhaps an event callback somehow?  That would seal
+                    //     streambuf's fate as a C++11 + creature due to the variadic nature of our subject/notify
+                    //     mechanism...... though, to be fair, this decode-notify itself is exactly that, so
+                    //     perhaps make the notification compile-time optional.  For that to work, it might require
+                    //     observer attach at runtime though, which currently is not really supported.
                     if (decoder.option_length() > 0)
                     {
                         bool completed;
