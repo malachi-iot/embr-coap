@@ -136,7 +136,7 @@ bool decode_and_notify(TSubject& subject, StreambufDecoder<TStreambuf>& decoder)
 {
     int fake_app_context;
 
-    return decode_and_notify_streambuf(subject, decoder, fake_app_context);
+    return decode_and_notify(subject, decoder, fake_app_context);
 }
 
 }
