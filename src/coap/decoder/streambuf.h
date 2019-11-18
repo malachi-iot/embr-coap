@@ -8,13 +8,18 @@
 
 namespace moducom { namespace coap { namespace experimental {
 
+// context mode is intermediate, so once native streambuf mode is fully online, zap EXPCONTEXT code
+//#define FEATURE_MCCOAP_EXPCONTEXT
+
 template <class TStreambuf>
 class StreambufDecoder : public Decoder
 {
     TStreambuf streambuf;
+#ifdef FEATURE_MCCOAP_EXPCONTEXT
     // a bit like the netbuf-ish DecoderWithContext, but without the netbuf mk1 semantics
     // might be able to bypass context or minimize it to more stack-y behavior
     internal::DecoderContext context;
+#endif
 
 public:
     typedef typename estd::remove_reference<TStreambuf>::type streambuf_type;
@@ -52,7 +57,11 @@ public:
 
     bool process_iterate_streambuf()
     {
+#ifdef FEATURE_MCCOAP_EXPCONTEXT
         size_t& pos = context.pos;
+#else
+        size_t pos = 0; // dummy value, phase out this call after EXPCONTEXT is gone
+#endif
 
         return process_iterate_streambuf(pos);
     }
@@ -63,10 +72,12 @@ public:
             streambuf(std::forward<TArgs>(args)...),
             // FIX: in_avail() can come back with a '0' or '-1' , still need to address that
             // FIX: Need better assessment of 'last_chunk'
+#ifdef FEATURE_MCCOAP_EXPCONTEXT
             context(estd::const_buffer(
                     (const uint8_t*)streambuf.gptr(),
                     streambuf.in_avail()),
                     total_size <= streambuf.in_avail()),
+#endif
             total_size_remaining(total_size)
     {}
 #endif
@@ -84,6 +95,7 @@ public:
     // without adding any overhead
     istream_type istream() { return istream_type(streambuf); }
 
+#ifdef FEATURE_MCCOAP_EXPCONTEXT
     // evaluates incoming chunk up until the next state change OR end
     // of presented chunk, then stops
     // returns true when context.chunk is fully processed, even if it is not
@@ -125,6 +137,7 @@ public:
 
         return false;
     }
+#endif
 };
 
 }}}
