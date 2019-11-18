@@ -180,7 +180,11 @@ TEST_CASE("CoAP decoder subject tests", "[coap-decoder-subject]")
                     streambuf_type;
 
         estd::span<char> chunk((char*)buffer_16bit_delta, sizeof(buffer_16bit_delta));
+#ifdef FEATURE_MCCOAP_EXPCONTEXT
         StreambufDecoder<streambuf_type> decoder(0, chunk);
+#else
+        StreambufDecoder<streambuf_type> decoder(chunk);
+#endif
 
         SECTION("void subject")
         {

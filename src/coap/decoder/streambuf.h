@@ -32,6 +32,7 @@ public:
     typedef typename estd::span<const char_type> span_type;
 
 private:
+#ifdef FEATURE_MCCOAP_EXPCONTEXT
     // Represents total size remaining of incoming stream/packet data to be decoded
     // NOTE: Temporary helper as we transition to truly stream-based decoding.  CoAP
     // relies heavily on the transport knowing total_size or at least a hard EOF for
@@ -40,6 +41,7 @@ private:
     // available on a decode.  Sloppy, but not "wrong".  Eventually we want to lean more
     // on in_avail(), underflow() and friends directly in the decoder
     size_type total_size_remaining;
+#endif
 
 public:
     // Copy/adapted from decoder.h context flavor
@@ -68,17 +70,21 @@ public:
 
 #ifdef FEATURE_CPP_VARIADIC
     template <class ...TArgs>
-    StreambufDecoder(size_type  total_size, TArgs&&... args) :
-            streambuf(std::forward<TArgs>(args)...),
+    StreambufDecoder(
+#ifdef FEATURE_MCCOAP_EXPCONTEXT
+            size_type total_size,
+#endif
+            TArgs&&... args) :
+            streambuf(std::forward<TArgs>(args)...)
+#ifdef FEATURE_MCCOAP_EXPCONTEXT
             // FIX: in_avail() can come back with a '0' or '-1' , still need to address that
             // FIX: Need better assessment of 'last_chunk'
-#ifdef FEATURE_MCCOAP_EXPCONTEXT
-            context(estd::const_buffer(
+            ,context(estd::const_buffer(
                     (const uint8_t*)streambuf.gptr(),
                     streambuf.in_avail()),
                     total_size <= streambuf.in_avail()),
-#endif
             total_size_remaining(total_size)
+#endif
     {}
 #endif
 
