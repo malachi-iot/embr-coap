@@ -5,6 +5,7 @@ set(COMPONENT_REQUIRES estdlib)
 set(COMPONENT_SRCS 
     ${ROOT_DIR}/src/coap.cpp
     ${ROOT_DIR}/src/coap/option-decoder.cpp
+    ${ROOT_DIR}/src/coap-encoder.cpp
     )
 
 # NOTE: moducom-memory is pure legacy at this point, just need to phase it out

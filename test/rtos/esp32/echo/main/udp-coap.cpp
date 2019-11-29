@@ -45,8 +45,12 @@ void udp_coap_recv(void *arg,
         //StreambufDecoder<in_pbuf_streambuf> decoder(0, p, false);
 
         StreambufDecoder<in_pbuf_streambuf> decoder(p, false);
-        // TODO: Not ready yet
-        //StreambufEncoder<out_pbuf_streambuf> encoder;
+        // Remember, at this time netbuf-pbuf code makes no assumptions about
+        // how large you want that initial buffer.  Very app dependent.  For CoAP,
+        // 32 is more than enough for a simple ACK style response.  Now, with chaining
+        // it's even less consequential - however we're embedded, so specifying these
+        // things explicitly is welcome rather than wasting space
+        StreambufEncoder<out_pbuf_streambuf> encoder(32);
 
         bool eof;
 
@@ -68,6 +72,19 @@ void udp_coap_recv(void *arg,
         ESP_LOG_BUFFER_HEX(TAG, token, header.token_length());
         eof = decoder.process_iterate_streambuf();
         ESP_LOGI(TAG, "state = %s", get_description(decoder.state()));
+
+        encoder.header(header);
+
+        netbuf_type& netbuf = encoder.rdbuf()->netbuf();
+
+        netbuf.shrink(encoder.rdbuf()->absolute_pos());
+
+        ESP_LOGI(TAG, "about to output %d bytes", netbuf.total_size());
+
+        // NOTE: I think this works, I can't remember
+        // waiting to look up CoAP 'ping' type operation - I do recall
+        // needing to change header 'ack' around
+        //udp_sendto(pcb, netbuf.pbuf(), addr, port);
     }
 }
 
