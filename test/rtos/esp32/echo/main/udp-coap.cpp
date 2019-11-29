@@ -9,6 +9,7 @@
 
 #include <coap/header.h>
 #include <coap/decoder/streambuf.hpp>
+#include <coap/encoder/streambuf.h>
 
 #define COAP_UDP_PORT 5683
 
@@ -16,6 +17,7 @@ using namespace embr;
 using namespace embr::mem;
 using namespace moducom::coap;
 using namespace moducom::coap::experimental;
+using namespace embr::coap::experimental;
 
 typedef embr::lwip::PbufNetbuf netbuf_type;
 typedef out_netbuf_streambuf<char, netbuf_type> out_pbuf_streambuf;
@@ -35,8 +37,16 @@ void udp_coap_recv(void *arg,
         // Not required for latest streambuf decoder code, and will be phased out
         int dummy_length = 0;
 
-        //pbuf_istream in(p, false); // will auto-free p since it's not bumping reference
-        StreambufDecoder<in_pbuf_streambuf> decoder(0, p, false);
+        // will auto-free p since it's not bumping reference
+        //pbuf_istream in(p, false);
+        // WARN: Be careful!!! this compiles, but seems to map to
+        //       "const PbufNetbuf& copy_from, bool reset, bool bump_reference = true"
+        //       signature
+        //StreambufDecoder<in_pbuf_streambuf> decoder(0, p, false);
+
+        StreambufDecoder<in_pbuf_streambuf> decoder(p, false);
+        // TODO: Not ready yet
+        //StreambufEncoder<out_pbuf_streambuf> encoder;
 
         bool eof;
 
