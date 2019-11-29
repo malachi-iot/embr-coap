@@ -77,7 +77,27 @@ protected:
     }
 
 public:
+    /*
+     * TODO: Something about this breaks our unit test, diagnose ... necessary!
+#ifdef FEATURE_CPP_VARIADIC
+    template <class ...TArgs>
+    StreambufEncoder(TArgs&&... args) :
+        streambuf(std::forward<TArgs>(args)...) {}
+#endif
+
+#ifdef FEATURE_CPP_MOVESEMANTIC
+    StreambufEncoder(streambuf_type&& streambuf) :
+        streambuf(std::move(streambuf)) {}
+#endif
+    */
+
+//#ifndef FEATURE_CPP_VARIADIC
+    // FIX: Replace this with the good-ol TParam1 C++03 compat way of doin gthings,
+    // hardcoding span in here is just temporary
+    // FIX: Also keeping around as I think there's a glitch with out_span_streambuf that this
+    // helps with
     StreambufEncoder(const estd::span<char_type>& span) : streambuf(span) {}
+//#endif
 
     // ostream-style
     streambuf_type* rdbuf() { return &streambuf; }
