@@ -73,7 +73,15 @@ void udp_coap_recv(void *arg,
         eof = decoder.process_iterate_streambuf();
         ESP_LOGI(TAG, "state = %s", get_description(decoder.state()));
 
+        // these two send npm coap into a tizzy
+        //header.type(Header::TypeEnum::Reset);
+        //header.type(Header::TypeEnum::NonConfirmable);
+        header.type(Header::TypeEnum::Acknowledgement);
+        //header.code(Header::Code::Empty);
+        header.code(Header::Code::Valid);
+
         encoder.header(header);
+        encoder.rdbuf()->sputn((char*)token, header.token_length());
 
         netbuf_type& netbuf = encoder.rdbuf()->netbuf();
 
@@ -84,7 +92,7 @@ void udp_coap_recv(void *arg,
         // NOTE: I think this works, I can't remember
         // waiting to look up CoAP 'ping' type operation - I do recall
         // needing to change header 'ack' around
-        //udp_sendto(pcb, netbuf.pbuf(), addr, port);
+        udp_sendto(pcb, netbuf.pbuf(), addr, port);
     }
 }
 
