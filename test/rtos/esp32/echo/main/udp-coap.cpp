@@ -38,7 +38,10 @@ void udp_coap_recv(void *arg,
     {
         ESP_LOGI(TAG, "entry: p->len=%d", p->len);
 
-        // _recv plumbing auto-frees p since our netbuf-pbuf is not bumping reference
+        // _recv plumbing depends on us to frees p,
+        // so be sure we do NOT bump up reference, which
+        // makes the auto pbuf_free call completely free
+        // up p as LwIP wants
         StreambufDecoder<in_pbuf_streambuf> decoder(p, false);
 
         // Remember, at this time netbuf-pbuf code makes no assumptions about

@@ -15,6 +15,13 @@
 #include <coap/decoder/streambuf.hpp>
 #include <coap/encoder/streambuf.h>
 
+#include "context.h"
+
+// TODO: Time to clean exp events up, functionality is not
+// experimental any longer
+#include <exp/events.h>
+
+
 #define COAP_UDP_PORT 5683
 
 using namespace embr;
@@ -35,7 +42,12 @@ typedef estd::internal::basic_istream<in_pbuf_streambuf> pbuf_istream;
 
 struct Observer
 {
-    void on_notify(int)
+    void on_notify(header_event, AppContext& context)
+    {
+    }
+
+
+    void on_notify(completed_event, AppContext& context)
     {
     }
 };
@@ -54,6 +66,7 @@ void udp_coap_recv(void *arg,
         // subject
         auto subject = embr::layer1::make_subject(observer);
         // TODO: Spin up proper context so we can get access to a StreambufEncoder somehow
+        AppContext context;
 
         decode_and_notify(decoder, subject);
     }
