@@ -163,7 +163,7 @@ TEST_CASE("CoAP decoder subject tests", "[coap-decoder-subject]")
 
             do
             {
-                decode_and_notify(s, decoder, decoder.context);
+                decode_and_notify(decoder, s, decoder.context);
 
             } while (decoder.state() != Decoder::Done);
 
@@ -190,7 +190,7 @@ TEST_CASE("CoAP decoder subject tests", "[coap-decoder-subject]")
         {
             embr::void_subject s;
 
-            decode_and_notify(s, decoder);
+            decode_and_notify(decoder, s);
         }
         SECTION("regular subject (stateful)")
         {
@@ -200,7 +200,7 @@ TEST_CASE("CoAP decoder subject tests", "[coap-decoder-subject]")
 
             do
             {
-                decode_and_notify(s, decoder);
+                decode_and_notify(decoder, s);
             } while (decoder.state() != Decoder::Done);
 
             REQUIRE(o.counter == 3);

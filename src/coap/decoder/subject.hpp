@@ -16,7 +16,7 @@ namespace experimental {
 // shall bear very strong resemblace to predecessor's DecoderSubjectBase dispatch_iterate
 /// @return true when at end of context buffer, false otherwise
 template <class TSubject, class TContext>
-bool decode_and_notify(TSubject& subject, Decoder& decoder, Decoder::Context& context, TContext& app_context)
+bool decode_and_notify(Decoder& decoder, TSubject& subject, Decoder::Context& context, TContext& app_context)
 {
     typedef event_base::buffer_t buffer_t;
 
@@ -99,7 +99,7 @@ bool decode_and_notify(TSubject& subject, Decoder& decoder, Decoder::Context& co
 // TODO: deduce actual streambuf by SFINAE looking for in_avail, etc
 /// @return true when at end of context buffer, false otherwise
 template <class TSubject, class TStreambuf, class TContext>
-bool decode_and_notify(TSubject& subject, StreambufDecoder<TStreambuf>& decoder, TContext& app_context)
+bool decode_and_notify(StreambufDecoder<TStreambuf>& decoder, TSubject& subject, TContext& app_context)
 {
     typedef event_base::buffer_t buffer_t;
     typedef StreambufDecoder<TStreambuf> decoder_type;

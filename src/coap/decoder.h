@@ -178,7 +178,7 @@ class Decoder;
 namespace experimental {
 
 template <class TSubject>
-bool decode_and_notify(TSubject& subject, Decoder& decoder, internal::DecoderContext& context);
+bool decode_and_notify(Decoder& decoder, TSubject& subject, internal::DecoderContext& context);
 
 }
 
@@ -246,7 +246,7 @@ public:
     template <class TSubject>
     bool process_iterate_experimental(TSubject& s, Context& context)
     {
-        return experimental::decode_and_notify(s, *this, context);
+        return experimental::decode_and_notify(*this, s, context);
     }
 
     /// @brief process entire remainder of context, firing events via TSubject.  Runs until

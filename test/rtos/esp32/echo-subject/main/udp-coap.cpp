@@ -3,6 +3,10 @@
 #include <embr/platform/lwip/pbuf.h>
 #include <embr/streambuf.h>
 
+#include <embr/observer.h>
+// remember to do this and not regular subject.h, otherwise not all the deductions will work
+#include <coap/decoder/subject.hpp>
+
 #include <estd/string.h>
 #include <estd/ostream.h>
 #include <estd/istream.h>
@@ -28,11 +32,26 @@ typedef in_netbuf_streambuf<char, netbuf_type> in_pbuf_streambuf;
 typedef estd::internal::basic_ostream<out_pbuf_streambuf> pbuf_ostream;
 typedef estd::internal::basic_istream<in_pbuf_streambuf> pbuf_istream;
 
+
+struct Observer
+{
+
+};
+
 void udp_coap_recv(void *arg, 
     struct udp_pcb *pcb, struct pbuf *p,
     const ip_addr_t *addr, u16_t port)
 {
-   
+    const char* TAG = "udp_coap_recv";
+
+    if (p != NULL)
+    {
+        StreambufDecoder<in_pbuf_streambuf> decoder(p, false);
+        Observer observer;
+        auto subject = embr::layer1::make_subject(observer);
+
+        decode_and_notify(decoder, subject);
+    }
 }
 
 
