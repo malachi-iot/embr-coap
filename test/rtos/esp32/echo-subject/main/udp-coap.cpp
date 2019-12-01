@@ -35,7 +35,9 @@ typedef estd::internal::basic_istream<in_pbuf_streambuf> pbuf_istream;
 
 struct Observer
 {
-
+    void on_notify(int)
+    {
+    }
 };
 
 void udp_coap_recv(void *arg, 
@@ -48,7 +50,10 @@ void udp_coap_recv(void *arg,
     {
         StreambufDecoder<in_pbuf_streambuf> decoder(p, false);
         Observer observer;
+        // TODO: Need an rvalue (&&) flavor of decode_and_notify so we can use a temp
+        // subject
         auto subject = embr::layer1::make_subject(observer);
+        // TODO: Spin up proper context so we can get access to a StreambufEncoder somehow
 
         decode_and_notify(decoder, subject);
     }
