@@ -92,9 +92,6 @@ void udp_coap_recv(void *arg,
 
         ESP_LOGI(TAG, "about to output %d bytes", netbuf.total_size());
 
-        // NOTE: I think this works, I can't remember
-        // waiting to look up CoAP 'ping' type operation - I do recall
-        // needing to change header 'ack' around
         udp_sendto(pcb, netbuf.pbuf(), addr, port);
     }
 }

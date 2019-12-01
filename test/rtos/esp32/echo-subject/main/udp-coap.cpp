@@ -15,8 +15,6 @@
 #include <coap/decoder/streambuf.hpp>
 #include <coap/encoder/streambuf.h>
 
-#include "context.h"
-
 // TODO: Time to clean exp events up, functionality is not
 // experimental any longer
 #include <exp/events.h>
@@ -39,6 +37,8 @@ typedef in_netbuf_streambuf<char, netbuf_type> in_pbuf_streambuf;
 typedef estd::internal::basic_ostream<out_pbuf_streambuf> pbuf_ostream;
 typedef estd::internal::basic_istream<in_pbuf_streambuf> pbuf_istream;
 
+#include "context.h"
+
 
 struct Observer
 {
@@ -49,6 +49,18 @@ struct Observer
 
     void on_notify(completed_event, AppContext& context)
     {
+        AppContext::encoder_type encoder = context.make_encoder();
+
+        //encoder.header();
+        //encoder.token();
+        encoder.finalize();
+
+        // WARN: Compiles but not gonna run right since header/token
+        // not populated
+        udp_sendto(context.pcb, 
+            encoder.rdbuf()->netbuf().pbuf(), 
+            &context.address(), 
+            context.port);
     }
 };
 
@@ -66,9 +78,9 @@ void udp_coap_recv(void *arg,
         // subject
         auto subject = embr::layer1::make_subject(observer);
         // TODO: Spin up proper context so we can get access to a StreambufEncoder somehow
-        AppContext context;
+        AppContext context(pcb, addr, port);
 
-        decode_and_notify(decoder, subject);
+        decode_and_notify(decoder, subject, context);
     }
 }
 
