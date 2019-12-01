@@ -60,11 +60,12 @@ void udp_coap_recv(void *arg,
         eof = decoder.process_iterate_streambuf();
 
         Header header = decoder.header_decoder();
-        
+        uint8_t tkl = header.token_length();
+
         ESP_LOGI(TAG, "state = %s / mid = %d / tkl = %d", 
             get_description(decoder.state()),
             header.message_id(),
-            header.token_length());
+            tkl);
         eof = decoder.process_iterate_streambuf();
         ESP_LOGI(TAG, "state = %s", get_description(decoder.state()));
         eof = decoder.process_iterate_streambuf();
@@ -74,7 +75,7 @@ void udp_coap_recv(void *arg,
 
         const uint8_t* token = decoder.token_decoder().data();
 
-        ESP_LOG_BUFFER_HEX(TAG, token, header.token_length());
+        ESP_LOG_BUFFER_HEX(TAG, token, tkl);
         eof = decoder.process_iterate_streambuf();
         ESP_LOGI(TAG, "state = %s", get_description(decoder.state()));
 
@@ -86,8 +87,7 @@ void udp_coap_recv(void *arg,
         header.code(Header::Code::Valid);
 
         encoder.header(header);
-
-        encoder.rdbuf()->sputn((char*)token, header.token_length());
+        encoder.token(token, header.token_length());
 
         netbuf_type& netbuf = encoder.rdbuf()->netbuf();
 

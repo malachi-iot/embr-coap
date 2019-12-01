@@ -49,18 +49,21 @@ protected:
     typedef typename streambuf_type::char_type char_type;
     typedef typename streambuf_type::traits_type traits_type;
 
-    TStreambuf streambuf;
-    moducom::coap::OptionEncoder option_encoder;
-
-    estd::streamsize sputn(const uint8_t* bytes, estd::streamsize n)
+    estd::streamsize write(const uint8_t* bytes, estd::streamsize n)
     {
         return rdbuf()->sputn(reinterpret_cast<const char_type*>(bytes), n);
     }
 
+protected:
+
+    TStreambuf streambuf;
+    moducom::coap::OptionEncoder option_encoder;
+
+    /*
     estd::streamsize remaining()
     {
         return rdbuf()->epptr() - rdbuf()->pptr();
-    }
+    } */
 
     // returns true when a byte is generated
     // false when state machine is processing (inspect
@@ -108,7 +111,7 @@ public:
     {
         _assert(state_type::Uninitialized);
         // TODO: Chunked not handled, but we could still check for fail to write
-        sputn(header.bytes, 4);
+        write(header.bytes, 4);
         state(state_type::HeaderDone);
     }
 
@@ -116,8 +119,18 @@ public:
     // NOTE: token size must have already been specified in header!
     void token(const estd::const_buffer token)
     {
+        _assert(state_type::HeaderDone);
         // TODO: Chunked not handled, but we could still check for fail to write
-        sputn(token.data(), token.size());
+        write(token.data(), token.size());
+        state(state_type::TokenDone);
+    }
+
+
+    void token(const uint8_t* token, int tkl)
+    {
+        _assert(state_type::HeaderDone);
+        write(token, tkl);
+        state(state_type::TokenDone);
     }
 
 
@@ -165,7 +178,16 @@ public:
     template <class TImpl>
     bool option(moducom::coap::Option::Numbers number, estd::internal::allocated_array<TImpl>& a)
     {
+        typedef typename estd::internal::allocated_array<TImpl>::value_type value_type;
+
+        // TODO: ensure a.size() is size in bytes
         if(!option(number, a.size())) return false;
+
+        const value_type* a_data = a.clock();
+        rdbuf()->sputn(a_data, a.size());
+        a.cunlock();
+
+        /*
 
         // FIX: following code is limited.  Firstly, we do it to avoid
         // having to do a lock/unlock on a, but really, is it that big a deal?
@@ -177,8 +199,10 @@ public:
 
         sb->pubseekoff(copied, estd::ios_base::cur, estd::ios_base::out);
 
+         */
+
         // FIX: we definitely don't have gaurunteed success here
-        // and we don't address chunking yet at all (I don't remember if OptionsEncoder helped us
+        // and we don't fully address chunking yet (I don't remember if OptionsEncoder helped us
         // with that... I think it does)
         return true;
     }
