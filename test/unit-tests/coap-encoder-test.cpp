@@ -238,6 +238,10 @@ TEST_CASE("CoAP encoder tests", "[coap-encoder]")
 
         StreambufEncoder<streambuf_type> encoder(buffer);
 
+        SECTION("experimental finalize")
+        {
+            encoder.finalize_experimental();
+        }
         SECTION("Test 1")
         {
             const char* hello_str = "hello";

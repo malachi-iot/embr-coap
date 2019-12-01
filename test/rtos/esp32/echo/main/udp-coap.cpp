@@ -88,6 +88,7 @@ void udp_coap_recv(void *arg,
 
         encoder.header(header);
         encoder.token(token, header.token_length());
+        encoder.finalize_experimental();
 
         netbuf_type& netbuf = encoder.rdbuf()->netbuf();
 

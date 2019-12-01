@@ -15,12 +15,36 @@
 // used 'embr' here since we might consider phasing out 'moducom' namespace
 namespace embr { namespace coap { namespace experimental {
 
+namespace impl {
+
+template<class TStreambuf>
+struct StreambufEncoderImpl
+{
+    typedef typename estd::remove_const<TStreambuf>::type streambuf_type;
+
+    static void finalize(streambuf_type* streambuf) {}
+};
+
+template <class TNetbuf>
+struct StreambufEncoderImpl<::embr::mem::impl::out_netbuf_streambuf<char, TNetbuf> >
+{
+    typedef typename estd::remove_const<::embr::mem::impl::out_netbuf_streambuf<char, TNetbuf>>::type streambuf_type;
+
+    static void finalize(streambuf_type* streambuf) {}
+};
+
+}
+
+
 // experimental replacement for netbuf encoder.  it's possible streambufs
 // are an all around replacement for netbufs, or at least most of the time
 // TODO: Still need to address partial (chunked) writes
 // NOTE: header and token no chunking is not planned, we'd have to employ HeaderEncoder and
 // TokenEncoder.  That use case is an edge case, since maximum size of header + token = 12 bytes
-template <class TStreambuf>
+template <
+        class TStreambuf,
+        class TStreambufEncoderImpl = impl::StreambufEncoderImpl<TStreambuf>
+        >
 class StreambufEncoder
 {
     typedef moducom::coap::internal::Root::State state_type;
@@ -41,6 +65,7 @@ class StreambufEncoder
 
 public:
     typedef typename estd::remove_reference<TStreambuf>::type streambuf_type;
+    typedef TStreambufEncoderImpl streambuf_encoder_traits;
     typedef estd::internal::basic_ostream<streambuf_type&> ostream_type;
     typedef moducom::coap::experimental::layer2::OptionBase option_type;
 
@@ -223,6 +248,13 @@ public:
     bool payload()
     {
         return rdbuf()->sputc(COAP_PAYLOAD_MARKER) != traits_type::eof();
+    }
+
+    // some systems require explicit demarkation of completion, since CoAP depends on transport
+    // packet size
+    void finalize_experimental()
+    {
+        streambuf_encoder_traits::finalize(rdbuf());
     }
 
     this_type& operator<<(this_type& (*__pf)(this_type&))
