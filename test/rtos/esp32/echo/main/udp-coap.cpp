@@ -20,6 +20,7 @@ using namespace moducom::coap::experimental;
 using namespace embr::coap::experimental;
 
 typedef embr::lwip::PbufNetbuf netbuf_type;
+typedef netbuf_type::size_type size_type;
 typedef out_netbuf_streambuf<char, netbuf_type> out_pbuf_streambuf;
 typedef in_netbuf_streambuf<char, netbuf_type> in_pbuf_streambuf;
 typedef estd::internal::basic_ostream<out_pbuf_streambuf> pbuf_ostream;
@@ -57,7 +58,9 @@ void udp_coap_recv(void *arg,
         eof = decoder.process_iterate_streambuf();
         ESP_LOGI(TAG, "state = %s", get_description(decoder.state()));
         eof = decoder.process_iterate_streambuf();
+
         Header header = decoder.header_decoder();
+        
         ESP_LOGI(TAG, "state = %s / mid = %d / tkl = %d", 
             get_description(decoder.state()),
             header.message_id(),
@@ -68,12 +71,14 @@ void udp_coap_recv(void *arg,
         ESP_LOGI(TAG, "state = %s", get_description(decoder.state()));
         eof = decoder.process_iterate_streambuf();
         ESP_LOGI(TAG, "state = %s", get_description(decoder.state()));
+
         const uint8_t* token = decoder.token_decoder().data();
+
         ESP_LOG_BUFFER_HEX(TAG, token, header.token_length());
         eof = decoder.process_iterate_streambuf();
         ESP_LOGI(TAG, "state = %s", get_description(decoder.state()));
 
-        // these two send npm coap into a tizzy
+        // these two send npm coap into a tizzy, even it seems in nonconfirmable mode
         //header.type(Header::TypeEnum::Reset);
         //header.type(Header::TypeEnum::NonConfirmable);
         header.type(Header::TypeEnum::Acknowledgement);
@@ -81,13 +86,18 @@ void udp_coap_recv(void *arg,
         header.code(Header::Code::Valid);
 
         encoder.header(header);
+
         encoder.rdbuf()->sputn((char*)token, header.token_length());
 
         netbuf_type& netbuf = encoder.rdbuf()->netbuf();
 
-        netbuf.shrink(encoder.rdbuf()->absolute_pos());
+        size_type absolute_pos = encoder.rdbuf()->absolute_pos();
 
-        ESP_LOGI(TAG, "about to output %d bytes", netbuf.total_size());
+        netbuf.shrink(absolute_pos);
+
+        ESP_LOGI(TAG, "about to output %d bytes (absolute_pos=%d)", 
+            netbuf.total_size(),
+            absolute_pos);
 
         // NOTE: I think this works, I can't remember
         // waiting to look up CoAP 'ping' type operation - I do recall
