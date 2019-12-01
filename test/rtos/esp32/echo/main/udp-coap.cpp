@@ -37,17 +37,10 @@ void udp_coap_recv(void *arg,
     if (p != NULL)
     {
         ESP_LOGI(TAG, "entry: p->len=%d", p->len);
-        // Not required for latest streambuf decoder code, and will be phased out
-        int dummy_length = 0;
 
-        // will auto-free p since it's not bumping reference
-        //pbuf_istream in(p, false);
-        // WARN: Be careful!!! this compiles, but seems to map to
-        //       "const PbufNetbuf& copy_from, bool reset, bool bump_reference = true"
-        //       signature
-        //StreambufDecoder<in_pbuf_streambuf> decoder(0, p, false);
-
+        // _recv plumbing auto-frees p since our netbuf-pbuf is not bumping reference
         StreambufDecoder<in_pbuf_streambuf> decoder(p, false);
+
         // Remember, at this time netbuf-pbuf code makes no assumptions about
         // how large you want that initial buffer.  Very app dependent.  For CoAP,
         // 32 is more than enough for a simple ACK style response.  Now, with chaining
