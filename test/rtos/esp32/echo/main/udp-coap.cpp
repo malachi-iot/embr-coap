@@ -21,8 +21,12 @@ using namespace embr::coap::experimental;
 
 typedef embr::lwip::PbufNetbuf netbuf_type;
 typedef netbuf_type::size_type size_type;
-typedef out_netbuf_streambuf<char, netbuf_type> out_pbuf_streambuf;
-typedef in_netbuf_streambuf<char, netbuf_type> in_pbuf_streambuf;
+
+typedef out_netbuf_streambuf<char, netbuf_type> out_pbuf_streambuf_impl;
+typedef in_netbuf_streambuf<char, netbuf_type> in_pbuf_streambuf_impl;
+typedef estd::internal::streambuf<out_pbuf_streambuf_impl> out_pbuf_streambuf;
+typedef estd::internal::streambuf<in_pbuf_streambuf_impl> in_pbuf_streambuf;
+
 typedef estd::internal::basic_ostream<out_pbuf_streambuf> pbuf_ostream;
 typedef estd::internal::basic_istream<in_pbuf_streambuf> pbuf_istream;
 
