@@ -1,0 +1,1 @@
+Same as `echo` but done with subject/observer code
