@@ -240,7 +240,7 @@ TEST_CASE("CoAP encoder tests", "[coap-encoder]")
 
         SECTION("experimental finalize")
         {
-            encoder.finalize_experimental();
+            encoder.finalize();
         }
         SECTION("Test 1")
         {

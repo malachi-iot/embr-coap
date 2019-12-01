@@ -26,11 +26,17 @@ struct StreambufEncoderImpl
 };
 
 template <class TNetbuf>
-struct StreambufEncoderImpl<::embr::mem::impl::out_netbuf_streambuf<char, TNetbuf> >
+struct StreambufEncoderImpl<::embr::mem::out_netbuf_streambuf<char, TNetbuf> >
 {
-    typedef typename estd::remove_const<::embr::mem::impl::out_netbuf_streambuf<char, TNetbuf>>::type streambuf_type;
+    typedef typename estd::remove_const<::embr::mem::out_netbuf_streambuf<char, TNetbuf>>::type streambuf_type;
+    typedef typename streambuf_type::size_type size_type;
 
-    static void finalize(streambuf_type* streambuf) {}
+    static void finalize(streambuf_type* streambuf)
+    {
+        size_type total_length = streambuf->absolute_pos();
+
+        streambuf->netbuf().shrink(total_length);
+    }
 };
 
 }
@@ -71,12 +77,22 @@ public:
 
 protected:
     // DEBT: Must assert that char_type is an 8-bit type
-    typedef typename streambuf_type::char_type char_type;
     typedef typename streambuf_type::traits_type traits_type;
+    typedef typename traits_type::char_type char_type;
+    typedef typename traits_type::int_type int_type;
 
     estd::streamsize write(const uint8_t* bytes, estd::streamsize n)
     {
         return rdbuf()->sputn(reinterpret_cast<const char_type*>(bytes), n);
+    }
+
+    // returns true when character written successfully, false otherwise
+    bool write(char_type c)
+    {
+        int_type result = rdbuf()->sputc(c);
+        //return traits_type::not_eof(result) == traits_type::to_int_type(c);
+        return !traits_type::eq_int_type(result, traits_type::eof());
+        return result != traits_type::eof();
     }
 
 protected:
@@ -119,13 +135,12 @@ public:
 #ifndef FEATURE_CPP_VARIADIC
     // FIX: Replace this with the good-ol TParam1 C++03 compat way of doin gthings,
     // hardcoding span in here is just temporary
-    // FIX: Also keeping around as I think there's a glitch with out_span_streambuf that this
-    // helps with
     StreambufEncoder(const estd::span<char_type>& span) : streambuf(span) {}
 #endif
 
     // ostream-style
     streambuf_type* rdbuf() { return &streambuf; }
+    const streambuf_type* rdbuf() const { return &streambuf; }
 
     // NOTE: might prefer instead to present entire encoder as a minimal
     // (non flaggable) basic_ostream.  Brings along some useful functionality
@@ -180,16 +195,14 @@ public:
 
         // TODO: run option encoder up until OptionDeltaAndLengthDone or
         // OptionLengthDone state
-        int result;
+        int_type result;
         do
         {
             result = option_encoder.generate_iterate();
             if(result != -1)
             {
-                if(rdbuf()->sputc(result) == traits_type::eof())
-                {
+                if(!write(result))
                     return false;
-                }
             }
 
         }   while(
@@ -247,12 +260,15 @@ public:
     // want those extra few bytes generated
     bool payload()
     {
-        return rdbuf()->sputc(COAP_PAYLOAD_MARKER) != traits_type::eof();
+        return write(COAP_PAYLOAD_MARKER);
     }
 
-    // some systems require explicit demarkation of completion, since CoAP depends on transport
-    // packet size
-    void finalize_experimental()
+    // since CoAP depends on transport packet size, utilize streambuf_encoder_traits
+    // to demarkate/process output streambuf in the specific way needed for coap
+    // encoding
+    // For UDP, this means ensuring the UDP packet is exactly the size of the CoAP packet, which
+    // for LwIP, usually means realloc (shrinking) the PBUF chain
+    void finalize()
     {
         streambuf_encoder_traits::finalize(rdbuf());
     }

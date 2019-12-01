@@ -90,17 +90,11 @@ void udp_coap_recv(void *arg,
 
         encoder.header(header);
         encoder.token(token, header.token_length());
-        encoder.finalize_experimental();
+        encoder.finalize();
 
         netbuf_type& netbuf = encoder.rdbuf()->netbuf();
 
-        size_type absolute_pos = encoder.rdbuf()->absolute_pos();
-
-        netbuf.shrink(absolute_pos);
-
-        ESP_LOGI(TAG, "about to output %d bytes (absolute_pos=%d)", 
-            netbuf.total_size(),
-            absolute_pos);
+        ESP_LOGI(TAG, "about to output %d bytes", netbuf.total_size());
 
         // NOTE: I think this works, I can't remember
         // waiting to look up CoAP 'ping' type operation - I do recall
