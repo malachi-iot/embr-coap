@@ -108,7 +108,11 @@ void udp_coap_recv(void *arg,
         AppContext context(pcb, addr, port);
 
         // FIX: near as I can tell, our Observer is NOT getting called
-        decode_and_notify(decoder, subject, context);
+        do
+        {
+            decode_and_notify(decoder, subject, context);
+        }
+        while(decoder.state() != Decoder::Done);
     }
 }
 

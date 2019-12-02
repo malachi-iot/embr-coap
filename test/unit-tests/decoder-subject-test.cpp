@@ -206,5 +206,18 @@ TEST_CASE("CoAP decoder subject tests", "[coap-decoder-subject]")
             REQUIRE(o.counter == 3);
             REQUIRE(o2.counter == 7);
         }
+        SECTION("regular subject (with context)")
+        {
+            test_observer o;
+            request_context_t context;
+            auto s = embr::layer1::make_subject(o);
+
+            do
+            {
+                decode_and_notify(decoder, s, context);
+            } while (decoder.state() != Decoder::Done);
+
+            REQUIRE(o.counter == 3);
+        }
     }
 }
