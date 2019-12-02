@@ -1,6 +1,6 @@
 #include "esp_log.h"
 
-#include <embr/platform/lwip/pbuf.h>
+#include <embr/platform/lwip/streambuf.h>
 #include <embr/streambuf.h>
 
 #include <embr/observer.h>
@@ -22,20 +22,9 @@
 
 #define COAP_UDP_PORT 5683
 
-using namespace embr;
-using namespace embr::mem;
 using namespace moducom::coap;
 using namespace moducom::coap::experimental;
 using namespace embr::coap::experimental;
-
-typedef embr::lwip::PbufNetbuf netbuf_type;
-typedef netbuf_type::size_type size_type;
-
-typedef out_netbuf_streambuf<char, netbuf_type> out_pbuf_streambuf;
-typedef in_netbuf_streambuf<char, netbuf_type> in_pbuf_streambuf;
-
-typedef estd::internal::basic_ostream<out_pbuf_streambuf> pbuf_ostream;
-typedef estd::internal::basic_istream<in_pbuf_streambuf> pbuf_istream;
 
 #include "observer-util.h"
 #include "context.h"
@@ -79,8 +68,6 @@ void udp_coap_recv(void *arg,
     {
         ESP_LOGD(TAG, "p->len=%d", p->len);
 
-        StreambufDecoder<in_pbuf_streambuf> decoder(p, false);
-
         // TODO: Need an rvalue (&&) flavor of decode_and_notify so we can use a temp
         // subject
         auto subject = embr::layer1::make_subject(
@@ -90,11 +77,7 @@ void udp_coap_recv(void *arg,
 
         AppContext context(pcb, addr, port);
 
-        do
-        {
-            decode_and_notify(decoder, subject, context);
-        }
-        while(decoder.state() != Decoder::Done);
+        context.do_notify(p, subject);
     }
 }
 
