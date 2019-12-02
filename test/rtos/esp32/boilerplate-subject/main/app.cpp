@@ -5,6 +5,7 @@
 using namespace moducom::coap;
 
 #include "context.h"
+#include "observer-esp-idf.h"
 
 
 constexpr int id_path_v1 = 0;
@@ -56,7 +57,10 @@ struct Observer : ExperimentalDecoderEventTypedefs
 
 embr::layer0::subject<
     HeaderContextObserver,
-    TokenContextObserver> app_subject;
+    TokenContextObserver,
+    UriParserObserver,
+    VersionObserver<id_path_v1_api_version>
+    > app_subject;
 
 
 void do_notify(AppContext& context, struct pbuf* p)
