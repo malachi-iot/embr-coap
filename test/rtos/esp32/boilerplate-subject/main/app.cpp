@@ -1,5 +1,13 @@
+// remember to do this and not regular subject.h, otherwise not all the deductions will work
+#include <coap/decoder/subject.hpp>
+#include <coap/decoder/streambuf.hpp>
+
+using namespace moducom::coap;
+using namespace moducom::coap::experimental;
+
 #include "context.h"
 #include "observer-util.h"
+
 
 
 struct Observer

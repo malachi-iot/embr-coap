@@ -13,4 +13,22 @@ struct AppContext :
     {
         this->addr = addr;
     }
+
+    // number of seed bytes is sorta app-specific, so do it here
+    encoder_type make_encoder()
+    {
+        return encoder_type(64);
+    }
+
+    void reply(encoder_type& encoder)
+    {
+        sendto(encoder, this->address(), port);
+    }
+
+
+    template <class TSubject>
+    void do_notify(pbuf_pointer p, TSubject& subject)
+    {
+        LwipContext::do_notify(subject, *this, p);
+    }
 };

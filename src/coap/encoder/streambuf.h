@@ -296,7 +296,7 @@ struct _Option
     uint16_t sz;
 };
 
-_Option option(moducom::coap::Option::Numbers number, uint16_t sz)
+inline _Option option(moducom::coap::Option::Numbers number, uint16_t sz)
 {
     return _Option { number, sz };
 }
@@ -307,14 +307,14 @@ struct _Token
     estd::const_buffer raw;
 };
 
-_Token token(estd::const_buffer raw)
+inline _Token token(estd::const_buffer raw)
 {
     return _Token { raw };
 }
 
 
 template <class TStreambuf>
-StreambufEncoder<TStreambuf>& operator<<(StreambufEncoder<TStreambuf>& encoder, _Option o)
+inline StreambufEncoder<TStreambuf>& operator<<(StreambufEncoder<TStreambuf>& encoder, _Option o)
 {
     encoder.option(o.number, o.sz);
 
@@ -322,7 +322,7 @@ StreambufEncoder<TStreambuf>& operator<<(StreambufEncoder<TStreambuf>& encoder, 
 }
 
 template <class TStreambuf>
-StreambufEncoder<TStreambuf>& operator<<(StreambufEncoder<TStreambuf>& encoder, _Token o)
+inline StreambufEncoder<TStreambuf>& operator<<(StreambufEncoder<TStreambuf>& encoder, _Token o)
 {
     encoder.token(o.raw);
 

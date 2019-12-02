@@ -1,10 +1,13 @@
 #pragma once
 
+#include "esp_log.h"
+
 /**
  * Where all the generic/utility observers go
  * imported from bronze-star project
  * TODO: disambiguate naming for CoAP observe feature vs our subject-observer approach
  * TODO: dissimenate all this utility code into official coap source itself
+ * TODO: decouple from esp-idf
  */
 
 #include <exp/uripath-repeater.h>   // brings in UriPathMatcher and friends
