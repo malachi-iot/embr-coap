@@ -23,4 +23,9 @@ struct AppContext : moducom::coap::IncomingContext<ip_addr_t>
     {
         return encoder_type(32);
     }
+
+    void reply(encoder_type& encoder)
+    {
+        //encoder.rdbuf()->netbuf();
+    }
 };

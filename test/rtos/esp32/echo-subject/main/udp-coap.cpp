@@ -37,22 +37,40 @@ typedef in_netbuf_streambuf<char, netbuf_type> in_pbuf_streambuf;
 typedef estd::internal::basic_ostream<out_pbuf_streambuf> pbuf_ostream;
 typedef estd::internal::basic_istream<in_pbuf_streambuf> pbuf_istream;
 
+#include "observer-util.h"
 #include "context.h"
 
 
 struct Observer
 {
+    static constexpr char* TAG = "Observer";
+
     void on_notify(header_event, AppContext& context)
     {
+        ESP_LOGI(TAG, "on_notify header");
+    }
+
+
+    void on_notify(option_start_event, AppContext& context)
+    {
+        ESP_LOGI(TAG, "on_notify options start");
     }
 
 
     void on_notify(completed_event, AppContext& context)
     {
+        ESP_LOGI(TAG, "on_notify completed");
+
         AppContext::encoder_type encoder = context.make_encoder();
 
-        //encoder.header();
-        //encoder.token();
+        Header header = context.header();
+        moducom::coap::layer3::Token token = context.token();
+
+        header.type(Header::TypeEnum::Acknowledgement);
+        header.code(Header::Code::Valid);
+
+        encoder.header(header);
+        encoder.token(token);
         encoder.finalize();
 
         // WARN: Compiles but not gonna run right since header/token
@@ -64,6 +82,10 @@ struct Observer
     }
 };
 
+embr::layer0::subject<
+    HeaderContextObserver,
+    TokenContextObserver> app_subject;
+
 void udp_coap_recv(void *arg, 
     struct udp_pcb *pcb, struct pbuf *p,
     const ip_addr_t *addr, u16_t port)
@@ -72,14 +94,20 @@ void udp_coap_recv(void *arg,
 
     if (p != NULL)
     {
+        ESP_LOGI(TAG, "p->len=%d", p->len);
+
         StreambufDecoder<in_pbuf_streambuf> decoder(p, false);
         Observer observer;
         // TODO: Need an rvalue (&&) flavor of decode_and_notify so we can use a temp
         // subject
-        auto subject = embr::layer1::make_subject(observer);
+        auto subject = embr::layer1::make_subject(
+            embr::layer1::make_observer_proxy(app_subject),
+            observer
+            );
         // TODO: Spin up proper context so we can get access to a StreambufEncoder somehow
         AppContext context(pcb, addr, port);
 
+        // FIX: near as I can tell, our Observer is NOT getting called
         decode_and_notify(decoder, subject, context);
     }
 }
