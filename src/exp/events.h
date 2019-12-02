@@ -118,4 +118,16 @@ struct uri_path_event
 
 }
 
+struct ExperimentalDecoderEventTypedefs
+{
+    typedef experimental::token_event token_event;
+    typedef experimental::payload_event payload_event;
+    typedef experimental::option_event option_event;
+    typedef experimental::option_start_event option_start_event;
+    typedef experimental::option_completed_event option_completed_event;
+    typedef experimental::header_event header_event;
+    typedef experimental::completed_event completed_event;
+};
+
+
 }}

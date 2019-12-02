@@ -1,15 +1,22 @@
 #pragma once
 
 #include "lwip-context.h"
+#include "observer-util.h"
+
+typedef moducom::coap::experimental::UriPathMap UriPathMap;
+
+extern const UriPathMap uri_map[7];
 
 struct AppContext : 
     moducom::coap::IncomingContext<const ip_addr_t*>,
-    LwipContext
+    LwipContext,
+    UriParserContext
 {
     AppContext(struct udp_pcb* pcb, 
         const ip_addr_t* addr,
         uint16_t port) : 
-        LwipContext(pcb, port)
+        LwipContext(pcb, port),
+        UriParserContext(uri_map)
     {
         this->addr = addr;
     }

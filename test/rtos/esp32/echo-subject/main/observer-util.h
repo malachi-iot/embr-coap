@@ -10,7 +10,11 @@
  * TODO: decouple from esp-idf
  */
 
+#include <coap/context.h>
 #include <exp/uripath-repeater.h>   // brings in UriPathMatcher and friends
+#include <exp/events.h>
+
+typedef moducom::coap::ExperimentalDecoderEventTypedefs ExperimentalDecoderEventTypedefs;
 
 // Candidate for 'Provider' since this mostly just holds on the an instance
 class UriParserContext
@@ -44,10 +48,10 @@ public:
 
 
 
-struct TokenContextObserver
+struct TokenContextObserver : ExperimentalDecoderEventTypedefs
 {
     template <bool inline_token>
-    static void on_notify(const token_event& e, TokenContext<inline_token>& ctx) 
+    static void on_notify(const token_event& e, moducom::coap::TokenContext<inline_token>& ctx) 
     {
         //printf("TokenContextObserver::on_notify(token_event)\n");
         ctx.token(e.chunk);
@@ -55,9 +59,9 @@ struct TokenContextObserver
 };
 
 // stateless observer which populates some of the context items
-struct HeaderContextObserver
+struct HeaderContextObserver : ExperimentalDecoderEventTypedefs
 {
-    static void on_notify(const header_event& e, HeaderContext& ctx) 
+    static void on_notify(const header_event& e, moducom::coap::HeaderContext& ctx) 
     {
         //printf("HeaderContextObserver::on_notify(header_event)\n");
         ctx.header(e.header);
@@ -65,7 +69,7 @@ struct HeaderContextObserver
 };
 
 // FIX: Needs better name
-struct UriParserObserver
+struct UriParserObserver : ExperimentalDecoderEventTypedefs
 {
     static const char* TAG;
 
@@ -77,7 +81,7 @@ struct UriParserObserver
 
         switch(e.option_number)
         {
-            case Option::UriPath:
+            case moducom::coap::Option::UriPath:
                 ctx.uri_matcher().find(e.string());
                 break;
 
@@ -92,7 +96,7 @@ struct UriParserObserver
     }
 };
 
-struct _UriBuilderObserver
+struct _UriBuilderObserver : ExperimentalDecoderEventTypedefs
 {
     static const char* TAG;
     static estd::layer1::string<128> incoming_uri;
@@ -104,7 +108,7 @@ struct _UriBuilderObserver
 
     static void on_notify(const option_event& e) 
     {
-        if(e.option_number == Option::UriPath)
+        if(e.option_number == moducom::coap::Option::UriPath)
         {
             incoming_uri += e.string();
             incoming_uri += '/';

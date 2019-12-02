@@ -3,14 +3,33 @@
 #include <coap/decoder/streambuf.hpp>
 
 using namespace moducom::coap;
-using namespace moducom::coap::experimental;
 
 #include "context.h"
-#include "observer-util.h"
 
 
+constexpr int id_path_v1 = 0;
+constexpr int id_path_v1_api = 1;
+constexpr int id_path_v1_api_test = 3;
+constexpr int id_path_v1_api_version = 4;
+constexpr int id_path_v1_api_stats = 5;
+constexpr int id_path_well_known = 20;
+constexpr int id_path_well_known_core = 21;
 
-struct Observer
+// NOTE: Alphabetization is important.  id# ordering is not
+const UriPathMap uri_map[7] =
+{
+    { "v1",         id_path_v1,                 MCCOAP_URIPATH_NONE },
+    { "api",        id_path_v1_api,             id_path_v1 },
+    { "stats",      id_path_v1_api_stats,       id_path_v1_api },
+    { "test",       id_path_v1_api_test,        id_path_v1_api },
+    { "version",    id_path_v1_api_version,     id_path_v1_api },
+
+    { ".well-known",    id_path_well_known,         MCCOAP_URIPATH_NONE },
+    { "core",           id_path_well_known_core,    id_path_well_known }
+};
+
+
+struct Observer : ExperimentalDecoderEventTypedefs
 {
     static constexpr const char* TAG = "Observer";
 
