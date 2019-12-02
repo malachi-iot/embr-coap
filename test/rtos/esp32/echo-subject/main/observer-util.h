@@ -46,7 +46,7 @@ struct TokenContextObserver
     template <bool inline_token>
     static void on_notify(const token_event& e, TokenContext<inline_token>& ctx) 
     {
-        printf("TokenContextObserver::on_notify(token_event)\n");
+        //printf("TokenContextObserver::on_notify(token_event)\n");
         ctx.token(e.chunk);
     }
 };
@@ -56,7 +56,7 @@ struct HeaderContextObserver
 {
     static void on_notify(const header_event& e, HeaderContext& ctx) 
     {
-        printf("HeaderContextObserver::on_notify(header_event)\n");
+        //printf("HeaderContextObserver::on_notify(header_event)\n");
         ctx.header(e.header);
     }
 };

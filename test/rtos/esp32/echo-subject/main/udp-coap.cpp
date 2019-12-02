@@ -43,19 +43,7 @@ typedef estd::internal::basic_istream<in_pbuf_streambuf> pbuf_istream;
 
 struct Observer
 {
-    static constexpr char* TAG = "Observer";
-
-    void on_notify(header_event, AppContext& context)
-    {
-        ESP_LOGI(TAG, "on_notify header");
-    }
-
-
-    void on_notify(option_start_event, AppContext& context)
-    {
-        ESP_LOGI(TAG, "on_notify options start");
-    }
-
+    static constexpr const char* TAG = "Observer";
 
     void on_notify(completed_event, AppContext& context)
     {
@@ -73,12 +61,7 @@ struct Observer
         encoder.token(token);
         encoder.finalize();
 
-        // WARN: Compiles but not gonna run right since header/token
-        // not populated
-        udp_sendto(context.pcb, 
-            encoder.rdbuf()->netbuf().pbuf(), 
-            &context.address(), 
-            context.port);
+        context.reply(encoder);
     }
 };
 
@@ -94,20 +77,19 @@ void udp_coap_recv(void *arg,
 
     if (p != NULL)
     {
-        ESP_LOGI(TAG, "p->len=%d", p->len);
+        ESP_LOGD(TAG, "p->len=%d", p->len);
 
         StreambufDecoder<in_pbuf_streambuf> decoder(p, false);
-        Observer observer;
+
         // TODO: Need an rvalue (&&) flavor of decode_and_notify so we can use a temp
         // subject
         auto subject = embr::layer1::make_subject(
             embr::layer1::make_observer_proxy(app_subject),
-            observer
+            Observer()
             );
-        // TODO: Spin up proper context so we can get access to a StreambufEncoder somehow
+
         AppContext context(pcb, addr, port);
 
-        // FIX: near as I can tell, our Observer is NOT getting called
         do
         {
             decode_and_notify(decoder, subject, context);
