@@ -222,7 +222,7 @@ namespace layer2 {
 // also we may want larger than 4 at some point, but that's
 // as big as is convenient for now
 template <size_t buffer_size = 4>
-class UInt : estd::layer1::vector<uint8_t, buffer_size>
+class UInt : public estd::layer1::vector<uint8_t, buffer_size>
         //pipeline::layer2::MemoryChunk<buffer_size, uint8_t>
 {
     typedef estd::layer1::vector<uint8_t, buffer_size> base_t;

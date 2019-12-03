@@ -4,6 +4,10 @@
 
 #include <estd/port/identify_platform.h>
 
+// FIX: Not yet pulling in proper estd esp-idf version finder
+// so hardwiring to PROJECT_VER
+#define PROJECT_VER "1.0.0-alpha001"
+
 #include <exp/events.h>
 #include <exp/uripath-repeater.h>   // brings in UriPathMatcher and friends
 #if ESTD_IDF_VER >= ESTD_IDF_VER_3_3_0
@@ -39,7 +43,23 @@ struct VersionObserver : VersionObserverBase
         // discrete class
         if(ctx.uri_matcher().last_found() == id_path)
         {
-#ifdef READY
+            auto encoder = make_encoder(ctx);
+
+            Header header = ctx.header();
+            auto token = ctx.token();
+
+            header.code(Header::Code::Content);
+            header.type(Header::TypeEnum::Acknowledgement);
+
+            encoder.header(header);
+            encoder.token(token);
+
+            // text/plain
+            encoder.option_int(Option::Numbers::ContentFormat, 0);
+
+            encoder.payload();
+
+#ifdef OLD_CODE
             //ESP_LOGD(TAG, "replying with version");
 
             auto encoder = ctx.make_encoder_experimental(Header::Code::Content);
@@ -56,8 +76,14 @@ struct VersionObserver : VersionObserverBase
 #else
             encoder << estd::layer2::const_string(PROJECT_VER);
 #endif
-            ctx.reply(encoder);
+
+#else
+            auto out = encoder.ostream();
+
+            out << PROJECT_VER;
+
 #endif
+            ctx.reply(encoder);
         }
     }
 };

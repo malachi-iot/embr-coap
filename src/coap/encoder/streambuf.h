@@ -11,6 +11,7 @@
 #include "../../coap-encoder.h"
 #include "../../coap_transmission.h"
 #include "../context.h"
+#include "../uint.h"
 
 // used 'embr' here since we might consider phasing out 'moducom' namespace
 namespace embr { namespace coap { namespace experimental {
@@ -74,6 +75,7 @@ public:
     typedef TStreambufEncoderImpl streambuf_encoder_traits;
     typedef estd::internal::basic_ostream<streambuf_type&> ostream_type;
     typedef moducom::coap::experimental::layer2::OptionBase option_type;
+    typedef moducom::coap::Option::Numbers option_number_type;
 
 protected:
     // DEBT: Must assert that char_type is an 8-bit type
@@ -182,9 +184,20 @@ public:
         token(ctx.token());
     }
 
+    // FIX: rename to 'option'
+    bool option_int(option_number_type number, int option_value)
+    {
+        moducom::coap::layer2::UInt<> v;
+
+        v.set(option_value);
+
+        return option(number, v);
+    }
+
     // returns false if chunking is needed
     // returns true if entire data was output
     // NOTE: interrogating option state may be a better way to ascertain that info
+    // FIX: rename to 'option_raw'
     bool option(moducom::coap::Option::Numbers number, uint16_t length = 0)
     {
         option_type option(number);
@@ -221,8 +234,11 @@ public:
         // TODO: ensure a.size() is size in bytes
         if(!option(number, a.size())) return false;
 
+        // TODO: ensure value_type is 8-bit (strong overlap with
+        // checking that size is in bytes)
         const value_type* a_data = a.clock();
-        rdbuf()->sputn(a_data, a.size());
+        const char_type* s = reinterpret_cast<const char_type*>(a_data);
+        rdbuf()->sputn(s, a.size());
         a.cunlock();
 
         /*

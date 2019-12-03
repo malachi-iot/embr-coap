@@ -21,12 +21,6 @@ struct AppContext :
         this->addr = addr;
     }
 
-    // number of seed bytes is sorta app-specific, so do it here
-    encoder_type make_encoder()
-    {
-        return encoder_type(64);
-    }
-
     void reply(encoder_type& encoder)
     {
         sendto(encoder, this->address(), port);
@@ -39,3 +33,11 @@ struct AppContext :
         LwipContext::do_notify(subject, *this, p);
     }
 };
+
+
+inline AppContext::encoder_type make_encoder(const AppContext&)
+{
+    ESP_LOGD("TEST", "Got to special encoder");
+
+    return AppContext::encoder_type(32);
+}
