@@ -28,6 +28,23 @@ struct VersionObserverBase
     static const char *TAG;
 };
 
+/*
+template <class TContext>
+typename TContext::encoder_type build_version_response(const TContext& context)
+{
+    typename TContext::encoder_type encoder_type;
+
+    encoder_type encoder = make_encoder_reply(ctx, Header::Code::Content);
+
+    // text/plain
+    encoder.option_int(Option::Numbers::ContentFormat, 0);
+
+    encoder.payload();
+
+
+}
+*/
+
 // Expects TContext to be/conform to:
 // moducom::coap::IncomingContext
 template <int id_path, class TContext>
