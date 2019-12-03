@@ -1,3 +1,6 @@
+// 12/3/2019: OBSOLETE
+// This is all netbuf mk. 1 code.  Anything pertinent in this category
+// now lives in embr
 #pragma once
 
 #include "mc/netbuf.h"

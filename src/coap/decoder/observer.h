@@ -1,3 +1,5 @@
+// 12/03/2019: OBSOLETE
+// We now use embr subject-observer mechanism, this is not compatible
 #pragma once
 
 #include <mc/memory-pool.h>

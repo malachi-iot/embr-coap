@@ -7,6 +7,12 @@
 
 #define COAP_UDP_PORT 5683
 
+// TODO: Either include addr in here and somehow NOT in app context,
+// or go other direction and inherit from moducom::coap::IncomingContext
+// - If we do the former, except for encoder/decoder types this could be
+//   completely decoupled from coap
+// - If we do the latter, then this could more comfortably contain the
+//   reply data which AppContext needs
 struct LwipContext
 {
     typedef struct udp_pcb* pcb_pointer;

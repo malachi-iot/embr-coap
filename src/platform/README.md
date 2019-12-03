@@ -12,6 +12,8 @@ b) demand consuming programmer (you) to manually find and include CPP files in y
 
 Leaning towards a, but we will see
 
-NOTE:
+# NOTE
 
 Platform probably should be named 'modules' , will likely be renamed as such
+
+Also much of this platform code relies on netbuf mk. 1 which is obsolete and is not to be used at all.
