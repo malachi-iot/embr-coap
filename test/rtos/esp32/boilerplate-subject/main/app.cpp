@@ -47,7 +47,7 @@ struct Observer : ExperimentalDecoderEventTypedefs
                 break;
 
             default:
-                build_encoder_reply(context, encoder, Header::Code::NotFound);
+                build_reply(context, encoder, Header::Code::NotFound);
                 break;
         }
 

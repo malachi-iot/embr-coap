@@ -28,13 +28,15 @@ struct VersionObserverBase
     static const char *TAG;
 };
 
-template <class TContext>
-void build_version_response(const TContext& context, typename TContext::encoder_type& encoder)
+template <bool inline_token, class TStreambuf>
+void build_version_response(
+    const moducom::coap::TokenAndHeaderContext<inline_token>& context, 
+    embr::coap::experimental::StreambufEncoder<TStreambuf>& encoder)
 {
     typedef moducom::coap::Header Header;
     typedef moducom::coap::Option Option;
 
-    build_encoder_reply(context, encoder, Header::Code::Content);
+    build_reply(context, encoder, Header::Code::Content);
 
     // text/plain
     encoder.option_int(Option::Numbers::ContentFormat, 0);

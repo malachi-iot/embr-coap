@@ -69,8 +69,10 @@ inline LwipContext::encoder_type make_encoder(const LwipContext&)
 }
 
 
-template <class TContext>
-inline void build_encoder_reply(const TContext& context, typename TContext::encoder_type& encoder, uint8_t code)
+template <bool inline_token, class TStreambuf>
+inline void build_reply(
+    const moducom::coap::TokenAndHeaderContext<inline_token>& context, 
+    embr::coap::experimental::StreambufEncoder<TStreambuf>& encoder, uint8_t code)
 {
     typedef moducom::coap::Header Header;
 

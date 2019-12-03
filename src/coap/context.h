@@ -207,7 +207,7 @@ public:
 };
 
 // these two really like to go together
-template <bool inline_token, bool simple_buffer>
+template <bool inline_token, bool simple_buffer = false>
 struct TokenAndHeaderContext;
 
 template <>
