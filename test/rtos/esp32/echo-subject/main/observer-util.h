@@ -122,3 +122,23 @@ struct _UriBuilderObserver : ExperimentalDecoderEventTypedefs
     }
 };
 
+
+// Depends on TContext conforming to/being 
+// 1. UriParserContext
+// 2. moducom::coap::IncomingContext
+template <class TContext>
+struct Auto404Observer : ExperimentalDecoderEventTypedefs
+{
+    typedef moducom::coap::Header Header;
+    typedef moducom::coap::Option Option;
+
+    static void on_notify(option_completed_event, TContext& context)
+    {
+        if(context.found_node() != MCCOAP_URIPATH_NONE)
+            return;
+
+        auto encoder = make_encoder_reply(context, Header::Code::NotFound);
+
+        context.reply(encoder);
+    }
+};

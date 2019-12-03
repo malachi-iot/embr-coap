@@ -37,20 +37,6 @@ struct Observer : ExperimentalDecoderEventTypedefs
     void on_notify(completed_event, AppContext& context)
     {
         ESP_LOGI(TAG, "on_notify completed");
-
-        AppContext::encoder_type encoder = make_encoder(context);
-
-        Header header = context.header();
-        moducom::coap::layer3::Token token = context.token();
-
-        header.type(Header::TypeEnum::Acknowledgement);
-        header.code(Header::Code::Valid);
-
-        encoder.header(header);
-        encoder.token(token);
-        encoder.finalize();
-
-        context.reply(encoder);
     }
 };
 
@@ -59,7 +45,8 @@ embr::layer0::subject<
     HeaderContextObserver,
     TokenContextObserver,
     UriParserObserver,
-    VersionObserver<id_path_v1_api_version>
+    VersionObserver<id_path_v1_api_version, AppContext>,
+    Auto404Observer<AppContext>
     > app_subject;
 
 

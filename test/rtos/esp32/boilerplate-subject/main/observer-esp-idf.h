@@ -28,14 +28,16 @@ struct VersionObserverBase
     static const char *TAG;
 };
 
-template <int id_path>
+// Expects TContext to be/conform to:
+// moducom::coap::IncomingContext
+template <int id_path, class TContext>
 struct VersionObserver : VersionObserverBase
 {
     typedef moducom::coap::Header Header;
     typedef moducom::coap::Option Option;
     typedef moducom::coap::experimental::completed_event completed_event;
 
-    static void on_notify(completed_event, AppContext& ctx) 
+    static void on_notify(completed_event, TContext& ctx) 
     {
         ESP_LOGD(TAG, "on_notify(completed_event)");
 
@@ -43,16 +45,7 @@ struct VersionObserver : VersionObserverBase
         // discrete class
         if(ctx.uri_matcher().last_found() == id_path)
         {
-            auto encoder = make_encoder(ctx);
-
-            Header header = ctx.header();
-            auto token = ctx.token();
-
-            header.code(Header::Code::Content);
-            header.type(Header::TypeEnum::Acknowledgement);
-
-            encoder.header(header);
-            encoder.token(token);
+            auto encoder = make_encoder_reply(ctx, Header::Code::Content);
 
             // text/plain
             encoder.option_int(Option::Numbers::ContentFormat, 0);
@@ -81,7 +74,6 @@ struct VersionObserver : VersionObserverBase
             auto out = encoder.ostream();
 
             out << PROJECT_VER;
-
 #endif
             ctx.reply(encoder);
         }

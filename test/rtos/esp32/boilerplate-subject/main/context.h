@@ -23,6 +23,8 @@ struct AppContext :
 
     void reply(encoder_type& encoder)
     {
+        encoder.finalize();
+        
         sendto(encoder, this->address(), port);
     }
 

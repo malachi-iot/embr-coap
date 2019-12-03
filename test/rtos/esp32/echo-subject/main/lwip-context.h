@@ -67,3 +67,25 @@ inline LwipContext::encoder_type make_encoder(const LwipContext&)
     // their context for more specificity
     return LwipContext::encoder_type(256);
 }
+
+
+// Expects TContext to be/conform to:
+// moducom::coap::IncomingContext
+// TODO: better suited to cpp/hpp - be nice to non-inline it
+template <class TContext>
+inline typename TContext::encoder_type make_encoder_reply(const TContext& context, uint8_t code)
+{
+    typedef moducom::coap::Header Header;
+    typename TContext::encoder_type encoder = make_encoder(context);
+
+    Header header = context.header();
+    auto token = context.token();
+
+    header.code(code);
+    header.type(Header::TypeEnum::Acknowledgement);
+
+    encoder.header(header);
+    encoder.token(token);
+
+    return encoder;
+}
