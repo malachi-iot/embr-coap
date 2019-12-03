@@ -28,22 +28,24 @@ struct VersionObserverBase
     static const char *TAG;
 };
 
-/*
 template <class TContext>
-typename TContext::encoder_type build_version_response(const TContext& context)
+void build_version_response(const TContext& context, typename TContext::encoder_type& encoder)
 {
-    typename TContext::encoder_type encoder_type;
+    typedef moducom::coap::Header Header;
+    typedef moducom::coap::Option Option;
 
-    encoder_type encoder = make_encoder_reply(ctx, Header::Code::Content);
+    build_encoder_reply(context, encoder, Header::Code::Content);
 
     // text/plain
     encoder.option_int(Option::Numbers::ContentFormat, 0);
 
     encoder.payload();
 
+    auto out = encoder.ostream();
 
+    out << PROJECT_VER;
 }
-*/
+
 
 // Expects TContext to be/conform to:
 // moducom::coap::IncomingContext
@@ -62,12 +64,9 @@ struct VersionObserver : VersionObserverBase
         // discrete class
         if(ctx.uri_matcher().last_found() == id_path)
         {
-            auto encoder = make_encoder_reply(ctx, Header::Code::Content);
+            auto encoder = make_encoder(ctx);
 
-            // text/plain
-            encoder.option_int(Option::Numbers::ContentFormat, 0);
-
-            encoder.payload();
+            build_version_response(ctx, encoder);
 
 #ifdef OLD_CODE
             //ESP_LOGD(TAG, "replying with version");
@@ -87,10 +86,6 @@ struct VersionObserver : VersionObserverBase
             encoder << estd::layer2::const_string(PROJECT_VER);
 #endif
 
-#else
-            auto out = encoder.ostream();
-
-            out << PROJECT_VER;
 #endif
             ctx.reply(encoder);
         }

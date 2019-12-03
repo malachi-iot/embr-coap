@@ -38,13 +38,20 @@ struct Observer : ExperimentalDecoderEventTypedefs
     {
         ESP_LOGI(TAG, "on_notify completed");
 
+        auto encoder = make_encoder(context);
+
         switch(context.found_node())
         {
-            case id_path_v1_api_stats:
+            case id_path_v1_api_version:
+                build_version_response(context, encoder);
                 break;
-                
-            default: break;
+
+            default:
+                build_encoder_reply(context, encoder, Header::Code::NotFound);
+                break;
         }
+
+        context.reply(encoder);
     }
 };
 
@@ -52,9 +59,9 @@ struct Observer : ExperimentalDecoderEventTypedefs
 embr::layer0::subject<
     HeaderContextObserver,
     TokenContextObserver,
-    UriParserObserver,
-    VersionObserver<id_path_v1_api_version, AppContext>,
-    Auto404Observer<AppContext>
+    UriParserObserver
+    //VersionObserver<id_path_v1_api_version, AppContext>,
+    //Auto404Observer<AppContext>
     > app_subject;
 
 
