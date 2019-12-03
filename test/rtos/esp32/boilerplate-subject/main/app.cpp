@@ -17,7 +17,7 @@ constexpr int id_path_well_known = 20;
 constexpr int id_path_well_known_core = 21;
 
 // NOTE: Alphabetization is important.  id# ordering is not
-const UriPathMap uri_map[7] =
+const UriPathMap uri_map[] =
 {
     { "v1",         id_path_v1,                 MCCOAP_URIPATH_NONE },
     { "api",        id_path_v1_api,             id_path_v1 },
@@ -37,6 +37,14 @@ struct Observer : ExperimentalDecoderEventTypedefs
     void on_notify(completed_event, AppContext& context)
     {
         ESP_LOGI(TAG, "on_notify completed");
+
+        switch(context.found_node())
+        {
+            case id_path_v1_api_stats:
+                break;
+                
+            default: break;
+        }
     }
 };
 
