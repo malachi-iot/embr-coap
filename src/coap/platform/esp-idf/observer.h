@@ -4,19 +4,17 @@
 
 // TODO: use relative pathing here
 #include <exp/events.h>
-#include <exp/uripath-repeater.h>   // brings in UriPathMatcher and friends
+#include "../../../exp/uripath-repeater.h"   // brings in UriPathMatcher and friends
+
+#include "esp_log.h"
 #if ESTD_IDF_VER >= ESTD_IDF_VER_3_3_0
 #include "esp_ota_ops.h"
 #endif
 
-#include <coap/header.h>
+#include "../../context.h"
+#include "../../encoder/streambuf.h"
 
 namespace moducom { namespace coap {
-
-// FIX: decouple from specific AppContext, only needs to really be wired to:
-// 1. UriPathMatcher
-// 2. something which can do a make_encoder/reply
-#include "context.h"
 
 // for coap version command request
 
@@ -25,6 +23,7 @@ struct VersionObserverBase
     static const char *TAG;
 };
 
+// TODO: This belongs in a different file really
 template <bool inline_token, class TStreambuf>
 void build_version_response(
     const moducom::coap::TokenAndHeaderContext<inline_token>& context, 
@@ -65,8 +64,6 @@ struct VersionObserver : VersionObserverBase
     {
         ESP_LOGD(TAG, "on_notify(completed_event)");
 
-        // NOTE: Consider making this into a helper method instead of a whole
-        // discrete class
         if(ctx.uri_matcher().last_found() == id_path)
         {
             auto encoder = make_encoder(ctx);

@@ -1,6 +1,7 @@
 set(ROOT_DIR ${CMAKE_CURRENT_LIST_DIR}/../..)
 
-set(COMPONENT_REQUIRES estdlib)
+# app_update because we query runtime version in esp-idf/observer.h
+set(COMPONENT_REQUIRES estdlib embr app_update)
 
 set(COMPONENT_SRCS 
     ${ROOT_DIR}/src/coap.cpp

@@ -5,7 +5,7 @@
 using namespace moducom::coap;
 
 #include "context.h"
-#include "observer-esp-idf.h"
+#include <coap/platform/esp-idf/observer.h>
 
 constexpr int id_path_v1 = 0;
 constexpr int id_path_v1_api = 1;
@@ -59,8 +59,6 @@ embr::layer0::subject<
     HeaderContextObserver,
     TokenContextObserver,
     UriParserObserver
-    //VersionObserver<id_path_v1_api_version, AppContext>,
-    //Auto404Observer<AppContext>
     > app_subject;
 
 
