@@ -33,7 +33,7 @@ struct Observer : ExperimentalDecoderEventTypedefs
 {
     static constexpr const char* TAG = "Observer";
 
-    void on_notify(completed_event, AppContext& context)
+    static void on_notify(completed_event, AppContext& context)
     {
         ESP_LOGI(TAG, "on_notify completed");
 
@@ -58,7 +58,8 @@ struct Observer : ExperimentalDecoderEventTypedefs
 embr::layer0::subject<
     HeaderContextObserver,
     TokenContextObserver,
-    UriParserObserver
+    UriParserObserver,
+    Observer
     > app_subject;
 
 
@@ -68,10 +69,5 @@ void do_notify(AppContext& context, struct pbuf* p)
 
     ESP_LOGD(TAG, "p->len=%d", p->len);
 
-    auto subject = embr::layer1::make_subject(
-        embr::layer1::make_observer_proxy(app_subject),
-        Observer()
-        );
-
-    context.do_notify(p, subject);
+    context.do_notify(p, app_subject);
 }

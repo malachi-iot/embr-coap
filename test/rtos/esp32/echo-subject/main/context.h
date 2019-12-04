@@ -6,10 +6,13 @@ struct AppContext :
     moducom::coap::IncomingContext<const ip_addr_t*>,
     moducom::coap::LwipContext
 {
+    uint16_t port;
+
     AppContext(struct udp_pcb* pcb, 
         const ip_addr_t* addr,
         uint16_t port) : 
-        LwipContext(pcb, port)
+        LwipContext(pcb),
+        port(port)
     {
         this->addr = addr;
     }

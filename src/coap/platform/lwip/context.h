@@ -28,13 +28,17 @@ struct LwipContext
     typedef moducom::coap::StreambufEncoder<out_streambuf_type> encoder_type;
     typedef moducom::coap::StreambufDecoder<in_streambuf_type> decoder_type;
 
-    pcb_pointer pcb;
-    uint16_t port;
+    struct PortAndAddress
+    {
+        const ip_addr_t* addr;
+        uint16_t port;
+    };
 
-    LwipContext(pcb_pointer pcb,
-        uint16_t port) : 
-        pcb(pcb),
-        port(port) {}
+    pcb_pointer pcb;
+
+    LwipContext(pcb_pointer pcb) : 
+        pcb(pcb)
+        {}
 
     // most times in a udp_recv handler we're expected to issue a free on
     // pbuf also.  bumpref = false stops us from auto-bumping ref with our
@@ -68,13 +72,23 @@ struct LwipContext
 // We're tracking from-addr and from-port since CoAP likes to respond
 // to that 
 struct LwipIncomingContext :
-    moducom::coap::IncomingContext<const ip_addr_t*>,
+    moducom::coap::IncomingContext<LwipContext::PortAndAddress>,
     LwipContext
 {
-    LwipIncomingContext(struct udp_pcb* pcb, 
+    typedef LwipContext::PortAndAddress addr_type;
+
+    LwipIncomingContext(pcb_pointer pcb, 
         const ip_addr_t* addr,
         uint16_t port) : 
-        LwipContext(pcb, port)
+        LwipContext(pcb)
+    {
+        this->addr.addr = addr;
+        this->addr.port = port;
+    }
+
+
+    LwipIncomingContext(pcb_pointer pcb, const addr_type& addr) :
+        LwipContext(pcb)
     {
         this->addr = addr;
     }
@@ -82,8 +96,10 @@ struct LwipIncomingContext :
     void reply(encoder_type& encoder)
     {
         encoder.finalize();
+
+        const addr_type& addr = this->address();
         
-        sendto(encoder, this->address(), port);
+        sendto(encoder, addr.addr, addr.port);
     }
 };
 

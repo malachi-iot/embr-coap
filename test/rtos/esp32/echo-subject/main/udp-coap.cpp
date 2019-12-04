@@ -1,38 +1,28 @@
 #include "esp_log.h"
 
 #include <embr/platform/lwip/streambuf.h>
-#include <embr/streambuf.h>
 
 #include <embr/observer.h>
 // remember to do this and not regular subject.h, otherwise not all the deductions will work
 #include <coap/decoder/subject.hpp>
 
 #include <estd/string.h>
-#include <estd/ostream.h>
-#include <estd/istream.h>
 
 #include <coap/header.h>
 #include <coap/decoder/streambuf.hpp>
 #include <coap/encoder/streambuf.h>
 
-// TODO: Time to clean exp events up, functionality is not
-// experimental any longer
-#include <exp/events.h>
-
-
-#define COAP_UDP_PORT 5683
 
 using namespace moducom::coap;
-using namespace moducom::coap::experimental;
 
 #include "context.h"
 
 
-struct Observer
+struct Observer : ExperimentalDecoderEventTypedefs
 {
     static constexpr const char* TAG = "Observer";
 
-    void on_notify(completed_event, AppContext& context)
+    static void on_notify(completed_event, AppContext& context)
     {
         ESP_LOGI(TAG, "on_notify completed");
 
