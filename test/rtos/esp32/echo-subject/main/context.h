@@ -1,10 +1,10 @@
 #pragma once
 
-#include "lwip-context.h"
+#include <coap/platform/lwip/context.h>
 
 struct AppContext : 
     moducom::coap::IncomingContext<const ip_addr_t*>,
-    LwipContext
+    moducom::coap::LwipContext
 {
     AppContext(struct udp_pcb* pcb, 
         const ip_addr_t* addr,

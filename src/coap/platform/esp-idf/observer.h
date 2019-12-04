@@ -45,8 +45,10 @@ void build_version_response(
     const esp_app_desc_t* app_desc = esp_ota_get_app_description();
 
     out << app_desc->version;
-#else
+#elif defined(PROJECT_VER)
     out << PROJECT_VER;
+#else
+    out << "No version data";
 #endif
 }
 

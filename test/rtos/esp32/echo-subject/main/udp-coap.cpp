@@ -26,7 +26,6 @@ using namespace moducom::coap;
 using namespace moducom::coap::experimental;
 using namespace embr::coap::experimental;
 
-#include "observer-util.h"
 #include "context.h"
 
 
