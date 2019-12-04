@@ -5,5 +5,9 @@ cmake_minimum_required(VERSION 3.5)
 #
 set(EXTRA_COMPONENT_DIRS "../components")
 
+set(ESTDLIB_DIR ../../../../ext/estdlib)
+
 include($ENV{IDF_PATH}/tools/cmake/project.cmake)
-project(coap-ping-subject)
+include(${ESTDLIB_DIR}/tools/esp-idf/version_finder.cmake)
+
+project(coap-boilerplate-subject)

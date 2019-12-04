@@ -45,7 +45,13 @@ void build_version_response(
 
     auto out = encoder.ostream();
 
+#if ESTD_IDF_VER >= ESTD_IDF_VER_3_3_0
+    const esp_app_desc_t* app_desc = esp_ota_get_app_description();
+
+    out << app_desc->version;
+#else
     out << PROJECT_VER;
+#endif
 }
 
 
