@@ -3,7 +3,7 @@
 #include "streambuf.h"
 #include "option.h"
 
-namespace moducom { namespace coap { namespace experimental {
+namespace moducom { namespace coap {
 
 template <class TStreambuf>
 bool StreambufDecoder<TStreambuf>::process_iterate_streambuf(size_t& pos)
@@ -254,8 +254,6 @@ estd::span<const typename StreambufDecoder<TStreambuf>::char_type>
     return ret;
 }
 
-
-}
 
 // EXPERIMENTAL
 // copied from OptionDecoder::process_iterate

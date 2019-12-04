@@ -9,21 +9,29 @@
 
 namespace moducom { namespace coap {
 
-namespace experimental {
-
 // inspects state of incoming decoder+context, and fires off associated decoder events via
 // provided subject.
 // shall bear very strong resemblace to predecessor's DecoderSubjectBase dispatch_iterate
+// TODO: Phase this out in favor of streambuf flavor, since most any C++ spec which handles TSubject
+// is going to handle streambufs
 /// @return true when at end of context buffer, false otherwise
 template <class TSubject, class TContext>
 bool decode_and_notify(Decoder& decoder, TSubject& subject, Decoder::Context& context, TContext& app_context)
 {
-    typedef event_base::buffer_t buffer_t;
+    typedef experimental::event_base::buffer_t buffer_t;
 
     // NOTE: We deviate from norm and do state machine processing before then evaluating
     // state.  This means we'll miss out on responding to 'Uninitialized' state (oh no)
     // and importantly, means that we can consistently respond to 'done' state
     bool at_end = decoder.process_iterate(context);
+
+    typedef experimental::header_event header_event;
+    typedef experimental::token_event token_event;
+    typedef experimental::option_event option_event;
+    typedef experimental::payload_event payload_event;
+    typedef experimental::option_completed_event option_completed_event;
+    typedef experimental::option_start_event option_start_event;
+    typedef experimental::completed_event completed_event;
 
     switch(decoder.state())
     {
@@ -101,9 +109,17 @@ bool decode_and_notify(Decoder& decoder, TSubject& subject, Decoder::Context& co
 template <class TSubject, class TStreambuf, class TContext>
 bool decode_and_notify(StreambufDecoder<TStreambuf>& decoder, TSubject& subject, TContext& app_context)
 {
-    typedef event_base::buffer_t buffer_t;
+    typedef experimental::event_base::buffer_t buffer_t;
     typedef StreambufDecoder<TStreambuf> decoder_type;
     typedef typename decoder_type::span_type span_type;
+
+    typedef experimental::header_event header_event;
+    typedef experimental::token_event token_event;
+    typedef experimental::option_event option_event;
+    //typedef experimental::payload_event payload_event;
+    typedef experimental::option_completed_event option_completed_event;
+    typedef experimental::option_start_event option_start_event;
+    typedef experimental::completed_event completed_event;
 
     // NOTE: We deviate from norm and do state machine processing before then evaluating
     // state.  This means we'll miss out on responding to 'Uninitialized' state (oh no)
@@ -197,7 +213,7 @@ bool decode_and_notify(StreambufDecoder<TStreambuf>& decoder, TSubject& subject,
             // TODO: Going to do payload differently, since reading payload out of a
             // stream is more sensible than trying to send a big buffer (what if it's
             // chunked?)
-            subject.notify(streambuf_payload_event<typename decoder_type::streambuf_type>(rdbuf),
+            subject.notify(experimental::streambuf_payload_event<typename decoder_type::streambuf_type>(rdbuf),
                            app_context);
 
             // NOTE: fast forwarding *if necessary* after payload notification so that
@@ -217,8 +233,6 @@ bool decode_and_notify(StreambufDecoder<TStreambuf>& decoder, TSubject& subject,
     }
 
     return at_end;
-}
-
 }
 
 // TODO: Eventually clean up dispatch_option and then

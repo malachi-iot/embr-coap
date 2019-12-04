@@ -136,9 +136,9 @@ TEST_CASE("CoAP decoder tests", "[coap-decoder]")
 
         // FIX: in theory we can std::forward buffer directly down into out_span_streambuf, but it isn't happy
 #ifdef FEATURE_MCCOAP_EXPCONTEXT
-        moducom::coap::experimental::StreambufDecoder<streambuf_type> decoder(span.size(), span);
+        moducom::coap::StreambufDecoder<streambuf_type> decoder(span.size(), span);
 #else
-        moducom::coap::experimental::StreambufDecoder<streambuf_type> decoder(span);
+        moducom::coap::StreambufDecoder<streambuf_type> decoder(span);
 #endif
 
 #ifdef FEATURE_MCCOAP_EXPCONTEXT

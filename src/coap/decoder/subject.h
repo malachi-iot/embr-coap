@@ -18,68 +18,72 @@ namespace moducom { namespace coap {
 namespace experimental {
 
 // TODO: If we like these observer helpers, move them into (estd) observer.h not subject.h
-template <class TNotifier1, class TNotifier2 = void, class TNotifier3 = void, class TNotifier4 = void, class TNotifier5 = void, class TDecider = void>
+template<class TNotifier1, class TNotifier2 = void, class TNotifier3 = void, class TNotifier4 = void, class TNotifier5 = void, class TDecider = void>
 struct observer_base_base;
 
-template <class TNotifier1>
+template<class TNotifier1>
 struct observer_base_base<TNotifier1>
 {
-    virtual void on_notify(const TNotifier1&) = 0;
+    virtual void on_notify(const TNotifier1 &) = 0;
 };
 
-template <class TNotifier1, class TNotifier2, class TNotifier3, class TNotifier4, class TNotifier5>
+template<class TNotifier1, class TNotifier2, class TNotifier3, class TNotifier4, class TNotifier5>
 struct observer_base_base<TNotifier1, TNotifier2, TNotifier3, TNotifier4, TNotifier5, int>
 {
-    virtual void on_notify(const TNotifier1&) = 0;
-    virtual void on_notify(const TNotifier2&) = 0;
-    virtual void on_notify(const TNotifier3&) = 0;
-    virtual void on_notify(const TNotifier4&) = 0;
-    virtual void on_notify(const TNotifier5&) = 0;
+    virtual void on_notify(const TNotifier1 &) = 0;
+
+    virtual void on_notify(const TNotifier2 &) = 0;
+
+    virtual void on_notify(const TNotifier3 &) = 0;
+
+    virtual void on_notify(const TNotifier4 &) = 0;
+
+    virtual void on_notify(const TNotifier5 &) = 0;
 };
 
 // super-experimental
-template <class TObserver, class TNotifier1, class TNotifier2 = void, class TNotifier3 = void, class TNotifier4 = void, class TNotifier5 = void, class TDecider = void>
+template<class TObserver, class TNotifier1, class TNotifier2 = void, class TNotifier3 = void, class TNotifier4 = void, class TNotifier5 = void, class TDecider = void>
 struct observer_base_base_wrapper;
 
-template <class TObserver, class TNotifier1, class TNotifier2, class TNotifier3, class TNotifier4, class TNotifier5>
+template<class TObserver, class TNotifier1, class TNotifier2, class TNotifier3, class TNotifier4, class TNotifier5>
 struct observer_base_base_wrapper<TObserver, TNotifier1, TNotifier2, TNotifier3, TNotifier4, TNotifier5, int> :
         observer_base_base<TNotifier1, TNotifier2, TNotifier3, TNotifier4, TNotifier5, int>
 {
     TObserver observer;
 
-    virtual void on_notify(const TNotifier1& e) OVERRIDE
+    virtual void on_notify(const TNotifier1 &e) OVERRIDE
     {
         observer.on_notify(e);
     }
 
-    virtual void on_notify(const TNotifier2& e) OVERRIDE
+    virtual void on_notify(const TNotifier2 &e) OVERRIDE
     {
         observer.on_notify(e);
     }
 
-    virtual void on_notify(const TNotifier3& e) OVERRIDE
+    virtual void on_notify(const TNotifier3 &e) OVERRIDE
     {
         observer.on_notify(e);
     }
 
-    virtual void on_notify(const TNotifier4& e) OVERRIDE
+    virtual void on_notify(const TNotifier4 &e) OVERRIDE
     {
         observer.on_notify(e);
     }
 
-    virtual void on_notify(const TNotifier5& e) OVERRIDE
+    virtual void on_notify(const TNotifier5 &e) OVERRIDE
     {
         observer.on_notify(e);
     }
 };
 
-template <class TObserver, class TNotifier1>
+template<class TObserver, class TNotifier1>
 struct observer_base_base_wrapper<TObserver, TNotifier1> :
         observer_base_base<TNotifier1>
 {
     TObserver observer;
 
-    virtual void on_notify(const TNotifier1& e) OVERRIDE
+    virtual void on_notify(const TNotifier1 &e) OVERRIDE
     {
         observer.on_notify(e);
     }
@@ -89,19 +93,25 @@ struct observer_base_base_wrapper<TObserver, TNotifier1> :
 // FIX: change name, only needed if using virtualized subject/observer
 struct observer_base
 {
-    virtual void on_notify(const header_event&) = 0;
-    virtual void on_notify(const token_event&) = 0;
-    virtual void on_notify(const option_event&) = 0;
-    virtual void on_notify(const payload_event&) = 0;
+    virtual void on_notify(const header_event &) = 0;
+
+    virtual void on_notify(const token_event &) = 0;
+
+    virtual void on_notify(const option_event &) = 0;
+
+    virtual void on_notify(const payload_event &) = 0;
+
     virtual void on_notify(completed_event) = 0;
 };
 
 // For having non-virtualized observers participate in virtualized environment
-template <class TObserver>
+template<class TObserver>
 struct observer_wrapper : observer_base
 {
 
 };
+
+}
 
 // TSubject = one of the new embr::*::subject classes
 // NOTE: Not perfect location, a global function, but not terrible either.  Perhaps
@@ -141,7 +151,6 @@ bool decode_and_notify(StreambufDecoder<TStreambuf>& decoder, TSubject& subject)
     return decode_and_notify(decoder, subject, fake_app_context);
 }
 
-}
 
 // Revamped "Dispatcher"
 // Now passing basic test suite

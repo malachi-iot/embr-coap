@@ -26,7 +26,7 @@ struct LwipContext
     typedef out_streambuf_type::size_type size_type;
 
     typedef embr::coap::experimental::StreambufEncoder<out_streambuf_type> encoder_type;
-    typedef moducom::coap::experimental::StreambufDecoder<in_streambuf_type> decoder_type;
+    typedef moducom::coap::StreambufDecoder<in_streambuf_type> decoder_type;
 
     pcb_pointer pcb;
     uint16_t port;

@@ -175,12 +175,8 @@ protected:
 
 class Decoder;
 
-namespace experimental {
-
 template <class TSubject>
 bool decode_and_notify(Decoder& decoder, TSubject& subject, internal::DecoderContext& context);
-
-}
 
 // TODO: As an optimization, make version of TokenDecoder which is zerocopy
 class Decoder :
@@ -246,7 +242,7 @@ public:
     template <class TSubject>
     bool process_iterate_experimental(TSubject& s, Context& context)
     {
-        return experimental::decode_and_notify(*this, s, context);
+        return decode_and_notify(*this, s, context);
     }
 
     /// @brief process entire remainder of context, firing events via TSubject.  Runs until

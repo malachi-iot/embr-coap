@@ -1,6 +1,8 @@
 //
 // Created by malachi on 12/27/17.
 //
+// 12/4/2019: OBSOLETE - using prior / unrealized dispatcher flavor (function pointer/virtual based)
+// rather than newer embr subject-observer style
 
 #include <catch.hpp>
 
