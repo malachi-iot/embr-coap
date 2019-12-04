@@ -16,8 +16,6 @@
 using namespace embr;
 using namespace embr::mem;
 using namespace moducom::coap;
-using namespace moducom::coap::experimental;
-using namespace embr::coap::experimental;
 
 typedef embr::lwip::PbufNetbuf netbuf_type;
 typedef netbuf_type::size_type size_type;

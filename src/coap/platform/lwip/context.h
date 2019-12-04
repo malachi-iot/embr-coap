@@ -25,7 +25,7 @@ struct LwipContext
     typedef embr::lwip::in_pbuf_streambuf<char> in_streambuf_type;
     typedef out_streambuf_type::size_type size_type;
 
-    typedef embr::coap::experimental::StreambufEncoder<out_streambuf_type> encoder_type;
+    typedef moducom::coap::StreambufEncoder<out_streambuf_type> encoder_type;
     typedef moducom::coap::StreambufDecoder<in_streambuf_type> decoder_type;
 
     pcb_pointer pcb;
@@ -106,7 +106,7 @@ inline LwipContext::encoder_type make_encoder(const LwipContext&)
 template <bool inline_token, class TStreambuf>
 inline void build_reply(
     const moducom::coap::TokenAndHeaderContext<inline_token>& context, 
-    embr::coap::experimental::StreambufEncoder<TStreambuf>& encoder, uint8_t code)
+    moducom::coap::StreambufEncoder<TStreambuf>& encoder, uint8_t code)
 {
     typedef moducom::coap::Header Header;
 

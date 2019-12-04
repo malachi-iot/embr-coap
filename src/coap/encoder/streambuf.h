@@ -13,8 +13,7 @@
 #include "../context.h"
 #include "../uint.h"
 
-// used 'embr' here since we might consider phasing out 'moducom' namespace
-namespace embr { namespace coap { namespace experimental {
+namespace moducom { namespace coap {
 
 namespace impl {
 
@@ -294,6 +293,8 @@ public:
         return __pf(*this);
     }
 };
+
+namespace experimental {
 
 template <class TStreambuf>
 StreambufEncoder<TStreambuf>& operator<<(StreambufEncoder<TStreambuf>& encoder, moducom::coap::Header header)

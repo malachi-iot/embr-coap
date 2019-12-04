@@ -216,7 +216,8 @@ TEST_CASE("CoAP encoder tests", "[coap-encoder]")
     }
     SECTION("streambuf encoder")
     {
-        using namespace embr::coap::experimental;
+        // for << operator, which I'm still undecided about
+        using namespace moducom::coap::experimental;
 
         typedef char char_type;
         typedef estd::internal::streambuf<

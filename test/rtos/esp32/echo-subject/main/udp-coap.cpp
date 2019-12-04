@@ -24,7 +24,6 @@
 
 using namespace moducom::coap;
 using namespace moducom::coap::experimental;
-using namespace embr::coap::experimental;
 
 #include "context.h"
 

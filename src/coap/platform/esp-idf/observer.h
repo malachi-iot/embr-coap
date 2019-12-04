@@ -27,7 +27,7 @@ struct VersionObserverBase
 template <bool inline_token, class TStreambuf>
 void build_version_response(
     const moducom::coap::TokenAndHeaderContext<inline_token>& context, 
-    embr::coap::experimental::StreambufEncoder<TStreambuf>& encoder)
+    moducom::coap::StreambufEncoder<TStreambuf>& encoder)
 {
     typedef moducom::coap::Header Header;
     typedef moducom::coap::Option Option;
