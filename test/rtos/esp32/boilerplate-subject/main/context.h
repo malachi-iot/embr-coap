@@ -8,8 +8,8 @@ typedef moducom::coap::experimental::UriPathMap UriPathMap;
 extern const UriPathMap uri_map[7];
 
 struct AppContext : 
-    LwipIncomingContext,
-    UriParserContext
+    moducom::coap::LwipIncomingContext,
+    moducom::coap::UriParserContext
 {
     AppContext(struct udp_pcb* pcb, 
         const ip_addr_t* addr,

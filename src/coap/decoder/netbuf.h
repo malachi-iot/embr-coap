@@ -1,6 +1,10 @@
 /**
  * @file
  * @author  Malachi Burke
+ * 
+ * 12/3/2019: OBSOLETE
+ * Basically this is netbuf mk. 1 code.  The option_iterator is an interesting
+ * mechanism however we might want to bring that forward somehow
  */
 
 #pragma once

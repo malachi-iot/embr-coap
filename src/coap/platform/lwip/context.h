@@ -9,8 +9,7 @@
 
 #define COAP_UDP_PORT 5683
 
-// TODO: Do namespacing!
-//namespace moducom { namespace coap {
+namespace moducom { namespace coap {
 
 // TODO: Either include addr in here and somehow NOT in app context,
 // or go other direction and inherit from moducom::coap::IncomingContext
@@ -135,4 +134,4 @@ inline typename TContext::encoder_type make_encoder_reply(const TContext& contex
     return encoder;
 }
 
-//}}
+}}

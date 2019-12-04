@@ -1,6 +1,10 @@
 #pragma once
 
+#include <estd/port/identify_platform.h>
+
+#ifdef ESTD_IDF_VER
 #include "esp_log.h"
+#endif
 
 /**
  * Where all the generic/utility observers go
@@ -14,7 +18,7 @@
 #include <exp/uripath-repeater.h>   // brings in UriPathMatcher and friends
 #include <exp/events.h>
 
-typedef moducom::coap::ExperimentalDecoderEventTypedefs ExperimentalDecoderEventTypedefs;
+namespace moducom { namespace coap {
 
 // Candidate for 'Provider' since this mostly just holds on the an instance
 class UriParserContext
@@ -53,7 +57,6 @@ struct TokenContextObserver : ExperimentalDecoderEventTypedefs
     template <bool inline_token>
     static void on_notify(const token_event& e, moducom::coap::TokenContext<inline_token>& ctx) 
     {
-        //printf("TokenContextObserver::on_notify(token_event)\n");
         ctx.token(e.chunk);
     }
 };
@@ -63,7 +66,6 @@ struct HeaderContextObserver : ExperimentalDecoderEventTypedefs
 {
     static void on_notify(const header_event& e, moducom::coap::HeaderContext& ctx) 
     {
-        //printf("HeaderContextObserver::on_notify(header_event)\n");
         ctx.header(e.header);
     }
 };
@@ -76,8 +78,10 @@ struct UriParserObserver : ExperimentalDecoderEventTypedefs
     // TODO: Put this elsewhere in a reusable component
     static void on_notify(const option_event& e, UriParserContext& ctx)
     {
+#ifdef ESTD_IDF_VER
         // Only here to help diagnose event-not-firing stuff
         ESP_LOGD(TAG, "on_notify(option_event)=%d", e.option_number);
+#endif
 
         switch(e.option_number)
         {
@@ -90,10 +94,12 @@ struct UriParserObserver : ExperimentalDecoderEventTypedefs
         }
     }
 
+#ifdef ESTD_IDF_VER
     static void on_notify(option_completed_event, UriParserContext& ctx)
     {
         ESP_LOGI(TAG, "on_notify(option_completed_event) uri path node=%d", ctx.found_node());
     }
+#endif
 };
 
 struct _UriBuilderObserver : ExperimentalDecoderEventTypedefs
@@ -115,11 +121,13 @@ struct _UriBuilderObserver : ExperimentalDecoderEventTypedefs
         }
     }
 
+#ifdef ESTD_IDF_VER
     static void on_notify(option_completed_event)
     {
         // underlying incoming_uri is fixed-alloc null-terminated, so this works
         ESP_LOGI(TAG, "uri path=%s", incoming_uri.data());
     }
+#endif
 };
 
 
@@ -142,3 +150,5 @@ struct Auto404Observer : ExperimentalDecoderEventTypedefs
         context.reply(encoder);
     }
 };
+
+}}
