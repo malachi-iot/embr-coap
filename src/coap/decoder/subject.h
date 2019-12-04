@@ -11,6 +11,7 @@
 
 #include <estd/span.h>
 #include "../../exp/events.h"
+#include "observer/util.h"
 
 namespace moducom { namespace coap {
 

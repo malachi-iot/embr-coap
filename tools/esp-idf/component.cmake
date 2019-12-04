@@ -7,6 +7,7 @@ set(COMPONENT_SRCS
     ${ROOT_DIR}/src/coap.cpp
     ${ROOT_DIR}/src/coap/option-decoder.cpp
     ${ROOT_DIR}/src/coap-encoder.cpp
+    ${ROOT_DIR}/src/coap/decoder/observer/util.cpp
 
     ${ROOT_DIR}/src/coap/platform/esp-idf/observer.cpp
     )

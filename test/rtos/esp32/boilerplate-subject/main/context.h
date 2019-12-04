@@ -1,7 +1,7 @@
 #pragma once
 
 #include <coap/platform/lwip/context.h>
-#include "observer-util.h"
+#include <coap/decoder/subject.h>
 
 typedef moducom::coap::experimental::UriPathMap UriPathMap;
 
