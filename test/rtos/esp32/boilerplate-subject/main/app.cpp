@@ -7,7 +7,6 @@ using namespace moducom::coap;
 #include "context.h"
 #include "observer-esp-idf.h"
 
-
 constexpr int id_path_v1 = 0;
 constexpr int id_path_v1_api = 1;
 constexpr int id_path_v1_api_test = 3;

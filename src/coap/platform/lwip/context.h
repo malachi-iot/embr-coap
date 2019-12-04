@@ -5,7 +5,12 @@
 #include <coap/decoder/streambuf.h>
 #include <coap/encoder/streambuf.h>
 
+// This is all UDP oriented.  No TCP or SSL support
+
 #define COAP_UDP_PORT 5683
+
+// TODO: Do namespacing!
+//namespace moducom { namespace coap {
 
 // TODO: Either include addr in here and somehow NOT in app context,
 // or go other direction and inherit from moducom::coap::IncomingContext
@@ -60,6 +65,30 @@ struct LwipContext
     }
 };
 
+
+// We're tracking from-addr and from-port since CoAP likes to respond
+// to that 
+struct LwipIncomingContext :
+    moducom::coap::IncomingContext<const ip_addr_t*>,
+    LwipContext
+{
+    LwipIncomingContext(struct udp_pcb* pcb, 
+        const ip_addr_t* addr,
+        uint16_t port) : 
+        LwipContext(pcb, port)
+    {
+        this->addr = addr;
+    }
+
+    void reply(encoder_type& encoder)
+    {
+        encoder.finalize();
+        
+        sendto(encoder, this->address(), port);
+    }
+};
+
+
 // in C# we'd do an IEncoderFactory, in C++ for tiny code footprint
 // we'll instead do a special override of make_encoder.  Important since
 // the particulars of how an encoder+streambuf is initialized changes
@@ -105,3 +134,5 @@ inline typename TContext::encoder_type make_encoder_reply(const TContext& contex
 
     return encoder;
 }
+
+//}}
