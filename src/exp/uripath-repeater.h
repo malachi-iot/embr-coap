@@ -138,7 +138,7 @@ struct UriPathMatcher
 {
     estd::layer3::const_string match_to;
 
-    void on_notify(const uri_path_event& e)
+    void on_notify(const event::uri_path& e)
     {
         if(e.path == match_to)
         {
@@ -440,13 +440,13 @@ struct UriPathRepeater
     TSubject subject;
 
     // received from Decoder Subject, if one is broadcasting to us
-    void on_notify(const option_event& e)
+    void on_notify(const event::option& e)
     {
         //estd::string_view s;
         estd::string_view uri_path((const char*)e.chunk.data(),
                                    e.chunk.size());
 
-        uri_path_event upe { uri_path };
+        event::uri_path upe { uri_path };
 
         subject.on_notify(upe);
     }

@@ -6,7 +6,7 @@
 
 namespace moducom { namespace coap {
 
-namespace experimental {
+namespace event {
 
 // 6/24/2018 revamped event system based on upcoming estd::experimental::subject code
 // 12/3/2019 code works very well, prefers embr's subject/observer.  Proper naming
@@ -48,14 +48,14 @@ struct chunk_event_base : event_base
     }
 };
 
-struct option_event : chunk_event_base
+struct option : chunk_event_base
 {
     option_number_t option_number;
 
-    option_event(uint16_t n) :
+    option(uint16_t n) :
             option_number((option_number_t)n) {}
 
-    option_event(uint16_t n,
+    option(uint16_t n,
                  const buffer_t& chunk,
                 bool last_chunk) :
             chunk_event_base(chunk, last_chunk),
@@ -63,16 +63,16 @@ struct option_event : chunk_event_base
     {}
 };
 
-struct option_start_event {};
+struct option_start {};
 
 // FIX: naming inconsistency with Decoder::OptionsDone
-struct option_completed_event {};
+struct option_completed {};
 
 // doing struct instead of typedef to ensure it overloads as
 // a different type during on_notify
-struct payload_event : chunk_event_base
+struct payload : chunk_event_base
 {
-    payload_event(
+    payload(
             const buffer_t& chunk,
             bool last_chunk) :
             chunk_event_base(chunk, last_chunk)
@@ -81,30 +81,30 @@ struct payload_event : chunk_event_base
 
 
 template <class TStreambuf>
-struct streambuf_payload_event : streambuf_event_base<TStreambuf>
+struct streambuf_payload : streambuf_event_base<TStreambuf>
 {
     typedef streambuf_event_base<TStreambuf> base_type;
     typedef typename base_type::streambuf_type streambuf_type;
 
-    streambuf_payload_event(streambuf_type& streambuf) : base_type(streambuf) {}
+    streambuf_payload(streambuf_type& streambuf) : base_type(streambuf) {}
 };
 
 
-struct completed_event {};
+struct completed {};
 
 
-struct header_event
+struct header
 {
-    Header header;
+    Header h;
 
-    header_event(const Header& header) :
-        header(header) {}
+    header(const Header& header) :
+        h(header) {}
 };
 
 
-struct token_event : chunk_event_base
+struct token : chunk_event_base
 {
-    token_event(
+    token(
             const buffer_t& chunk,
             bool last_chunk) :
             chunk_event_base(chunk, last_chunk)
@@ -113,7 +113,7 @@ struct token_event : chunk_event_base
 
 
 // this event applies to a different set of code, the revised version of uripath-dispatcher
-struct uri_path_event
+struct uri_path
 {
     estd::string_view path;
 };
@@ -122,13 +122,13 @@ struct uri_path_event
 
 struct ExperimentalDecoderEventTypedefs
 {
-    typedef experimental::token_event token_event;
-    typedef experimental::payload_event payload_event;
-    typedef experimental::option_event option_event;
-    typedef experimental::option_start_event option_start_event;
-    typedef experimental::option_completed_event option_completed_event;
-    typedef experimental::header_event header_event;
-    typedef experimental::completed_event completed_event;
+    typedef event::token token_event;
+    typedef event::payload payload_event;
+    typedef event::option option_event;
+    typedef event::option_start option_start_event;
+    typedef event::option_completed option_completed_event;
+    typedef event::header header_event;
+    typedef event::completed completed_event;
 };
 
 

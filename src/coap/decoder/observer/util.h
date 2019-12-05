@@ -66,7 +66,7 @@ struct HeaderContextObserver : ExperimentalDecoderEventTypedefs
 {
     static void on_notify(const header_event& e, moducom::coap::HeaderContext& ctx) 
     {
-        ctx.header(e.header);
+        ctx.header(e.h);
     }
 };
 
