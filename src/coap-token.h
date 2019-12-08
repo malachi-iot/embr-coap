@@ -92,6 +92,8 @@ class Token : public estd::layer2::vector<const uint8_t, 8>
     typedef estd::layer2::vector<const uint8_t, 8> base_t;
 
 public:
+    typedef estd::span<const uint8_t> const_buffer;
+
     Token(const uint8_t* data, size_t tkl) :
             base_t(data, tkl)
     {
@@ -102,9 +104,9 @@ public:
         base_t::impl().size(token.size());
     }
 
-    operator estd::const_buffer()
+    operator const_buffer()
     {
-        return estd::const_buffer(lock(), size());
+        return const_buffer(data(), size());
     }
 };
 

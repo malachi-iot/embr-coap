@@ -55,6 +55,8 @@ inline uint8_t uint_get<uint8_t>(const uint8_t* value, const size_t len)
 class UInt
 {
 public:
+    typedef estd::span<const uint8_t> const_buffer;
+
     template <class TReturn>
     static TReturn get(const uint8_t* value, const size_t len = sizeof(TReturn))
     {
@@ -65,7 +67,7 @@ public:
 
 
     template <class TReturn>
-    static TReturn get(const estd::const_buffer& b)
+    static TReturn get(const const_buffer& b)
     {
         ASSERT_WARN(true, sizeof(TReturn) >= b.size(), "decoding integer size too small");
 

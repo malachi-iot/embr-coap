@@ -15,7 +15,7 @@ namespace event {
 // using only for typedef convenience
 struct event_base
 {
-    typedef estd::const_buffer buffer_t;
+    typedef estd::span<const uint8_t> buffer_t;
     typedef internal::option_number_t option_number_t;
 };
 
