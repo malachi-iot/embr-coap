@@ -35,7 +35,7 @@ TEST_CASE("CoAP decoder tests", "[coap-decoder]")
     SECTION("Basic test 1")
     {
         OptionDecoder decoder;
-        OptionDecoder::OptionExperimental option;
+        OptionDecoder::Holder option;
 
         // pretty much ready to TRY testing, just need to load in appropriate data into buffer_in
         //decoder.process_iterate(net_in, &option);

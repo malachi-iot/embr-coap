@@ -198,7 +198,7 @@ protected:
     // Also this has the bonus of 'undeltaizing' the option number so that the consumer
     // doesn't need to track and add option deltas
     // TODO: Also be sure to union-ize this, if appropriate
-    OptionDecoder::OptionExperimental optionHolder;
+    OptionDecoder::Holder optionHolder;
 
     // making context public (hopefully temporarily) since we use Decoder in a
     // composable (has a) vs hierarchical (is-a) way

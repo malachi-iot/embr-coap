@@ -1,10 +1,13 @@
 #pragma once
 
+// TODO: Needs a better home than simple.h
+
 #include "../../coap.h" // more resilient against other coap.h's when we do this
 
 namespace moducom { namespace coap {
 
-// TODO: Needs a better home than simple.h
+// TODO: doesn't really belong only in decoder area, and maybe better fit would be 'embr'
+// lib
 template <class TState>
 class StateHelper
 {

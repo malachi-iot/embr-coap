@@ -222,7 +222,7 @@ bool OptionDecoder::process_iterate(uint8_t value, bool eof)
 }
 
 #ifdef UNUSED
-bool OptionDecoder::process_iterate(pipeline::IBufferedPipelineReader& reader, OptionExperimental* built_option)
+bool OptionDecoder::process_iterate(pipeline::IBufferedPipelineReader& reader, Holder* built_option)
 {
     pipeline::PipelineMessage msg = reader.peek();
 
@@ -266,7 +266,7 @@ bool OptionDecoder::process_iterate(pipeline::IBufferedPipelineReader& reader, O
 #endif
 
 size_t OptionDecoder::process_iterate(const const_buffer& chunk,
-                                      OptionExperimental* built_option,
+                                      Holder* built_option,
                                       bool last_chunk)
 {
     // last chunk + length == 0 means special EOF processing mode
@@ -280,7 +280,7 @@ size_t OptionDecoder::process_iterate(const const_buffer& chunk,
 }
 
 size_t OptionDecoder::process_iterate(const const_buffer& chunk,
-                                      OptionExperimental* built_option)
+                                      Holder* built_option)
 {
     size_t length = chunk.size(); // represents remaining length to be processed
 
