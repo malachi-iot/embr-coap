@@ -3,8 +3,9 @@
 // Revised version as of 5/17/2018
 
 #include <stdint.h> // for uint8_t and friends
-#include <coap-uint.h>
+#include "../coap/uint.h"
 #include <estd/string.h>
+#include "mc/memory-chunk.h"
 
 namespace moducom { namespace cbor {
 
