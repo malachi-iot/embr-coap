@@ -69,6 +69,7 @@ set(SOURCE_FILES
         coap/experimental-observer.h
         coap/observable.h coap/observable.hpp
         coap/platform.h
+        coap/option.h
         coap/option-decoder.cpp
 
         coap/token.h

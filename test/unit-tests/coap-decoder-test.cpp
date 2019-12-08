@@ -25,7 +25,7 @@ inline estd::span<const typename TStreambuf::char_type> sgetn(TStreambuf& s, est
 
 TEST_CASE("CoAP decoder tests", "[coap-decoder]")
 {
-    typedef estd::const_buffer ro_chunk_t;
+    typedef estd::span<const uint8_t> ro_chunk_t;
 
     ro_chunk_t buffer_in(buffer_16bit_delta);
 

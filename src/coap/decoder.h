@@ -44,7 +44,7 @@ namespace internal {
 struct DecoderContext
 {
     //typedef pipeline::experimental::ReadOnlyMemoryChunk<> chunk_t;
-    typedef estd::const_buffer chunk_t;
+    typedef estd::span<const uint8_t> chunk_t;
 
     // TODO: optimize by making this a value not a ref, and bump up "data" pointer
     // (and down length) instead of bumping up pos.  A little more fiddly, but then

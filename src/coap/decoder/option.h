@@ -15,6 +15,7 @@ class OptionDecoder :
 public:
     typedef Option _number_t;
     typedef internal::option_number_t number_t;
+    typedef estd::span<const uint8_t> const_buffer;
 
     // Need this because all other Option classes I've made are const'd out,
     // but we do need a data entity we can build slowly/iteratively, so that's
@@ -175,10 +176,10 @@ public:
     // we want to force a bit more process_iterate operation to move through the states
     // consistently.  This might gently conflict the notion of state machines, but is 100%
     // congruent with coap operation which explicitly depends on a known message length
-    size_t process_iterate(const estd::const_buffer& input,
+    size_t process_iterate(const const_buffer& input,
                            OptionExperimental* built_option,
                            bool last_chunk);
-    size_t process_iterate(const estd::const_buffer& input,
+    size_t process_iterate(const const_buffer& input,
                            OptionExperimental* built_option);
 
     template <class TStreambuf>
