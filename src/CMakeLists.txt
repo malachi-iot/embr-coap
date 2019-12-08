@@ -71,6 +71,7 @@ set(SOURCE_FILES
         coap/platform.h
         coap/option-decoder.cpp
 
+        coap/token.h
 
         coap-dispatcher.cpp coap-dispatcher.hpp coap-dispatcher.h
         coap-encoder.h
