@@ -2,6 +2,8 @@
 
 #include "platform.h"
 
+#include <estd/cstdint.h>
+
 namespace moducom { namespace coap {
 
 // Base helper class to assist with ALL option related things.  Mainly

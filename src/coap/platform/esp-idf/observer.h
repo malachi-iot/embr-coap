@@ -60,9 +60,8 @@ struct VersionObserver : VersionObserverBase
 {
     typedef moducom::coap::Header Header;
     typedef moducom::coap::Option Option;
-    typedef moducom::coap::experimental::completed_event completed_event;
 
-    static void on_notify(completed_event, TContext& ctx) 
+    static void on_notify(event::completed, TContext& ctx)
     {
         ESP_LOGD(TAG, "on_notify(completed_event)");
 
