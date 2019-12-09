@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "../coap-token.h"
+#include "token.h"
 #include "header.h"
 #include "../coap-features.h"
 #include "mc/objstack.h"

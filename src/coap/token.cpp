@@ -2,8 +2,8 @@
 // Created by malachi on 12/29/17.
 //
 
-#include "coap/token.h"
-#include "coap/uint.h"
+#include "token.h"
+#include "uint.h"
 
 namespace moducom { namespace coap {
 
