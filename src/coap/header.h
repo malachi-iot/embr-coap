@@ -1,6 +1,6 @@
 #pragma once
 
-#include <stdint.h>
+#include <estd/cstdint.h>
 #include "platform.h"
 
 namespace moducom { namespace coap {

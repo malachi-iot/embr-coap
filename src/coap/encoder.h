@@ -3,12 +3,11 @@
 #include "encoder/option.h"
 #include "../coap-encoder.h"
 #include "mc/netbuf.h"
-#include "../coap-uint.h"
+#include "uint.h"
 #include "context.h"
 
 #include <estd/span.h>
-
-#include <utility>
+#include <estd/utility.h>
 
 namespace moducom { namespace coap {
 
@@ -18,6 +17,10 @@ namespace moducom { namespace coap {
 // 4/18/2018 - after much experimentation, I have settled on network-buffer pattern
 // reigning supreme for shuttling memory around, so then this is the canonical go-to
 // encoder
+// 12/8/2019 - no longer exactly the case.  StreambufEncoder is now the preferred mechanism,
+// however we're going to keep netbuf based things around in a minimal sense since pre c++11
+// code I expect can work with it.  Be advised this code expects a mk. 1 netbuf, so to be
+// functional we'll need to upgrade to a mk. 2 netbuf
 template <class TNetBuf>
 class NetBufEncoder :
         public moducom::io::experimental::NetBufWriter<TNetBuf>,

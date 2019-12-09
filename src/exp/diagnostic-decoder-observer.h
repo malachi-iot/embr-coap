@@ -1,7 +1,10 @@
+// 12/8/2019 - Still very useful, still experimental - ideally we'd send this to a specialized
+//             clog which could retain contextual information (loglevel, tag, etc)
+
 #include <estd/span.h>
 #include <estd/string.h>
-#include "events.h"
-#include "../coap-uint.h"
+#include "../coap/decoder/events.h"
+#include "../coap/uint.h"
 
 namespace moducom { namespace coap {
 

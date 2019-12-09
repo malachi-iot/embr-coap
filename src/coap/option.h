@@ -33,7 +33,7 @@ public:
         ApplicationJson         = 50,
 
         // RFC 7049
-                ApplicationCbor         = 60
+        ApplicationCbor         = 60
     };
 
     enum Numbers

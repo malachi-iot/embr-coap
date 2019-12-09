@@ -1,7 +1,6 @@
 #pragma once
 
-#include <stdint.h>
-//#include <string.h>
+#include <estd/cstdint.h>
 #include "platform.h"
 #include <mc/memory-chunk.h>
 

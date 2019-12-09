@@ -1,6 +1,6 @@
 #pragma once
 
-#include <stdint.h>
+#include <estd/cstdint.h>
 #include <mc/mem/platform.h>    // needed for ASSERT_WARN
 #include <estd/vector.h>
 #include <estd/span.h>
