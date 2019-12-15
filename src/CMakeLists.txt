@@ -116,7 +116,6 @@ set(SOURCE_FILES
         #mc/pipeline-encoder.h mc/pipeline-writer.h
         #mc/pipeline-reader.h
         #mc/pipeline-decoder.h
-        coap-uint.h
         mc/experimental.h
         coap-observable.h
 
