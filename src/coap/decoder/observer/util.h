@@ -16,7 +16,7 @@
 
 #include <coap/context.h>
 #include <exp/uripath-repeater.h>   // brings in UriPathMatcher and friends
-#include <exp/events.h>
+#include "../events.h"
 
 namespace moducom { namespace coap {
 
@@ -66,7 +66,7 @@ struct HeaderContextObserver : ExperimentalDecoderEventTypedefs
 {
     static void on_notify(const header_event& e, moducom::coap::HeaderContext& ctx) 
     {
-        ctx.header(e.header);
+        ctx.header(e.h);
     }
 };
 

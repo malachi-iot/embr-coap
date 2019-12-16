@@ -142,13 +142,13 @@ struct test_observer
 
     test_observer() : counter(0) {}
 
-    void on_notify(completed_event)
+    void on_notify(event::completed)
     {
         REQUIRE(counter >= 2);
         counter++;
     }
 
-    void on_notify(const option_event& e)
+    void on_notify(const event::option& e)
     {
         REQUIRE(e.option_number >= 270);
         counter++;

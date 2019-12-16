@@ -6,7 +6,7 @@
 #include <mc/mem/platform.h>
 #include "cbor/features.h"
 // TODO: Change naming and decouple UInt helpers from coap
-#include "coap-uint.h"
+#include "coap/uint.h"
 // TODO: Liberate state helper from coap-decoder so that we aren't dependent on it
 #include "coap/decoder.h"
 

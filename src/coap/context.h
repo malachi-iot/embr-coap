@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "../coap-token.h"
+#include "token.h"
 #include "header.h"
 #include "../coap-features.h"
 #include "mc/objstack.h"
@@ -54,7 +54,7 @@ public:
     {}
 
 public:
-    void token(const estd::const_buffer& t)
+    void token(const estd::span<const uint8_t>& t)
     {
         _token_present = true;
         std::copy(t.begin(), t.end(), _token.begin());
@@ -81,7 +81,7 @@ public:
 
     // Since tokens arrive piecemeal and oftentimes not at all, we have a non-constructor
     // based setter
-    void token(const estd::const_buffer& token)
+    void token(const estd::span<const uint8_t>& token)
     {
         //printf("%02x %02x %02x %02x", token[0], token[1], token[2], token[3]);
 #ifdef FEATURE_MCCOAP_IOSTREAM_NATIVE

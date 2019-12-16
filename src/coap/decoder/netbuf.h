@@ -10,10 +10,10 @@
 #pragma once
 
 #include "coap/decoder.h"
-#include "coap-token.h"
+#include "../token.h"
 #include <estd/string.h>
 #include <estd/optional.h>
-#include "coap-uint.h"
+#include "../uint.h"
 #include "coap/context.h"
 
 #include <estd/type_traits.h>

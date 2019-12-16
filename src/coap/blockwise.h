@@ -2,7 +2,7 @@
 
 #include <estd/span.h>
 
-#include "../coap-uint.h"
+#include "uint.h"
 
 // Experimental primarily due to naming
 // from https://tools.ietf.org/html/rfc7959#section-2.1
@@ -17,7 +17,7 @@ uint16_t option_block_decode_szx(uint8_t value)
     return 1 << value;
 }
 
-uint16_t option_block_decode_szx(const estd::const_buffer& option_value)
+uint16_t option_block_decode_szx(const estd::span<const uint8_t>& option_value)
 {
     // FIX: const_buffer doesn't yet have a .back(), but it will
     return option_block_decode_szx(option_value[option_value.size() - 1]);
@@ -25,7 +25,7 @@ uint16_t option_block_decode_szx(const estd::const_buffer& option_value)
 
 // sequence #
 template <class TInt = uint32_t>
-TInt option_block_decode_num(const estd::const_buffer& option_value)
+TInt option_block_decode_num(const estd::span<const uint8_t>& option_value)
 {
     // NUM can be up to 20 bits in size.  If you really feel like using less,
     // you can
@@ -33,7 +33,7 @@ TInt option_block_decode_num(const estd::const_buffer& option_value)
 }
 
 
-bool option_block_decode_m(const estd::const_buffer& option_value)
+bool option_block_decode_m(const estd::span<const uint8_t>& option_value)
 {
     return (option_value[option_value.size() - 1] & 0x08) != 0;
 }

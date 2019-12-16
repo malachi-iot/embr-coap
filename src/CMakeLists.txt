@@ -49,6 +49,7 @@ set(SOURCE_FILES
         coap/decoder.h
         coap/decoder.hpp
 
+        coap/decoder/events.h
         coap/decoder/netbuf.h
         coap/decoder/observer.h
         coap/decoder/observer-aggregate.h
@@ -65,18 +66,19 @@ set(SOURCE_FILES
         coap/encoder.h coap/encoder.hpp
         coap/encoder/streambuf.h
 
-#        coap/experimental.cpp
         coap/experimental-observer.h
         coap/observable.h coap/observable.hpp
         coap/platform.h
+        coap/option.h
         coap/option-decoder.cpp
 
+        coap/token.cpp
+        coap/token.h
 
         coap-dispatcher.cpp coap-dispatcher.hpp coap-dispatcher.h
         coap-encoder.h
         coap-encoder.cpp
         coap-features.h
-        coap-token.h coap-token.cpp
         coap-uripath-dispatcher.hpp coap-uripath-dispatcher.h
 
         exp/datapump-observer.h
@@ -114,9 +116,8 @@ set(SOURCE_FILES
         #mc/pipeline-encoder.h mc/pipeline-writer.h
         #mc/pipeline-reader.h
         #mc/pipeline-decoder.h
-        coap-uint.h
         mc/experimental.h
-        coap-header.h coap-observable.h
+        coap-observable.h
 
         mc/experimental.cpp
         mc/experimental-factory.h

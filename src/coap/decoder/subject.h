@@ -93,15 +93,15 @@ struct observer_base_base_wrapper<TObserver, TNotifier1> :
 // FIX: change name, only needed if using virtualized subject/observer
 struct observer_base
 {
-    virtual void on_notify(const header_event &) = 0;
+    virtual void on_notify(const event::header &) = 0;
 
-    virtual void on_notify(const token_event &) = 0;
+    virtual void on_notify(const event::token &) = 0;
 
-    virtual void on_notify(const option_event &) = 0;
+    virtual void on_notify(const event::option &) = 0;
 
-    virtual void on_notify(const payload_event &) = 0;
+    virtual void on_notify(const event::payload &) = 0;
 
-    virtual void on_notify(completed_event) = 0;
+    virtual void on_notify(event::completed) = 0;
 };
 
 // For having non-virtualized observers participate in virtualized environment

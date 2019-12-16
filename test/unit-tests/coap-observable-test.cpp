@@ -1,11 +1,11 @@
 #include <catch.hpp>
 #include "coap-encoder.h"
 #include "mc/memory.h"
-#include "coap_transmission.h"
-#include "coap-token.h"
+//#include "coap_transmission.h"
+#include "coap/token.h"
 #include "mc/experimental.h"
 #include "coap-observable.h"
-#include "coap-uint.h"
+#include "coap/uint.h"
 #include "test-data.h"
 
 using namespace moducom::coap;
@@ -13,7 +13,7 @@ using namespace moducom::pipeline;
 
 TEST_CASE("CoAP observable (RFC-7641) tests", "[coap-observer]")
 {
-    typedef estd::const_buffer ro_chunk_t;
+    typedef estd::span<const uint8_t> ro_chunk_t;
 
     SECTION("(over)simplest example")
     {

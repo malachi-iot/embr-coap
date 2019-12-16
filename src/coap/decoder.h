@@ -44,7 +44,7 @@ namespace internal {
 struct DecoderContext
 {
     //typedef pipeline::experimental::ReadOnlyMemoryChunk<> chunk_t;
-    typedef estd::const_buffer chunk_t;
+    typedef estd::span<const uint8_t> chunk_t;
 
     // TODO: optimize by making this a value not a ref, and bump up "data" pointer
     // (and down length) instead of bumping up pos.  A little more fiddly, but then
@@ -198,7 +198,7 @@ protected:
     // Also this has the bonus of 'undeltaizing' the option number so that the consumer
     // doesn't need to track and add option deltas
     // TODO: Also be sure to union-ize this, if appropriate
-    OptionDecoder::OptionExperimental optionHolder;
+    OptionDecoder::Holder optionHolder;
 
     // making context public (hopefully temporarily) since we use Decoder in a
     // composable (has a) vs hierarchical (is-a) way

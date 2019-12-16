@@ -1,6 +1,6 @@
 #include <catch.hpp>
 
-#include "coap-uint.h"
+#include "coap/uint.h"
 
 using namespace moducom::coap;
 

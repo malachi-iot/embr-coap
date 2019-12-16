@@ -1,6 +1,7 @@
 #pragma once
 
 #include <estd/span.h>
+#include "../option.h"
 
 namespace moducom { namespace coap {
 
@@ -15,6 +16,7 @@ class OptionDecoder :
 public:
     typedef Option _number_t;
     typedef internal::option_number_t number_t;
+    typedef estd::span<const uint8_t> const_buffer;
 
     // Need this because all other Option classes I've made are const'd out,
     // but we do need a data entity we can build slowly/iteratively, so that's
@@ -24,7 +26,7 @@ public:
     // (https://tools.ietf.org/html/rfc7252#section-3.2)
     // FIX: Find a good name.  "Option" or "OptionRaw" not quite right because this excludes
     // the value portion.  Perhaps "OptionPrefix"
-    struct OptionExperimental
+    struct Holder
     {
         // delta, not absolute, number.  external party will have to translate this
         // to absolute.  Plot twist: we *add* to this as we go, so if we pass in same
@@ -175,14 +177,14 @@ public:
     // we want to force a bit more process_iterate operation to move through the states
     // consistently.  This might gently conflict the notion of state machines, but is 100%
     // congruent with coap operation which explicitly depends on a known message length
-    size_t process_iterate(const estd::const_buffer& input,
-                           OptionExperimental* built_option,
+    size_t process_iterate(const const_buffer& input,
+                           Holder* built_option,
                            bool last_chunk);
-    size_t process_iterate(const estd::const_buffer& input,
-                           OptionExperimental* built_option);
+    size_t process_iterate(const const_buffer& input,
+                           Holder* built_option);
 
     template <class TStreambuf>
-    size_t process_iterate_streambuf(TStreambuf& streambuf, OptionExperimental* built_option);
+    size_t process_iterate_streambuf(TStreambuf& streambuf, Holder* built_option);
 };
 
 }}

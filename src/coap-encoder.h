@@ -8,7 +8,7 @@
 
 #include "coap_transmission.h"
 //#include "mc/pipeline-writer.h"
-#include "coap-token.h"
+#include "coap/token.h"
 #include "coap/decoder.h"
 
 namespace moducom { namespace coap {

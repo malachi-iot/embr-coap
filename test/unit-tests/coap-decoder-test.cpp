@@ -25,7 +25,7 @@ inline estd::span<const typename TStreambuf::char_type> sgetn(TStreambuf& s, est
 
 TEST_CASE("CoAP decoder tests", "[coap-decoder]")
 {
-    typedef estd::const_buffer ro_chunk_t;
+    typedef estd::span<const uint8_t> ro_chunk_t;
 
     ro_chunk_t buffer_in(buffer_16bit_delta);
 
@@ -35,7 +35,7 @@ TEST_CASE("CoAP decoder tests", "[coap-decoder]")
     SECTION("Basic test 1")
     {
         OptionDecoder decoder;
-        OptionDecoder::OptionExperimental option;
+        OptionDecoder::Holder option;
 
         // pretty much ready to TRY testing, just need to load in appropriate data into buffer_in
         //decoder.process_iterate(net_in, &option);

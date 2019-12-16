@@ -28,17 +28,17 @@ struct test_static_observer
 {
     static int counter;
 
-    static void on_notify(const header_event&) {}
-    static void on_notify(const token_event&) {}
-    static void on_notify(const payload_event&) {}
+    static void on_notify(const event::header&) {}
+    static void on_notify(const event::token&) {}
+    static void on_notify(const event::payload&) {}
 
-    static void on_notify(const completed_event&)
+    static void on_notify(const event::completed&)
     {
         REQUIRE(counter == 2);
         counter++;
     }
 
-    static void on_notify(const option_event& e)
+    static void on_notify(const event::option& e)
     {
         REQUIRE(e.option_number >= 270);
         counter++;

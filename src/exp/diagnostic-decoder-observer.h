@@ -1,7 +1,10 @@
+// 12/8/2019 - Still very useful, still experimental - ideally we'd send this to a specialized
+//             clog which could retain contextual information (loglevel, tag, etc)
+
 #include <estd/span.h>
 #include <estd/string.h>
-#include "events.h"
-#include "../coap-uint.h"
+#include "../coap/decoder/events.h"
+#include "../coap/uint.h"
 
 namespace moducom { namespace coap {
 
@@ -58,14 +61,14 @@ struct DiagnosticMessageObserver
         } */
     }
 
-    static void on_notify(const header_event& e)
+    static void on_notify(const event::header& e)
     {
         printf("[DEBUG] Header: tkl=%d mid=%x\n",
-            e.header.token_length(),
-            e.header.message_id());
+            e.h.token_length(),
+            e.h.message_id());
     }
 
-    static void on_notify(const option_event& e)
+    static void on_notify(const event::option& e)
     {
         const char* description = get_description(e.option_number);
 
@@ -117,13 +120,13 @@ struct DiagnosticMessageObserver
         }
     }
 
-    static void on_notify(const token_event& e)
+    static void on_notify(const event::token& e)
     {
         printf("[DEBUG] Token: ");
         opaque_dump_line(e.chunk);
     }
 
-    static void on_notify(const payload_event& e)
+    static void on_notify(const event::payload& e)
     {
         printf("[DEBUG] Payload: len=%d\n", 
             (int)e.chunk.size());
@@ -131,7 +134,7 @@ struct DiagnosticMessageObserver
     }
 
     // FIX: We only get this when there's a payload
-    static void on_notify(completed_event)
+    static void on_notify(event::completed)
     {
         printf("[DEBUG] Completed\n");
     }

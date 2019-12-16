@@ -258,7 +258,7 @@ estd::span<const typename StreambufDecoder<TStreambuf>::char_type>
 // EXPERIMENTAL
 // copied from OptionDecoder::process_iterate
 template <class TStreambuf>
-size_t OptionDecoder::process_iterate_streambuf(TStreambuf& streambuf, OptionExperimental* built_option)
+size_t OptionDecoder::process_iterate_streambuf(TStreambuf& streambuf, Holder* built_option)
 {
     size_t length = streambuf.in_avail(); // represents remaining length to be processed
     int underflow = streambuf.underflow();  // only valid if length <= 0
