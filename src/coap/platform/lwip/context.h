@@ -1,7 +1,11 @@
 #pragma once
 
+// On to use experimental LWIP transport abstraction code
+#define FEATURE_MCCOAP_LWIP_TRANSPORT
+
 #include <coap/context.h>
 #include <embr/platform/lwip/streambuf.h>
+#include <embr/platform/lwip/transport.h>
 #include <coap/decoder/streambuf.h>
 #include <coap/encoder/streambuf.h>
 
@@ -18,6 +22,9 @@ namespace moducom { namespace coap {
 // - If we do the latter, then this could more comfortably contain the
 //   reply data which AppContext needs
 struct LwipContext
+#ifdef FEATURE_MCCOAP_LWIP_TRANSPORT
+    : embr::lwip::experimental::TransportUdp
+#endif
 {
     typedef struct udp_pcb* pcb_pointer;
     typedef struct pbuf* pbuf_pointer;
@@ -28,6 +35,13 @@ struct LwipContext
     typedef moducom::coap::StreambufEncoder<out_streambuf_type> encoder_type;
     typedef moducom::coap::StreambufDecoder<in_streambuf_type> decoder_type;
 
+#ifdef FEATURE_MCCOAP_LWIP_TRANSPORT
+    typedef embr::lwip::experimental::TransportUdp::endpoint_type PortAndAddress;
+
+    LwipContext(pcb_pointer pcb) : 
+        embr::lwip::experimental::TransportUdp(pcb)
+        {}
+#else
     struct PortAndAddress
     {
         const ip_addr_t* addr;
@@ -39,6 +53,7 @@ struct LwipContext
     LwipContext(pcb_pointer pcb) : 
         pcb(pcb)
         {}
+#endif
 
     // most times in a udp_recv handler we're expected to issue a free on
     // pbuf also.  bumpref = false stops us from auto-bumping ref with our
@@ -57,6 +72,7 @@ struct LwipContext
         while(decoder.state() != moducom::coap::Decoder::Done);
     }
 
+#ifndef FEATURE_MCCOAP_LWIP_TRANSPORT
     void sendto(encoder_type& encoder, 
         const ip_addr_t* addr,
         uint16_t port)
@@ -66,6 +82,7 @@ struct LwipContext
             addr, 
             port);
     }
+#endif
 };
 
 
@@ -82,7 +99,11 @@ struct LwipIncomingContext :
         uint16_t port) : 
         LwipContext(pcb)
     {
+#ifdef FEATURE_MCCOAP_LWIP_TRANSPORT
+        this->addr.address = addr;
+#else
         this->addr.addr = addr;
+#endif
         this->addr.port = port;
     }
 
@@ -99,7 +120,11 @@ struct LwipIncomingContext :
 
         const addr_type& addr = this->address();
         
+#ifdef FEATURE_MCCOAP_LWIP_TRANSPORT
+        send(*encoder.rdbuf(), addr);
+#else
         sendto(encoder, addr.addr, addr.port);
+#endif
     }
 };
 
