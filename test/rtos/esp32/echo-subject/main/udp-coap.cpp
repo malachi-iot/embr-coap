@@ -26,7 +26,7 @@ struct Observer : ExperimentalDecoderEventTypedefs
     {
         ESP_LOGI(TAG, "on_notify completed");
 
-        AppContext::encoder_type encoder = context.make_encoder();
+        AppContext::encoder_type encoder = make_encoder(context);
 
         Header header = context.header();
         moducom::coap::layer3::Token token = context.token();

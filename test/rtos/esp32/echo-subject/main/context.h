@@ -12,14 +12,7 @@ struct AppContext : moducom::coap::LwipIncomingContext
     {
     }
 
-    // number of seed bytes is sorta app-specific, so do it here
-    // (ping needs only 8 bytes ever)
-    encoder_type make_encoder()
-    {
-        return encoder_type(8);
-    }
-
-
+    // convenience method
     template <class TSubject>
     void do_notify(pbuf_pointer p, TSubject& subject)
     {
@@ -42,19 +35,13 @@ struct AppContext :
         this->addr = addr;
     }
 
-    // number of seed bytes is sorta app-specific, so do it here
-    // (ping needs only 8 bytes ever)
-    encoder_type make_encoder()
-    {
-        return encoder_type(8);
-    }
-
     void reply(encoder_type& encoder)
     {
         sendto(encoder, this->address(), port);
     }
 
 
+    // convenience method
     template <class TSubject>
     void do_notify(pbuf_pointer p, TSubject& subject)
     {
@@ -62,3 +49,10 @@ struct AppContext :
     }
 };
 #endif
+
+// number of seed bytes is sorta app-specific, so do it here
+// (ping needs only 8 bytes ever)
+inline LwipContext::encoder_type make_encoder(const AppContext&)
+{
+    return LwipContext::encoder_type(8);
+}
