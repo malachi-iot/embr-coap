@@ -28,8 +28,8 @@ struct LwipContext
 {
     typedef struct udp_pcb* pcb_pointer;
     typedef struct pbuf* pbuf_pointer;
-    typedef embr::lwip::out_pbuf_streambuf<char> out_streambuf_type;
-    typedef embr::lwip::in_pbuf_streambuf<char> in_streambuf_type;
+    typedef embr::lwip::opbuf_streambuf out_streambuf_type;
+    typedef embr::lwip::ipbuf_streambuf in_streambuf_type;
     typedef out_streambuf_type::size_type size_type;
 
     typedef moducom::coap::StreambufEncoder<out_streambuf_type> encoder_type;

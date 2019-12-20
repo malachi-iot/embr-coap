@@ -1,6 +1,6 @@
 #include "esp_log.h"
 
-#include <embr/platform/lwip/pbuf.h>
+#include <embr/platform/lwip/iostream.h>
 #include <embr/streambuf.h>
 
 #include <estd/string.h>
@@ -20,11 +20,8 @@ using namespace moducom::coap;
 typedef embr::lwip::PbufNetbuf netbuf_type;
 typedef netbuf_type::size_type size_type;
 
-typedef out_netbuf_streambuf<char, netbuf_type> out_pbuf_streambuf;
-typedef in_netbuf_streambuf<char, netbuf_type> in_pbuf_streambuf;
-
-typedef estd::internal::basic_ostream<out_pbuf_streambuf> pbuf_ostream;
-typedef estd::internal::basic_istream<in_pbuf_streambuf> pbuf_istream;
+using embr::lwip::ipbuf_streambuf;
+using embr::lwip::opbuf_streambuf;
 
 void udp_coap_recv(void *arg, 
     struct udp_pcb *pcb, struct pbuf *p,
@@ -40,14 +37,14 @@ void udp_coap_recv(void *arg,
         // so be sure we do NOT bump up reference, which
         // makes the auto pbuf_free call completely free
         // up p as LwIP wants
-        StreambufDecoder<in_pbuf_streambuf> decoder(p, false);
+        StreambufDecoder<ipbuf_streambuf> decoder(p, false);
 
         // Remember, at this time netbuf-pbuf code makes no assumptions about
         // how large you want that initial buffer.  Very app dependent.  For CoAP,
         // 32 is more than enough for a simple ACK style response.  Now, with chaining
         // it's even less consequential - however we're embedded, so specifying these
         // things explicitly is welcome rather than wasting space
-        StreambufEncoder<out_pbuf_streambuf> encoder(32);
+        StreambufEncoder<opbuf_streambuf> encoder(32);
 
         bool eof;
 

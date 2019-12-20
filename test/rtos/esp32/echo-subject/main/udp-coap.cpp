@@ -1,7 +1,5 @@
 #include "esp_log.h"
 
-#include <embr/platform/lwip/streambuf.h>
-
 #include <embr/observer.h>
 // remember to do this and not regular subject.h, otherwise not all the deductions will work
 #include <coap/decoder/subject.hpp>
@@ -15,7 +13,7 @@
 
 using namespace moducom::coap;
 
-#include "context.h"
+#include "context.h"    // lwip magic happens in here
 
 
 struct Observer : ExperimentalDecoderEventTypedefs
