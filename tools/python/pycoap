@@ -1,0 +1,46 @@
+#!/usr/bin/env python3
+
+import logging
+import asyncio
+import argparse
+
+from aiocoap import *
+
+tool_version = "0.0.1"
+
+# as per https://stackabuse.com/command-line-arguments-in-python/
+parser = argparse.ArgumentParser(
+    description = "CoAP command line tool v{}".
+    format(tool_version))
+
+# TODO: need to decode from GET/PUT etc and translate to the requisite integer
+#parser.add_argument("verb", nargs='?', default=GET, help="request verb (GET is default)")
+#parser.add_argument("put", nargs='?', help="Use PUT verb")
+parser.add_argument("uri", help="destination - be sure to prefix coap://")
+parser.add_argument("--payload", "-p", help="specify payload (not yet implemented)")
+#parser.add_argument("--version", "-V", help="queries this app version")
+
+args = parser.parse_args()
+
+async def main():
+    logging.basicConfig(level=logging.INFO)
+    logger = logging.getLogger("pycoap")
+
+    protocol = await Context.create_client_context()
+
+    logger.debug('Fetching %s', args.uri)
+
+    request = Message(code=args.verb, uri=args.uri)
+
+    try:
+        response = await protocol.request(request).response
+    except Exception as e:
+        logger.error('Failed to fetch resource: %s', e);
+        #print('Failed to fetch resource:')
+        #print('hi')
+    else:
+        print('Result: %s\n%r'%(response.code, response.payload))
+
+if __name__ == "__main__":
+    asyncio.get_event_loop().run_until_complete(main())
+
