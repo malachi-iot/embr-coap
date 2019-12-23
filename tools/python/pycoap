@@ -1,15 +1,13 @@
 #!/usr/bin/env python3
 
 import argparse
-from aiocoap.numbers import *
 
-tool_version = "0.0.3"
+tool_version = "0.0.4"
 
-# I wasn't easily finding numerical mappings for GET, PUT etc. so doing it
-# a bit brute force this way
-verbs = [('GET', GET), ('PUT', PUT), ('POST', POST), ('DELETE', DELETE)]
-
-verb_strings = [e[0] for e in verbs]
+# matching IANA registry as per
+# https://github.com/chrysn/aiocoap/blob/master/aiocoap/numbers/codes.py
+# Not yanking straight from aiocoap to keep startup fast
+verb_strings = ['GET', 'POST', 'PUT', 'DELETE']
 
 # as per https://stackabuse.com/command-line-arguments-in-python/
 parser = argparse.ArgumentParser(
@@ -39,17 +37,21 @@ import string
 
 from aiocoap import *
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger("pycoap")
 
-str_verb = args.verb
-str_verb = str_verb.upper()
+str_verb = args.verb.upper();
 
 # as per https://www.geeksforgeeks.org/python-test-if-string-contains-element-from-list/
 #verb = [i for i, e in enumerate(verbs) if(e[0] is str_verb)]
-verb = next((e for e in verbs if e[0] == str_verb))
+verbs = ((verb, i + 1) for i, verb in enumerate(verb_strings))
+verb = next(e for e in verbs if e[0] == str_verb)
 
-#print(verbs[verb])
+#verb = next(filter(lambda x: x[0] == str_verb, verbs))
+# interesting option:
+# https://pypi.org/project/first/
+#verb = first(verbs, key=lambda x: x[0] == str_verb)
+
 logger.debug("Got: {} from {}".format(verb, str_verb))
 
 # grab numeric/enum that is associated with string
