@@ -1,8 +1,15 @@
 #!/usr/bin/env python3
 
 import argparse
+from aiocoap.numbers import *
 
-tool_version = "0.0.2"
+tool_version = "0.0.3"
+
+# I wasn't easily finding numerical mappings for GET, PUT etc. so doing it
+# a bit brute force this way
+verbs = [('GET', GET), ('PUT', PUT), ('POST', POST), ('DELETE', DELETE)]
+
+verb_strings = [e[0] for e in verbs]
 
 # as per https://stackabuse.com/command-line-arguments-in-python/
 parser = argparse.ArgumentParser(
@@ -10,48 +17,59 @@ parser = argparse.ArgumentParser(
     format(tool_version))
 
 # TODO: need to decode from GET/PUT etc and translate to the requisite integer
-parser.add_argument("verb", nargs='?', default='GET', help="request verb (GET is default)")
-#parser.add_argument("put", nargs='?', help="Use PUT verb")
+parser.add_argument("verb", 
+    type=str,
+    nargs='?', 
+    default='GET', 
+    choices=verb_strings,
+    help="request verb (GET is default)")
+
 parser.add_argument("uri", help="destination - be sure to prefix coap://")
-parser.add_argument("--payload", "-p", help="specify payload (not yet implemented)")
-#parser.add_argument("--version", "-V", help="queries this app version")
+parser.add_argument("--payload", "-p", 
+    help="specify payload (not yet implemented)")
+parser.add_argument("--version", "-V", action="version",
+    version="%(prog)s {}".format(tool_version))
 
 args = parser.parse_args()
 
+# doing this down here since it's a bit slower - that way args come up fast
 import logging
 import asyncio
 import string
 
 from aiocoap import *
 
-verbs = ['', 'GET', 'PUT', 'POST', 'DELETE']
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger("pycoap")
 
 str_verb = args.verb
 str_verb = str_verb.upper()
 
 # as per https://www.geeksforgeeks.org/python-test-if-string-contains-element-from-list/
-verb = [i for i, e in enumerate(verbs) if(e is str_verb)]
-#verb = bool(verb)
-verb = GET
+#verb = [i for i, e in enumerate(verbs) if(e[0] is str_verb)]
+verb = next((e for e in verbs if e[0] == str_verb))
 
-print(verbs[verb])
+#print(verbs[verb])
+logger.debug("Got: {} from {}".format(verb, str_verb))
+
+# grab numeric/enum that is associated with string
+verb = verb[1]
 
 async def main():
-    logging.basicConfig(level=logging.INFO)
-    logger = logging.getLogger("pycoap")
-
     protocol = await Context.create_client_context()
 
     logger.debug('Fetching %d %s', verb, args.uri)
 
     request = Message(code=verb, uri=args.uri)
 
+    # For now, payload must be a string
+    if args.payload != None:
+        request.payload = bytes(args.payload, 'UTF-8')
+
     try:
         response = await protocol.request(request).response
     except Exception as e:
         logger.error('Failed to fetch resource: %s', e);
-        #print('Failed to fetch resource:')
-        #print('hi')
     else:
         print('Result: %s\n%r'%(response.code, response.payload))
 
