@@ -1,13 +1,8 @@
 #!/usr/bin/env python3
 
-import logging
-import asyncio
 import argparse
-import string
 
-from aiocoap import *
-
-tool_version = "0.0.1"
+tool_version = "0.0.2"
 
 # as per https://stackabuse.com/command-line-arguments-in-python/
 parser = argparse.ArgumentParser(
@@ -22,6 +17,12 @@ parser.add_argument("--payload", "-p", help="specify payload (not yet implemente
 #parser.add_argument("--version", "-V", help="queries this app version")
 
 args = parser.parse_args()
+
+import logging
+import asyncio
+import string
+
+from aiocoap import *
 
 verbs = ['', 'GET', 'PUT', 'POST', 'DELETE']
 
