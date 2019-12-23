@@ -3,6 +3,7 @@
 import logging
 import asyncio
 import argparse
+import string
 
 from aiocoap import *
 
@@ -14,7 +15,7 @@ parser = argparse.ArgumentParser(
     format(tool_version))
 
 # TODO: need to decode from GET/PUT etc and translate to the requisite integer
-#parser.add_argument("verb", nargs='?', default=GET, help="request verb (GET is default)")
+parser.add_argument("verb", nargs='?', default='GET', help="request verb (GET is default)")
 #parser.add_argument("put", nargs='?', help="Use PUT verb")
 parser.add_argument("uri", help="destination - be sure to prefix coap://")
 parser.add_argument("--payload", "-p", help="specify payload (not yet implemented)")
@@ -22,15 +23,27 @@ parser.add_argument("--payload", "-p", help="specify payload (not yet implemente
 
 args = parser.parse_args()
 
+verbs = ['', 'GET', 'PUT', 'POST', 'DELETE']
+
+str_verb = args.verb
+str_verb = str_verb.upper()
+
+# as per https://www.geeksforgeeks.org/python-test-if-string-contains-element-from-list/
+verb = [i for i, e in enumerate(verbs) if(e is str_verb)]
+#verb = bool(verb)
+verb = GET
+
+print(verbs[verb])
+
 async def main():
     logging.basicConfig(level=logging.INFO)
     logger = logging.getLogger("pycoap")
 
     protocol = await Context.create_client_context()
 
-    logger.debug('Fetching %s', args.uri)
+    logger.debug('Fetching %d %s', verb, args.uri)
 
-    request = Message(code=args.verb, uri=args.uri)
+    request = Message(code=verb, uri=args.uri)
 
     try:
         response = await protocol.request(request).response
