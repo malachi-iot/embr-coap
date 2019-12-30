@@ -143,36 +143,4 @@ inline LwipContext::encoder_type make_encoder(const LwipContext&)
     return LwipContext::encoder_type(256);
 }
 
-
-template <bool inline_token, class TStreambuf>
-inline void build_reply(
-    const moducom::coap::TokenAndHeaderContext<inline_token>& context, 
-    moducom::coap::StreambufEncoder<TStreambuf>& encoder, uint8_t code)
-{
-    typedef moducom::coap::Header Header;
-
-    Header header = context.header();
-    auto token = context.token();
-
-    header.code(code);
-    header.type(Header::TypeEnum::Acknowledgement);
-
-    encoder.header(header);
-    encoder.token(token);
-}
-
-// Expects TContext to be/conform to:
-// moducom::coap::IncomingContext
-// TODO: better suited to cpp/hpp - be nice to non-inline it
-// NOTE: leans heavily on RVO, at least as much as 'make_encoder' itself does
-template <class TContext>
-inline typename TContext::encoder_type make_encoder_reply(const TContext& context, uint8_t code)
-{
-    typename TContext::encoder_type encoder = make_encoder(context);
-
-    build_encoder_reply(context, encoder, code);
-
-    return encoder;
-}
-
 }}

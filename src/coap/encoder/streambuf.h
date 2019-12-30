@@ -12,6 +12,7 @@
 #include "../../coap_transmission.h"
 #include "../context.h"
 #include "../uint.h"
+#include "factory.h"
 
 namespace moducom { namespace coap {
 

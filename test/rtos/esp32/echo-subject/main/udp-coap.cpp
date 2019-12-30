@@ -16,25 +16,17 @@ using namespace moducom::coap;
 #include "context.h"    // lwip magic happens in here
 
 
-struct Observer : ExperimentalDecoderEventTypedefs
+struct Observer
 {
     static constexpr const char* TAG = "Observer";
 
-    static void on_notify(completed_event, AppContext& context)
+    static void on_notify(event::completed, AppContext& context)
     {
         ESP_LOGI(TAG, "on_notify completed");
 
-        AppContext::encoder_type encoder = make_encoder(context);
+        AppContext::encoder_type encoder = make_encoder_reply(context, Header::Code::Valid);
 
-        Header header = context.header();
-        moducom::coap::layer3::Token token = context.token();
-
-        header.type(Header::TypeEnum::Acknowledgement);
-        header.code(Header::Code::Valid);
-
-        encoder.header(header);
-        encoder.token(token);
-        encoder.finalize();
+        //encoder.payload();
 
         context.reply(encoder);
     }
