@@ -25,6 +25,10 @@ class AddressContext
 protected:
     TAddr addr;
 
+    AddressContext() {}
+
+    AddressContext(const TAddr& addr) : addr(addr) {}
+
 public:
     typedef TAddr addr_t;
 
@@ -257,6 +261,11 @@ class IncomingContext :
         public AddressContext<TAddr>
 {
 public:
+    IncomingContext() {}
+
+    IncomingContext(const TAddr& addr) :
+        AddressContext<TAddr>(addr)
+    {}
 };
 
 

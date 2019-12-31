@@ -23,7 +23,7 @@ namespace moducom { namespace coap {
 //   reply data which AppContext needs
 struct LwipContext
 #ifdef FEATURE_MCCOAP_LWIP_TRANSPORT
-    : embr::lwip::experimental::TransportUdp
+    : embr::lwip::experimental::TransportUdp<>
 #endif
 {
     typedef struct udp_pcb* pcb_pointer;
@@ -36,10 +36,10 @@ struct LwipContext
     typedef moducom::coap::StreambufDecoder<in_streambuf_type> decoder_type;
 
 #ifdef FEATURE_MCCOAP_LWIP_TRANSPORT
-    typedef embr::lwip::experimental::TransportUdp::endpoint_type PortAndAddress;
+    typedef embr::lwip::experimental::TransportUdp<>::endpoint_type PortAndAddress;
 
     LwipContext(pcb_pointer pcb) : 
-        embr::lwip::experimental::TransportUdp(pcb)
+        embr::lwip::experimental::TransportUdp<>(pcb)
         {}
 #else
     struct PortAndAddress
@@ -93,25 +93,27 @@ struct LwipIncomingContext :
     LwipContext
 {
     typedef LwipContext::PortAndAddress addr_type;
+    typedef moducom::coap::IncomingContext<addr_type> base_type;
 
     LwipIncomingContext(pcb_pointer pcb, 
         const ip_addr_t* addr,
         uint16_t port) : 
+#ifdef FEATURE_MCCOAP_LWIP_TRANSPORT
+        base_type(addr_type(addr, port)),
+#endif
         LwipContext(pcb)
     {
-#ifdef FEATURE_MCCOAP_LWIP_TRANSPORT
-        this->addr.address = addr;
-#else
+#ifndef FEATURE_MCCOAP_LWIP_TRANSPORT
         this->addr.addr = addr;
-#endif
         this->addr.port = port;
+#endif
     }
 
 
     LwipIncomingContext(pcb_pointer pcb, const addr_type& addr) :
+        base_type(addr),
         LwipContext(pcb)
     {
-        this->addr = addr;
     }
 
     void reply(encoder_type& encoder)
