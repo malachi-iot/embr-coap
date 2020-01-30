@@ -13,6 +13,8 @@
 #pragma file_attr("OS_Component=Threads")
 #pragma file_attr("Threads")
 
+#include <estd/string.h>
+
 /******************************************************************************
  *  MainThread Run Function (MainThread's main{})
  */
