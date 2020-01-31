@@ -1,0 +1,1 @@
+Since we have a few cpp files whose names easily collide, we pack it all into a library
