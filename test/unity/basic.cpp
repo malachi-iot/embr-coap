@@ -4,7 +4,7 @@
 // until that's done
 #include <coap/header.h>
 
-//#include "unity.h"
+#include "unit-test.h"
 
 #ifdef ESP_IDF_TESTING
 TEST_CASE("header tests", "[header]")
