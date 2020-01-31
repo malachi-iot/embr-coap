@@ -2,6 +2,7 @@
 
 #include <estd/cstdint.h>
 #include "platform.h"
+#include <new>
 
 namespace moducom { namespace coap {
 
@@ -418,8 +419,10 @@ inline bool process_response(Header input, Header* output)
             // Expected when we issued a NON request, but MAY appear from a CON
             // request too.  In either case, no response required
             return false;
-    }
 
+        default:
+            return false;
+    }
 }
 
 
