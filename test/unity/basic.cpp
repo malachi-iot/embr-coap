@@ -6,10 +6,21 @@
 
 #include "unit-test.h"
 
+using namespace moducom;
+
+void test_default_header()
+{
+    coap::Header header(coap::Header::Acknowledgement);
+
+    TEST_ASSERT_EQUAL(coap::Header::Acknowledgement, header.type());
+    TEST_ASSERT_EQUAL(1, header.version());
+}
+
 #ifdef ESP_IDF_TESTING
 TEST_CASE("header tests", "[header]")
 #else
 void test_header()
 #endif
 {
+    RUN_TEST(test_default_header);
 }

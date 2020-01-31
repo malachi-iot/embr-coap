@@ -131,8 +131,13 @@ std::ostream& operator <<(std::ostream& out, Option::State state);
 }}
 
 #ifdef FEATURE_ESTD_IOSTREAM_NATIVE
+#ifdef __ADSPBLACKFIN__
+// Blackfin has an abbreviated version of ostream
+inline std::ostream& operator <<(std::ostream& os, const moducom::coap::Option::Numbers& v)
+#else
 template <class CharT, class Traits>
 std::basic_ostream<CharT, Traits>& operator <<(std::basic_ostream<CharT, Traits>& os, const moducom::coap::Option::Numbers& v)
+#endif
 {
     const char* d = moducom::coap::get_description(v);
 
