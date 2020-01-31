@@ -3,3 +3,13 @@
 // to put it, so in the short term patch it up for modern use.  Code disabled 
 // until that's done
 #include <coap/header.h>
+
+//#include "unity.h"
+
+#ifdef ESP_IDF_TESTING
+TEST_CASE("header tests", "[header]")
+#else
+void test_header()
+#endif
+{
+}
