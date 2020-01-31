@@ -1,4 +1,11 @@
 Debug/
 
+# pcf is just a cache file of sorts
+# https://ez.analog.com/dsp/software-and-development-tools/visualdsp/f/q-a/70440/what-does-the-pcf-file-do-in-vdsp-projects
+
 *.bak
+*.pcf
+
+# mak file appears to regenerate smoothly for this project
+
 *.mak
