@@ -5,6 +5,7 @@
 
 namespace moducom { namespace coap {
 
+// TODO: Do all these defines with enum if we can
 #define COAP_HEADER_FIXED_VER_POS       6
 #define COAP_HEADER_FIXED_TYPE_POS      4
 #define COAP_HEADER_FIXED_TKL_POS       0
@@ -184,8 +185,9 @@ public:
     {
         uint8_t retVal = bytes[0];
 
+        retVal &= COAP_HEADER_FIXED_TYPE_MASK;
         retVal >>= COAP_HEADER_FIXED_TYPE_POS;
-        retVal &= 0b11;
+        //retVal &= 0b11;   // I like this but it only works in c++11/c++17 and higher
 
         return (TypeEnum) retVal;
         // NOTE: Pretty sure this one is bugged
@@ -205,7 +207,9 @@ public:
     {
         bytes[0] &= ~COAP_HEADER_FIXED_TYPE_MASK;
         bytes[0] |= ((uint8_t)type) << COAP_HEADER_FIXED_TYPE_POS;
-        mask_or<COAP_HEADER_FIXED_TYPE_POS>(0, type);
+        // FIX: redundant operation.  Looked like mask_or was supposed to take _MASK too but
+        // never got around to it
+        //mask_or<COAP_HEADER_FIXED_TYPE_POS>(0, type);
     }
 
     const Code& code_experimental() const
