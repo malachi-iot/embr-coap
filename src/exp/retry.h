@@ -112,7 +112,7 @@ public:
     typedef typename TPolicy::random random_policy;
     typedef typename time_traits::time_t time_t;
     typedef embr::experimental::address_traits<addr_t> address_traits;
-    typedef typename transport_descriptor_t::netbuf_t netbuf_t;
+    typedef typename transport_descriptor_t::netbuf_type netbuf_t;
 
 private:
     ///

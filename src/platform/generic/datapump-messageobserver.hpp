@@ -59,7 +59,7 @@ template <class TDataPump, class TDecoderSubject>
 void process_messageobserver(TDataPump& datapump, TDecoderSubject& ds)
 {
     typedef TDataPump datapump_t;
-    typedef typename datapump_t::netbuf_t netbuf_t;
+    typedef typename datapump_t::netbuf_type netbuf_t;
     typedef typename datapump_t::addr_t addr_t;
 
     addr_t addr_incoming;
