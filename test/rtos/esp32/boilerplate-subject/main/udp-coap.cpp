@@ -1,10 +1,3 @@
-extern "C" {
-
-#include <lwip/api.h>
-#include <lwip/udp.h>
-
-}
-
 #include "context.h"
 
 void udp_coap_recv(void *arg, 

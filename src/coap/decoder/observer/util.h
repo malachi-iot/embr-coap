@@ -15,7 +15,7 @@
  */
 
 #include <coap/context.h>
-#include <exp/uripath-repeater.h>   // brings in UriPathMatcher and friends
+#include "../uri.h"   // brings in UriPathMatcher and friends
 #include "../events.h"
 
 namespace moducom { namespace coap {

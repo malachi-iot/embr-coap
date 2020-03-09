@@ -29,11 +29,11 @@ const UriPathMap uri_map[] =
 };
 
 
-struct Observer : ExperimentalDecoderEventTypedefs
+struct Observer
 {
     static constexpr const char* TAG = "Observer";
 
-    static void on_notify(completed_event, AppContext& context)
+    static void on_notify(event::completed, AppContext& context)
     {
         ESP_LOGI(TAG, "on_notify completed");
 
@@ -71,6 +71,8 @@ void udp_coap_recv(void *arg,
 
     ESP_LOGD(TAG, "p->len=%d", p->len);
 
+    // Because AppContext is on the stack and app_subject is layer0 (stateless)
+    // This code is, in theory, reentrant.  That has not been tested well, however
     AppContext context(pcb, addr, port);
 
     // NOTE: do_notify plumbing calls pbuf_free(p)

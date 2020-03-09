@@ -1,10 +1,13 @@
 #pragma once
 
 #include <coap/platform/lwip/context.h>
-#include <coap/decoder/subject.h>
+// TODO: We mainly include util.h for UriParserContext.  Include more obvious/cleaner include source once
+// the URI code base is cleaned up
+#include <coap/decoder/observer/util.h>
 
 typedef moducom::coap::experimental::UriPathMap UriPathMap;
 
+// NOTE: Not ideal, directly specifying '7' here
 extern const UriPathMap uri_map[7];
 
 struct AppContext : 
