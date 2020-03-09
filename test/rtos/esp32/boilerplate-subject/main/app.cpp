@@ -63,11 +63,16 @@ embr::layer0::subject<
     > app_subject;
 
 
-void do_notify(AppContext& context, struct pbuf* p)
+void udp_coap_recv(void *arg, 
+    struct udp_pcb *pcb, struct pbuf *p,
+    const ip_addr_t *addr, u16_t port)
 {
-    const char* TAG = "::do_notify";
+    const char* TAG = "udp_coap_recv";
 
     ESP_LOGD(TAG, "p->len=%d", p->len);
 
-    context.do_notify(p, app_subject);
+    AppContext context(pcb, addr, port);
+
+    // NOTE: do_notify plumbing calls pbuf_free(p)
+    LwipContext::do_notify(app_subject, context, p);
 }

@@ -18,12 +18,6 @@ struct AppContext :
         UriParserContext(uri_map)
     {
     }
-
-    template <class TSubject>
-    void do_notify(pbuf_pointer p, TSubject& subject)
-    {
-        LwipContext::do_notify(subject, *this, p);
-    }
 };
 
 
