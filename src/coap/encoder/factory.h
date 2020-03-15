@@ -12,6 +12,12 @@ namespace moducom { namespace coap {
 template <class TStreambuf, class TStreambufEncoderImpl>
 class StreambufEncoder;
 
+/**
+ * build a minimal reply populating header and token - no options or payload
+ * @param context context with which to lift header and token
+ * @param encoder StreambufEncoder to create output with
+ * @param code CoAP header code
+ */
 template <bool inline_token, class TStreambuf, class TStreambufEncoderImpl>
 inline void build_reply(
     const TokenAndHeaderContext<inline_token>& context, 
