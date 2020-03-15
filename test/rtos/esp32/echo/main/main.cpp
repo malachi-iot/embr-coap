@@ -1,9 +1,43 @@
+/**
+ * @file
+ * @author Malachi Burke
+ * esp-idf LwIP UDP specific initialization.  No TCP or DTLS support
+ */
 #include <esp-helper.h>
 
 #include "esp_system.h"
 #include "esp_wifi.h"
 
-void udp_coap_init();
+#include <embr/platform/lwip/udp.h>
+
+#define COAP_UDP_PORT 5683
+
+void udp_coap_recv(void *arg, 
+    struct udp_pcb *pcb, struct pbuf *p,
+    const ip_addr_t *addr, u16_t port);
+
+void udp_coap_init(void)
+{
+    embr::lwip::Pcb pcb;
+
+    // get new pcb
+    if (!pcb.alloc()) {
+        LWIP_DEBUGF(UDP_DEBUG, ("pcb.alloc failed!\n"));
+        return;
+    }
+
+    /* bind to any IP address */
+    if (pcb.bind(COAP_UDP_PORT) != ERR_OK) {
+        LWIP_DEBUGF(UDP_DEBUG, ("pcb.bind failed!\n"));
+        return;
+    }
+
+    /* set udp_echo_recv() as callback function
+       for received packets */
+    pcb.recv(udp_coap_recv);
+}
+
+
 
 extern "C" void app_main()
 {
