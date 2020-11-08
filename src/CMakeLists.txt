@@ -123,4 +123,6 @@ set(SOURCE_FILES
         mc/experimental-factory.h
         )
 
+# DEBT: get rid of old moducom-coap-lib extended name
 add_library(moducom-coap-lib ${SOURCE_FILES})
+add_library(${PROJECT_NAME} ALIAS moducom-coap-lib)
