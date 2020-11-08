@@ -6,7 +6,7 @@
 
 using namespace moducom;
 
-void test_basic_decode()
+static void test_basic_decode()
 {
     estd::span<const uint8_t> in(buffer_16bit_delta, sizeof(buffer_16bit_delta));
     coap::Decoder decoder;
@@ -23,5 +23,5 @@ TEST_CASE("decoder tests", "[decoder]")
 void test_decoder()
 #endif
 {
-
+    test_basic_decode();
 }
