@@ -84,10 +84,14 @@ TEST_CASE("CoAP decoder tests", "[coap-decoder]")
         // length is processed
         REQUIRE(decoder.process_iterate(context) == false);
         REQUIRE(decoder.state() == Decoder::Options);
+#if !FEATURE_MCCOAP_SUCCINCT_OPTIONDECODE
         REQUIRE(decoder.option_decoder().state() == OptionDecoder::OptionLengthDone);
+#endif
         REQUIRE(decoder.option_length() == 1);
+#if !FEATURE_MCCOAP_SUCCINCT_OPTIONDECODE
         REQUIRE(decoder.process_iterate(context) == false);
         // Would really prefer OptionDeltaDone or OptionLengthAndDeltaDone were exposed here
+#endif
         REQUIRE(decoder.option_decoder().state() == OptionDecoder::ValueStart);
         REQUIRE(decoder.option_number() == 270);
         REQUIRE(decoder.option_decoder().option_delta() == 270);
@@ -96,12 +100,16 @@ TEST_CASE("CoAP decoder tests", "[coap-decoder]")
         REQUIRE(decoder.option_decoder().state() == OptionDecoder::OptionValueDone);
         REQUIRE(decoder.process_iterate(context) == false);
         REQUIRE(decoder.state() == Decoder::Options);
+#if !FEATURE_MCCOAP_SUCCINCT_OPTIONDECODE
         REQUIRE(decoder.option_decoder().state() == OptionDecoder::OptionDeltaAndLengthDone);
+#endif
         REQUIRE(decoder.option_length() == 2);
         REQUIRE(decoder.option_number() == 271);
         REQUIRE(decoder.option_decoder().option_delta() == 1);
+#if !FEATURE_MCCOAP_SUCCINCT_OPTIONDECODE
         REQUIRE(decoder.process_iterate(context) == false);
         REQUIRE(decoder.state() == Decoder::Options);
+#endif
         REQUIRE(decoder.option_decoder().state() == OptionDecoder::ValueStart);
         REQUIRE(decoder.process_iterate(context) == false);
         REQUIRE(decoder.state() == Decoder::Options);
@@ -180,11 +188,15 @@ TEST_CASE("CoAP decoder tests", "[coap-decoder]")
 
             REQUIRE(!decoder.process_iterate_streambuf());
             REQUIRE(decoder.state() == Decoder::Options);
+#if !FEATURE_MCCOAP_SUCCINCT_OPTIONDECODE
             REQUIRE(decoder.option_decoder().state() == OptionDecoder::OptionLengthDone);
+#endif
             REQUIRE(decoder.option_length() == 1);
 
+#if !FEATURE_MCCOAP_SUCCINCT_OPTIONDECODE
             REQUIRE(!decoder.process_iterate_streambuf());
             // Would really prefer OptionDeltaDone or OptionLengthAndDeltaDone were exposed here
+#endif
             REQUIRE(decoder.option_decoder().state() == OptionDecoder::ValueStart);
             REQUIRE(decoder.option_number() == 270);
             REQUIRE(decoder.option_decoder().option_delta() == 270);
@@ -195,13 +207,17 @@ TEST_CASE("CoAP decoder tests", "[coap-decoder]")
 
             REQUIRE(!decoder.process_iterate_streambuf());
             REQUIRE(decoder.state() == Decoder::Options);
+#if !FEATURE_MCCOAP_SUCCINCT_OPTIONDECODE
             REQUIRE(decoder.option_decoder().state() == OptionDecoder::OptionDeltaAndLengthDone);
+#endif
             REQUIRE(decoder.option_length() == 2);
             REQUIRE(decoder.option_number() == 271);
             REQUIRE(decoder.option_decoder().option_delta() == 1);
 
+#if !FEATURE_MCCOAP_SUCCINCT_OPTIONDECODE
             REQUIRE(!decoder.process_iterate_streambuf());
             REQUIRE(decoder.state() == Decoder::Options);
+#endif
             REQUIRE(decoder.option_decoder().state() == OptionDecoder::ValueStart);
 
             REQUIRE(!decoder.process_iterate_streambuf());

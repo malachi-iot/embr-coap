@@ -315,9 +315,13 @@ size_t OptionDecoder::process_iterate(const const_buffer& chunk,
 
             case OptionLengthDone:
                 built_option->length = option_length();
+#if FEATURE_MCCOAP_SUCCINCT_OPTIONDECODE
+                break;
+#else
                 // we stop here, since caller will likely want to take prepatory action
                 // now that option number/delta and option length are available
                 return data - chunk.data();
+#endif
 
                 // pause here so consumer has a chance to act on a completed delta/length gather
             case ValueStart:

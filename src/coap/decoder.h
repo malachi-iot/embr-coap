@@ -24,6 +24,13 @@
 #include <estd/type_traits.h>
 #endif
 
+// for option decode chunk processing, skip the linger on OptionLengthDone and
+// OptionDeltaAndLengthDone since ValueStart always appears at the end of those
+// cycles
+// NOTE: Almost works, but seems to upset old NetBuf/option iterator code.
+// Since it's a priority to zap those first, waiting on this
+#define FEATURE_MCCOAP_SUCCINCT_OPTIONDECODE    0
+
 namespace moducom { namespace coap {
 
 
