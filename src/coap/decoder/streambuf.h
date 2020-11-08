@@ -86,6 +86,13 @@ public:
             total_size_remaining(total_size)
 #endif
     {}
+#else
+    template <class T1>
+    StreambufDecoder(T1& arg1) :
+        streambuf(arg1)
+    {
+
+    }
 #endif
 
 #ifdef FEATURE_CPP_MOVESEMANTIC

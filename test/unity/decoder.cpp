@@ -25,8 +25,56 @@ static void test_streambuf_decode()
     typedef estd::experimental::ispanbuf streambuf_type;
     // DEBT: Quite clumsy streambuf char requirement vs coap uint8_t requirement.
     estd::span<char> in((char*)buffer_16bit_delta, sizeof(buffer_16bit_delta));
-    streambuf_type sb(in);
-    //coap::StreambufDecoder<streambuf_type> decoder(sb);
+    coap::StreambufDecoder<streambuf_type> decoder(in);
+
+    bool eol = decoder.process_iterate_streambuf();
+
+    TEST_ASSERT(!eol);
+    TEST_ASSERT_EQUAL(coap::Decoder::Header, decoder.state());
+
+    eol = decoder.process_iterate_streambuf();
+
+    TEST_ASSERT(!eol);
+    TEST_ASSERT_EQUAL(coap::Decoder::HeaderDone, decoder.state());
+
+    eol = decoder.process_iterate_streambuf();
+
+    TEST_ASSERT(!eol);
+    TEST_ASSERT_EQUAL(coap::Decoder::TokenDone, decoder.state());
+
+    eol = decoder.process_iterate_streambuf();
+
+    TEST_ASSERT(!eol);
+    TEST_ASSERT_EQUAL(coap::Decoder::OptionsStart, decoder.state());
+
+    eol = decoder.process_iterate_streambuf();
+
+    TEST_ASSERT(!eol);
+    // DEBT: Don't like repeatedly kicking top-level CoAP parser to do clicky decode of
+    // option.  Would be better to know to use option decoder and otherwise fast-forward option.
+    // Both are non-obvious, but at least the latter is more organized
+    TEST_ASSERT_EQUAL(coap::Decoder::Options, decoder.state());
+
+    TEST_ASSERT_EQUAL(1, decoder.option_length());
+    TEST_ASSERT_EQUAL(0, decoder.option_number());
+
+    TEST_ASSERT_EQUAL(coap::OptionDecoder::OptionLengthDone, decoder.option_decoder().state());
+    //decoder.option();
+    //TEST_ASSERT_EQUAL(3, decoder.option()[0]);
+
+    eol = decoder.process_iterate_streambuf();
+
+    TEST_ASSERT(!eol);
+    TEST_ASSERT_EQUAL(coap::Decoder::Options, decoder.state());
+    TEST_ASSERT_EQUAL(coap::OptionDecoder::ValueStart, decoder.option_decoder().state());
+
+    TEST_ASSERT_EQUAL(270, decoder.option_number());
+    TEST_ASSERT_EQUAL(3, decoder.option()[0]);
+
+    eol = decoder.process_iterate_streambuf();
+
+    TEST_ASSERT(!eol);
+    //TEST_ASSERT_EQUAL(coap::Decoder::OptionsDone, decoder.state());
 }
 
 #ifdef ESP_IDF_TESTING
@@ -35,5 +83,6 @@ TEST_CASE("decoder tests", "[decoder]")
 void test_decoder()
 #endif
 {
-    test_basic_decode();
+    RUN_TEST(test_basic_decode);
+    RUN_TEST(test_streambuf_decode);
 }

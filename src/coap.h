@@ -87,6 +87,7 @@ public:
         HeaderDone,
         TokenStart, // currently unused
         Token,
+        /// Emit always, even if tkl = 0
         TokenDone,
         OptionsStart,
         Options,
