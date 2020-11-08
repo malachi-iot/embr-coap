@@ -29,7 +29,7 @@
 // cycles
 // NOTE: Almost works, but seems to upset old NetBuf/option iterator code.
 // Since it's a priority to zap those first, waiting on this
-#define FEATURE_MCCOAP_SUCCINCT_OPTIONDECODE    0
+#define FEATURE_MCCOAP_SUCCINCT_OPTIONDECODE    1
 
 namespace moducom { namespace coap {
 

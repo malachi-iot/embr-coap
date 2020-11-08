@@ -56,6 +56,8 @@ static void test_streambuf_decode()
     TEST_ASSERT_EQUAL(coap::Decoder::Options, decoder.state());
 
     TEST_ASSERT_EQUAL(1, decoder.option_length());
+
+#if !FEATURE_MCCOAP_SUCCINCT_OPTIONDECODE
     TEST_ASSERT_EQUAL(0, decoder.option_number());
 
     TEST_ASSERT_EQUAL(coap::OptionDecoder::OptionLengthDone, decoder.option_decoder().state());
@@ -66,15 +68,29 @@ static void test_streambuf_decode()
 
     TEST_ASSERT(!eol);
     TEST_ASSERT_EQUAL(coap::Decoder::Options, decoder.state());
+#endif
     TEST_ASSERT_EQUAL(coap::OptionDecoder::ValueStart, decoder.option_decoder().state());
 
     TEST_ASSERT_EQUAL(270, decoder.option_number());
     TEST_ASSERT_EQUAL(3, decoder.option()[0]);
 
-    eol = decoder.process_iterate_streambuf();
+    TEST_ASSERT(!decoder.process_iterate_streambuf());
+    TEST_ASSERT_EQUAL(coap::OptionDecoder::OptionValueDone, decoder.option_decoder().state());
 
-    TEST_ASSERT(!eol);
-    //TEST_ASSERT_EQUAL(coap::Decoder::OptionsDone, decoder.state());
+    TEST_ASSERT(!decoder.process_iterate_streambuf());
+    TEST_ASSERT_EQUAL(coap::Decoder::Options, decoder.state());
+    TEST_ASSERT_EQUAL(coap::OptionDecoder::ValueStart, decoder.option_decoder().state());
+    TEST_ASSERT_EQUAL(271, decoder.option_number());
+
+    TEST_ASSERT(!decoder.process_iterate_streambuf());
+    TEST_ASSERT_EQUAL(coap::Decoder::Options, decoder.state());
+    TEST_ASSERT_EQUAL(coap::OptionDecoder::OptionValueDone, decoder.option_decoder().state());
+
+    TEST_ASSERT(!decoder.process_iterate_streambuf());
+    TEST_ASSERT_EQUAL(coap::Decoder::OptionsDone, decoder.state());
+
+    TEST_ASSERT(!decoder.process_iterate_streambuf());
+    TEST_ASSERT_EQUAL(coap::Decoder::Payload, decoder.state());
 }
 
 #ifdef ESP_IDF_TESTING
