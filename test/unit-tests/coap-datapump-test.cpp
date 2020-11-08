@@ -4,6 +4,7 @@
 #include <embr/datapump.hpp>
 #include <embr/observer.h>
 #include "coap/decoder/subject.hpp"
+#include <embr/transport-descriptor.h>
 
 #include "test-data.h"
 #include "test-observer.h"

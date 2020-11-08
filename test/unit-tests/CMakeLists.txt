@@ -9,7 +9,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
 add_definitions(-DUNIT_TESTING)
 # NOTE: Normally this would go into an 'opts' but 'mc/opts.h', while a good idea, is no longer
 # ubiquitous
-add_definitions(-DFEATURE_EMBR_DATAPUMP_INLINE)
+#add_definitions(-DFEATURE_EMBR_DATAPUMP_INLINE)
 #add_definitions(-DDEBUG)
 
 set(ROOT_DIR ../..)

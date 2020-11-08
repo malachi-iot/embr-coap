@@ -15,6 +15,7 @@
 
 #include <embr/datapump.h>
 #include <embr/events.h>
+#include <embr/exp/pbuf.h>
 
 #include "datapump-observer.h" // for IDataPumpObserver
 

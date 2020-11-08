@@ -1,3 +1,4 @@
+#if OBSOLETE
 #include <catch.hpp>
 
 #include <coap/decoder/netbuf.h>
@@ -223,3 +224,4 @@ TEST_CASE("netbuf+coap tests", "[netbuf-coap]")
         suite(decoder);
     }
 }
+#endif

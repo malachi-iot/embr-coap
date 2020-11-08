@@ -1,3 +1,7 @@
+// netbuf code is out the door be it mk. 1 or mk. 2 - streambuf is how we do it
+// and currently retry code is netbuf specific
+#if OBSOLETE
+
 #include <catch.hpp>
 
 #include "exp/misc.h"
@@ -284,3 +288,5 @@ TEST_CASE("retry logic")
         }
     }
 }
+
+#endif
