@@ -1,6 +1,10 @@
 cmake_minimum_required(VERSION 2.8)
 
-#set(CMAKE_CXX_STANDARD 98)
+set(CMAKE_CXX_STANDARD 98)
+
+# DEBT: This is not always true for C++98 scenarios, but implicitly true for ADSPBFIN (inttypes.h isn't
+# available, but it seems to have those defs) and most other compilers I use
+add_compile_definitions(FEATURE_STD_INTTYPES)
 
 project(coap-unity-tests)
 

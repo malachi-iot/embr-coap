@@ -1,6 +1,6 @@
 #pragma once
 
-#include <embr/streambuf.h>
+//#include <embr/streambuf.h>
 #include <estd/istream.h>
 
 #include "../decoder.h"
