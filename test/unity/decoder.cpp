@@ -1,12 +1,6 @@
-// uses too many C++11 goodies at the moment
-//#include <coap/decoder/netbuf.h>
-
-// DEBT: Not quite C++03 compatible, but isn't hard -- just need to move
-// variable initializer
-#define FEATURE_ESTD_IOS_GCOUNT 0
-
 #include <coap/decoder.h>
 #include <coap/decoder/streambuf.hpp>
+//#include <coap/decoder/subject.hpp>
 
 #include "unit-test.h"
 

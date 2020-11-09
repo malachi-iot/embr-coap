@@ -4,6 +4,7 @@ project(coap-unity-tests-lib)
 
 set(ROOT_DIR ${PROJECT_SOURCE_DIR}/../..)
 set(ESTDLIB_DIR ${ROOT_DIR}/ext/estdlib)
+set(EMBR_DIR ${ROOT_DIR}/ext/embr)
 set(UNITY_DIR ${ESTDLIB_DIR}/ext/Unity)
 set(COAP_DIR ${ROOT_DIR}/src)
 set(MC_MEM_DIR ${ROOT_DIR}/ext/moducom-memory)
@@ -18,8 +19,9 @@ add_library(${PROJECT_NAME}
 
 target_link_libraries(${PROJECT_NAME} unity mc-coap)
 
-target_include_directories(${PROJECT_NAME} PUBLIC 
+target_include_directories(${PROJECT_NAME} PUBLIC
     ${ESTDLIB_DIR}/src
+    ${EMBR_DIR}/src
     ${UNITY_DIR}
     .
     )
