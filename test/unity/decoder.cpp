@@ -7,6 +7,7 @@
 using namespace moducom;
 
 static estd::span<const uint8_t> in(buffer_16bit_delta, sizeof(buffer_16bit_delta));
+typedef estd::experimental::ispanbuf streambuf_type;
 
 static void test_basic_decode()
 {
@@ -21,7 +22,6 @@ static void test_basic_decode()
 
 static void test_streambuf_decode()
 {
-    typedef estd::experimental::ispanbuf streambuf_type;
     // DEBT: Quite clumsy streambuf char requirement vs coap uint8_t requirement.
     estd::span<char> in((char*)buffer_16bit_delta, sizeof(buffer_16bit_delta));
     coap::StreambufDecoder<streambuf_type> decoder(in);
@@ -92,9 +92,64 @@ static void test_streambuf_decode()
     TEST_ASSERT_EQUAL(coap::Decoder::Payload, decoder.state());
 }
 
+struct Context
+{
+    int counter;
+};
+
+struct Listener
+{
+    void notify(coap::event::header e, Context& context)
+    {
+        context.counter++;
+    }
+
+    void notify(coap::event::token e, Context& context)
+    {
+        context.counter++;
+    }
+
+    void notify(coap::event::option_start, Context&) {}
+    void notify(coap::event::option_completed, Context&) {}
+
+    void notify(coap::event::option e, Context& context)
+    {
+        if(context.counter++ == 2)
+            TEST_ASSERT_EQUAL(270, e.option_number);
+        else
+            TEST_ASSERT_EQUAL(271, e.option_number);
+    }
+
+    void notify(coap::event::streambuf_payload<streambuf_type> e, Context& context)
+    {
+        context.counter++;
+    }
+
+    void notify(coap::event::completed e, Context& context)
+    {
+        context.counter++;
+    }
+};
+
+
 static void test_decode_and_notify()
 {
+    // DEBT: Quite clumsy streambuf char requirement vs coap uint8_t requirement.
+    estd::span<char> in((char*)buffer_16bit_delta, sizeof(buffer_16bit_delta));
+    coap::StreambufDecoder<streambuf_type> decoder(in);
+    Listener l;
+    Context context;
 
+    context.counter = 0;
+
+    while(!coap::decode_and_notify(decoder, l, context));
+
+    // runs once more at end to trigger completed event, don't remember
+    // exactly why we have to do it that way - it has something to do with
+    // giving consumer chance to fully consume payload
+    coap::decode_and_notify(decoder, l, context);
+
+    TEST_ASSERT_EQUAL_INT(6, context.counter);
 }
 
 #ifdef ESP_IDF_TESTING

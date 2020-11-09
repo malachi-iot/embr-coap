@@ -47,7 +47,7 @@ bool decode_and_notify(StreambufDecoder<TStreambuf>& decoder, TSubject& subject,
         }
 
         case Decoder::OptionsStart:
-            subject.notify(option_start_event{}, app_context);
+            subject.notify(option_start_event(), app_context);
             break;
 
         case Decoder::Options:
@@ -107,7 +107,7 @@ bool decode_and_notify(StreambufDecoder<TStreambuf>& decoder, TSubject& subject,
             break;
 
         case Decoder::OptionsDone:
-            subject.notify(option_completed_event{}, app_context);
+            subject.notify(option_completed_event(), app_context);
             break;
 
         case Decoder::Payload:
