@@ -1,6 +1,6 @@
 #include <coap/decoder.h>
 #include <coap/decoder/streambuf.hpp>
-//#include <coap/decoder/subject.hpp>
+#include <coap/decoder/subject-core.hpp>
 
 #include "unit-test.h"
 
@@ -92,6 +92,11 @@ static void test_streambuf_decode()
     TEST_ASSERT_EQUAL(coap::Decoder::Payload, decoder.state());
 }
 
+static void test_decode_and_notify()
+{
+
+}
+
 #ifdef ESP_IDF_TESTING
 TEST_CASE("decoder tests", "[decoder]")
 #else
@@ -100,4 +105,5 @@ void test_decoder()
 {
     RUN_TEST(test_basic_decode);
     RUN_TEST(test_streambuf_decode);
+    RUN_TEST(test_decode_and_notify);
 }

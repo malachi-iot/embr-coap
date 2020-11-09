@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 2.8)
 
 project(coap-unity-tests-lib)
 
+add_compile_definitions(FEATURE_MCCOAP_LEGACY_EVENTS=0)
+
 set(ROOT_DIR ${PROJECT_SOURCE_DIR}/../..)
 set(ESTDLIB_DIR ${ROOT_DIR}/ext/estdlib)
 set(EMBR_DIR ${ROOT_DIR}/ext/embr)

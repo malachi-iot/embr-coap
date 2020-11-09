@@ -1,6 +1,9 @@
 #pragma once
 
 #include <estd/span.h>
+#include <estd/string.h>
+#include <estd/string_view.h>
+
 // FIX: string_view needs include guards
 //#include <estd/string_view.h>
 //#include "../coap.h"

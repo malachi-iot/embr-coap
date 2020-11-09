@@ -13,6 +13,15 @@
 #include "../../exp/events.h"
 #include "observer/util.h"
 
+// Just before we went with on_notify approach we had a forming useful
+// on_payload, on_token etc. approach.  That approach was more built out
+// with some interesting experimental features, but I think I abandoned
+// it.  I am not sure.  So it's wrapped up with this flag - importantly
+// as it is one of the main dependents on the outdated mc-memory
+#ifndef FEATURE_MCCOAP_LEGACY_EVENTS
+#define FEATURE_MCCOAP_LEGACY_EVENTS 1
+#endif
+
 namespace moducom { namespace coap {
 
 namespace experimental {
@@ -152,6 +161,7 @@ bool decode_and_notify(StreambufDecoder<TStreambuf>& decoder, TSubject& subject)
 }
 
 
+#if FEATURE_MCCOAP_LEGACY_EVENTS
 // Revamped "Dispatcher"
 // Now passing basic test suite
 template <class TMessageObserver>
@@ -243,5 +253,6 @@ public:
         new (&decoder) Decoder;
     }
 };
+#endif
 
 }}

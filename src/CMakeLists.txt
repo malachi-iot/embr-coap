@@ -62,6 +62,7 @@ set(SOURCE_FILES
 
         coap/decoder/subject.h
         coap/decoder/subject.hpp
+        coap/decoder/subject-core.hpp
 
         coap/encoder.h coap/encoder.hpp
         coap/encoder/streambuf.h

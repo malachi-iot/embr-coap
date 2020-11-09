@@ -86,36 +86,6 @@ CONSTEXPR dispatcher_handler_factory_fn uri_helper_helper(T a [size], const char
 }; */
 
 
-template <class TArray>
-dispatcher_handler_factory_fn uri_helper2(const TArray& array)
-{
-    typedef array_helper<TArray> array_helper_t;
-
-    int count = _array_helper_count(array);
-    const void* contents = _array_helper_contents(array);
-
-    // really needs real constexpr from C++11 to work
-    //return &uri_plus_factory_dispatcher<array, count, name>;
-
-    /*
-    MemoryChunk& uri_handler_chunk = chunk;
-    MemoryChunk sub_handler_chunk = chunk.remainder(sizeof(UriPathDispatcherHandler));
-    MemoryChunk sub_handler_inner_chunk = sub_handler_chunk.remainder(sizeof(FactoryDispatcherHandler));
-
-    FactoryDispatcherHandler* fdh = new (sub_handler_chunk.data()) FactoryDispatcherHandler(
-            sub_handler_inner_chunk,
-            array, count);
-
-    return new (uri_handler_chunk.data()) UriPathDispatcherHandler(uri_path, *fdh); */
-}
-
-
-/*
-template <dispatcher_handler_factory_fn factories[N], int N>
-IDispatcherHandler* uri_plus_factory_dispatcher(MemoryChunk chunk)
-{
-
-} */
 
 template <class TRequestContext>
 IDecoderObserver<TRequestContext>* test_single_uri_observer(TRequestContext& ctx)
