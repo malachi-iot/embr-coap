@@ -39,6 +39,7 @@ MainThread::Run()
     test_header();
     test_encoder();
     test_decoder();
+    test_uri();
 
     UNITY_END();
 	// A thread is automatically Destroyed when it exits its run function
