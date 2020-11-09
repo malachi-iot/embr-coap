@@ -92,6 +92,7 @@ set(SOURCE_FILES
         exp/retry.h
         exp/diagnostic-decoder-observer.h
         exp/uripath-repeater.h
+        exp/uripathmap.h
 
         exp/prototype/observer-idea1.h
 
