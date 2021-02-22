@@ -40,11 +40,17 @@ bool option_block_decode_m(const estd::span<const uint8_t>& option_value)
 
 
 // NOTE: remember szx needs some minor math to represent size
-uint8_t option_block_encode(uint8_t* option_value, uint32_t num, bool m, uint8_t szx)
+template <typename TUInt>
+uint8_t option_block_encode(uint8_t* option_value, TUInt num, bool m, uint8_t szx)
 {
+    // DEBT: Do this up with an estd simulated static_assert like in
+    // https://gist.github.com/Bueddl/2e4dea884982c22718ceafbebbd75c5f
+    //static_assert(!estd::numeric_limits<TUInt>::is_signed);
+
     // use outgoing option_value as our own variable a bit
     *option_value = 0;
 
+    // shifting over, as num sits 4 bits to the msb of m+szx
     uint8_t size = UInt::set(num << 4, option_value);
 
     // remember it's implicitly already in bit position 1, so to get it to 4 we shift by 3

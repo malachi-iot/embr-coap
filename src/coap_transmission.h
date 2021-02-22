@@ -27,19 +27,25 @@ public:
     uint16_t length;
 };
 
+// Raw data for CoAP value.  Encoding/decoding happens elsewhere
 class OptionValue //: public OptionLength
 {
 protected:
 public:
     union
     {
+        // DEBT: Phase out value_string also as that too is a bit of
+        // encode/decode, though much simpler than the int processing
         const char*     value_string;
         const uint8_t*  value_opaque;
-        const uint16_t  value_uint;
+        // We don't attempt a encode/decode of CoAP int here anymore
+        //const uint16_t  value_uint;
     };
 
     // C++98 requirement
-    OptionValue() : value_uint(0) {}
+    //OptionValue() : value_uint(0) {}
+
+    OptionValue() : value_opaque(NULLPTR) {}
 };
 
 class OptionString : public OptionValue
