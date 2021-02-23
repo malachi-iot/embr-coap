@@ -7,6 +7,8 @@
 
 #include <coap/encoder/streambuf.h>
 
+#include "unit-test.h"
+
 using namespace moducom;
 
 typedef estd::experimental::ospanbuf streambuf_type;
@@ -19,11 +21,36 @@ static void test_encoder_1()
     encoder_type encoder(buf);
     coap::Header h;
 
-    h.type(coap::Header::Acknowledgement);
+    h.message_id(000);
+    h.type(coap::Header::NonConfirmable);
+
+    encoder.header(h);
+
+    encoder.option(coap::Option::UriPath, 4);
 
     encoder_type::ostream_type out = encoder.ostream();
 
-    encoder.header(h);
+    out << "TEST";
+
+    encoder.option(coap::Option::UriPath, 3);
+
+    out << "POS";
+
+    encoder.payload();
+
+    out.put(0x10);
+    out.put(0x11);
+    out.put(0x12);
+    out.put(0x13);
+    out.put(0x14);
+    out.put(0x15);
+    out.put(0x16);
+
+    encoder.finalize();
+
+    int sz = out.tellp();
+
+    TEST_ASSERT_EQUAL(sizeof(buffer_plausible), sz);
 }
 
 #ifdef ESP_IDF_TESTING
