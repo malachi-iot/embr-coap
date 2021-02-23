@@ -19,10 +19,10 @@ static void test_encoder_1()
     char buffer[512];
     estd::span<char> buf(&buffer[0], 512);
     encoder_type encoder(buf);
-    coap::Header h;
+    // DEBT: A little confusing, Header needs a parameter before it initializes version field
+    coap::Header h(coap::Header::Confirmable);
 
-    h.message_id(000);
-    h.type(coap::Header::NonConfirmable);
+    //h.message_id(000);
 
     encoder.header(h);
 
@@ -32,6 +32,7 @@ static void test_encoder_1()
 
     out << "TEST";
 
+    // FIX: Having an issue probably
     encoder.option(coap::Option::UriPath, 3);
 
     out << "POS";
@@ -51,6 +52,7 @@ static void test_encoder_1()
     int sz = out.tellp();
 
     TEST_ASSERT_EQUAL(sizeof(buffer_plausible), sz);
+    TEST_ASSERT_EQUAL_UINT8_ARRAY(&buffer_plausible[0], out.rdbuf()->pbase(), sz);
 }
 
 #ifdef ESP_IDF_TESTING
