@@ -24,10 +24,10 @@ inline void build_reply(
     StreambufEncoder<TStreambuf, TStreambufEncoderImpl>& encoder, uint8_t code)
 {
     Header header = context.header();
-    auto token = context.token();
+    layer3::Token token = context.token();
 
     header.code(code);
-    header.type(Header::TypeEnum::Acknowledgement);
+    header.type(Header::Acknowledgement);
 
     encoder.header(header);
     encoder.token(token);

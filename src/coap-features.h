@@ -26,3 +26,8 @@
 // If defined, IMessageObserver has an on_complete message too
 // Experimental right now, but likely will be a committed feature
 #define FEATURE_MCCOAP_COMPLETE_OBSERVER
+
+// Enable/disable legacy netbuf encoder
+#ifndef FEATURE_MCCOAP_NETBUF_ENCODER
+#define FEATURE_MCCOAP_NETBUF_ENCODER 0
+#endif

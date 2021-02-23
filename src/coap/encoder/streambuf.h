@@ -3,7 +3,11 @@
  */
 #pragma once
 
+#include "../../coap-features.h"
+
+#if FEATURE_MCCOAP_NETBUF_ENCODER
 #include <embr/streambuf.h>
+#endif
 #include <estd/streambuf.h>
 #include <estd/ostream.h>
 
@@ -26,6 +30,7 @@ struct StreambufEncoderImpl
     static void finalize(streambuf_type* streambuf) {}
 };
 
+#if FEATURE_MCCOAP_NETBUF_ENCODER
 template <class TNetbuf>
 struct StreambufEncoderImpl<::embr::mem::out_netbuf_streambuf<char, TNetbuf> >
 {
@@ -39,6 +44,7 @@ struct StreambufEncoderImpl<::embr::mem::out_netbuf_streambuf<char, TNetbuf> >
         streambuf->netbuf().shrink(total_length);
     }
 };
+#endif
 
 }
 
@@ -54,18 +60,26 @@ template <
         >
 class StreambufEncoder
 {
+#ifdef FEATURE_CPP_ENUM_CLASS
     typedef moducom::coap::internal::Root::State state_type;
+    // DEBT: For passing around as parameter, needs better name
+    typedef state_type _state_type;
+#else
+    typedef moducom::coap::internal::Root state_type;
+    // DEBT: For passing around as parameter, needs better name
+    typedef moducom::coap::internal::Root::State _state_type;
+#endif
 
 #ifdef DEBUG
-    void _assert(state_type s)
+    void _assert(_state_type s)
     {
         // TODO:
     }
 #else
-    void _assert(state_type s) {}
+    void _assert(_state_type s) {}
     /// \brief Only used for debug purposes.  noop in release mode
     /// \param s
-    void state(state_type s) {}
+    void state(_state_type s) {}
 #endif
 
     typedef StreambufEncoder<TStreambuf> this_type;
