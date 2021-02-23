@@ -282,7 +282,8 @@ TEST_CASE("CoAP encoder tests", "[coap-encoder]")
 
             b += hello_str_len;
             // --- option #2
-            REQUIRE(*b++ == ((Option::Numbers::UriPath << 4) | test_str.size()) );
+            //REQUIRE(*b++ == ((Option::Numbers::UriPath << 4) | test_str.size()) );
+            REQUIRE(*b++ == test_str.size());
 
             new (&s) estd::layer3::const_string((char*)b, test_str.size());
 
@@ -292,7 +293,7 @@ TEST_CASE("CoAP encoder tests", "[coap-encoder]")
 
             // --- option #3
             REQUIRE(*b++ == (Option::ExtendedMode::Extended8Bit << 4));
-            REQUIRE(*b++ == Option::Numbers::Size1 - 13);
+            REQUIRE(*b++ == (Option::Numbers::Size1 - Option::Numbers::UriPath) - 13);
 
             // PAYLOAD
             REQUIRE(*b++ == 0xFF);

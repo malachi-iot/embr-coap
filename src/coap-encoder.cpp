@@ -110,8 +110,15 @@ OptionEncoder::output_t OptionEncoder::generate_iterate()
             return option_length_next;
         }
 
+        // Option and Delta all at once in once byte is finished now
         case _state_t::OptionDeltaAndLengthDone:
             current_option_number = option_base.number;
+
+            // DEBT: Could optimize this by specifying current_option_number directly during
+            // state set, but this is easier to understand continuing state machine a little
+            // further here
+            state(_state_t::OptionLengthDone);
+            return signal_continue;
 
         case _state_t::OptionLengthDone:
             if (option_base.length == 0)

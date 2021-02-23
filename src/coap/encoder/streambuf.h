@@ -234,7 +234,7 @@ public:
 
         // FIX: Appears to have a glitch where we need to proceed one past this so that delta tracker works
         }   while(
-                (option_encoder.state() != option_encoder.OptionDeltaAndLengthDone) &&
+                //(option_encoder.state() != option_encoder.OptionDeltaAndLengthDone) &&
                 (option_encoder.state() != option_encoder.OptionLengthDone));
 
         return true;
