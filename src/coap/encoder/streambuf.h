@@ -331,18 +331,33 @@ struct _Option
 
 inline _Option option(moducom::coap::Option::Numbers number, uint16_t sz)
 {
+#ifdef __cpp_initializer_lists
     return _Option { number, sz };
+#else
+    _Option option;
+    option.number = number;
+    option.sz = sz;
+    return option;
+#endif
 }
 
 
 struct _Token
 {
     estd::const_buffer raw;
+
+#ifndef __cpp_initializer_lists
+    _Token(estd::const_buffer raw) : raw(raw) {}
+#endif
 };
 
 inline _Token token(estd::const_buffer raw)
 {
+#ifdef __cpp_initializer_lists
     return _Token { raw };
+#else
+    return _Token(raw);
+#endif
 }
 
 
