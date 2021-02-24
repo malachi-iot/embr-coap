@@ -79,12 +79,47 @@ static void test_build_reply()
     TEST_ASSERT_EQUAL(200, h2.code());
     TEST_ASSERT_EQUAL(0x123, h2.message_id());
 
+    // 'Accept' option actually doesn't belong in replies, but we'll allow it for
+    // synthetic.  Also, since 'Accept' is 17, it hangs over the 13-boundary and
+    // results in a two-byte option header
+    encoder.option_int(coap::Option::Accept, coap::Option::ApplicationJson);
+
+    // add in payload marker
     encoder.payload();
 
     // FIX: Not able to resolve underlying dependency here
     //TEST_ASSERT_EQUAL(4, encoder.rdbuf()->pubseekpos(0));
 
-    TEST_ASSERT_EQUAL(5, encoder.rdbuf()->pos());
+    TEST_ASSERT_EQUAL(8, encoder.rdbuf()->pos());
+}
+
+static void test_build_reply_stream()
+{
+    char buffer[512];
+    estd::span<char> buf(&buffer[0], 512);
+    encoder_type encoder(buf);
+    coap::TokenAndHeaderContext<true> context;
+
+    // represents synthetic incoming header
+    coap::Header h(coap::Header::Confirmable);
+
+    h.message_id(0x123);
+
+    context.header(h);
+
+    coap::build_reply(context, encoder, coap::Header::Code::Valid);
+
+    encoder.payload();
+
+    encoder_type::ostream_type out = encoder.ostream();
+
+    out << '{';
+    out << "hi2u";
+    out << '}';
+
+    encoder.finalize();
+
+    TEST_ASSERT_EQUAL(11, encoder.rdbuf()->pos());
 }
 
 #ifdef ESP_IDF_TESTING
@@ -95,4 +130,5 @@ void test_encoder()
 {
     RUN_TEST(test_encoder_1);
     RUN_TEST(test_build_reply);
+    RUN_TEST(test_build_reply_stream);
 }
