@@ -55,6 +55,32 @@ static void test_encoder_1()
     TEST_ASSERT_EQUAL_UINT8_ARRAY(&buffer_plausible[0], out.rdbuf()->pbase(), sz);
 }
 
+static void test_build_reply()
+{
+    char buffer[512];
+    estd::span<char> buf(&buffer[0], 512);
+    encoder_type encoder(buf);
+    coap::TokenAndHeaderContext<true> context;
+
+    // represents synthetic incoming header
+    coap::Header h(coap::Header::Confirmable);
+
+    h.message_id(0x123);
+
+    context.header(h);
+
+    coap::build_reply(context, encoder, 200);
+
+    coap::Header h2;
+
+    estd::copy_n(buffer, 4, h2.bytes);
+
+    TEST_ASSERT_EQUAL(1, h2.version());
+    TEST_ASSERT_EQUAL(0, h2.token_length());
+    TEST_ASSERT_EQUAL(200, h2.code());
+    TEST_ASSERT_EQUAL(0x123, h2.message_id());
+}
+
 #ifdef ESP_IDF_TESTING
 TEST_CASE("encoder tests", "[encoder]")
 #else
@@ -62,4 +88,5 @@ void test_encoder()
 #endif
 {
     RUN_TEST(test_encoder_1);
+    RUN_TEST(test_build_reply);
 }
