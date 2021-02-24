@@ -92,7 +92,7 @@ static void test_streambuf_decode()
     TEST_ASSERT_EQUAL(coap::Decoder::Payload, decoder.state());
 }
 
-struct Context
+struct Context : coap::TokenAndHeaderContext<true>
 {
     int counter;
 };
@@ -101,11 +101,13 @@ struct Listener
 {
     void notify(coap::event::header e, Context& context)
     {
+        context.header(e.h);
         context.counter++;
     }
 
     void notify(coap::event::token e, Context& context)
     {
+        context.token(e.chunk);
         context.counter++;
     }
 
