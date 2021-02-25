@@ -29,6 +29,8 @@ void test_uri_match2()
 
     result = matcher.find("power");
     TEST_ASSERT_EQUAL_INT(id_path_v1_api_power, result->second);
+
+    TEST_ASSERT_EQUAL_INT(id_path_v1_api_power, *matcher.last_found());
 }
 
 #ifdef ESP_IDF_TESTING
