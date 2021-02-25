@@ -296,23 +296,46 @@ TEST_CASE("experimental 2 tests")
         SECTION("UriPathMatcher3")
         {
             moducom::coap::experimental::UriPathMatcher3 m(map);
+            typedef const moducom::coap::experimental::UriPathMap* result_type;
 
-            auto v = m.find("v2");
+            SECTION("Look in v2/api")
+            {
+                result_type v = m.find("v2");
 
-            REQUIRE(v);
-            REQUIRE(v->second == id_path_v2);
+                REQUIRE(v);
+                REQUIRE(v->second == id_path_v2);
 
-            v = m.find("api");
+                v = m.find("api");
 
-            REQUIRE(v);
-            REQUIRE(v->second == id_path_v2_api);
+                REQUIRE(v);
 
-            new (&m) moducom::coap::experimental::UriPathMatcher3(map);
+                REQUIRE(v->second == id_path_v2_api);
 
-            v = m.find("v3");
+                SECTION("Look in v2/api/nested/nested")
+                {
+                    result_type v = m.find("nested");
 
-            REQUIRE(!v);
+                    REQUIRE(v);
+                    REQUIRE(v->second == id_path_v2_api_nested);
 
+                    v = m.find("nested");
+
+                    REQUIRE(v->second == id_path_v2_api_nested2);
+                }
+                SECTION("Look in v2/api/test")
+                {
+                    result_type v = m.find("test");
+
+                    REQUIRE(v);
+                    REQUIRE(v->second == id_path_v2_api_test);
+                }
+            }
+            SECTION("look for v3")
+            {
+                result_type v = m.find("v3");
+
+                REQUIRE(!v);
+            }
         }
     }
 }

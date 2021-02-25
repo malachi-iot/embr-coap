@@ -13,6 +13,9 @@ CONSTEXPR int id_path_v1_api_test = 6;
 CONSTEXPR int id_path_dummy = 3;
 CONSTEXPR int id_path_v2 = 4;
 CONSTEXPR int id_path_v2_api = 5;
+CONSTEXPR int id_path_v2_api_nested = 9;
+CONSTEXPR int id_path_v2_api_nested2 = 10;
+CONSTEXPR int id_path_v2_api_test = 11;
 CONSTEXPR int id_path_well_known = 7;
 CONSTEXPR int id_path_well_known_core = 8;
 
@@ -33,6 +36,11 @@ const moducom::coap::experimental::UriPathMap map[] =
 
     { "v2",     id_path_v2,             MCCOAP_URIPATH_NONE },
     { "api",    id_path_v2_api,         id_path_v2 },
+
+    { "nested",     id_path_v2_api_nested,  id_path_v2_api },
+    { "nested",     id_path_v2_api_nested2, id_path_v2_api_nested },
+
+    { "test",   id_path_v2_api_test,    id_path_v2_api },
 
     { ".well-known",    id_path_well_known,         0 },
     { "core",           id_path_well_known_core,    id_path_well_known }
