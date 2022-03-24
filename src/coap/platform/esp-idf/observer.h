@@ -37,7 +37,11 @@ void build_version_response(
     // text/plain
     encoder.option_int(Option::Numbers::ContentFormat, 0);
 
-    encoder.payload();
+    // NOTE: ember::mem::impl::out_netbuf_streambuf doesn't implement sputc, so this fails
+    // Since that is streambuf not the coap encoder, this is a NOTE not a FIX
+    bool success = encoder.payload();
+
+    ESP_LOGD("build_version_response", "payload write=%d", success);
 
     auto out = encoder.ostream();
 
