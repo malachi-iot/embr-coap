@@ -26,10 +26,11 @@ struct LwipContext
     : embr::lwip::experimental::TransportUdp<>
 #endif
 {
+    typedef embr::lwip::experimental::TransportUdp<> base_type;
     typedef struct udp_pcb* pcb_pointer;
     typedef struct pbuf* pbuf_pointer;
-    typedef embr::lwip::opbuf_streambuf out_streambuf_type;
-    typedef embr::lwip::ipbuf_streambuf in_streambuf_type;
+    typedef typename base_type::ostreambuf_type out_streambuf_type;
+    typedef typename base_type::istreambuf_type in_streambuf_type;
     typedef out_streambuf_type::size_type size_type;
 
     typedef moducom::coap::StreambufEncoder<out_streambuf_type> encoder_type;
