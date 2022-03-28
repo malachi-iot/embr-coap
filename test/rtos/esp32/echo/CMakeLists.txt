@@ -5,5 +5,6 @@ cmake_minimum_required(VERSION 3.5)
 #
 set(EXTRA_COMPONENT_DIRS "../components")
 
+include(../components/estdlib/version_finder.cmake)
 include($ENV{IDF_PATH}/tools/cmake/project.cmake)
 project(coap-echo)
