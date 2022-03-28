@@ -18,8 +18,13 @@ using namespace moducom::coap;
 typedef embr::lwip::PbufNetbuf netbuf_type;
 typedef netbuf_type::size_type size_type;
 
-using embr::lwip::ipbuf_streambuf;
-using embr::lwip::opbuf_streambuf;
+#if FEATURE_EMBR_NETBUF_STREAMBUF
+using embr::lwip::upgrading::ipbuf_streambuf;
+using embr::lwip::upgrading::opbuf_streambuf;
+#else
+using embr::lwip::legacy::ipbuf_streambuf;
+using embr::lwip::legacy::opbuf_streambuf;
+#endif
 
 void udp_coap_recv(void *arg, 
     struct udp_pcb *pcb, struct pbuf *p,
