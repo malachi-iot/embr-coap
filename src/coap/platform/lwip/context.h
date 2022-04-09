@@ -36,19 +36,13 @@ struct LwipContext
     typedef moducom::coap::StreambufEncoder<out_streambuf_type> encoder_type;
     typedef moducom::coap::StreambufDecoder<in_streambuf_type> decoder_type;
 
-#ifdef FEATURE_MCCOAP_LWIP_TRANSPORT
-    typedef embr::lwip::experimental::TransportUdp<>::endpoint_type PortAndAddress;
+    typedef embr::lwip::experimental::Endpoint<> endpoint_type;
 
+#ifdef FEATURE_MCCOAP_LWIP_TRANSPORT
     LwipContext(pcb_pointer pcb) : 
         embr::lwip::experimental::TransportUdp<>(pcb)
         {}
 #else
-    struct PortAndAddress
-    {
-        const ip_addr_t* addr;
-        uint16_t port;
-    };
-
     pcb_pointer pcb;
 
     LwipContext(pcb_pointer pcb) : 
@@ -90,28 +84,31 @@ struct LwipContext
 // We're tracking from-addr and from-port since CoAP likes to respond
 // to that 
 struct LwipIncomingContext :
-    moducom::coap::IncomingContext<LwipContext::PortAndAddress>,
+    moducom::coap::IncomingContext<LwipContext::endpoint_type>,
     LwipContext
 {
-    typedef LwipContext::PortAndAddress addr_type;
-    typedef moducom::coap::IncomingContext<addr_type> base_type;
+    typedef LwipContext::endpoint_type endpoint_type;
+    typedef moducom::coap::IncomingContext<endpoint_type> base_type;
 
     LwipIncomingContext(pcb_pointer pcb, 
         const ip_addr_t* addr,
         uint16_t port) : 
 #ifdef FEATURE_MCCOAP_LWIP_TRANSPORT
-        base_type(addr_type(addr, port)),
+        base_type(endpoint_type(addr, port)),
 #endif
         LwipContext(pcb)
     {
 #ifndef FEATURE_MCCOAP_LWIP_TRANSPORT
+        // NOTE: 09APR22 I believe this is fully obsolete, keeping around
+        // just to be conservative
+        #warning Obsolete code
         this->addr.addr = addr;
         this->addr.port = port;
 #endif
     }
 
 
-    LwipIncomingContext(pcb_pointer pcb, const addr_type& addr) :
+    LwipIncomingContext(pcb_pointer pcb, const endpoint_type& addr) :
         base_type(addr),
         LwipContext(pcb)
     {
@@ -121,7 +118,7 @@ struct LwipIncomingContext :
     {
         encoder.finalize();
 
-        const addr_type& addr = this->address();
+        const endpoint_type& addr = this->address();
         
 #ifdef FEATURE_MCCOAP_LWIP_TRANSPORT
         send(*encoder.rdbuf(), addr);
