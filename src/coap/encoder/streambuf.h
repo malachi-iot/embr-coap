@@ -18,17 +18,23 @@
 #include "../uint.h"
 #include "factory.h"
 
+// FIX: Temporarily putting this here, but really this an specialization belong elsewhere
+
+#include <embr/platform/lwip/streambuf.h>
+
 namespace moducom { namespace coap {
 
 namespace impl {
 
 template<class TStreambuf>
-struct StreambufEncoderImpl
+struct StreambufEncoderImpl;
+/*
 {
     typedef typename estd::remove_const<TStreambuf>::type streambuf_type;
 
     static void finalize(streambuf_type* streambuf) {}
 };
+*/
 
 #if FEATURE_MCCOAP_NETBUF_ENCODER
 template <class TNetbuf>
@@ -45,6 +51,18 @@ struct StreambufEncoderImpl<::embr::mem::out_netbuf_streambuf<char, TNetbuf> >
     }
 };
 #endif
+
+template <>
+struct StreambufEncoderImpl<::embr::lwip::upgrading::opbuf_streambuf>
+{
+    typedef typename estd::remove_const<::embr::lwip::upgrading::opbuf_streambuf>::type streambuf_type;
+    typedef typename streambuf_type::size_type size_type;
+
+    static void finalize(streambuf_type* streambuf)
+    {
+        streambuf->shrink();
+    }
+};
 
 }
 
