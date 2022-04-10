@@ -18,23 +18,33 @@
 #include "../uint.h"
 #include "factory.h"
 
-// FIX: Temporarily putting this here, but really this an specialization belong elsewhere
-
-#include <embr/platform/lwip/streambuf.h>
+// DEBT: Phase this out along with below debt
+#include <estd/internal/impl/streambuf/span.h>
 
 namespace moducom { namespace coap {
 
 namespace impl {
 
+// DEBT: Pretty sure we don't need an explicit coap finalization like this, but rather
+// a transport-level one.  So, making this default to not implemented and very much moving
+// towards phasing it out completely
 template<class TStreambuf>
 struct StreambufEncoderImpl;
-/*
-{
-    typedef typename estd::remove_const<TStreambuf>::type streambuf_type;
 
-    static void finalize(streambuf_type* streambuf) {}
+// Somewhat of a reference implementation
+template <typename TChar>
+struct StreambufEncoderImpl<
+    estd::internal::streambuf<
+        estd::internal::impl::out_span_streambuf<TChar> > >
+{
+    typedef estd::internal::streambuf<estd::internal::impl::out_span_streambuf<TChar> > streambuf_type;
+    typedef typename streambuf_type::size_type size_type;
+
+    static void finalize(streambuf_type* streambuf)
+    {
+    }
 };
-*/
+
 
 #if FEATURE_MCCOAP_NETBUF_ENCODER
 template <class TNetbuf>
@@ -52,17 +62,6 @@ struct StreambufEncoderImpl<::embr::mem::out_netbuf_streambuf<char, TNetbuf> >
 };
 #endif
 
-template <>
-struct StreambufEncoderImpl<::embr::lwip::upgrading::opbuf_streambuf>
-{
-    typedef typename estd::remove_const<::embr::lwip::upgrading::opbuf_streambuf>::type streambuf_type;
-    typedef typename streambuf_type::size_type size_type;
-
-    static void finalize(streambuf_type* streambuf)
-    {
-        streambuf->shrink();
-    }
-};
 
 }
 

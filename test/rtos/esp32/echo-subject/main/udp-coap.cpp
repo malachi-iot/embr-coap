@@ -9,6 +9,7 @@
 #include <coap/header.h>
 #include <coap/decoder/streambuf.hpp>
 #include <coap/encoder/streambuf.h>
+#include <coap/platform/lwip/encoder.h>
 
 
 using namespace moducom::coap;

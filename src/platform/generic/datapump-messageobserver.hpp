@@ -60,7 +60,7 @@ void process_messageobserver(TDataPump& datapump, TDecoderSubject& ds)
 {
     typedef TDataPump datapump_t;
     typedef typename datapump_t::netbuf_type netbuf_t;
-    typedef typename datapump_t::addr_t addr_t;
+    typedef typename datapump_t::endpoint_type addr_t;
 
     addr_t addr_incoming;
     netbuf_t* netbuf;

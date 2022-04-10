@@ -19,4 +19,20 @@ inline LwipContext::encoder_type make_encoder(const LwipContext&)
     return LwipContext::encoder_type(256);
 }
 
+namespace impl {
+
+template <>
+struct StreambufEncoderImpl<::embr::lwip::upgrading::opbuf_streambuf>
+{
+    typedef typename estd::remove_const<::embr::lwip::upgrading::opbuf_streambuf>::type streambuf_type;
+    typedef typename streambuf_type::size_type size_type;
+
+    static void finalize(streambuf_type* streambuf)
+    {
+        streambuf->shrink();
+    }
+};
+
+}
+
 }}
