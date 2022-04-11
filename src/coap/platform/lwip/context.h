@@ -15,6 +15,27 @@
 
 namespace moducom { namespace coap {
 
+// most times in a udp_recv handler we're expected to issue a free on
+// pbuf also.  bumpref = false stops us from auto-bumping ref with our
+// pbuf-netbuf, so that when it leaves scope it issues a pbuf_free
+template <class TSubject, class TContext>
+static void decode_and_notify(
+    struct pbuf* incoming,
+    TSubject& subject, TContext& context,
+    bool bumpref = false)
+{
+    typedef StreambufDecoder<embr::lwip::upgrading::ipbuf_streambuf> decoder_type;
+    decoder_type decoder(incoming, bumpref);
+
+    do
+    {
+        decode_and_notify(decoder, subject, context);
+    }
+    while(decoder.state() != moducom::coap::Decoder::Done);
+}
+
+
+
 // TODO: Either include addr in here and somehow NOT in app context,
 // or go other direction and inherit from moducom::coap::IncomingContext
 // - If we do the former, except for encoder/decoder types this could be
@@ -49,23 +70,6 @@ struct LwipContext
         pcb(pcb)
         {}
 #endif
-
-    // most times in a udp_recv handler we're expected to issue a free on
-    // pbuf also.  bumpref = false stops us from auto-bumping ref with our
-    // pbuf-netbuf, so that when it leaves scope it issues a pbuf_free
-    template <class TSubject, class TContext>
-    static void do_notify(
-        TSubject& subject, TContext& context,
-        pbuf_pointer incoming, bool bumpref = false)
-    {
-        decoder_type decoder(incoming, bumpref);
-
-        do
-        {
-            decode_and_notify(decoder, subject, context);
-        }
-        while(decoder.state() != moducom::coap::Decoder::Done);
-    }
 
 #ifndef FEATURE_MCCOAP_LWIP_TRANSPORT
     void sendto(encoder_type& encoder, 

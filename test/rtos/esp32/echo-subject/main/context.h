@@ -3,22 +3,7 @@
 #include <coap/platform/lwip/context.h>
 
 #ifdef FEATURE_MCCOAP_LWIP_TRANSPORT
-struct AppContext : moducom::coap::LwipIncomingContext
-{
-    AppContext(pcb_pointer pcb, 
-        const ip_addr_t* addr,
-        uint16_t port) : 
-        LwipIncomingContext(pcb, addr, port)
-    {
-    }
-
-    // convenience method
-    template <class TSubject>
-    void do_notify(pbuf_pointer p, TSubject& subject)
-    {
-        LwipContext::do_notify(subject, *this, p);
-    }
-};
+typedef  moducom::coap::LwipIncomingContext AppContext;
 #else
 struct AppContext : 
     moducom::coap::IncomingContext<const ip_addr_t*>,

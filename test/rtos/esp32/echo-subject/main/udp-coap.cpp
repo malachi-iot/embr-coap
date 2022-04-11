@@ -23,11 +23,9 @@ struct Observer
 
     static void on_notify(event::completed, AppContext& context)
     {
-        ESP_LOGI(TAG, "on_notify completed");
+        ESP_LOGD(TAG, "on_notify completed");
 
         AppContext::encoder_type encoder = make_encoder_reply(context, Header::Code::Valid);
-
-        //encoder.payload();
 
         context.reply(encoder);
     }
@@ -56,6 +54,6 @@ void udp_coap_recv(void *arg,
 
         AppContext context(pcb, addr, port);
 
-        context.do_notify(p, subject);
+        decode_and_notify(p, subject, context);
     }
 }
