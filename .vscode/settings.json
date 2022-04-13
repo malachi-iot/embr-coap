@@ -74,6 +74,7 @@
         "__locale": "cpp",
         "forward_list": "cpp",
         "string": "cpp",
-        "string_view": "cpp"
+        "string_view": "cpp",
+        "random": "cpp"
     }
 }

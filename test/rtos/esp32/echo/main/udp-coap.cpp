@@ -1,30 +1,23 @@
 #include "esp_log.h"
 
-#include <embr/platform/lwip/iostream.h>
-#include <embr/streambuf.h>
-
 #include <estd/string.h>
 #include <estd/ostream.h>
 #include <estd/istream.h>
+
+#include <embr/streambuf.h>
 
 #include <coap/header.h>
 #include <coap/decoder/streambuf.hpp>
 #include <coap/encoder/streambuf.h>
 
+// TODO: Put specialization of finalize into more readily available area
+#include <coap/platform/lwip/encoder.h>
+
 using namespace embr;
-using namespace embr::mem;
 using namespace moducom::coap;
 
-typedef embr::lwip::PbufNetbuf netbuf_type;
-typedef netbuf_type::size_type size_type;
-
-#if FEATURE_EMBR_NETBUF_STREAMBUF
 using embr::lwip::upgrading::ipbuf_streambuf;
 using embr::lwip::upgrading::opbuf_streambuf;
-#else
-using embr::lwip::legacy::ipbuf_streambuf;
-using embr::lwip::legacy::opbuf_streambuf;
-#endif
 
 void udp_coap_recv(void *arg, 
     struct udp_pcb *pcb, struct pbuf *p,
@@ -42,7 +35,7 @@ void udp_coap_recv(void *arg,
         // up p as LwIP wants
         StreambufDecoder<ipbuf_streambuf> decoder(p, false);
 
-        // Remember, at this time netbuf-pbuf code makes no assumptions about
+        // Remember, at this time pbuf code makes no assumptions about
         // how large you want that initial buffer.  Very app dependent.  For CoAP,
         // 32 is more than enough for a simple ACK style response.  Now, with chaining
         // it's even less consequential - however we're embedded, so specifying these
@@ -86,11 +79,11 @@ void udp_coap_recv(void *arg,
         encoder.token(token, header.token_length());
         encoder.finalize();
 
-        netbuf_type& netbuf = encoder.rdbuf()->netbuf();
+        auto& pbuf = encoder.rdbuf()->pbuf();
 
-        ESP_LOGI(TAG, "about to output %d bytes", netbuf.total_size());
+        ESP_LOGI(TAG, "about to output %d bytes", pbuf.total_length());
 
-        udp_sendto(pcb, netbuf.pbuf(), addr, port);
+        udp_sendto(pcb, pbuf.pbuf(), addr, port);
     }
 }
 
