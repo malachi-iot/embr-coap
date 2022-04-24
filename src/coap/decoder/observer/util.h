@@ -142,6 +142,10 @@ struct Auto404Observer : ExperimentalDecoderEventTypedefs
 
     static void on_notify(option_completed_event, TContext& context)
     {
+#ifdef ESTD_IDF_VER
+        ESP_LOGD("Auto404Observer", "on_notify(completed)");
+#endif
+
         if(context.found_node() != MCCOAP_URIPATH_NONE)
             return;
 
