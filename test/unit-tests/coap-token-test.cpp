@@ -14,7 +14,6 @@ TEST_CASE("CoAP token tests", "[coap-token]")
     {
         SECTION("Test 1")
         {
-            //moducom::pipeline::layer2::MemoryChunk<8> chunk;
             estd::layer1::vector<uint8_t, 8> chunk;
 
             int bytes_used = embr::coap::UInt::set(0xFEDCBA, chunk);

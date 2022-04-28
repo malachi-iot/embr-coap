@@ -4,9 +4,11 @@
 #include "cbor/encoder.h"
 #include "cbor/decoder.h"
 #if __cplusplus >= 201103L
-#include "platform/generic/malloc_netbuf.h"
+#include "obsolete/platform/generic/malloc_netbuf.h"
 #endif
 #include "test-data.h"
+
+#include "obsolete/cbor/encoder.h"
 
 using namespace embr;
 

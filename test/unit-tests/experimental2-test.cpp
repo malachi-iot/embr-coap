@@ -15,7 +15,7 @@
 
 #include "coap/decoder/subject.hpp"
 #if __cplusplus >= 201103L
-#include "platform/generic/malloc_netbuf.h"
+#include "obsolete/platform/generic/malloc_netbuf.h"
 #endif
 
 #include "exp/events.h"

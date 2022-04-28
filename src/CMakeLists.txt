@@ -64,7 +64,6 @@ set(SOURCE_FILES
         coap/decoder/subject.hpp
         coap/decoder/subject-core.hpp
 
-        coap/encoder.h coap/encoder.hpp
         coap/encoder/streambuf.h
 
         coap/experimental-observer.h
@@ -96,10 +95,15 @@ set(SOURCE_FILES
 
         exp/prototype/observer-idea1.h
 
+        obsolete/cbor/encoder.h
+        obsolete/coap/encoder.h
+        obsolete/coap/encoder.hpp
+        obsolete/coap/observable.h
+        obsolete/platform/generic/malloc_netbuf.h
+
         platform/arduino/arduino-eth-datapump.cpp
 
         platform/generic/datapump-messageobserver.hpp
-        platform/generic/malloc_netbuf.h
 
         platform/lwip/lwip-datapump.h
         platform/lwip/lwip-portandaddress.h

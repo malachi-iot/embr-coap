@@ -1,10 +1,10 @@
 #pragma once
 
-#include "encoder/option.h"
-#include "../coap-encoder.h"
+#include <coap/encoder/option.h>
+#include <coap-encoder.h>
 #include "mc/netbuf.h"
-#include "uint.h"
-#include "context.h"
+#include <coap/uint.h>
+#include <coap/context.h>
 
 #include <estd/span.h>
 #include <estd/utility.h>

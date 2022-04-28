@@ -5,6 +5,7 @@
 
 namespace embr { namespace coap {
 
+#ifdef OBSOLETE
 template <class TCollection,
           class TIncomingContext,
           class TRequestContextTraits>
@@ -73,7 +74,7 @@ void ObservableRegistrar<TCollection, TIncomingContext, TRequestContextTraits>::
         datapump.enqueue_out(encoder.netbuf(), addr);
 #endif
     }}
-
+#endif
 
 template <class TRequestContext>
 void ObservableOptionObserverBase<TRequestContext>::on_option(option_number_t number,

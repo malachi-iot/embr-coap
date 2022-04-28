@@ -11,7 +11,7 @@
 #include "coap_transmission.h"
 #include "coap/token.h"
 #include "mc/experimental.h"
-#include "coap/encoder.hpp"
+#include <obsolete/coap/encoder.hpp>
 
 #include "exp/netbuf.h"
 
