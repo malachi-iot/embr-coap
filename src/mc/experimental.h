@@ -15,6 +15,8 @@
 
 namespace moducom { namespace coap { namespace experimental {
 
+using namespace embr::coap;
+
 namespace v2 {
 
 // See the 2nd v2 namespace down below for more comments

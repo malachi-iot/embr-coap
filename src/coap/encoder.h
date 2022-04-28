@@ -12,6 +12,8 @@
 namespace embr { namespace coap {
 
 
+namespace pipeline = moducom::pipeline;
+namespace dynamic = moducom::dynamic;
 
 
 // 4/18/2018 - after much experimentation, I have settled on network-buffer pattern

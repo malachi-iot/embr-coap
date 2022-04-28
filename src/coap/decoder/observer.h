@@ -5,7 +5,7 @@
 #include <mc/memory-pool.h>
 #include "../context.h"
 
-namespace moducom { namespace coap {
+namespace embr { namespace coap {
 
 #ifdef FEATURE_DISCRETE_OBSERVERS
 // re-write and decomposition of IResponderDeprecated
@@ -65,10 +65,10 @@ struct IMessageObserver
     typedef internal::option_number_t number_t;
 
     virtual void on_header(Header header) = 0;
-    virtual void on_token(const pipeline::MemoryChunk::readonly_t& token_part, bool last_chunk) = 0;
+    virtual void on_token(const moducom::pipeline::MemoryChunk::readonly_t& token_part, bool last_chunk) = 0;
     virtual void on_option(number_t number, uint16_t length) = 0;
-    virtual void on_option(number_t number, const pipeline::MemoryChunk::readonly_t& option_value_part, bool last_chunk) = 0;
-    virtual void on_payload(const pipeline::MemoryChunk::readonly_t& payload_part, bool last_chunk) = 0;
+    virtual void on_option(number_t number, const moducom::pipeline::MemoryChunk::readonly_t& option_value_part, bool last_chunk) = 0;
+    virtual void on_payload(const moducom::pipeline::MemoryChunk::readonly_t& payload_part, bool last_chunk) = 0;
 #ifdef FEATURE_MCCOAP_COMPLETE_OBSERVER
     virtual void on_complete() = 0;
 #endif
@@ -241,7 +241,7 @@ public:
 
     void on_header(Header header) OVERRIDE { }
 
-    virtual void on_token(const pipeline::MemoryChunk::readonly_t& token_part,
+    virtual void on_token(const moducom::pipeline::MemoryChunk::readonly_t& token_part,
                   bool last_chunk) OVERRIDE
     {}
 
@@ -251,13 +251,13 @@ public:
     }
 
     virtual void on_option(number_t number,
-                   const pipeline::MemoryChunk::readonly_t& option_value_part,
+                   const moducom::pipeline::MemoryChunk::readonly_t& option_value_part,
                    bool last_chunk) OVERRIDE
     {
 
     }
 
-    virtual void on_payload(const pipeline::MemoryChunk::readonly_t& payload_part,
+    virtual void on_payload(const moducom::pipeline::MemoryChunk::readonly_t& payload_part,
                     bool last_chunk) OVERRIDE
     {
 

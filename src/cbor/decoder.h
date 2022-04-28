@@ -259,7 +259,7 @@ class StreamDecoder
 {
     Decoder item_decoder;
 
-    typedef pipeline::MemoryChunk::readonly_t ro_chunk_t;
+    typedef moducom::pipeline::MemoryChunk::readonly_t ro_chunk_t;
 
     friend class SimpleData;
     friend class SimpleDataHelper;

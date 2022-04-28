@@ -13,7 +13,8 @@
 
 namespace embr { namespace coap {
 
-
+namespace pipeline = moducom::pipeline;
+namespace dynamic = moducom::dynamic;
 
 // At this point, only experimental because I keep futzing with the names - don't like IDispatcherHandler
 // Perhaps IMessageHandler - finally - is the right term?  But IDispatcher + interested() call *do* go

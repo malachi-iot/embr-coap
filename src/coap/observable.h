@@ -50,7 +50,7 @@ template<class TDataPump,
          class TNetBuf = typename TDataPump::netbuf_t,
          class TAddr = typename TDataPump::addr_t>
 class ObservableMetaSession :
-        public IDataPumpObserver<TNetBuf, TAddr>
+        public moducom::coap::IDataPumpObserver<TNetBuf, TAddr>
 {
     typedef TNetBuf netbuf_t;
 

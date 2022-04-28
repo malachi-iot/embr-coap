@@ -23,7 +23,7 @@
 #include <sys/time.h>
 #endif
 
-namespace moducom { namespace coap { namespace experimental {
+namespace embr { namespace coap { namespace experimental {
 
 struct TimePolicy
 {

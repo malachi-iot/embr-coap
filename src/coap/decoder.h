@@ -94,7 +94,7 @@ public:
             last_chunk(last_chunk)
             {}
 
-    DecoderContext(const pipeline::MemoryChunk::readonly_t& legacy_chunk, bool last_chunk) :
+    DecoderContext(const moducom::pipeline::MemoryChunk::readonly_t& legacy_chunk, bool last_chunk) :
             chunk(legacy_chunk.data(), legacy_chunk.length()),
             pos(0),
             last_chunk(last_chunk)

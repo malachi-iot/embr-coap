@@ -10,6 +10,7 @@
 
 using namespace embr;
 
+namespace pipeline = moducom::pipeline;
 
 static const uint8_t* cbor_assert(CBOR::Decoder& decoder, const uint8_t* v, std::string expected)
 {
@@ -283,7 +284,7 @@ TEST_CASE("CBOR decoder tests", "[cbor-decoder]")
         using namespace embr::coap;
         using namespace embr::cbor;
 
-        NetBufEncoder<NetBufDynamicExperimental> encoder;
+        NetBufEncoder<moducom::coap::NetBufDynamicExperimental> encoder;
 
         const char* _s = "Hello world";
         estd::layer2::const_string s = _s;
@@ -400,7 +401,7 @@ TEST_CASE("CBOR decoder tests", "[cbor-decoder]")
         using namespace embr::coap;
         using namespace embr::cbor;
 
-        NetBufEncoder<NetBufDynamicExperimental> encoder;
+        NetBufEncoder<moducom::coap::NetBufDynamicExperimental> encoder;
 
         encoder.boolean(true);
         encoder.null();

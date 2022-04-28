@@ -67,14 +67,14 @@ TEST_CASE("experimental tests", "[experimental]")
     typedef chunk_t::readonly_t ro_chunk_t;
     SECTION("layer1")
     {
-        experimental::layer1::ProcessedMemoryChunk<128> chunk;
+        moducom::coap::experimental::layer1::ProcessedMemoryChunk<128> chunk;
 
         chunk[0] = 1;
         chunk.processed(1);
     }
     SECTION("layer2")
     {
-        experimental::layer2::ProcessedMemoryChunk<128> chunk;
+        moducom::coap::experimental::layer2::ProcessedMemoryChunk<128> chunk;
 
         chunk[0] = 1;
         chunk.processed(1);
@@ -103,7 +103,7 @@ TEST_CASE("experimental tests", "[experimental]")
     }
     SECTION("ManagedBuffer")
     {
-        experimental::v2::ManagedBuffer buffer;
+        moducom::coap::experimental::v2::ManagedBuffer buffer;
 
         moducom::pipeline::MemoryChunk c = buffer.current();
 
@@ -144,7 +144,7 @@ TEST_CASE("experimental tests", "[experimental]")
     }
     SECTION("More ManagedBuffer")
     {
-        experimental::v2::ManagedBuffer buffer;
+        moducom::coap::experimental::v2::ManagedBuffer buffer;
 
         chunk_t w = buffer.current();
 
@@ -254,9 +254,9 @@ TEST_CASE("experimental tests", "[experimental]")
     SECTION("OutgoingPacketManager")
     {
         // FIX: Probably phasing out in favor of datapump
-        OutgoingPacketManager opm;
+        moducom::coap::experimental::OutgoingPacketManager opm;
         moducom::io::experimental::layer5::INetBuf* nb;
-        OutgoingPacketManager::item_t item;
+        moducom::coap::experimental::OutgoingPacketManager::item_t item;
 
         item = opm.add(nb);
 

@@ -7,6 +7,9 @@
 
 namespace embr { namespace coap {
 
+namespace pipeline = moducom::pipeline;
+namespace dynamic = moducom::dynamic;
+
 namespace experimental {
 
 struct FnFactoryContext
