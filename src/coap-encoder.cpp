@@ -4,7 +4,7 @@
 
 #include "coap-encoder.h"
 
-namespace moducom { namespace coap {
+namespace embr { namespace coap {
 
 
 
@@ -195,7 +195,7 @@ namespace experimental {
 
 uint8_t ExperimentalPrototypeOptionEncoder1::_option(uint8_t* output_data, internal::option_number_t number, uint16_t length)
 {
-    moducom::coap::experimental::layer2::OptionBase optionBase(number);
+    embr::coap::experimental::layer2::OptionBase optionBase(number);
 
     optionBase.length = length;
 

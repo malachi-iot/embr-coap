@@ -5,7 +5,7 @@
 #include "token.h"
 #include "uint.h"
 
-namespace moducom { namespace coap {
+namespace embr { namespace coap {
 
 void SimpleTokenGenerator::generate(layer2::Token* token)
 {

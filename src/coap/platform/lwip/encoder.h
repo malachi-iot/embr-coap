@@ -2,7 +2,7 @@
 
 #include "context.h"
 
-namespace moducom { namespace coap {
+namespace embr { namespace coap {
 
 
 // in C# we'd do an IEncoderFactory, in C++ for tiny code footprint

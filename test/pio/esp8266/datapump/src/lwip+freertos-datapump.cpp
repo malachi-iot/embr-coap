@@ -7,7 +7,7 @@
 // FIX: temporarily conflating datapump and ping responder
 #include <simple-ping-responder.hpp>
 
-using namespace moducom::coap;
+using namespace embr::coap;
 
 lwip_datapump_t datapump;
 

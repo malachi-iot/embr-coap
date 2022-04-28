@@ -3,7 +3,7 @@
 #include "observable.h"
 
 
-namespace moducom { namespace coap {
+namespace embr { namespace coap {
 
 template <class TCollection,
           class TIncomingContext,
@@ -14,9 +14,9 @@ void ObservableRegistrar<TCollection, TIncomingContext, TRequestContextTraits>::
         TDataPump& datapump,
         void (*emit_observe_fn)(
 #ifdef FEATURE_EMBR_DATAPUMP_INLINE
-            moducom::coap::NetBufEncoder<typename TDataPump::netbuf_t>& encoder,
+            embr::coap::NetBufEncoder<typename TDataPump::netbuf_t>& encoder,
 #else
-            moducom::coap::NetBufEncoder<typename TDataPump::netbuf_t&>& encoder,
+            embr::coap::NetBufEncoder<typename TDataPump::netbuf_t&>& encoder,
 #endif
             const observable_session_t& sess),
         bool autosend_observe_option)

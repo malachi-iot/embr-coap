@@ -6,7 +6,7 @@
 #include "../decoder.h"
 #include "../context.h"
 
-namespace moducom { namespace coap {
+namespace embr { namespace coap {
 
 // context mode is intermediate, so once native streambuf mode is fully online, zap EXPCONTEXT code
 //#define FEATURE_MCCOAP_EXPCONTEXT

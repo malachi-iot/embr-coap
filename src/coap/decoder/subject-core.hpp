@@ -3,7 +3,7 @@
 #include "streambuf.h"
 #include "events.h"
 
-namespace moducom { namespace coap {
+namespace embr { namespace coap {
 
 // inspects state of incoming decoder+context, and fires off associated decoder events via
 // provided subject.

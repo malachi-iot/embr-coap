@@ -4,7 +4,7 @@
 
 #include <estd/cstdint.h>
 
-namespace moducom { namespace coap {
+namespace embr { namespace coap {
 
 // Base helper class to assist with ALL option related things.  Mainly
 // a holder for enums

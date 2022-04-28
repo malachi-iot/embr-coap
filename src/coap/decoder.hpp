@@ -2,7 +2,7 @@
 
 #include "decoder.h" // only for tooltips - decoder.hpp is auto-included by decoder.h itself (at the end)
 
-namespace moducom { namespace coap {
+namespace embr { namespace coap {
 
 template <class TDecoderTraits>
 bool DecoderBase<TDecoderTraits>::header_process_iterate(internal::DecoderContext& c)

@@ -6,7 +6,7 @@
 
 #include "../coap/decoder/events.h"
 
-namespace moducom { namespace coap {
+namespace embr { namespace coap {
 
 struct ExperimentalDecoderEventTypedefs
 {

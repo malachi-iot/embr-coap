@@ -5,7 +5,7 @@
 #include <coap/decoder/netbuf.h>
 #include <coap/decoder/subject.h>
 
-namespace moducom { namespace coap {
+namespace embr { namespace coap {
 
 template <class TMessageObserver, class TNetBuf>
 void process_messageobserver_helper(DecoderSubjectBase<TMessageObserver>& ds, TNetBuf& netbuf,

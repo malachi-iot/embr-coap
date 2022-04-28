@@ -3,7 +3,7 @@
 #include "observer-aggregate.h"
 
 
-namespace moducom { namespace coap {
+namespace embr { namespace coap {
 
 template <class TIncomingContext, class TCollection>
 void AggregateDecoderObserver<TIncomingContext, TCollection>::on_token(const pipeline::MemoryChunk::readonly_t& token_part, bool last_chunk)

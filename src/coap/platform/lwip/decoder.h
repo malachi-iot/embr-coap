@@ -4,7 +4,7 @@
 #include <embr/platform/lwip/transport.h>
 #include "../../decoder/streambuf.h"
 
-namespace moducom { namespace coap {
+namespace embr { namespace coap {
 
 // Consider moving this into coap-lwip area if we can nail down bump vs not bump
 // reference count on pbuf

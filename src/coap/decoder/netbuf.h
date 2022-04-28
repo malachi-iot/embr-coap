@@ -19,7 +19,7 @@
 #include <estd/type_traits.h>
 #include <estd/utility.h> // for ESTD_FN_HAS_METHOD
 
-namespace moducom { namespace coap {
+namespace embr { namespace coap {
 
 template <class TNetBufDecoder>
 class option_iterator;
@@ -465,7 +465,7 @@ public:
 private:
     void partial_advance_and_get_number()
     {
-        using namespace moducom::coap;
+        using namespace embr::coap;
 
         // chew on and decode option number and length
         decoder.process_option_header_experimental();

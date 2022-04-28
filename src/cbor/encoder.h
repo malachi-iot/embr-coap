@@ -4,13 +4,13 @@
 #include "decoder.h"
 #include "mc/encoder-base.h"
 
-namespace moducom { namespace cbor {
+namespace embr { namespace cbor {
 
 class EncoderBaseBase :
-        public moducom::EncoderBase<>,
+        public embr::EncoderBase<>,
         public Root
 {
-    typedef moducom::EncoderBase<> base_t;
+    typedef embr::EncoderBase<> base_t;
 protected:
     typedef CBOR::Types types_t;
     typedef CBOR::Decoder::AdditionalIntegerInformation add_int_info_t;

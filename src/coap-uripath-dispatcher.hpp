@@ -4,7 +4,7 @@
 
 #include "coap-uripath-dispatcher.h"
 
-namespace moducom { namespace coap {
+namespace embr { namespace coap {
 
 namespace experimental {
 

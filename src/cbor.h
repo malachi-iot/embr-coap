@@ -17,7 +17,7 @@
 #endif
 
 
-namespace moducom {
+namespace embr {
 
 // https://tools.ietf.org/html/rfc7049
 //

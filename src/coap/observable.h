@@ -7,7 +7,7 @@
 #include "coap/platform.h"
 #include <estd/vector.h>
 
-namespace moducom { namespace  coap {
+namespace embr { namespace  coap {
 
 // Not seeing anything specific in RFC7641 mandating or denying the use of CON or NON
 // messaging for observables, thereby implying we don't need to track what flavor
@@ -273,7 +273,7 @@ template<class TAddr, size_t N,
         class TResourceKey = int,
         class TObservableSession = ObservableSession<TAddr, TResourceKey> >
 class ObservableRegistrar :
-        public moducom::coap::ObservableRegistrar<
+        public embr::coap::ObservableRegistrar<
                 estd::layer1::vector<TObservableSession, N> >
 {
 };

@@ -15,7 +15,7 @@
 // temporary cleanup flag only
 #define CLEANUP_TRANSMISSION_CPP
 
-namespace moducom {
+namespace embr {
 namespace coap {
 
 namespace experimental {
@@ -167,7 +167,7 @@ public:
     OptionString(uint8_t number) :
             OptionBase(number) {}
 
-    //moducom::std::string value;
+    //embr::std::string value;
 };
 
 

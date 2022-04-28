@@ -2,7 +2,7 @@
 
 #include "observer.h"
 
-namespace moducom { namespace coap {
+namespace embr { namespace coap {
 
 // this is runtime-ish collection version
 template <class TIncomingContext, class TCollection>

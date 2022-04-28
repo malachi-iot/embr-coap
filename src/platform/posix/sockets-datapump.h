@@ -9,11 +9,11 @@
 // transport descriptor.  The meat of the sockets-datapump.* files actually contain SocketsDatapumpHelper
 // which works more with the transport than anything (could eventually be rolled into transport & dataport
 // code probably)
-namespace moducom { namespace coap {
+namespace embr { namespace coap {
 
-typedef embr::TransportDescriptor<moducom::coap::NetBufDynamicExperimental, sockaddr_in> transport_descriptor_t;
+typedef embr::TransportDescriptor<embr::coap::NetBufDynamicExperimental, sockaddr_in> transport_descriptor_t;
 typedef embr::DataPump<transport_descriptor_t> sockets_datapump_t;
-typedef moducom::coap::experimental::Retry<transport_descriptor_t> sockets_retry_t;
+typedef embr::coap::experimental::Retry<transport_descriptor_t> sockets_retry_t;
 
 }}
 

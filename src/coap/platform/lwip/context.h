@@ -13,7 +13,7 @@
 
 #define COAP_UDP_PORT 5683
 
-namespace moducom { namespace coap {
+namespace embr { namespace coap {
 
 // most times in a udp_recv handler we're expected to issue a free on
 // pbuf also.  bumpref = false stops us from auto-bumping ref with our
@@ -31,13 +31,13 @@ static void decode_and_notify(
     {
         decode_and_notify(decoder, subject, context);
     }
-    while(decoder.state() != moducom::coap::Decoder::Done);
+    while(decoder.state() != embr::coap::Decoder::Done);
 }
 
 
 
 // TODO: Either include addr in here and somehow NOT in app context,
-// or go other direction and inherit from moducom::coap::IncomingContext
+// or go other direction and inherit from embr::coap::IncomingContext
 // - If we do the former, except for encoder/decoder types this could be
 //   completely decoupled from coap
 // - If we do the latter, then this could more comfortably contain the
@@ -54,8 +54,8 @@ struct LwipContext
     typedef typename base_type::istreambuf_type in_streambuf_type;
     typedef out_streambuf_type::size_type size_type;
 
-    typedef moducom::coap::StreambufEncoder<out_streambuf_type> encoder_type;
-    typedef moducom::coap::StreambufDecoder<in_streambuf_type> decoder_type;
+    typedef embr::coap::StreambufEncoder<out_streambuf_type> encoder_type;
+    typedef embr::coap::StreambufDecoder<in_streambuf_type> decoder_type;
 
     typedef embr::lwip::experimental::Endpoint<> endpoint_type;
 
@@ -88,11 +88,11 @@ struct LwipContext
 // We're tracking from-addr and from-port since CoAP likes to respond
 // to that 
 struct LwipIncomingContext :
-    moducom::coap::IncomingContext<LwipContext::endpoint_type>,
+    embr::coap::IncomingContext<LwipContext::endpoint_type>,
     LwipContext
 {
     typedef LwipContext::endpoint_type endpoint_type;
-    typedef moducom::coap::IncomingContext<endpoint_type> base_type;
+    typedef embr::coap::IncomingContext<endpoint_type> base_type;
 
     LwipIncomingContext(pcb_pointer pcb, 
         const ip_addr_t* addr,

@@ -4,7 +4,7 @@
 
 #include "udp-datapump.h"
 
-namespace moducom { namespace coap { namespace arduino {
+namespace embr { namespace coap { namespace arduino {
 
 void nonblocking_datapump_loop(UDP& udp, udp_datapump_t& datapump)
 {

@@ -31,7 +31,7 @@
 // Since it's a priority to zap those first, waiting on this
 #define FEATURE_MCCOAP_SUCCINCT_OPTIONDECODE    1
 
-namespace moducom { namespace coap {
+namespace embr { namespace coap {
 
 
 // gauruntees about contiguous nature (or lack thereof) of incoming

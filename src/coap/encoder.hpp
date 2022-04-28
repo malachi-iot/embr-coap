@@ -1,6 +1,6 @@
 #include "encoder.h"
 
-namespace moducom { namespace coap {
+namespace embr { namespace coap {
 
 template <class TNetBuf>
 bool NetBufEncoder<TNetBuf>::option_header(option_number_t number, uint16_t value_length)

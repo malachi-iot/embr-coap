@@ -22,7 +22,7 @@
 #define FEATURE_MCCOAP_LEGACY_EVENTS 1
 #endif
 
-namespace moducom { namespace coap {
+namespace embr { namespace coap {
 
 namespace experimental {
 

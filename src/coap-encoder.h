@@ -11,7 +11,7 @@
 #include "coap/token.h"
 #include "coap/decoder.h"
 
-namespace moducom { namespace coap {
+namespace embr { namespace coap {
 
 // TODO: Split this out into OptionEncoderBase,
 // OptionEncoder and OptionEncoderWithValue, the latter being the rarified case
@@ -136,7 +136,7 @@ namespace experimental {
 #ifdef UNUSED
 class ExperimentalSessionContext
 {
-    moducom::coap::layer2::Token token;
+    embr::coap::layer2::Token token;
 };
 
 // NOTE: Too dumb to live
@@ -164,7 +164,7 @@ public:
 class ExperimentalPrototypeOptionEncoder1
 {
 protected:
-    //typedef moducom::coap::experimental::layer2::OptionGenerator::StateMachine generator_t;
+    //typedef embr::coap::experimental::layer2::OptionGenerator::StateMachine generator_t;
     typedef OptionEncoder generator_t;
 
     generator_t generator;
@@ -300,7 +300,7 @@ public:
     }
 
 
-    void token(const moducom::coap::layer2::Token& value)
+    void token(const embr::coap::layer2::Token& value)
     {
         assert_state(_state_t::HeaderDone);
         writer.write(value.data(), value.length());

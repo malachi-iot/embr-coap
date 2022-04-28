@@ -6,7 +6,7 @@
 
 // Experimental primarily due to naming
 // from https://tools.ietf.org/html/rfc7959#section-2.1
-namespace moducom { namespace coap { namespace experimental {
+namespace embr { namespace coap { namespace experimental {
 
 // internal call, push through least-significant-byte of option_value
 // through here

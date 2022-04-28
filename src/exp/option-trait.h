@@ -3,7 +3,7 @@
 #include <estd/internal/platform.h>
 #include "../coap.h"
 
-namespace moducom { namespace coap { namespace experimental {
+namespace embr { namespace coap { namespace experimental {
 
 template <Option::Numbers number>
 struct OptionTrait

@@ -6,7 +6,7 @@
 #include <estd/span.h>
 #include <estd/array.h>
 
-namespace moducom { namespace coap {
+namespace embr { namespace coap {
 
 namespace internal {
 
@@ -205,7 +205,7 @@ public:
     TReturn get() const
     {
         // TODO: Needs assert
-        return moducom::coap::UInt::get<TReturn>(base_t::data(), base_t::length());
+        return embr::coap::UInt::get<TReturn>(base_t::data(), base_t::length());
     }
 };
 
@@ -237,14 +237,14 @@ public:
     {
         ASSERT_ERROR(true, length() <= 2, "Length greater than 2, but shouldn't be");
 
-        return moducom::coap::UInt::get<uint16_t>(data(), length());
+        return embr::coap::UInt::get<uint16_t>(data(), length());
     }
 
     uint32_t get_uint24_t() const
     {
         ASSERT_ERROR(true, length() <= 3, "Length greater than 2, but shouldn't be");
 
-        return moducom::coap::UInt::get<uint32_t>(data(), length());
+        return embr::coap::UInt::get<uint32_t>(data(), length());
     }
 
 
@@ -262,7 +262,7 @@ public:
     inline void set(TInput input)
     {
         uint8_t* data = base_t::lock();
-        uint8_t byte_length = moducom::coap::UInt::set(input, data);
+        uint8_t byte_length = embr::coap::UInt::set(input, data);
         // FIX: We actually need to do the resize before the set
         base_t::resize(byte_length);
         base_t::unlock();
@@ -273,7 +273,7 @@ public:
     {
         // TODO: Needs assert
         ASSERT_ERROR(true, length() <= sizeof(TReturn), "Option length too large");
-        TReturn ret = moducom::coap::UInt::get<TReturn>(base_t::lock(), base_t::size());
+        TReturn ret = embr::coap::UInt::get<TReturn>(base_t::lock(), base_t::size());
         base_t::unlock();
         return ret;
     }

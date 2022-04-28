@@ -1,7 +1,7 @@
 #include <string.h>
 #include "cbor.h"
 
-namespace moducom {
+namespace embr {
 
 // NOTE: It's possible we can phase this out since now Decoder is more tightly scoped,
 // and merely yank integer out directly from buffer

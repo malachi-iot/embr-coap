@@ -4,7 +4,7 @@
 
 #include "../../coap.h" // more resilient against other coap.h's when we do this
 
-namespace moducom { namespace coap {
+namespace embr { namespace coap {
 
 // TODO: doesn't really belong only in decoder area, and maybe better fit would be 'embr'
 // lib

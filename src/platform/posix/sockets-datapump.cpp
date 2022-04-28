@@ -14,7 +14,7 @@
 #include <arpa/inet.h>  // for inet_addr
 #include <signal.h> // for POLL_IN
 
-using namespace moducom::coap;
+using namespace embr::coap;
 
 typedef NetBufDynamicExperimental netbuf_t;
 

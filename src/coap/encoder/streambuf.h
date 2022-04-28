@@ -21,7 +21,7 @@
 // DEBT: Phase this out along with below debt
 #include <estd/internal/impl/streambuf/span.h>
 
-namespace moducom { namespace coap {
+namespace embr { namespace coap {
 
 namespace impl {
 
@@ -78,13 +78,13 @@ template <
 class StreambufEncoder
 {
 #ifdef FEATURE_CPP_ENUM_CLASS
-    typedef moducom::coap::internal::Root::State state_type;
+    typedef embr::coap::internal::Root::State state_type;
     // DEBT: For passing around as parameter, needs better name
     typedef state_type _state_type;
 #else
-    typedef moducom::coap::internal::Root state_type;
+    typedef embr::coap::internal::Root state_type;
     // DEBT: For passing around as parameter, needs better name
-    typedef moducom::coap::internal::Root::State _state_type;
+    typedef embr::coap::internal::Root::State _state_type;
 #endif
 
 #ifdef DEBUG
@@ -105,8 +105,8 @@ public:
     typedef typename estd::remove_reference<TStreambuf>::type streambuf_type;
     typedef TStreambufEncoderImpl streambuf_encoder_traits;
     typedef estd::internal::basic_ostream<streambuf_type&> ostream_type;
-    typedef moducom::coap::experimental::layer2::OptionBase option_type;
-    typedef moducom::coap::Option::Numbers option_number_type;
+    typedef embr::coap::experimental::layer2::OptionBase option_type;
+    typedef embr::coap::Option::Numbers option_number_type;
 
 protected:
     // DEBT: Must assert that char_type is an 8-bit type
@@ -131,7 +131,7 @@ protected:
 protected:
 
     TStreambuf streambuf;
-    moducom::coap::OptionEncoder option_encoder;
+    embr::coap::OptionEncoder option_encoder;
 
     /*
     estd::streamsize remaining()
@@ -180,7 +180,7 @@ public:
     // without adding any overhead
     ostream_type ostream() { return ostream_type(streambuf); }
 
-    void header(const moducom::coap::Header& header)
+    void header(const embr::coap::Header& header)
     {
         _assert(state_type::Uninitialized);
         // TODO: Chunked not handled, but we could still check for fail to write
@@ -208,7 +208,7 @@ public:
 
 
     template <bool inline_token, bool simple_buffer>
-    void header_and_token(const moducom::coap::TokenAndHeaderContext<inline_token, simple_buffer>&
+    void header_and_token(const embr::coap::TokenAndHeaderContext<inline_token, simple_buffer>&
     ctx)
     {
         header(ctx.header());
@@ -218,7 +218,7 @@ public:
     // FIX: rename to 'option'
     bool option_int(option_number_type number, int option_value)
     {
-        moducom::coap::layer2::UInt<> v;
+        embr::coap::layer2::UInt<> v;
 
         v.set(option_value);
 
@@ -229,7 +229,7 @@ public:
     // returns true if entire data was output
     // NOTE: interrogating option state may be a better way to ascertain that info
     // FIX: rename to 'option_raw'
-    bool option(moducom::coap::Option::Numbers number, uint16_t length = 0)
+    bool option(embr::coap::Option::Numbers number, uint16_t length = 0)
     {
         option_type option(number);
 
@@ -259,7 +259,7 @@ public:
 
 
     template <class TImpl>
-    bool option(moducom::coap::Option::Numbers number, estd::internal::allocated_array<TImpl>& a)
+    bool option(embr::coap::Option::Numbers number, estd::internal::allocated_array<TImpl>& a)
     {
         typedef typename estd::internal::allocated_array<TImpl>::value_type value_type;
 
@@ -293,7 +293,7 @@ public:
         return true;
     }
 
-    bool option(moducom::coap::Option::Numbers number, const char* str)
+    bool option(embr::coap::Option::Numbers number, const char* str)
     {
         int n = strlen(str);
         option(number, n);
@@ -330,7 +330,7 @@ public:
 namespace experimental {
 
 template <class TStreambuf>
-StreambufEncoder<TStreambuf>& operator<<(StreambufEncoder<TStreambuf>& encoder, moducom::coap::Header header)
+StreambufEncoder<TStreambuf>& operator<<(StreambufEncoder<TStreambuf>& encoder, embr::coap::Header header)
 {
     encoder.header(header);
 
@@ -342,11 +342,11 @@ StreambufEncoder<TStreambuf>& operator<<(StreambufEncoder<TStreambuf>& encoder, 
 // NOTE: almost definitely have something laying about in our options area to fill this role
 struct _Option
 {
-    moducom::coap::Option::Numbers number;
+    embr::coap::Option::Numbers number;
     uint16_t sz;
 };
 
-inline _Option option(moducom::coap::Option::Numbers number, uint16_t sz)
+inline _Option option(embr::coap::Option::Numbers number, uint16_t sz)
 {
 #ifdef __cpp_initializer_lists
     return _Option { number, sz };

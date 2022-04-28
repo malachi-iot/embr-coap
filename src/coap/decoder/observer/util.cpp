@@ -1,6 +1,6 @@
 #include "util.h"
 
-namespace moducom { namespace coap {
+namespace embr { namespace coap {
 
 const char* UriParserObserver::TAG = "UriParserObserver";
 

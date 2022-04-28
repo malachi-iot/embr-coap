@@ -4,7 +4,7 @@
 #include "platform.h"
 #include <new>
 
-namespace moducom { namespace coap {
+namespace embr { namespace coap {
 
 // TODO: Do all these defines with enum if we can
 #define COAP_HEADER_FIXED_VER_POS       6

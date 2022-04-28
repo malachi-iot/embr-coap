@@ -18,19 +18,19 @@
 #include "../uri.h"   // brings in UriPathMatcher and friends
 #include "../events.h"
 
-namespace moducom { namespace coap {
+namespace embr { namespace coap {
 
 // Candidate for 'Provider' since this mostly just holds on the an instance
 class UriParserContext
 {
-    typedef moducom::coap::experimental::UriPathMatcher3 matcher_type;
+    typedef embr::coap::experimental::UriPathMatcher3 matcher_type;
     typedef matcher_type::optional_int_type optional_int_type;
 
     // tracks current parsed/requested URI in incoming context
     matcher_type _uri_matcher;
 
 protected:
-    typedef moducom::coap::experimental::UriPathMap UriPathMap;
+    typedef embr::coap::experimental::UriPathMap UriPathMap;
     
     template <int N>
     UriParserContext(const UriPathMap (&paths)[N]) : _uri_matcher(paths) {}
@@ -55,7 +55,7 @@ public:
 struct TokenContextObserver : ExperimentalDecoderEventTypedefs
 {
     template <bool inline_token>
-    static void on_notify(const token_event& e, moducom::coap::TokenContext<inline_token>& ctx) 
+    static void on_notify(const token_event& e, embr::coap::TokenContext<inline_token>& ctx) 
     {
         ctx.token(e.chunk);
     }
@@ -64,7 +64,7 @@ struct TokenContextObserver : ExperimentalDecoderEventTypedefs
 // stateless observer which populates some of the context items
 struct HeaderContextObserver : ExperimentalDecoderEventTypedefs
 {
-    static void on_notify(const header_event& e, moducom::coap::HeaderContext& ctx) 
+    static void on_notify(const header_event& e, embr::coap::HeaderContext& ctx) 
     {
         ctx.header(e.h);
     }
@@ -85,7 +85,7 @@ struct UriParserObserver : ExperimentalDecoderEventTypedefs
 
         switch(e.option_number)
         {
-            case moducom::coap::Option::UriPath:
+            case embr::coap::Option::UriPath:
                 ctx.uri_matcher().find(e.string());
                 break;
 
@@ -114,7 +114,7 @@ struct _UriBuilderObserver : ExperimentalDecoderEventTypedefs
 
     static void on_notify(const option_event& e) 
     {
-        if(e.option_number == moducom::coap::Option::UriPath)
+        if(e.option_number == embr::coap::Option::UriPath)
         {
             incoming_uri += e.string();
             incoming_uri += '/';
@@ -137,8 +137,8 @@ struct _UriBuilderObserver : ExperimentalDecoderEventTypedefs
 template <class TContext>
 struct Auto404Observer : ExperimentalDecoderEventTypedefs
 {
-    typedef moducom::coap::Header Header;
-    typedef moducom::coap::Option Option;
+    typedef embr::coap::Header Header;
+    typedef embr::coap::Option Option;
 
     static void on_notify(option_completed_event, TContext& context)
     {

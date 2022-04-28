@@ -1,6 +1,6 @@
 #include "observer.h"
 
-namespace moducom { namespace coap {
+namespace embr { namespace coap {
 
 const char* VersionObserverBase::TAG = "VersionObserver";
 

@@ -9,7 +9,7 @@
 #include <estd/span.h>
 #include <estd/utility.h>
 
-namespace moducom { namespace coap {
+namespace embr { namespace coap {
 
 
 
@@ -290,7 +290,7 @@ public:
     {
         // Not going to check header write, we always assume we have at least 4 bytes
         // at the start of our netbuf
-        header(moducom::coap::create_response(context.header(),
+        header(embr::coap::create_response(context.header(),
                                        response_code));
         return token(context.token());
     }

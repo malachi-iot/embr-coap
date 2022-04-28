@@ -1,7 +1,7 @@
 #include "coap.h"
 #include "mc/memory.h"
 
-namespace moducom {
+namespace embr {
 namespace coap {
 
 const char* get_description(Option::Numbers number)

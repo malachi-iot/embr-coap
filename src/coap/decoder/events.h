@@ -8,7 +8,7 @@
 //#include <estd/string_view.h>
 //#include "../coap.h"
 
-namespace moducom { namespace coap { namespace event {
+namespace embr { namespace coap { namespace event {
 
 // 6/24/2018 revamped event system based on upcoming estd::experimental::subject code
 // 12/3/2019 code works very well, prefers embr's subject/observer.  Proper naming

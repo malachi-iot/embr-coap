@@ -17,7 +17,7 @@
 // layer1 = inline 8 bytes, no explicit size, someone else tracks it
 // layer2 = inline 8 bytes max, explicit size
 // layer3 = ptr 8 bytes max, explicit size
-namespace moducom { namespace coap {
+namespace embr { namespace coap {
 
 namespace layer1 {
 

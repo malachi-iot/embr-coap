@@ -19,7 +19,7 @@
 #include "freertos/task.h"
 #endif
 
-using namespace moducom::coap;
+using namespace embr::coap;
 
 #define DIAGNOSTIC_MODE
 

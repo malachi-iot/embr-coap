@@ -7,7 +7,7 @@
 #include <coap/context.h>
 #include <coap/header.h>
 
-namespace moducom { namespace coap {
+namespace embr { namespace coap {
 
 template <class TStreambuf, class TStreambufEncoderImpl>
 class StreambufEncoder;
@@ -34,7 +34,7 @@ inline void build_reply(
 }
 
 // Expects TContext to be/conform to:
-// moducom::coap::IncomingContext
+// embr::coap::IncomingContext
 // TODO: better suited to cpp/hpp - be nice to non-inline it
 // NOTE: leans heavily on RVO, at least as much as 'make_encoder' itself does
 template <class TContext>

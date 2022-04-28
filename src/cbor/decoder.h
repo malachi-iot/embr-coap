@@ -7,7 +7,7 @@
 #include <estd/string.h>
 #include "mc/memory-chunk.h"
 
-namespace moducom { namespace cbor {
+namespace embr { namespace cbor {
 
 struct Root
 {

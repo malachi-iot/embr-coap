@@ -7,7 +7,7 @@
 #include "mc/experimental-factory.h"
 #include "mc/objstack.h"
 
-namespace moducom { namespace coap {
+namespace embr { namespace coap {
 
 // Specialized prefix checker which does not expect s to be
 // null terminated, but does expect prefix to be null terminated

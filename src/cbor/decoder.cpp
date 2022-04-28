@@ -1,7 +1,7 @@
 #include "decoder.h"
 
 
-namespace moducom { namespace cbor {
+namespace embr { namespace cbor {
 
 bool Decoder::process_iterate(uint8_t ch)
 {

@@ -17,7 +17,7 @@
 
 using namespace moducom::mem;
 
-namespace moducom { namespace coap {
+namespace embr { namespace coap {
 
 typedef lwip_datapump_t::netbuf_t netbuf_t;
 typedef lwip_datapump_t::addr_t addr_t;

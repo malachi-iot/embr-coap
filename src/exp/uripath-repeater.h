@@ -19,7 +19,7 @@
 
 // embr subject/observer version of uripath handlers
 // hangs off new embr-based decoder subject
-namespace moducom { namespace coap {
+namespace embr { namespace coap {
 
 namespace experimental {
 

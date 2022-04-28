@@ -14,7 +14,7 @@
 #include "../../context.h"
 #include "../../encoder/streambuf.h"
 
-namespace moducom { namespace coap {
+namespace embr { namespace coap {
 
 // for coap version command request
 
@@ -26,11 +26,11 @@ struct VersionObserverBase
 // TODO: This belongs in a different file really
 template <bool inline_token, class TStreambuf>
 void build_version_response(
-    const moducom::coap::TokenAndHeaderContext<inline_token>& context, 
-    moducom::coap::StreambufEncoder<TStreambuf>& encoder)
+    const embr::coap::TokenAndHeaderContext<inline_token>& context, 
+    embr::coap::StreambufEncoder<TStreambuf>& encoder)
 {
-    typedef moducom::coap::Header Header;
-    typedef moducom::coap::Option Option;
+    typedef embr::coap::Header Header;
+    typedef embr::coap::Option Option;
 
     build_reply(context, encoder, Header::Code::Content);
 
@@ -58,12 +58,12 @@ void build_version_response(
 
 
 // Expects TContext to be/conform to:
-// moducom::coap::IncomingContext
+// embr::coap::IncomingContext
 template <int id_path, class TContext>
 struct VersionObserver : VersionObserverBase
 {
-    typedef moducom::coap::Header Header;
-    typedef moducom::coap::Option Option;
+    typedef embr::coap::Header Header;
+    typedef embr::coap::Option Option;
 
     static void on_notify(event::completed, TContext& ctx)
     {

@@ -16,7 +16,7 @@
 // a) add decoder state accessor/decoder* to context itself for convenient query as to
 //    present state of decode
 // b) utilize c++17 (I think) 'concepts' to enforce context signature
-namespace moducom { namespace coap {
+namespace embr { namespace coap {
 
 
 template <class TAddr>

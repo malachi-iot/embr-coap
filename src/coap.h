@@ -27,7 +27,7 @@
 
 #include "coap/header.h"
 
-namespace moducom {
+namespace embr {
 namespace coap {
 
 // all timeouts/delays/etc for these COAP_ constants are in seconds
@@ -134,13 +134,13 @@ std::ostream& operator <<(std::ostream& out, Option::State state);
 #ifdef FEATURE_ESTD_IOSTREAM_NATIVE
 #ifdef __ADSPBLACKFIN__
 // Blackfin has an abbreviated version of ostream
-inline std::ostream& operator <<(std::ostream& os, const moducom::coap::Option::Numbers& v)
+inline std::ostream& operator <<(std::ostream& os, const embr::coap::Option::Numbers& v)
 #else
 template <class CharT, class Traits>
-std::basic_ostream<CharT, Traits>& operator <<(std::basic_ostream<CharT, Traits>& os, const moducom::coap::Option::Numbers& v)
+std::basic_ostream<CharT, Traits>& operator <<(std::basic_ostream<CharT, Traits>& os, const embr::coap::Option::Numbers& v)
 #endif
 {
-    const char* d = moducom::coap::get_description(v);
+    const char* d = embr::coap::get_description(v);
 
     if(d)
         os << d;
@@ -158,13 +158,13 @@ template <class CharT, class Traits, typename THasGetDescription
           ,
           typename std::enable_if<
               std::is_function<
-                    decltype(moducom::coap::get_description(std::declval<THasGetDescription>()))
+                    decltype(embr::coap::get_description(std::declval<THasGetDescription>()))
                   >::value
               >::type
           >
 std::basic_ostream<CharT, Traits>& operator <<(std::basic_ostream<CharT, Traits>& os, const THasGetDescription& t)
 {
-    const char* d = moducom::coap::get_description(t);
+    const char* d = embr::coap::get_description(t);
 
     if(d)
         os << d;

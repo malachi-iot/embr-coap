@@ -6,7 +6,7 @@
 #include <estd/string.h>
 
 using namespace std;
-using namespace moducom::coap;
+using namespace embr::coap;
 
 template <class TDataPump>
 void simple_ping_responder(TDataPump& datapump)

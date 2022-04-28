@@ -6,7 +6,7 @@
 #include "../coap/decoder/events.h"
 #include "../coap/uint.h"
 
-namespace moducom { namespace coap {
+namespace embr { namespace coap {
 
 // NOTE: Not really experimental, but uses events whose location and naming have not yet
 // settled down and they are in 'experimental' namespace, so convenient to put this here

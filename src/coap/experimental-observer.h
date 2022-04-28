@@ -2,7 +2,7 @@
 
 #include "../coap-dispatcher.h"
 
-namespace moducom { namespace coap { namespace experimental {
+namespace embr { namespace coap { namespace experimental {
 
 // use this to make non-virtual versions
 // TODO: Do further testing to see how optimal that really is (maybe

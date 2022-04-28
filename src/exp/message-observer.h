@@ -9,7 +9,7 @@
 #include <estd/type_traits.h> // for estd::enable_if_t, otherwise it's only present in c++14
 #endif
 
-namespace moducom { namespace coap { namespace experimental {
+namespace embr { namespace coap { namespace experimental {
 
 #ifdef FEATURE_CPP_VARIADIC
 

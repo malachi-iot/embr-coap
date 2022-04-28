@@ -9,9 +9,9 @@
 #define MCCOAP_PUTCHAR_SAVED putchar
 #undef putchar
 
-namespace moducom { namespace coap {
+namespace embr { namespace coap {
 
-typedef moducom::coap::DataPump<moducom::mem::LwipNetbuf, LwipPortAndAddress> lwip_datapump_t;
+typedef embr::coap::DataPump<moducom::mem::LwipNetbuf, LwipPortAndAddress> lwip_datapump_t;
 
 extern void nonblocking_datapump_loop(lwip::Netconn netconn, lwip_datapump_t& datapump);
 extern void netconn_callback(netconn* conn, netconn_evt evt, uint16_t len);

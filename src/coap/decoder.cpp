@@ -6,7 +6,7 @@
 #include "decoder.h"
 #include "../coap_transmission.h"
 
-namespace moducom { namespace coap {
+namespace embr { namespace coap {
 
 Decoder::ro_chunk_t Decoder::option(Context& context, bool* completed)
 {

@@ -1,7 +1,7 @@
 #include "decoder.h"
 #include "../coap_transmission.h"
 
-namespace moducom { namespace coap {
+namespace embr { namespace coap {
 
 // Operations are done in "network byte order" according to CoAP spec, which in turn is
 // big endian as suggested by https://stackoverflow.com/questions/13514614/why-is-network-byte-order-defined-to-be-big-endian

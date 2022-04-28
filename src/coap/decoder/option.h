@@ -3,7 +3,7 @@
 #include <estd/span.h>
 #include "../option.h"
 
-namespace moducom { namespace coap {
+namespace embr { namespace coap {
 
 // processes bytes input to then reveal more easily digestible coap options
 // same code that was in CoAP::ParserDeprecated but dedicated only to option processing

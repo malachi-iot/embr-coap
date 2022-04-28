@@ -4,7 +4,7 @@
 
 #include "coap_transmission.h"
 
-namespace moducom {
+namespace embr {
 namespace coap {
 
 void DummyDispatcher::receive()

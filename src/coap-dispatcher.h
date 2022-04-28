@@ -11,7 +11,7 @@
 #include "coap/context.h"
 #include "coap/decoder/observer.h"
 
-namespace moducom { namespace coap {
+namespace embr { namespace coap {
 
 
 
@@ -254,7 +254,7 @@ template <class TRequestContext = ObserverContext>
 class ContextDispatcherHandler : public DecoderObserverBase<TRequestContext>
 {
     typedef IsInterestedBase::InterestedEnum interested_t;
-    typedef moducom::coap::layer2::Token token_t;
+    typedef embr::coap::layer2::Token token_t;
     typedef DecoderObserverBase<TRequestContext> base_t;
 
 protected:
@@ -351,7 +351,7 @@ public:
 
 }}
 
-inline void* operator new(size_t sz, moducom::coap::ObjStackContext& ctx)
+inline void* operator new(size_t sz, embr::coap::ObjStackContext& ctx)
 {
     return ctx.objstack.alloc(sz);
 }

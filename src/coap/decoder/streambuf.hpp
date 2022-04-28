@@ -3,7 +3,7 @@
 #include "streambuf.h"
 #include "option.h"
 
-namespace moducom { namespace coap {
+namespace embr { namespace coap {
 
 template <class TStreambuf>
 bool StreambufDecoder<TStreambuf>::process_iterate_streambuf(size_t& pos)

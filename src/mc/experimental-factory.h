@@ -5,7 +5,7 @@
 
 #include "coap/decoder/observer.h"
 
-namespace moducom { namespace coap {
+namespace embr { namespace coap {
 
 namespace experimental {
 

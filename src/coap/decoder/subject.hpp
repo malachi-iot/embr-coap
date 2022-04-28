@@ -8,7 +8,7 @@
 #include "subject.h"
 #include "subject-core.hpp"
 
-namespace moducom { namespace coap {
+namespace embr { namespace coap {
 
 // inspects state of incoming decoder+context, and fires off associated decoder events via
 // provided subject.
