@@ -17,14 +17,14 @@ TEST_CASE("CoAP token tests", "[coap-token]")
             //moducom::pipeline::layer2::MemoryChunk<8> chunk;
             estd::layer1::vector<uint8_t, 8> chunk;
 
-            int bytes_used = moducom::coap::UInt::set(0xFEDCBA, chunk);
+            int bytes_used = embr::coap::UInt::set(0xFEDCBA, chunk);
 
             REQUIRE(bytes_used == 3);
             REQUIRE((uint8_t)chunk[0] == 0xFE);
         }
         SECTION("Test 2")
         {
-            moducom::coap::layer2::UInt<> uint_val;
+            embr::coap::layer2::UInt<> uint_val;
 
             uint_val.set(0xFEDCBA);
 
@@ -34,19 +34,19 @@ TEST_CASE("CoAP token tests", "[coap-token]")
             //uint32_t val = uint_val.get_uint32_t();
             const uint8_t* data = uint_val.data();
 
-            uint32_t val = moducom::coap::UInt::get<uint32_t>(data, uint_val.length());
+            uint32_t val = embr::coap::UInt::get<uint32_t>(data, uint_val.length());
 
             REQUIRE(val == 0xFEDCBA);
         }
         SECTION("Test 3")
         {
-            //moducom::coap::layer2::UInt uint_val;
+            //embr::coap::layer2::UInt uint_val;
         }
     }
     SECTION("Token Generator")
     {
-        moducom::coap::SimpleTokenGenerator generator;
-        moducom::coap::layer2::Token token;
+        embr::coap::SimpleTokenGenerator generator;
+        embr::coap::layer2::Token token;
 
         generator.generate(&token);
         generator.generate(&token);
@@ -68,7 +68,7 @@ TEST_CASE("CoAP token tests", "[coap-token]")
     }
     SECTION("Token test")
     {
-        moducom::coap::layer2::Token token;
+        embr::coap::layer2::Token token;
 
         //token.set(0);
         token.resize(1);
@@ -79,7 +79,7 @@ TEST_CASE("CoAP token tests", "[coap-token]")
     }
     SECTION("layer3 token")
     {
-        moducom::coap::layer2::Token token;
+        embr::coap::layer2::Token token;
 
         token.resize(1);
         //token.set(0);
@@ -88,7 +88,7 @@ TEST_CASE("CoAP token tests", "[coap-token]")
 
         REQUIRE((char)token[0] == '3');
 
-        moducom::coap::layer3::Token token2(token);
+        embr::coap::layer3::Token token2(token);
 
         REQUIRE(token2 == token);
     }

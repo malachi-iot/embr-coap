@@ -198,7 +198,7 @@ public:
         // input as chunk doesn't work because chunk is raw bytes, not converted int
         // furthermore we WANT raw bytes instead of fiddling with converting back
         // and forth to int
-        //moducom::coap::UInt::set_padded(chunk, *this, chunk._length());
+        //embr::coap::UInt::set_padded(chunk, *this, chunk._length());
     }
 
     template <typename TReturn>

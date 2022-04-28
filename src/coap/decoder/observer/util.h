@@ -133,7 +133,7 @@ struct _UriBuilderObserver : ExperimentalDecoderEventTypedefs
 
 // Depends on TContext conforming to/being 
 // 1. UriParserContext
-// 2. moducom::coap::TokenAndHeaderContext
+// 2. embr::coap::TokenAndHeaderContext
 template <class TContext>
 struct Auto404Observer : ExperimentalDecoderEventTypedefs
 {

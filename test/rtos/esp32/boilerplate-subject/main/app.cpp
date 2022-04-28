@@ -2,7 +2,7 @@
 #include <coap/decoder/subject.hpp>
 #include <coap/decoder/streambuf.hpp>
 
-using namespace moducom::coap;
+using namespace embr::coap;
 
 #include "context.h"
 #include <coap/platform/esp-idf/observer.h>

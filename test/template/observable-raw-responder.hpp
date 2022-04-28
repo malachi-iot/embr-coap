@@ -16,9 +16,9 @@
 
 template <class TNetBuf, class TObservableSession>
 #ifdef FEATURE_MCCOAP_DATAPUMP_INLINE
-void emit_observe(moducom::coap::NetBufEncoder<TNetBuf>& encoder, TObservableSession os)
+void emit_observe(embr::coap::NetBufEncoder<TNetBuf>& encoder, TObservableSession os)
 #else
-void emit_observe(moducom::coap::NetBufEncoder<TNetBuf&>& encoder, TObservableSession os)
+void emit_observe(embr::coap::NetBufEncoder<TNetBuf&>& encoder, TObservableSession os)
 #endif
 {
     // zero-copy goodness
@@ -49,7 +49,7 @@ void emit_observe(moducom::coap::NetBufEncoder<TNetBuf&>& encoder, TObservableSe
 // notification use case, nor is this the ideal way to do it even if it is the only use case
 template <class TDataPump, class TObservableCollection>
 void evaluate_emit_observe(TDataPump& datapump,
-                           moducom::coap::ObservableRegistrar<TObservableCollection>& observable_registrar,
+                           embr::coap::ObservableRegistrar<TObservableCollection>& observable_registrar,
                            std::chrono::milliseconds total_since_start)
 {
     static std::chrono::milliseconds last(0);
@@ -69,9 +69,9 @@ void evaluate_emit_observe(TDataPump& datapump,
 
 template <class TIncomingContext, class TObservableCollection>
 void simple_observable_responder(TIncomingContext& context,
-                                 moducom::coap::ObservableRegistrar<TObservableCollection>& observable_registrar)
+                                 embr::coap::ObservableRegistrar<TObservableCollection>& observable_registrar)
 {
-    using namespace moducom::coap;
+    using namespace embr::coap;
 
     typedef typename TIncomingContext::netbuf_t netbuf_t;
     typedef typename TIncomingContext::decoder_t decoder_t;

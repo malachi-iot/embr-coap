@@ -9,7 +9,7 @@
 template <class TIncomingContext>
 void simple_uri_responder(TIncomingContext& context)
 {
-    using namespace moducom::coap;
+    using namespace embr::coap;
 
     typedef typename TIncomingContext::netbuf_t netbuf_t;
     typedef typename TIncomingContext::decoder_t decoder_t;

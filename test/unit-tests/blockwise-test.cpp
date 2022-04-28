@@ -2,7 +2,7 @@
 
 #include <coap/blockwise.h>
 
-using namespace moducom::coap::experimental;
+using namespace embr::coap::experimental;
 
 TEST_CASE("Blockwise option encoder/decoder tests", "[blockwise]")
 {

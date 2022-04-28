@@ -8,7 +8,7 @@
 #endif
 #include "test-data.h"
 
-using namespace moducom;
+using namespace embr;
 
 
 static const uint8_t* cbor_assert(CBOR::Decoder& decoder, const uint8_t* v, std::string expected)
@@ -280,8 +280,8 @@ TEST_CASE("CBOR decoder tests", "[cbor-decoder]")
     SECTION("revamped netbuf encoder")
     {
         using namespace moducom::io::experimental;
-        using namespace moducom::coap;
-        using namespace moducom::cbor;
+        using namespace embr::coap;
+        using namespace embr::cbor;
 
         NetBufEncoder<NetBufDynamicExperimental> encoder;
 
@@ -397,8 +397,8 @@ TEST_CASE("CBOR decoder tests", "[cbor-decoder]")
     SECTION("encoder: boolean and NULL")
     {
         using namespace moducom::io::experimental;
-        using namespace moducom::coap;
-        using namespace moducom::cbor;
+        using namespace embr::coap;
+        using namespace embr::cbor;
 
         NetBufEncoder<NetBufDynamicExperimental> encoder;
 

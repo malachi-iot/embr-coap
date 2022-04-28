@@ -15,8 +15,8 @@
 #include <string>
 #include <estd/string.h>
 
-using namespace moducom::coap;
-using namespace moducom::coap::experimental;
+using namespace embr::coap;
+using namespace embr::coap::experimental;
 //using namespace moducom::pipeline;
 
 int test(experimental::FnFactoryContext context)

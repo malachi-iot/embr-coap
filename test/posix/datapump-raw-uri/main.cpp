@@ -6,7 +6,7 @@
 #include "simple-uri-responder.hpp"
 
 //using namespace std;
-using namespace moducom::coap;
+using namespace embr::coap;
 
 int main()
 {
@@ -14,8 +14,8 @@ int main()
     std::cout << "Hello World!" << std::endl;
     std::cout << "Test: " << Option::Numbers::Block2 << std::endl;
     std::cout << "Test2: " << std::is_function<
-            //decltype(moducom::coap::get_description)
-            decltype(moducom::coap::get_description(Option::Numbers::UriPath))
+            //decltype(embr::coap::get_description)
+            decltype(embr::coap::get_description(Option::Numbers::UriPath))
             //decltype(main)
           >::value << std::endl;
 

@@ -9,8 +9,8 @@
 #include <coap-encoder.h>
 
 using namespace moducom;
-using namespace moducom::coap;
-using namespace moducom::coap::experimental;
+using namespace embr::coap;
+using namespace embr::coap::experimental;
 
 constexpr char STR_URI_V1[] = "v1";
 constexpr char STR_URI_TEST[] = "test";
@@ -20,7 +20,7 @@ constexpr char STR_URI_TEST2[] = "test2";
 // TODO: Make a new kind of encoder, the normal-simple-case
 // one which just dumps to an existing buffer without all the
 // fancy IPipline/IWriter involvement
-moducom::coap::experimental::BlockingEncoder* global_encoder;
+embr::coap::experimental::BlockingEncoder* global_encoder;
 
 // FIX: This should be embedded either in encoder or elsewhere
 // signals that we have a response to send
@@ -73,8 +73,8 @@ public:
 
 extern dispatcher_handler_factory_fn v1_factories[];
 
-moducom::coap::experimental::IDispatcherHandler* context_dispatcher(
-    moducom::coap::experimental::FactoryDispatcherHandlerContext& ctx)
+embr::coap::experimental::IDispatcherHandler* context_dispatcher(
+    embr::coap::experimental::FactoryDispatcherHandlerContext& ctx)
 {
     return new (ctx.handler_memory.data()) ContextDispatcherHandler(ctx.incoming_context);
 }

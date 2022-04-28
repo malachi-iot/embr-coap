@@ -2,7 +2,7 @@
 
 #include "coap/uint.h"
 
-using namespace moducom::coap;
+using namespace embr::coap;
 
 TEST_CASE("uint tests", "[uint]")
 {

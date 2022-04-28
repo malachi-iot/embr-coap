@@ -5,7 +5,7 @@
 #include "test-data.h"
 //#include "../mc/pipeline.h"
 
-using namespace moducom::coap;
+using namespace embr::coap;
 using namespace moducom::pipeline;
 
 // +++ EXPERIMENTAL
@@ -144,9 +144,9 @@ TEST_CASE("CoAP decoder tests", "[coap-decoder]")
 
         // FIX: in theory we can std::forward buffer directly down into out_span_streambuf, but it isn't happy
 #ifdef FEATURE_MCCOAP_EXPCONTEXT
-        moducom::coap::StreambufDecoder<streambuf_type> decoder(span.size(), span);
+        embr::coap::StreambufDecoder<streambuf_type> decoder(span.size(), span);
 #else
-        moducom::coap::StreambufDecoder<streambuf_type> decoder(span);
+        embr::coap::StreambufDecoder<streambuf_type> decoder(span);
 #endif
 
 #ifdef FEATURE_MCCOAP_EXPCONTEXT

@@ -9,8 +9,8 @@
 #include "main.h"
 
 using namespace moducom::pipeline;
-using namespace moducom::coap;
-using namespace moducom::coap::experimental;
+using namespace embr::coap;
+using namespace embr::coap::experimental;
 
 
 #ifndef FEATURE_MCCOAP_INLINE_TOKEN

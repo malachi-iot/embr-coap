@@ -9,7 +9,7 @@
 #include <arpa/inet.h> // for inet_addr
 
 using namespace std;
-using namespace moducom::coap;
+using namespace embr::coap;
 
 #define COAP_PORT 5683
 

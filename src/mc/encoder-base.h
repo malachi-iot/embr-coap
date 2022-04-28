@@ -2,7 +2,7 @@
 
 #include "mc/netbuf.h"
 
-namespace moducom {
+namespace embr {
 
 template <class TSize = size_t>
 class EncoderBase

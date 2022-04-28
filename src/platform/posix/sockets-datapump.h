@@ -34,7 +34,7 @@ struct address_traits<sockaddr_in>
 }}
 
 int nonblocking_datapump_setup();
-void nonblocking_datapump_loop(int h, moducom::coap::sockets_datapump_t& datapump);
+void nonblocking_datapump_loop(int h, embr::coap::sockets_datapump_t& datapump);
 int nonblocking_datapump_shutdown(int);
 
 namespace moducom { namespace coap {

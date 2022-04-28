@@ -16,7 +16,7 @@
 #include <embr/netbuf-dynamic.h>
 
 using namespace moducom::io::experimental;
-using namespace moducom::coap;
+using namespace embr::coap;
 using namespace embr::experimental;
 
 namespace std {
@@ -76,7 +76,7 @@ TEST_CASE("netbuf+coap tests", "[netbuf-coap]")
         REQUIRE(header.message_id() == 0x0123);
         REQUIRE(header.token_length() == 0);
 
-        moducom::coap::layer3::Token token = decoder.token();
+        embr::coap::layer3::Token token = decoder.token();
 
         REQUIRE(token.size() == 0);
 
@@ -186,7 +186,7 @@ TEST_CASE("netbuf+coap tests", "[netbuf-coap]")
 
         SECTION("layer2")
         {
-            moducom::coap::layer2::Token token;
+            embr::coap::layer2::Token token;
 
             decoder.token(&token);
 
@@ -196,7 +196,7 @@ TEST_CASE("netbuf+coap tests", "[netbuf-coap]")
         }
         SECTION("layer3")
         {
-            moducom::coap::layer3::Token token = decoder.token();
+            embr::coap::layer3::Token token = decoder.token();
 
             REQUIRE(token.size() == 2);
             REQUIRE(token.data()[0] == 0x77);

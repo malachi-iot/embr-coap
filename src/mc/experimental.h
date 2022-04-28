@@ -334,7 +334,7 @@ class BufferedBlockingEncoder :
     typedef BufferedEncoderBase::_state_t _state_t;
 
     Header _header;
-    moducom::coap::layer1::Token _token;
+    embr::coap::layer1::Token _token;
 
     typedef BlockingEncoder base_t;
 
@@ -361,7 +361,7 @@ public:
 
     Header* header() { return &_header; }
 
-    moducom::coap::layer1::Token* token() { return &_token; }
+    embr::coap::layer1::Token* token() { return &_token; }
 
     /*
     // called even if "no" token.  It should be noted that RFC 7252 says there is *always* a

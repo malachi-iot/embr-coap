@@ -4,8 +4,8 @@
 
 
 using namespace moducom;
-using namespace moducom::coap;
-using namespace moducom::coap::experimental;
+using namespace embr::coap;
+using namespace embr::coap::experimental;
 
 // NOTE: Not used yet due to lingering kludginess regarding
 // done_encoding and global_encoder
@@ -16,8 +16,8 @@ static void root_helper(pipeline::MemoryChunk& dispatcherBuffer,
                         dispatcher_handler_factory_fn (&root_factories)[n])
 {
     moducom::pipeline::layer3::SimpleBufferedPipelineWriter writer(out);
-    //moducom::coap::experimental::Dispatcher dispatcher;
-    moducom::coap::experimental::BlockingEncoder encoder(writer);
+    //embr::coap::experimental::Dispatcher dispatcher;
+    embr::coap::experimental::BlockingEncoder encoder(writer);
 
     ObserverContext incoming_context(dispatcherBuffer);
 

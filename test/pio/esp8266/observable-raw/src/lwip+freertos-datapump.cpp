@@ -14,7 +14,7 @@
 // FIX: temporarily conflating datapump and observable-raw test
 #include <observable-raw-responder.hpp>
 
-using namespace moducom::coap;
+using namespace embr::coap;
 
 lwip_datapump_t datapump;
 

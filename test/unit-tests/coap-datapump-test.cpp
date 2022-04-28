@@ -11,7 +11,7 @@
 
 //#define putchar(c) put_value(c)
 
-using namespace moducom::coap;
+using namespace embr::coap;
 using namespace embr;
 
 typedef moducom::io::experimental::NetBufDynamicMemory<> netbuf_t;
@@ -115,7 +115,7 @@ TEST_CASE("Data pump tests", "[datapump]")
 
         // set up message subject+observer
         IncomingContext<addr_t> test_ctx;
-        DecoderSubjectBase<moducom::coap::experimental::ContextDispatcherHandler<IncomingContext<addr_t> > > test(test_ctx);
+        DecoderSubjectBase<embr::coap::experimental::ContextDispatcherHandler<IncomingContext<addr_t> > > test(test_ctx);
 
         REQUIRE(!test_ctx.have_header());
 

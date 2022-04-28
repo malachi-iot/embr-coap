@@ -13,8 +13,8 @@
 #include <exp/netbuf.h>
 #include "test-data.h"
 
-using namespace moducom::coap;
-using namespace moducom::coap::experimental;
+using namespace embr::coap;
+using namespace embr::coap::experimental;
 using namespace moducom::pipeline;
 
 /// @brief designed specifically to test against "buffer_16bit_delta" buffer

@@ -20,7 +20,7 @@
 
 #include "test-data.h"
 
-using namespace moducom::coap;
+using namespace embr::coap;
 using namespace moducom::pipeline;
 
 #include <stdio.h>
@@ -49,7 +49,7 @@ TEST_CASE("CoAP encoder tests", "[coap-encoder]")
     {
         moducom::pipeline::layer3::MemoryChunk<128> chunk;
         moducom::pipeline::layer3::SimpleBufferedPipelineWriter writer(chunk);
-        moducom::coap::experimental::BlockingEncoder encoder(writer);
+        embr::coap::experimental::BlockingEncoder encoder(writer);
 
         encoder.header(Header::Get);
 
@@ -68,9 +68,9 @@ TEST_CASE("CoAP encoder tests", "[coap-encoder]")
     {
         moducom::pipeline::layer3::MemoryChunk<128> chunk;
         moducom::pipeline::layer3::SimpleBufferedPipelineWriter writer(chunk);
-        moducom::coap::experimental::BufferedEncoder encoder(writer);
+        embr::coap::experimental::BufferedEncoder encoder(writer);
         Header& header = *encoder.header();
-        moducom::coap::layer1::Token& token = *encoder.token();
+        embr::coap::layer1::Token& token = *encoder.token();
 
         header.token_length(2);
         header.type(Header::Confirmable);
@@ -123,7 +123,7 @@ TEST_CASE("CoAP encoder tests", "[coap-encoder]")
         netbuf_t& netbuf = encoder.netbuf();
         const uint8_t* data = netbuf.chunk().data();
 
-        moducom::coap::layer2::Token token;
+        embr::coap::layer2::Token token;
 
         token.resize(3);
         token[0] = 1;
@@ -221,7 +221,7 @@ TEST_CASE("CoAP encoder tests", "[coap-encoder]")
     SECTION("streambuf encoder")
     {
         // for << operator, which I'm still undecided about
-        using namespace moducom::coap::experimental;
+        using namespace embr::coap::experimental;
 
         typedef char char_type;
         typedef estd::internal::streambuf<

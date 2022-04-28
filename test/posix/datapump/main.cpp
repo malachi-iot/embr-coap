@@ -7,7 +7,7 @@
 #include <mc/memory-chunk.h>
 
 using namespace std;
-using namespace moducom::coap;
+using namespace embr::coap;
 
 #include "simple-ping-responder.hpp"
 

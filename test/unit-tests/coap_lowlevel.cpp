@@ -7,7 +7,7 @@
 #include "coap/decoder.h"
 #include "test-data.h"
 
-using namespace moducom::coap;
+using namespace embr::coap;
 
 TEST_CASE("CoAP low level tests", "[coap-lowlevel]")
 {
@@ -106,7 +106,6 @@ TEST_CASE("CoAP low level tests", "[coap-lowlevel]")
         for (int i = 0; i < sizeof(buffer_16bit_delta); i++)
         {
             // A little clunky but should work, just to stay 1:1 with old test
-            //moducom::pipeline::MemoryChunk::readonly_t temp_chunk(&buffer[i], 1);
             estd::const_buffer temp_chunk(&buffer[i], 1);
             parser_t::Context context(temp_chunk, i == sizeof(buffer_16bit_delta) - 1);
 

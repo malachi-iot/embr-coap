@@ -5,14 +5,14 @@
 // the URI code base is cleaned up
 #include <coap/decoder/observer/util.h>
 
-typedef moducom::coap::experimental::UriPathMap UriPathMap;
+typedef embr::coap::experimental::UriPathMap UriPathMap;
 
 // NOTE: Not ideal, directly specifying '7' here
 extern const UriPathMap uri_map[7];
 
 struct AppContext : 
-    moducom::coap::LwipIncomingContext,
-    moducom::coap::UriParserContext
+    embr::coap::LwipIncomingContext,
+    embr::coap::UriParserContext
 {
     AppContext(struct udp_pcb* pcb, 
         const ip_addr_t* addr,

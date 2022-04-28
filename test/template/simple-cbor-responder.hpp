@@ -10,10 +10,10 @@
 template <class TIncomingContext>
 void simple_cbor_responder(TIncomingContext& context)
 {
-    using namespace moducom::coap;
+    using namespace embr::coap;
 
     typedef typename TIncomingContext::netbuf_t netbuf_t;
-    typedef moducom::pipeline::MemoryChunk::readonly_t ro_chunk_t;
+    typedef embr::pipeline::MemoryChunk::readonly_t ro_chunk_t;
 
     option_iterator<netbuf_t> it(context);
     NetBufDecoder<netbuf_t&>& decoder = context.decoder();
@@ -28,7 +28,7 @@ void simple_cbor_responder(TIncomingContext& context)
 
     if(has_payload)
     {
-        using namespace moducom;
+        using namespace embr;
 
         cbor::Decoder cbor_decoder;
         ro_chunk_t chunk = decoder.payload_experimental();
@@ -81,7 +81,7 @@ void simple_cbor_responder(TIncomingContext& context)
                 std::cout << "Accompanying int: " << intrinsic_int << std::endl;
 #endif
             }
-            else if(cbor_decoder.state() == moducom::cbor::Decoder::HeaderDone)
+            else if(cbor_decoder.state() == embr::cbor::Decoder::HeaderDone)
             {
 #ifdef FEATURE_MCCOAP_IOSTREAM_NATIVE
                 std::cout << "Has cbor type: " << cbor_decoder.type() << std::endl;

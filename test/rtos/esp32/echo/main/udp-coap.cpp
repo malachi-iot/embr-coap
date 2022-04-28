@@ -14,7 +14,7 @@
 #include <coap/platform/lwip/encoder.h>
 
 using namespace embr;
-using namespace moducom::coap;
+using namespace embr::coap;
 
 using embr::lwip::upgrading::ipbuf_streambuf;
 using embr::lwip::upgrading::opbuf_streambuf;

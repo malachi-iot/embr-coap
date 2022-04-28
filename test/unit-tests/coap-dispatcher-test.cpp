@@ -13,8 +13,8 @@
 
 #include "coap/decoder/subject.hpp"
 
-using namespace moducom::coap;
-using namespace moducom::coap::experimental;
+using namespace embr::coap;
+using namespace embr::coap::experimental;
 using namespace moducom::pipeline;
 
 extern dispatcher_handler_factory_fn test_sub_factories[];
@@ -25,7 +25,7 @@ IDecoderObserver<TRequestContext>* context_handler_factory(TRequestContext& ctx)
 #ifdef FEATURE_MCCOAP_INLINE_TOKEN
     return new (ctx) ContextDispatcherHandler<TRequestContext>(ctx);
 #else
-    static moducom::dynamic::PoolBase<moducom::coap::layer2::Token, 8> token_pool;
+    static moducom::dynamic::PoolBase<embr::coap::layer2::Token, 8> token_pool;
     return new (ctx.handler_memory.data()) ContextDispatcherHandler(ctx, token_pool);
 #endif
 }

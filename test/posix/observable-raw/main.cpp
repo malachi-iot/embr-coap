@@ -9,7 +9,7 @@
 
 
 //using namespace std;
-using namespace moducom::coap;
+using namespace embr::coap;
 
 layer1::ObservableRegistrar<sockets_datapump_t::addr_t, 10> observable_registrar;
 

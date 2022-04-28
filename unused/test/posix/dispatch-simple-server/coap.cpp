@@ -6,8 +6,8 @@
 #include "main.h"
 
 using namespace moducom;
-using namespace moducom::coap;
-using namespace moducom::coap::experimental;
+using namespace embr::coap;
+using namespace embr::coap::experimental;
 
 constexpr char STR_URI_V1[] = "v1";
 constexpr char STR_URI_TEST[] = "test";
@@ -38,9 +38,9 @@ IDecoderObserver* context_dispatcher(FactoryDispatcherHandlerContext& ctx)
 #ifdef FEATURE_MCCOAP_INLINE_TOKEN
     return new (ctx) ContextDispatcherHandler(ctx.incoming_context);
 #else
-    typedef moducom::dynamic::OutOfBandPool<moducom::coap::layer2::Token> token_pool_t;
+    typedef moducom::dynamic::OutOfBandPool<embr::coap::layer2::Token> token_pool_t;
 
-    static moducom::coap::layer2::Token _dummy[4];
+    static embr::coap::layer2::Token _dummy[4];
     static token_pool_t dummy(_dummy, 4);
 
     return new (ctx.handler_memory.data()) ContextDispatcherHandler(ctx.incoming_context, dummy);
@@ -202,9 +202,9 @@ size_t service_coap_in(const struct sockaddr_in& addr, pipeline::MemoryChunk& in
     // but those sound bad.  Perhaps MessageObservable?  DecodeMessageObservable? yuck.
     // ObservableMessage?  Nope... all bad, every one.
 #ifdef FEATURE_MCCOAP_LEGACY_DISPATCHER
-    moducom::coap::experimental::Dispatcher dispatcher;
+    embr::coap::experimental::Dispatcher dispatcher;
 #endif
-    moducom::coap::experimental::BlockingEncoder encoder(writer);
+    embr::coap::experimental::BlockingEncoder encoder(writer);
     ObserverContext incoming_context(dispatcherBuffer);
 
 #ifdef FEATURE_MCCOAP_LEGACY_PREOBJSTACK

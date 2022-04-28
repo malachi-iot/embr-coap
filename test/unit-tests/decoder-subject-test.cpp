@@ -10,14 +10,14 @@
 
 #include <embr/observer.h>
 
-using namespace moducom::coap;
+using namespace embr::coap;
 
 typedef TokenAndHeaderContext<true, false> request_context_t;
 
 // +++ just to test compilation, eliminate once decent unit tests for
 // DecoderSubjectBase is in place
 static request_context_t test_ctx;
-static DecoderSubjectBase<moducom::coap::experimental::ContextDispatcherHandler<request_context_t> > test(test_ctx);
+static DecoderSubjectBase<embr::coap::experimental::ContextDispatcherHandler<request_context_t> > test(test_ctx);
 // ---
 
 // FIX: putting this above causes compilation issues, clean that up
@@ -157,7 +157,7 @@ TEST_CASE("CoAP decoder subject tests", "[coap-decoder-subject]")
 
             netbuf_t nb(buffer_16bit_delta);
 
-            moducom::coap::DecoderContext<decoder_type> dc(nb);
+            embr::coap::DecoderContext<decoder_type> dc(nb);
 
             decoder_type decoder = dc.decoder();
 

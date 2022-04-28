@@ -27,7 +27,7 @@ CONSTEXPR int id_path_well_known_core = 8;
 // any of the secondary sorting the benefit is limited by our ability to know
 // how large the 'parent' region is in which we are sorting, which so far
 // is elusive
-const moducom::coap::experimental::UriPathMap map[] =
+const embr::coap::experimental::UriPathMap map[] =
 {
     { "v1",     id_path_v1,             MCCOAP_URIPATH_NONE },
     { "api",    id_path_v1_api,         id_path_v1 },

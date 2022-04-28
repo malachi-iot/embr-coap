@@ -28,8 +28,8 @@
 #include "test-data.h"
 #include "test-uri-data.h"
 
-using namespace moducom::coap;
-using namespace moducom::coap::experimental;
+using namespace embr::coap;
+using namespace embr::coap::experimental;
 
 typedef moducom::pipeline::MemoryChunk::readonly_t ro_chunk_t;
 typedef moducom::pipeline::MemoryChunk chunk_t;
@@ -53,7 +53,7 @@ TEST_CASE("experimental 2 tests")
                 > amo(ctx);
 
         Header test_header(Header::Confirmable);
-        //moducom::coap::layer1::Token token = ;
+        //embr::coap::layer1::Token token = ;
         uint8_t raw_token[] = { 0x45, 0x67 };
 
         test_header.token_length(sizeof(raw_token));
@@ -61,7 +61,7 @@ TEST_CASE("experimental 2 tests")
 
         amo.on_header(test_header);
         //amo.on_token(raw_token); // not doing this only because Buffer16BitDeltaObserver hates it
-        amo.on_option((moducom::coap::Option::Numbers) 270, 1);
+        amo.on_option((embr::coap::Option::Numbers) 270, 1);
     }
 #endif
     SECTION("prototype observer idea1")
@@ -108,7 +108,7 @@ TEST_CASE("experimental 2 tests")
     }
     SECTION("uripath repeater")
     {
-        moducom::coap::experimental::UriPathRepeater<embr::void_subject> upr;
+        embr::coap::experimental::UriPathRepeater<embr::void_subject> upr;
     }
     SECTION("factory test")
     {
@@ -267,7 +267,7 @@ TEST_CASE("experimental 2 tests")
 
         //auto t = estd::make_tuple(1, 2, 3, 4);
         auto t = estd::make_tuple(test_factory(2), test_factory(1));
-        moducom::coap::experimental::FactoryAggregator<int, decltype (t)&> fa(t);
+        embr::coap::experimental::FactoryAggregator<int, decltype (t)&> fa(t);
 
         fa.create(1);
         }
@@ -295,8 +295,8 @@ TEST_CASE("experimental 2 tests")
         }
         SECTION("UriPathMatcher3")
         {
-            moducom::coap::experimental::UriPathMatcher3 m(map);
-            typedef const moducom::coap::experimental::UriPathMap* result_type;
+            embr::coap::experimental::UriPathMatcher3 m(map);
+            typedef const embr::coap::experimental::UriPathMap* result_type;
 
             SECTION("Look in v2/api")
             {

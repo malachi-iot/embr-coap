@@ -6,7 +6,7 @@
 #include "simple-cbor-responder.hpp"
 
 //using namespace std;
-using namespace moducom::coap;
+using namespace embr::coap;
 
 int main()
 {

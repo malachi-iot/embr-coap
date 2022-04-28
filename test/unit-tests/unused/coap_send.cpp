@@ -4,8 +4,8 @@
 #include "coap_transmission.h"
 #include "coap-generator.h"
 
-using namespace moducom::coap;
-using namespace moducom::coap::experimental;
+using namespace embr::coap;
+using namespace embr::coap::experimental;
 
 using namespace moducom::pipeline;
 using namespace moducom::pipeline::experimental;
@@ -91,7 +91,7 @@ TEST_CASE("CoAP message construction tests", "[coap-send]")
         CONSTEXPR int option_number = 4;
         CONSTEXPR int option_length = 4;
 
-        moducom::coap::experimental::layer2::OptionBase option(option_number);
+        embr::coap::experimental::layer2::OptionBase option(option_number);
 
         option.value_string = "TEST";
         option.length = option_length;

@@ -9,7 +9,7 @@
 
 #include <exp/uripath-repeater.h>
 
-using namespace moducom::coap;
+using namespace embr::coap;
 
 constexpr int id_test1 = 2;
 constexpr int id_test2 = 3;

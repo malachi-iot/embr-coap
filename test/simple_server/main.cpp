@@ -19,7 +19,7 @@ void error(const char *msg)
     exit(1);
 }
 
-using namespace moducom::coap;
+using namespace embr::coap;
 
 
 
@@ -83,7 +83,7 @@ void encode_response(TEncoder& encoder, const IncomingContext& context, Header::
 }
 
 
-class TestDispatcherHandler : public moducom::coap::experimental::IDispatcherHandler
+class TestDispatcherHandler : public embr::coap::experimental::IDispatcherHandler
 {
     experimental::BlockingEncoder& encoder;
     IncomingContext context;

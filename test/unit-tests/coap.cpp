@@ -9,7 +9,7 @@
 #define CLEANUP_COAP_CPP
 #define CLEANUP
 
-using namespace moducom::coap;
+using namespace embr::coap;
 
 static void empty_fn()
 {
@@ -140,7 +140,7 @@ TEST_CASE("CoAP tests", "[coap]")
 #ifndef CLEANUP_TRANSMISSION_CPP
     SECTION("Parsing thru experimental DispatchingResponder")
     {
-        moducom::coap::experimental::DispatchingResponder responder;
+        embr::coap::experimental::DispatchingResponder responder;
         TestResponder user_responder;
 
         responder.add_handle("test", &user_responder);

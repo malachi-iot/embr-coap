@@ -11,7 +11,7 @@
 #include "../coap-responder.h"
 #include "test-data.h"
 
-using namespace moducom::coap;
+using namespace embr::coap;
 using namespace moducom::pipeline;
 
 #ifndef CLEANUP_COAP_CPP

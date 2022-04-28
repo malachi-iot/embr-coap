@@ -4,8 +4,8 @@
 #include <coap-encoder.h>
 
 using namespace moducom;
-using namespace moducom::coap;
-using namespace moducom::coap::experimental;
+using namespace embr::coap;
+using namespace embr::coap::experimental;
 
 // in-place new holder
 static pipeline::layer3::MemoryChunk<256> dispatcherBuffer;
@@ -15,7 +15,7 @@ static pipeline::layer3::MemoryChunk<256> outbuf;
 // TODO: Make a new kind of encoder, the normal-simple-case
 // one which just dumps to an existing buffer without all the
 // fancy IPipline/IWriter involvement
-extern moducom::coap::experimental::BlockingEncoder* global_encoder;
+extern embr::coap::experimental::BlockingEncoder* global_encoder;
 
 // FIX: This should be embedded either in encoder or elsewhere
 // signals that we have a response to send
@@ -63,7 +63,7 @@ extern "C" void coap_daemon(void *pvParameters)
         FactoryDispatcherHandler fdh(dispatcherBuffer, context, root_factories, 2);
         Dispatcher dispatcher;
         pipeline::layer3::SimpleBufferedPipelineWriter writer(outbuf);
-        moducom::coap::experimental::BlockingEncoder encoder(writer);
+        embr::coap::experimental::BlockingEncoder encoder(writer);
 
         global_encoder = &encoder;
         printf("\r\nGot COAP data: %d", len);

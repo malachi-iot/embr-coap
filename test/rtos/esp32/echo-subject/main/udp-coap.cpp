@@ -12,7 +12,7 @@
 #include <coap/platform/lwip/encoder.h>
 
 
-using namespace moducom::coap;
+using namespace embr::coap;
 
 #include "context.h"    // lwip magic happens in here
 
