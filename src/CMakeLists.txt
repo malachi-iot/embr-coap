@@ -51,22 +51,17 @@ set(SOURCE_FILES
 
         coap/decoder/events.h
         coap/decoder/netbuf.h
-        coap/decoder/observer.h
-        coap/decoder/observer-aggregate.h
-        coap/decoder/observer-aggregate.hpp
         coap/decoder/option.h
         coap/decoder/simple.h
 
         coap/decoder/streambuf.h
         coap/decoder/streambuf.hpp
 
-        coap/decoder/subject.h
         coap/decoder/subject.hpp
         coap/decoder/subject-core.hpp
 
         coap/encoder/streambuf.h
 
-        coap/experimental-observer.h
         coap/observable.h coap/observable.hpp
         coap/platform.h
         coap/option.h
@@ -75,7 +70,6 @@ set(SOURCE_FILES
         coap/token.cpp
         coap/token.h
 
-        coap-dispatcher.cpp coap-dispatcher.hpp coap-dispatcher.h
         coap-encoder.h
         coap-encoder.cpp
         coap-features.h
@@ -96,17 +90,25 @@ set(SOURCE_FILES
         exp/prototype/observer-idea1.h
 
         obsolete/cbor/encoder.h
+        obsolete/coap-dispatcher.cpp
+        obsolete/coap-dispatcher.h
+        obsolete/coap-dispatcher.hpp
+        obsolete/coap/decoder/observer.h
+        obsolete/coap/decoder/observer-aggregate.h
+        obsolete/coap/decoder/observer-aggregate.hpp
+        obsolete/coap/decoder/subject.h
         obsolete/coap/encoder.h
         obsolete/coap/encoder.hpp
+        obsolete/coap/experimental-observer.h
         obsolete/coap/observable.h
         obsolete/platform/generic/malloc_netbuf.h
+        obsolete/platform/lwip/lwip-portandaddress.h
 
         platform/arduino/arduino-eth-datapump.cpp
 
         platform/generic/datapump-messageobserver.hpp
 
         platform/lwip/lwip-datapump.h
-        platform/lwip/lwip-portandaddress.h
 
         platform/mbedtls/dtls-datapump.cpp
         platform/mbedtls/dtls-datapump.h

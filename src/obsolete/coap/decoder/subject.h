@@ -5,13 +5,13 @@
 
 #pragma once
 
-#include "../decoder.h"
-#include "streambuf.h"
-#include "../../coap-dispatcher.h"
+#include <coap/decoder.h>
+#include <coap/decoder/streambuf.h>
+#include <obsolete/coap-dispatcher.h>
 
 #include <estd/span.h>
-#include "../../exp/events.h"
-#include "observer/util.h"
+#include <exp/events.h>
+#include <coap/decoder/observer/util.h>
 
 // Just before we went with on_notify approach we had a forming useful
 // on_payload, on_token etc. approach.  That approach was more built out

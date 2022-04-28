@@ -1,10 +1,11 @@
 #pragma once
 
-#include "decoder/subject.h"
+//#include "decoder/subject.h"
 //#include "encoder.h"
-#include "experimental-observer.h"
+#include <obsolete/coap/experimental-observer.h>
 #include "exp/datapump-observer.h"
 #include "coap/platform.h"
+#include "context.h"
 #include <estd/vector.h>
 
 namespace embr { namespace  coap {
@@ -49,7 +50,7 @@ template <class TCollection,
           class TRequestContextTraits = incoming_context_traits<TIncomingContext> >
 class ObservableRegistrar
 {
-    typedef pipeline::MemoryChunk::readonly_t ro_chunk_t;
+    typedef moducom::pipeline::MemoryChunk::readonly_t ro_chunk_t;
 
     // Enumeration shall be of type ObservableSession, or something similar to it
     TCollection registrations;

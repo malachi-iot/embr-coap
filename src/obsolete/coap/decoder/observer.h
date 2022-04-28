@@ -3,7 +3,7 @@
 #pragma once
 
 #include <mc/memory-pool.h>
-#include "../context.h"
+#include <coap/context.h>
 
 namespace embr { namespace coap {
 

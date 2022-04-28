@@ -6,7 +6,7 @@
 namespace embr { namespace coap {
 
 template <class TIncomingContext, class TCollection>
-void AggregateDecoderObserver<TIncomingContext, TCollection>::on_token(const pipeline::MemoryChunk::readonly_t& token_part, bool last_chunk)
+void AggregateDecoderObserver<TIncomingContext, TCollection>::on_token(const moducom::pipeline::MemoryChunk::readonly_t& token_part, bool last_chunk)
 {
 
 }

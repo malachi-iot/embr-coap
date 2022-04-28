@@ -6,9 +6,9 @@
 
 #include <catch.hpp>
 
-#include "coap-dispatcher.h"
-#include <coap/decoder/subject.h> // for event definitions
-#include "coap/experimental-observer.h"
+#include <obsolete/coap-dispatcher.h>
+#include <obsolete/coap/decoder/subject.h> // for event definitions
+#include <obsolete/coap/experimental-observer.h>
 #include <coap/decoder/netbuf.h>
 #include <exp/netbuf.h>
 #include "test-data.h"

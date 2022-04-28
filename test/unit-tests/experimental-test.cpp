@@ -6,7 +6,7 @@
 //#include "../mc/pipeline.h"
 #include "mc/experimental-factory.h"
 #include "coap-uripath-dispatcher.h"
-#include "coap/experimental-observer.h"
+#include <obsolete/coap/experimental-observer.h>
 #include "coap/experimental-packet-manager.h"
 
 #include <embr/datapump.hpp>

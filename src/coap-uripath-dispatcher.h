@@ -3,7 +3,7 @@
 //
 #pragma  once
 
-#include "coap-dispatcher.h"
+#include <obsolete/coap-dispatcher.h>
 #include "mc/experimental-factory.h"
 #include "mc/objstack.h"
 

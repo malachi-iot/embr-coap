@@ -3,7 +3,7 @@
 
 #include <obsolete/coap/encoder.h>
 #include <coap/decoder/netbuf.h>
-#include <coap/decoder/subject.h>
+#include <obsolete/coap/decoder/subject.h>
 
 namespace embr { namespace coap {
 

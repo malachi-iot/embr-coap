@@ -1,7 +1,7 @@
 #pragma once
 
 #include <mc/mem/platform.h>
-#include <coap/experimental-observer.h>
+#include <obsolete/coap/experimental-observer.h>
 
 #ifdef FEATURE_CPP_VARIADIC
 // If we have variadic, then we assume we also have type traits
@@ -26,7 +26,7 @@ class AggregateMessageObserver : public MessageObserverBase<TIncomingContext>
 {
     typedef MessageObserverBase<TIncomingContext> base_t;
     typedef internal::option_number_t option_number_t;
-    typedef pipeline::MemoryChunk::readonly_t ro_chunk_t;
+    typedef moducom::pipeline::MemoryChunk::readonly_t ro_chunk_t;
     typedef typename base_t::context_t context_t;
 
     // for message observers with constructors

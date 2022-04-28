@@ -6,7 +6,7 @@
 
 #include <catch.hpp>
 
-#include "coap-dispatcher.h"
+#include <obsolete/coap-dispatcher.h>
 #include "coap-uripath-dispatcher.h"
 #include "test-data.h"
 #include "test-observer.h"

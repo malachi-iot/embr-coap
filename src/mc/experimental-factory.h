@@ -3,7 +3,7 @@
 //
 #pragma once
 
-#include "coap/decoder/observer.h"
+#include <obsolete/coap/decoder/observer.h>
 
 namespace embr { namespace coap {
 
