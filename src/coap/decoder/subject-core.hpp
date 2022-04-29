@@ -130,6 +130,7 @@ decode_result decode_and_notify(StreambufDecoder<TStreambuf>& decoder, TSubject&
         }
 
         case Decoder::Done:
+            at_end.done = true;
             subject.notify(completed_event(), app_context);
             break;
 

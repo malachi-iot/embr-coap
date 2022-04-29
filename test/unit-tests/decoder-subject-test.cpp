@@ -139,10 +139,7 @@ TEST_CASE("CoAP decoder subject tests", "[coap-decoder-subject]")
             // iterates until buffer end, not until state machine yields Decoder::Done)
             //decoder.process_experimental(s, context);
 
-            do
-            {
-                iterated::decode_and_notify(decoder, s, context);
-            } while (decoder.state() != Decoder::Done);
+            decode_and_notify(decoder, s, context);
 
             REQUIRE(test_static_observer::counter == 3);
             REQUIRE(o.counter == 3);
@@ -200,10 +197,7 @@ TEST_CASE("CoAP decoder subject tests", "[coap-decoder-subject]")
             o2.counter = 4;
             auto s = embr::layer1::make_subject(o, o2);
 
-            do
-            {
-                iterated::decode_and_notify(decoder, s);
-            } while (decoder.state() != Decoder::Done);
+            decode_and_notify(decoder, s);
 
             REQUIRE(o.counter == 3);
             REQUIRE(o2.counter == 7);
@@ -214,10 +208,7 @@ TEST_CASE("CoAP decoder subject tests", "[coap-decoder-subject]")
             request_context_t context;
             auto s = embr::layer1::make_subject(o);
 
-            do
-            {
-                iterated::decode_and_notify(decoder, s, context);
-            } while (decoder.state() != Decoder::Done);
+            decode_and_notify(decoder, s, context);
 
             REQUIRE(o.counter == 3);
         }

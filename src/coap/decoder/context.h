@@ -69,12 +69,16 @@ namespace iterated {
 // DEBT: Temporarily putting this here as we flesh out this upgraded return type
 struct decode_result
 {
-    /// EOF of data stream was reached.
+    /// End of data stream was reached.  NOTE that this is not considered
+    /// a stopping point, as further state machine processing may need to
+    /// occur on gathered data.  Look to 'done'
     uint16_t eof : 1;
     /// Data is in an unavailable/unknown state
     uint16_t waitstate : 1;
     /// CoAP decoding encountered an error - not yet active
     uint16_t failure : 1;
+    /// CoAP completed decoding the packet normally
+    uint16_t done: 1;
 };
 
 }

@@ -178,7 +178,7 @@ class DecoderSubjectBase
 
     // returns false while chunk/context has not been exhausted
     // returns true once it has
-    bool dispatch_iterate(Decoder::Context& context);
+    iterated::decode_result dispatch_iterate(Decoder::Context& context);
 
     void dispatch_token();
     void dispatch_option(Decoder::Context& context);
@@ -202,7 +202,7 @@ public:
     {
         Decoder::Context context(chunk, last_chunk);
 
-        while(!dispatch_iterate(context) && decoder.state() != Decoder::Done);
+        while(!dispatch_iterate(context).eof && decoder.state() != Decoder::Done);
 
         return context.pos;
     }

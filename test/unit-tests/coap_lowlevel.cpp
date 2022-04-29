@@ -50,7 +50,16 @@ TEST_CASE("CoAP low level tests", "[coap-lowlevel]")
 
             embr::void_subject s;
             Decoder::Context context(temp_chunk, i == sizeof(buffer) - 1);
-            decode_and_notify(parser, s, context);
+
+            // Low level test, we're evaluating inching through tiny buffers so
+            // we manually need to look for eof/waitstate
+            iterated::decode_result r;
+
+            do
+            {
+                r = iterated::decode_and_notify(parser, s, context);
+            }
+            while(!(r.eof | r.waitstate));
 
             switch (i + 1)
             {
@@ -109,7 +118,13 @@ TEST_CASE("CoAP low level tests", "[coap-lowlevel]")
             estd::const_buffer temp_chunk(&buffer[i], 1);
             parser_t::Context context(temp_chunk, i == sizeof(buffer_16bit_delta) - 1);
 
-            while(!parser.process_iterate(context));
+            iterated::decode_result r;
+
+            do
+            {
+                r = parser.process_iterate(context);
+            }
+            while(!(r.eof | r.waitstate));
 
             state_t state = parser.state();
 

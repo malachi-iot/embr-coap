@@ -35,13 +35,15 @@ Decoder::ro_chunk_t Decoder::option(Context& context, bool* completed)
 }
 
 
-bool Decoder::process_iterate(Context& context)
+iterated::decode_result Decoder::process_iterate(Context& context)
 {
     size_t& pos = context.pos;
     bool last_chunk = context.last_chunk;
     //typedef pipeline::MemoryChunk::readonly_t ro_chunk_t;
     typedef Context::chunk_t ro_chunk_t;
     const ro_chunk_t& chunk = context.chunk;
+
+    iterated::decode_result r{false, false, false, false};
 
     switch (state())
     {
@@ -197,6 +199,7 @@ bool Decoder::process_iterate(Context& context)
             break;
 
         case Done:
+            r.done = true;
             state(Uninitialized);
             break;
 
@@ -205,7 +208,12 @@ bool Decoder::process_iterate(Context& context)
     // TODO: Do an assert to make sure pos never exceeds chunk boundary
     ASSERT_ERROR(true, pos <= chunk.size(), "pos should never exceed chunk length");
 
-    return pos == chunk.size();
+    if(last_chunk)
+        r.eof = pos == chunk.size();
+    else
+        r.waitstate = pos == chunk.size();
+
+    return r;
 }
 
 }}

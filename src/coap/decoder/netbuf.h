@@ -58,7 +58,7 @@ protected:
     }
 
 
-    bool process_iterate(State assert_start_state, const char* errmsg = NULLPTR)
+    iterated::decode_result process_iterate(State assert_start_state, const char* errmsg = NULLPTR)
     {
         if(errmsg)
         {
@@ -73,9 +73,7 @@ protected:
             ASSERT_ERROR(assert_start_state, state(), "Encountered unexpected state");
 #endif
         }
-        bool result = base_t::process_iterate(context);
-
-        return result;
+        return base_t::process_iterate(context);
     }
 
     // keep processing until we encounter state
@@ -146,7 +144,7 @@ protected:
 
 
 public:
-    bool process_iterate()
+    iterated::decode_result process_iterate()
     {
         // TODO: Will know how to advance through netbuf
         return base_t::process_iterate(context);

@@ -79,7 +79,7 @@ iterated::decode_result decode_and_notify(
     {
         r = iterated::decode_and_notify(decoder, subject, app_context);
     }
-    while((r.failure | r.waitstate | r.eof) == 0);
+    while((r.failure | r.waitstate | r.done) == 0);
 
     return r;
 }
@@ -107,9 +107,21 @@ iterated::decode_result decode_and_notify(
     {
         r = iterated::decode_and_notify(decoder, subject, context, app_context);
     }
-    while((r.failure | r.waitstate | r.eof) == 0);
+    while((r.failure | r.waitstate | r.done) == 0);
 
     return r;
+}
+
+
+/// Auto iterating decoder/notifier.  Runs until a stopping point is encountered
+/// Uses an empty monostate for app_context
+/// \return iterated::decode_result indicates reason for stopping
+template <class TSubject, class TStreambuf>
+iterated::decode_result decode_and_notify(StreambufDecoder<TStreambuf>& decoder, TSubject& subject)
+{
+    estd::monostate empty_app_context;
+
+    return coap::decode_and_notify(decoder, subject, empty_app_context);
 }
 
 /// Auto iterating decoder/notifier.  Runs until a stopping point is encountered

@@ -28,7 +28,7 @@ decode_result decode_and_notify(Decoder& decoder, TSubject& subject, Decoder::Co
     // NOTE: We deviate from norm and do state machine processing before then evaluating
     // state.  This means we'll miss out on responding to 'Uninitialized' state (oh no)
     // and importantly, means that we can consistently respond to 'done' state
-    bool at_end = decoder.process_iterate(context);
+    iterated::decode_result r = decoder.process_iterate(context);
 
     typedef event::header header_event;
     typedef event::token token_event;
@@ -96,6 +96,7 @@ decode_result decode_and_notify(Decoder& decoder, TSubject& subject, Decoder::Co
             break;
 
         case Decoder::Done:
+            r.done = true;
             subject.notify(completed_event(), app_context);
             break;
 
@@ -103,7 +104,7 @@ decode_result decode_and_notify(Decoder& decoder, TSubject& subject, Decoder::Co
             break;
     }
 
-    return iterated::decode_result{at_end, false, false};
+    return r;
 }
 
 
@@ -113,7 +114,7 @@ decode_result decode_and_notify(Decoder& decoder, TSubject& subject, Decoder::Co
 // TODO: Eventually clean up dispatch_option and then
 // just run process_iterate always at the bottom
 template <class TMessageObserver>
-bool DecoderSubjectBase<TMessageObserver>::dispatch_iterate(Decoder::Context& context)
+iterated::decode_result DecoderSubjectBase<TMessageObserver>::dispatch_iterate(Decoder::Context& context)
 {
     switch(decoder.state())
     {
