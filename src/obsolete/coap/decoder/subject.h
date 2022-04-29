@@ -122,15 +122,6 @@ struct observer_wrapper : observer_base
 
 }
 
-template <class TSubject>
-bool notify_from_decoder(TSubject& subject, Decoder& decoder, Decoder::Context& context)
-{
-    int fake_app_context = 0;
-
-    return decode_and_notify(decoder, subject, context, fake_app_context);
-}
-
-
 #if FEATURE_MCCOAP_LEGACY_EVENTS
 // Revamped "Dispatcher"
 // Now passing basic test suite

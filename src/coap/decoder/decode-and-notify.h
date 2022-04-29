@@ -5,7 +5,9 @@
 
 namespace embr { namespace coap {
 
-namespace internal {
+// Used to call this 'internal' but ADL causes calls to flow here
+// unexpectedly
+namespace iterated {
 
 // TSubject = one of the new embr::*::subject classes
 // NOTE: Not perfect location, a global function, but not terrible either.  Perhaps
@@ -34,7 +36,17 @@ bool decode_and_notify(StreambufDecoder<TStreambuf>& decoder, TSubject& subject)
     return decode_and_notify(decoder, subject, fake_app_context);
 }
 
+/*
+template <class TSubject>
+bool notify_and_decode(Decoder& decoder, TSubject& subject, Decoder::Context& context)
+{
+    int fake_app_context;
+
+    return internal::decode_and_notify(decoder, subject, context, fake_app_context);
+} */
+
 
 }
+
 
 }}

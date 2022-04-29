@@ -12,7 +12,7 @@ namespace embr { namespace coap {
 
 // Making core decode_and_notify internal because it's somewhat non intuitive that it requires
 // multiple calls to iterate through the entire state machine
-namespace internal {
+namespace iterated {
 
 // inspects state of incoming decoder+context, and fires off associated decoder events via
 // provided subject.

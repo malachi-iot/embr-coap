@@ -182,7 +182,7 @@ protected:
 
 class Decoder;
 
-namespace internal {
+namespace iterated {
 // TODO: move to decode-and-notify.h
 template <class TSubject>
 bool decode_and_notify(Decoder& decoder, TSubject& subject, internal::DecoderContext& context);
@@ -252,7 +252,7 @@ public:
     template <class TSubject>
     bool process_iterate_experimental(TSubject& s, Context& context)
     {
-        return decode_and_notify(*this, s, context);
+        return iterated::decode_and_notify(*this, s, context);
     }
 
     /// @brief process entire remainder of context, firing events via TSubject.  Runs until
