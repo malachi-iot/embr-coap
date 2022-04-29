@@ -180,17 +180,6 @@ public:
     { 
         return option_decoder().state();
     }
-
-    /// @brief process entire remainder of context, firing events via TSubject.  Runs until
-    ///        buffer is exhausted
-    /// \tparam TSubject The event sink type
-    /// \param s The event sink
-    /// \param context
-    template <class TSubject>
-    void process_experimental(TSubject& s, Context& context)
-    {
-        while(!iterated::decode_and_notify(*this, s, context).eof);
-    }
 };
 
 }}

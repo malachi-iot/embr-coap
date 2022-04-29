@@ -50,7 +50,7 @@ TEST_CASE("CoAP low level tests", "[coap-lowlevel]")
 
             embr::void_subject s;
             Decoder::Context context(temp_chunk, i == sizeof(buffer) - 1);
-            parser.process_experimental(s, context);
+            decode_and_notify(parser, s, context);
 
             switch (i + 1)
             {

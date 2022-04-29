@@ -1,5 +1,7 @@
 #pragma once
 
+#include <estd/variant.h>
+
 #include "context.h"
 
 namespace embr { namespace coap {
@@ -36,25 +38,89 @@ decode_result decode_and_notify(
 /// \param decoder
 /// \param subject
 /// \param context
-/// \return true on eof, false otherwise
+/// \return decode_result reflecting eof, waitstate or bad decode
 template <class TSubject>
 decode_result decode_and_notify(Decoder& decoder, TSubject& subject, internal::DecoderContext& context)
 {
-    int fake_app_context;
+    estd::monostate empty_app_context;
 
-    return decode_and_notify(decoder, subject, context, fake_app_context);
+    return iterated::decode_and_notify(decoder, subject, context, empty_app_context);
 }
 
 template <class TSubject, class TStreambuf>
 decode_result decode_and_notify(StreambufDecoder<TStreambuf>& decoder, TSubject& subject)
 {
-    int fake_app_context;
+    estd::monostate empty_app_context;
 
-    return decode_and_notify(decoder, subject, fake_app_context);
+    return iterated::decode_and_notify(decoder, subject, empty_app_context);
 }
 
 
 }
 
+/// Auto iterating decoder/notifier
+/// Runs until a stopping point is encountered
+/// \tparam TSubject
+/// \tparam TStreambuf
+/// \tparam TContext
+/// \param decoder
+/// \param subject
+/// \param app_context
+/// \return @see iterated::decode_result
+template <class TSubject, class TStreambuf, class TContext>
+iterated::decode_result decode_and_notify(
+    StreambufDecoder<TStreambuf>& decoder,
+    TSubject& subject,
+    TContext& app_context)
+{
+    iterated::decode_result r;
+
+    do
+    {
+        r = iterated::decode_and_notify(decoder, subject, app_context);
+    }
+    while((r.failure | r.waitstate | r.eof) == 0);
+
+    return r;
+}
+
+
+/// Auto iterating decoder/notifier
+/// Runs until a stopping point is encountered
+/// \tparam TSubject
+/// \tparam TStreambuf
+/// \tparam TContext
+/// \param decoder
+/// \param subject
+/// \param app_context
+/// \return iterated::decode_result indicates reason for stopping
+template <class TSubject, class TContext>
+iterated::decode_result decode_and_notify(
+    Decoder& decoder,
+    TSubject& subject,
+    internal::DecoderContext& context,
+    TContext& app_context)
+{
+    iterated::decode_result r;
+
+    do
+    {
+        r = iterated::decode_and_notify(decoder, subject, context, app_context);
+    }
+    while((r.failure | r.waitstate | r.eof) == 0);
+
+    return r;
+}
+
+/// Auto iterating decoder/notifier.  Runs until a stopping point is encountered
+/// Uses an empty monostate for app_context
+/// \return iterated::decode_result indicates reason for stopping
+template <class TSubject>
+iterated::decode_result decode_and_notify(Decoder& decoder, TSubject& subject, internal::DecoderContext& context)
+{
+    estd::monostate empty_app_context;
+
+    return coap::decode_and_notify(decoder, subject, context, empty_app_context);
+}
 
 }}

@@ -116,7 +116,7 @@ TEST_CASE("CoAP decoder subject tests", "[coap-decoder-subject]")
         {
             embr::void_subject s;
 
-            decoder.process_experimental(s, context);
+            decode_and_notify(decoder, s, context);
 
             /*
             do
