@@ -27,7 +27,7 @@ bool StreambufDecoder<TStreambuf>::process_iterate_streambuf(size_t& pos, bool* 
     if(waitstate != NULLPTR)
     {
         // Record in waitstate if we are waiting for more data or not
-        if(*waitstate = !eof && in_avail == 0)
+        if((*waitstate = (!eof && in_avail == 0)))
             // We've determined we aren't at EOF, but there is no data available
             // no point in processing with no data, return immediately
             return false;
