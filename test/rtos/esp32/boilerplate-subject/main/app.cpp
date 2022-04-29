@@ -7,6 +7,10 @@ using namespace embr::coap;
 #include "context.h"
 #include <coap/platform/esp-idf/observer.h>
 
+#include <coap/platform/lwip/encoder.h>
+
+using embr::lwip::upgrading::ipbuf_streambuf;
+
 constexpr int id_path_v1 = 0;
 constexpr int id_path_v1_api = 1;
 constexpr int id_path_v1_api_test = 3;
@@ -75,6 +79,15 @@ void udp_coap_recv(void *arg,
     // This code is, in theory, reentrant.  That has not been tested well, however
     AppContext context(pcb, addr, port);
 
-    // NOTE: do_notify plumbing calls pbuf_free(p)
-    LwipContext::do_notify(app_subject, context, p);
+    // _recv plumbing depends on us to frees p,
+    // so be sure we do NOT bump up reference, which
+    // makes the auto pbuf_free call completely free
+    // up p as LwIP wants
+    //StreambufDecoder<ipbuf_streambuf> decoder(p, false);
+
+    // DEBT: Very confusing, this flavor of decode_and_notify requires
+    // iteration, while the below one does not
+    //decode_and_notify(decoder, app_subject, context);
+
+    decode_and_notify(p, app_subject, context);
 }
