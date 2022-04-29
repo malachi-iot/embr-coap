@@ -3,7 +3,8 @@
 #include "streambuf.h"
 #include "events.h"
 
-namespace embr { namespace coap {
+// DEBT: Move this and subject.hpp contents into decode-and-notify.hpp
+namespace embr { namespace coap { namespace iterated {
 
 // inspects state of incoming decoder+context, and fires off associated decoder events via
 // provided subject.
@@ -138,4 +139,4 @@ bool decode_and_notify(StreambufDecoder<TStreambuf>& decoder, TSubject& subject,
     return at_end;
 }
 
-}}
+}}}

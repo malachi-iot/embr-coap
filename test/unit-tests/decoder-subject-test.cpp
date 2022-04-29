@@ -216,7 +216,7 @@ TEST_CASE("CoAP decoder subject tests", "[coap-decoder-subject]")
 
             do
             {
-                decode_and_notify(decoder, s, context);
+                iterated::decode_and_notify(decoder, s, context);
             } while (decoder.state() != Decoder::Done);
 
             REQUIRE(o.counter == 3);

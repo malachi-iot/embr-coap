@@ -24,6 +24,12 @@ bool decode_and_notify(
     internal::DecoderContext& context,
     TContext& app_context);
 
+template <class TSubject, class TStreambuf, class TContext>
+bool decode_and_notify(
+    StreambufDecoder<TStreambuf>& decoder,
+    TSubject& subject,
+    TContext& app_context);
+
 
 ///
 /// \tparam TSubject
@@ -46,7 +52,6 @@ bool decode_and_notify(StreambufDecoder<TStreambuf>& decoder, TSubject& subject)
 
     return decode_and_notify(decoder, subject, fake_app_context);
 }
-
 
 
 }

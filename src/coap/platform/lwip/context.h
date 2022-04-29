@@ -29,7 +29,7 @@ static void decode_and_notify(
 
     do
     {
-        decode_and_notify(decoder, subject, context);
+        iterated::decode_and_notify(decoder, subject, context);
     }
     while(decoder.state() != embr::coap::Decoder::Done);
 }
