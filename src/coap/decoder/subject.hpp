@@ -10,6 +10,10 @@
 
 namespace embr { namespace coap {
 
+// Making core decode_and_notify internal because it's somewhat non intuitive that it requires
+// multiple calls to iterate through the entire state machine
+namespace internal {
+
 // inspects state of incoming decoder+context, and fires off associated decoder events via
 // provided subject.
 // shall bear very strong resemblace to predecessor's DecoderSubjectBase dispatch_iterate
@@ -34,7 +38,7 @@ bool decode_and_notify(Decoder& decoder, TSubject& subject, Decoder::Context& co
     typedef event::option_start option_start_event;
     typedef event::completed completed_event;
 
-    switch(decoder.state())
+    switch (decoder.state())
     {
         case Decoder::HeaderDone:
             subject.notify(header_event(decoder.header_decoder()), app_context);
@@ -44,7 +48,7 @@ bool decode_and_notify(Decoder& decoder, TSubject& subject, Decoder::Context& co
         {
             // FIX: Not 100% sure token_length is available at this point
             buffer_t chunk(decoder.token_decoder().data(),
-                             decoder.header_decoder().token_length());
+                           decoder.header_decoder().token_length());
 
             // TODO: Do chunking
             subject.notify(token_event(chunk, true), app_context);
@@ -56,7 +60,7 @@ bool decode_and_notify(Decoder& decoder, TSubject& subject, Decoder::Context& co
             break;
 
         case Decoder::Options:
-            switch(decoder.option_state())
+            switch (decoder.option_state())
             {
                 // a lot of option states pass by, but we always latch on to the ValueStart state
                 // remember, this state is seen even with "0-length" values
@@ -73,12 +77,12 @@ bool decode_and_notify(Decoder& decoder, TSubject& subject, Decoder::Context& co
                         buffer_t b = decoder.option(context, &completed);
                         subject.notify(option_event(option_number, b, completed),
                                        app_context);
-                    }
-                    else
+                    } else
                         subject.notify(option_event(option_number), app_context);
                 }
 
-                default: break;
+                default:
+                    break;
             }
             break;
 
@@ -95,14 +99,15 @@ bool decode_and_notify(Decoder& decoder, TSubject& subject, Decoder::Context& co
             subject.notify(completed_event(), app_context);
             break;
 
-        default: break;
+        default:
+            break;
     }
 
     return at_end;
 }
 
 
-
+}
 
 #if FEATURE_MCCOAP_LEGACY_EVENTS
 // TODO: Eventually clean up dispatch_option and then

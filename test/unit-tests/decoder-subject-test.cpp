@@ -3,6 +3,7 @@
 #include "coap/decoder/subject.hpp"
 #include "coap/decoder/streambuf.hpp"
 #include <obsolete/coap/decoder/observer-aggregate.hpp>
+#include <coap/decoder/decode-and-notify.h>
 #include <exp/diagnostic-decoder-observer.h>
 #include "test-data.h"
 #include "test-observer.h"
@@ -191,7 +192,7 @@ TEST_CASE("CoAP decoder subject tests", "[coap-decoder-subject]")
         {
             embr::void_subject s;
 
-            decode_and_notify(decoder, s);
+            embr::coap::internal::decode_and_notify(decoder, s);
         }
         SECTION("regular subject (stateful)")
         {
