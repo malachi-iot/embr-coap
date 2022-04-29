@@ -49,6 +49,7 @@ set(SOURCE_FILES
         coap/decoder.h
         coap/decoder.hpp
 
+        coap/decoder/context.h
         coap/decoder/decode-and-notify.h
         coap/decoder/events.h
         coap/decoder/netbuf.h

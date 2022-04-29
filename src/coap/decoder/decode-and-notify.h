@@ -1,5 +1,7 @@
 #pragma once
 
+#include "context.h"
+
 #include <coap/decoder.h>
 #include <coap/decoder/streambuf.h>
 
@@ -17,7 +19,7 @@ template <class TSubject, class TContext>
 bool decode_and_notify(
     Decoder& decoder,
     TSubject& subject,
-    Decoder::Context& context,
+    internal::DecoderContext& context,
     TContext& app_context);
 
 
@@ -28,7 +30,7 @@ bool decode_and_notify(
 /// \param context
 /// \return true on eof, false otherwise
 template <class TSubject>
-bool decode_and_notify(Decoder& decoder, TSubject& subject, Decoder::Context& context)
+bool decode_and_notify(Decoder& decoder, TSubject& subject, internal::DecoderContext& context)
 {
     int fake_app_context;
 
