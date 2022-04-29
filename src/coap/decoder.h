@@ -17,6 +17,7 @@
 #include "decoder/simple.h"
 #include "decoder/option.h"
 #include "decoder/context.h"
+#include "decoder/decode-and-notify.h"
 
 #if __cplusplus >= 201103L
 #include <type_traits>
@@ -119,13 +120,6 @@ protected:
     }
 };
 
-class Decoder;
-
-namespace iterated {
-// TODO: move to decode-and-notify.h
-template <class TSubject>
-bool decode_and_notify(Decoder& decoder, TSubject& subject, internal::DecoderContext& context);
-}
 
 // TODO: As an optimization, make version of TokenDecoder which is zerocopy
 class Decoder :

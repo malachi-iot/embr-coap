@@ -5,6 +5,10 @@
 
 namespace embr { namespace coap {
 
+// DEBT: Once we have a synthetic streambuf which can actually generate a waitstate,
+// roll a test for it and strongly consider changing return type from bool to a packed struct
+// with both eof and waitstate flags.  Nonblocking consumers can really use the info as to
+// why exactly processing isn't complete
 template <class TStreambuf>
 bool StreambufDecoder<TStreambuf>::process_iterate_streambuf(size_t& pos, bool* waitstate)
 {

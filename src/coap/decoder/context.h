@@ -4,13 +4,16 @@
 
 #include <mc/memory-chunk.h>
 
+// This is the legacy way of pushing data through our decoder.  It has the advantage
+// that is that it is dead simple while still being relatively powerful owing to the
+// 'last_chunk' flag.  And C++03 friendly.  Our streambufs are great, but they are not that.
+// So we keep it
 namespace embr { namespace coap { namespace internal {
 
 // NOTE: Running into this pattern a lot, a memory chunk augmented by a "worker position"
 // which moves through it
 struct DecoderContext
 {
-    //typedef pipeline::experimental::ReadOnlyMemoryChunk<> chunk_t;
     typedef estd::span<const uint8_t> chunk_t;
 
     // TODO: optimize by making this a value not a ref, and bump up "data" pointer

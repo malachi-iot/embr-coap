@@ -2,10 +2,12 @@
 
 #include "context.h"
 
-#include <coap/decoder.h>
-#include <coap/decoder/streambuf.h>
-
 namespace embr { namespace coap {
+
+class Decoder;
+
+template <class TStreambuf>
+class StreambufDecoder;
 
 // Used to call this 'internal' but ADL causes calls to flow here
 // unexpectedly
