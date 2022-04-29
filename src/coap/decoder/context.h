@@ -62,5 +62,21 @@ public:
         last_chunk(last_chunk) {}
 };
 
+}
 
-}}}
+namespace iterated {
+
+// DEBT: Temporarily putting this here as we flesh out this upgraded return type
+struct decode_result
+{
+    /// EOF of data stream was reached.
+    uint16_t eof : 1;
+    /// Data is in an unavailable/unknown state
+    uint16_t waitstate : 1;
+    /// CoAP decoding encountered an error - not yet active
+    uint16_t failure : 1;
+};
+
+}
+
+}}

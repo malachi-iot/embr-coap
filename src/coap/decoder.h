@@ -189,7 +189,7 @@ public:
     template <class TSubject>
     void process_experimental(TSubject& s, Context& context)
     {
-        while(!iterated::decode_and_notify(*this, s, context));
+        while(!iterated::decode_and_notify(*this, s, context).eof);
     }
 };
 

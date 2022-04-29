@@ -21,7 +21,7 @@ namespace iterated {
 // is going to handle streambufs
 /// @return true when at end of context buffer, false otherwise
 template <class TSubject, class TContext>
-bool decode_and_notify(Decoder& decoder, TSubject& subject, Decoder::Context& context, TContext& app_context)
+decode_result decode_and_notify(Decoder& decoder, TSubject& subject, Decoder::Context& context, TContext& app_context)
 {
     typedef event::event_base::buffer_t buffer_t;
 
@@ -103,7 +103,7 @@ bool decode_and_notify(Decoder& decoder, TSubject& subject, Decoder::Context& co
             break;
     }
 
-    return at_end;
+    return iterated::decode_result{at_end, false, false};
 }
 
 

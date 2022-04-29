@@ -174,19 +174,19 @@ TEST_CASE("CoAP decoder tests", "[coap-decoder]")
         SECTION("streambuf native style")
         {
             // somewhat a copy/paste from "16 bit delta test"
-            REQUIRE(!decoder.process_iterate_streambuf());
+            REQUIRE(!decoder.process_iterate_streambuf().eof);
             REQUIRE(decoder.state() == Decoder::Header);
-            REQUIRE(!decoder.process_iterate_streambuf());
+            REQUIRE(!decoder.process_iterate_streambuf().eof);
             REQUIRE(decoder.state() == Decoder::HeaderDone);
             uint16_t message_id = decoder.header_decoder().message_id();
             REQUIRE(message_id == 0x0123);
 
-            REQUIRE(!decoder.process_iterate_streambuf());
+            REQUIRE(!decoder.process_iterate_streambuf().eof);
             REQUIRE(decoder.state() == Decoder::TokenDone);
-            REQUIRE(!decoder.process_iterate_streambuf());
+            REQUIRE(!decoder.process_iterate_streambuf().eof);
             REQUIRE(decoder.state() == Decoder::OptionsStart);
 
-            REQUIRE(!decoder.process_iterate_streambuf());
+            REQUIRE(!decoder.process_iterate_streambuf().eof);
             REQUIRE(decoder.state() == Decoder::Options);
 #if !FEATURE_MCCOAP_SUCCINCT_OPTIONDECODE
             REQUIRE(decoder.option_decoder().state() == OptionDecoder::OptionLengthDone);
@@ -201,11 +201,11 @@ TEST_CASE("CoAP decoder tests", "[coap-decoder]")
             REQUIRE(decoder.option_number() == 270);
             REQUIRE(decoder.option_decoder().option_delta() == 270);
 
-            REQUIRE(!decoder.process_iterate_streambuf());
+            REQUIRE(!decoder.process_iterate_streambuf().eof);
             REQUIRE(decoder.state() == Decoder::Options);
             REQUIRE(decoder.option_decoder().state() == OptionDecoder::OptionValueDone);
 
-            REQUIRE(!decoder.process_iterate_streambuf());
+            REQUIRE(!decoder.process_iterate_streambuf().eof);
             REQUIRE(decoder.state() == Decoder::Options);
 #if !FEATURE_MCCOAP_SUCCINCT_OPTIONDECODE
             REQUIRE(decoder.option_decoder().state() == OptionDecoder::OptionDeltaAndLengthDone);
@@ -220,14 +220,14 @@ TEST_CASE("CoAP decoder tests", "[coap-decoder]")
 #endif
             REQUIRE(decoder.option_decoder().state() == OptionDecoder::ValueStart);
 
-            REQUIRE(!decoder.process_iterate_streambuf());
+            REQUIRE(!decoder.process_iterate_streambuf().eof);
             REQUIRE(decoder.state() == Decoder::Options);
             REQUIRE(decoder.option_decoder().state() == OptionDecoder::OptionValueDone);
 
-            REQUIRE(!decoder.process_iterate_streambuf());
+            REQUIRE(!decoder.process_iterate_streambuf().eof);
             REQUIRE(decoder.state() == Decoder::OptionsDone);
 
-            REQUIRE(!decoder.process_iterate_streambuf());
+            REQUIRE(!decoder.process_iterate_streambuf().eof);
             REQUIRE(decoder.state() == Decoder::Payload);
 
             auto& rdbuf = *decoder.rdbuf();
@@ -242,7 +242,7 @@ TEST_CASE("CoAP decoder tests", "[coap-decoder]")
             //REQUIRE(payload == original_payload);
             //decoder.rdbuf()->gptr();
 
-            REQUIRE(decoder.process_iterate_streambuf());
+            REQUIRE(decoder.process_iterate_streambuf().eof);
             REQUIRE(decoder.state() == Decoder::PayloadDone);
         }
         SECTION("wait state")

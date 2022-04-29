@@ -18,14 +18,14 @@ namespace iterated {
 // attaching it to Decoder, since TSubject is entirely ephemeral anyway?
 // Also be advised this actually does a process iterate as well as a notify
 template <class TSubject, class TContext>
-bool decode_and_notify(
+decode_result decode_and_notify(
     Decoder& decoder,
     TSubject& subject,
     internal::DecoderContext& context,
     TContext& app_context);
 
 template <class TSubject, class TStreambuf, class TContext>
-bool decode_and_notify(
+decode_result decode_and_notify(
     StreambufDecoder<TStreambuf>& decoder,
     TSubject& subject,
     TContext& app_context);
@@ -38,7 +38,7 @@ bool decode_and_notify(
 /// \param context
 /// \return true on eof, false otherwise
 template <class TSubject>
-bool decode_and_notify(Decoder& decoder, TSubject& subject, internal::DecoderContext& context)
+decode_result decode_and_notify(Decoder& decoder, TSubject& subject, internal::DecoderContext& context)
 {
     int fake_app_context;
 
@@ -46,7 +46,7 @@ bool decode_and_notify(Decoder& decoder, TSubject& subject, internal::DecoderCon
 }
 
 template <class TSubject, class TStreambuf>
-bool decode_and_notify(StreambufDecoder<TStreambuf>& decoder, TSubject& subject)
+decode_result decode_and_notify(StreambufDecoder<TStreambuf>& decoder, TSubject& subject)
 {
     int fake_app_context;
 
