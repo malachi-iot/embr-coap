@@ -95,11 +95,7 @@ TEST_CASE("CoAP tests", "[coap]")
         o.length = 1;
         o.value_string = "a";
 
-#ifdef CLEANUP
         OptionEncoder sm(o);
-#else
-        experimental::layer2::OptionGenerator::StateMachine sm(o);
-#endif
 
         while(sm.state() != Option::OptionValueDone)
         {

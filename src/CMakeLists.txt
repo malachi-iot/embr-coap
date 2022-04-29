@@ -34,7 +34,7 @@ include_directories(${EMBR_DIR})
 
 set(SOURCE_FILES
         coap.cpp coap.h
-        coap_transmission.cpp coap_transmission.h
+        coap_transmission.h
         cbor.h
         cbor/cbor.cpp cbor/features.h
         cbor/decoder.cpp

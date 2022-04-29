@@ -40,7 +40,7 @@ iterated::decode_result Decoder::process_iterate(Context& context)
     size_t& pos = context.pos;
     bool last_chunk = context.last_chunk;
     //typedef pipeline::MemoryChunk::readonly_t ro_chunk_t;
-    typedef Context::chunk_t ro_chunk_t;
+    typedef Context::chunk_type ro_chunk_t;
     const ro_chunk_t& chunk = context.chunk;
 
     iterated::decode_result r{false, false, false, false};

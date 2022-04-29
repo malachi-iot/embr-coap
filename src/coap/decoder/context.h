@@ -11,10 +11,11 @@
 namespace embr { namespace coap { namespace internal {
 
 // NOTE: Running into this pattern a lot, a memory chunk augmented by a "worker position"
-// which moves through it
-struct DecoderContext
+// which moves through it.
+template <class TChar>
+struct DataContextBase
 {
-    typedef estd::span<const uint8_t> chunk_t;
+    typedef estd::span<TChar> chunk_type;
 
     // TODO: optimize by making this a value not a ref, and bump up "data" pointer
     // (and down length) instead of bumping up pos.  A little more fiddly, but then
@@ -23,7 +24,7 @@ struct DecoderContext
     // a memory chunk is living somewhere for this context to operate.  Note though
     // that we need to remember what our original length was, so we still need
     // pos, unless we decrement length along the way
-    const chunk_t chunk;
+    const chunk_type chunk;
 
     // current processing position.  Should be chunk.length once processing is done
     size_t pos;
@@ -36,11 +37,9 @@ struct DecoderContext
     // Unused helper function
     //const uint8_t* data() const { return chunk.data() + pos; }
 
-    chunk_t remainder() const
+    chunk_type remainder() const
     {
-        chunk_t r(chunk.data() + pos, chunk.size() - pos);
-        return r;
-        //return chunk.remainder(pos);
+        return chunk_type(chunk.data() + pos, chunk.size() - pos);
     }
 
     // Helper method as we transition to estd::const_buffer
@@ -51,16 +50,18 @@ struct DecoderContext
     }
 
 public:
-    DecoderContext(const chunk_t& chunk, bool last_chunk) :
+    DataContextBase(const chunk_type& chunk, bool last_chunk) :
         chunk(chunk),
         pos(0),
         last_chunk(last_chunk) {}
 
-    DecoderContext(const moducom::pipeline::MemoryChunk::readonly_t& legacy_chunk, bool last_chunk) :
+    DataContextBase(const moducom::pipeline::MemoryChunk::readonly_t& legacy_chunk, bool last_chunk) :
         chunk(legacy_chunk.data(), legacy_chunk.length()),
         pos(0),
         last_chunk(last_chunk) {}
 };
+
+typedef DataContextBase<const uint8_t> DecoderContext;
 
 }
 

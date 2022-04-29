@@ -7,7 +7,6 @@
 #define MC_COAP_TEST_COAP_ENCODER_H
 
 #include "coap_transmission.h"
-//#include "mc/pipeline-writer.h"
 #include "coap/token.h"
 #include "coap/decoder.h"
 
@@ -124,97 +123,9 @@ public:
 
         state(OptionDone);
     }
-
-#ifdef UNUSED
-    // deprectated
-    bool process_iterate(pipeline::IBufferedPipelineWriter& writer);
-#endif
 };
 
 namespace experimental {
-
-#ifdef UNUSED
-class ExperimentalSessionContext
-{
-    embr::coap::layer2::Token token;
-};
-
-// NOTE: Too dumb to live
-class ExperimentalPrototypeBlockingHeaderEncoder1
-{
-public:
-    void header(pipeline::IPipelineWriter& writer, const Header& header)
-    {
-        writer.write(header.bytes, 4);
-    }
-};
-
-
-// NOTE: Too dumb to live
-class ExperimentalPrototypeBlockingTokenEncoder1
-{
-public:
-    void token(pipeline::IPipelineWriter& writer, const pipeline::MemoryChunk& value)
-    {
-        writer.write(value);
-    }
-};
-
-
-class ExperimentalPrototypeOptionEncoder1
-{
-protected:
-    //typedef embr::coap::experimental::layer2::OptionGenerator::StateMachine generator_t;
-    typedef OptionEncoder generator_t;
-
-    generator_t generator;
-
-    // option helper, fills output with non-value portion of option
-    uint8_t _option(uint8_t* output, internal::option_number_t number, uint16_t length);
-
-    ExperimentalPrototypeOptionEncoder1() : generator(0) {}
-};
-
-
-class ExperimentalPrototypeNonBlockingOptionEncoder1 : public ExperimentalPrototypeOptionEncoder1
-{
-    uint8_t buffer[8];
-
-protected:
-    bool option(pipeline::IBufferedPipelineWriter& writer,
-                internal::option_number_t number, const pipeline::MemoryChunk& value);
-};
-
-
-class ExperimentalPrototypeBlockingOptionEncoder1 : public ExperimentalPrototypeOptionEncoder1
-{
-public:
-
-    // FIX: Only public so that experimental BufferedEncoder can use it
-    // option helper.  Either completely writes a 0 length value option, or
-    // prepares for a write of a > 0 length value option
-    void option(pipeline::IPipelineWriter& writer, internal::option_number_t number, uint16_t length);
-
-public:
-
-    void option(pipeline::IPipelineWriter& writer, internal::option_number_t number, const pipeline::MemoryChunk& value);
-    void option(pipeline::IPipelineWriter& writer, internal::option_number_t number)
-    {
-        option(writer, number, 0);
-    }
-};
-
-
-class ExperimentalPrototypeBlockingPayloadEncoder1
-{
-    bool marker_written;
-
-public:
-    ExperimentalPrototypeBlockingPayloadEncoder1() : marker_written(false) {}
-
-    void payload(pipeline::IPipelineWriter& writer, const pipeline::MemoryChunk& chunk);
-};
-#endif
 
 class EncoderBase
 {
@@ -247,96 +158,6 @@ protected:
 #endif
 
 };
-#ifdef UNUSED
-class BlockingEncoder : public EncoderBase
-{
-protected:
-    typedef internal::option_number_t option_number_t;
-
-    ExperimentalPrototypeBlockingOptionEncoder1 optionEncoder;
-    ExperimentalPrototypeBlockingPayloadEncoder1 payloadEncoder;
-
-    pipeline::IPipelineWriter& writer;
-
-public:
-    BlockingEncoder(pipeline::IPipelineWriter& writer) :
-            writer(writer) {}
-
-    void header(const Header& header)
-    {
-        assert_state(_state_t::Header);
-        writer.write(header.bytes, 4);
-        state(_state_t::HeaderDone);
-    }
-
-
-    void header(Header::RequestMethodEnum request_method, Header::TypeEnum c = Header::Confirmable)
-    {
-        // initializes with no token and no message id
-        Header header(c);
-
-        header.code(request_method);
-
-        this->header(header);
-    }
-
-
-    void header(Header::Code::Codes response_method, Header::TypeEnum c = Header::Confirmable)
-    {
-        Header header(c);
-
-        header.response_code(response_method);
-
-        this->header(header);
-    }
-
-
-    // remember that, for now, we have to explicitly set token length in header too
-    void token(const pipeline::MemoryChunk& value)
-    {
-        assert_state(_state_t::HeaderDone);
-        writer.write(value);
-        state(_state_t::TokenDone);
-    }
-
-
-    void token(const embr::coap::layer2::Token& value)
-    {
-        assert_state(_state_t::HeaderDone);
-        writer.write(value.data(), value.length());
-        state(_state_t::TokenDone);
-    }
-
-    void option(option_number_t number, const pipeline::MemoryChunk& value)
-    {
-        assert_not_state(_state_t::Header);
-        optionEncoder.option(writer, number, value);
-        state(_state_t::Options);
-    }
-
-    void option(option_number_t number)
-    {
-        optionEncoder.option(writer, number);
-    }
-
-    void option(option_number_t number, const char* str)
-    {
-        pipeline::MemoryChunk chunk((uint8_t*) str, strlen(str));
-        option(number, chunk);
-    }
-
-    void payload(const pipeline::MemoryChunk& value)
-    {
-        payloadEncoder.payload(writer, value);
-    }
-
-    void payload(const char* str)
-    {
-        payload(pipeline::MemoryChunk((uint8_t*)str, strlen(str)));
-    }
-};
-#endif
-
 
 }
 

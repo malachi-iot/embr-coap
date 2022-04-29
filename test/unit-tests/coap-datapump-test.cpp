@@ -33,10 +33,6 @@ TEST_CASE("Data pump tests", "[datapump]")
 {
     SECTION("Datapump")
     {
-        //typedef moducom::io::experimental::layer2::NetBufMemory<512> netbuf_t;
-        //typedef moducom::io::experimental::NetBufDynamicMemory<> netbuf_t;
-        //typedef uint32_t addr_t;
-
         // will only work if I make it <const char, but then
         // s.copy won't work since it wants to output to value_type*
         // which will be const char*

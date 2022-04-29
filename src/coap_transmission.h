@@ -89,28 +89,6 @@ public:
     OptionBase(uint16_t number) : OptionHeader(number) {}
 };
 
-class OptionGenerator : public OptionBase
-{
-public:
-    /*!
-     * State machine which is capable of spitting out a single option
-     * within the context of many options
-     */
-    class StateMachine
-    {
-
-    };
-
-public:
-    OptionGenerator(uint8_t number) : OptionBase(number) {}
-
-    //! Create option in-place in output
-    //! \param output
-    //! \return
-    size_t generate(uint16_t last_number, uint8_t* output);
-};
-
-
 class OptionUriHost : public OptionString,
                       public OptionNumber
 {
