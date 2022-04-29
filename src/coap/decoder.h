@@ -248,13 +248,6 @@ public:
         return option_decoder().state();
     }
 
-    // NOTE: notify_from_decoder a bit misleading because it processes and notifies
-    template <class TSubject>
-    bool process_iterate_experimental(TSubject& s, Context& context)
-    {
-        return iterated::decode_and_notify(*this, s, context);
-    }
-
     /// @brief process entire remainder of context, firing events via TSubject.  Runs until
     ///        buffer is exhausted
     /// \tparam TSubject The event sink type
@@ -263,7 +256,7 @@ public:
     template <class TSubject>
     void process_experimental(TSubject& s, Context& context)
     {
-        while(!process_iterate_experimental(s, context));
+        while(!iterated::decode_and_notify(*this, s, context));
     }
 };
 

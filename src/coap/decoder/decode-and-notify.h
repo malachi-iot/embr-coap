@@ -20,6 +20,13 @@ bool decode_and_notify(
     Decoder::Context& context,
     TContext& app_context);
 
+
+///
+/// \tparam TSubject
+/// \param decoder
+/// \param subject
+/// \param context
+/// \return true on eof, false otherwise
 template <class TSubject>
 bool decode_and_notify(Decoder& decoder, TSubject& subject, Decoder::Context& context)
 {
@@ -36,14 +43,6 @@ bool decode_and_notify(StreambufDecoder<TStreambuf>& decoder, TSubject& subject)
     return decode_and_notify(decoder, subject, fake_app_context);
 }
 
-/*
-template <class TSubject>
-bool notify_and_decode(Decoder& decoder, TSubject& subject, Decoder::Context& context)
-{
-    int fake_app_context;
-
-    return internal::decode_and_notify(decoder, subject, context, fake_app_context);
-} */
 
 
 }

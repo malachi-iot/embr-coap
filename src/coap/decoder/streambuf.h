@@ -55,9 +55,9 @@ public:
     // Without analysis, unknown if this is a real, imagined, good or bad thing
     // NOTE: pos' days are numbered, only using this for compatibility with non streambuf decoder
     // TODO: Consider passing in streambuf also and moving this into Decoder base class
-    bool process_iterate_streambuf(size_t& pos);
+    bool process_iterate_streambuf(size_t& pos, bool* waitstate = NULLPTR);
 
-    bool process_iterate_streambuf()
+    bool process_iterate_streambuf(bool* waitstate = NULLPTR)
     {
 #ifdef FEATURE_MCCOAP_EXPCONTEXT
         size_t& pos = context.pos;
@@ -65,7 +65,7 @@ public:
         size_t pos = 0; // dummy value, phase out this call after EXPCONTEXT is gone
 #endif
 
-        return process_iterate_streambuf(pos);
+        return process_iterate_streambuf(pos, waitstate);
     }
 
 #ifdef FEATURE_CPP_VARIADIC

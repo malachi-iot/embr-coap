@@ -6,7 +6,7 @@
 namespace embr { namespace coap {
 
 template <class TStreambuf>
-bool StreambufDecoder<TStreambuf>::process_iterate_streambuf(size_t& pos)
+bool StreambufDecoder<TStreambuf>::process_iterate_streambuf(size_t& pos, bool* waitstate)
 {
     estd::streamsize in_avail = streambuf.in_avail();
     // remember in_avail == 0 = "no further data ... yet?", while -1 means "no further data, for sure"
@@ -18,6 +18,16 @@ bool StreambufDecoder<TStreambuf>::process_iterate_streambuf(size_t& pos)
     // FIX: that underflow() API is blocking, even though so far my implementation isn't.  Check out
     // estdlib branch exp/streambuf-nonblocking
     bool eof = in_avail == 0 ? streambuf.underflow() == traits_type::eof() : in_avail == -1;
+
+    // DEBT: Untested code
+    if(waitstate != NULLPTR)
+    {
+        // Record in waitstate if we are waiting for more data or not
+        if(*waitstate = !eof && in_avail == 0)
+            // We've determined we aren't at EOF, but there is no data available
+            // no point in processing with no data, return immediately
+            return false;
+    }
 
     // FIX: sbumpc ultimately is a blocking call too, just like underflow.  Same note applies as above
 

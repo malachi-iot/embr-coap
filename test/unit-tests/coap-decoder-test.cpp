@@ -245,5 +245,8 @@ TEST_CASE("CoAP decoder tests", "[coap-decoder]")
             REQUIRE(decoder.process_iterate_streambuf());
             REQUIRE(decoder.state() == Decoder::PayloadDone);
         }
+        SECTION("wait state")
+        {
+        }
     }
 }
