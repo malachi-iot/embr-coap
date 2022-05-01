@@ -6,4 +6,4 @@ Same as `echo` but done with subject/observer code
 
 |   Date  | esp-idf   | Platform   | Result | Notes |
 | ------- | --------- | ---------- | ------ | ----- |
-| 22APR22 | v4.4.0    | ESP32S     | Pass   | |
+| 01MAY22 | v4.4.0    | ESP32S     | Pass   | |

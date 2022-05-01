@@ -9,9 +9,9 @@
 #include <coap/decoder/streambuf.h>
 #include <coap/encoder/streambuf.h>
 
-// This is all UDP oriented.  No TCP or SSL support
+#include "../ip.h"
 
-#define COAP_UDP_PORT 5683
+// This is all UDP oriented.  No TCP or SSL support
 
 namespace embr { namespace coap {
 
