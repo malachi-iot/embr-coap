@@ -27,7 +27,7 @@ iterated::decode_result StreambufDecoder<TStreambuf>::process_iterate_streambuf(
     if(!eof && in_avail == 0)
         // We've determined we aren't at EOF, but there is no data available
         // no point in processing with no data, return immediately
-        return iterated::decode_result { false, true, false};
+        return iterated::decode_result { false, true, false, false};
 
     // FIX: sbumpc ultimately is a blocking call too, just like underflow.  Same note applies as above
 
@@ -219,7 +219,7 @@ iterated::decode_result StreambufDecoder<TStreambuf>::process_iterate_streambuf(
 
     }
 
-    return iterated::decode_result { eof, false, false };
+    return iterated::decode_result { eof, false, false, false };
 }
 
 // Copy/pasted from decoder.cpp.  Consider making a low-level one which shares
@@ -289,7 +289,7 @@ size_t OptionDecoder::process_iterate_streambuf(TStreambuf& streambuf, Holder* b
     streambuf.pubseekoff(count, estd::ios_base::cur);
 
     return count;
-
+#if UNUSED
     // --- was experimenting with a full copy/paste but I think calling upon existing const_buffer code is better
     // though there's an awkwardness still with 'last_chunk', though quite diminished
 
@@ -351,6 +351,7 @@ size_t OptionDecoder::process_iterate_streambuf(TStreambuf& streambuf, Holder* b
     }
 
     return data - data_start;
+#endif
 }
 
 

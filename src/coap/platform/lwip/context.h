@@ -19,7 +19,7 @@ namespace embr { namespace coap {
 // pbuf also.  bumpref = false stops us from auto-bumping ref with our
 // pbuf-netbuf, so that when it leaves scope it issues a pbuf_free
 template <class TSubject, class TContext>
-static void decode_and_notify(
+static iterated::decode_result decode_and_notify(
     struct pbuf* incoming,
     TSubject& subject, TContext& context,
     bool bumpref = false)
@@ -27,11 +27,7 @@ static void decode_and_notify(
     typedef StreambufDecoder<embr::lwip::upgrading::ipbuf_streambuf> decoder_type;
     decoder_type decoder(incoming, bumpref);
 
-    do
-    {
-        iterated::decode_and_notify(decoder, subject, context);
-    }
-    while(decoder.state() != embr::coap::Decoder::Done);
+    return decode_and_notify(decoder, subject, context);
 }
 
 

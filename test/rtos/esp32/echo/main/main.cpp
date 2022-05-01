@@ -18,7 +18,7 @@ void udp_coap_recv(void *arg,
 
 void udp_coap_init(void)
 {
-    embr::lwip::Pcb pcb;
+    embr::lwip::udp::Pcb pcb;
 
     // get new pcb
     if (!pcb.alloc()) {
