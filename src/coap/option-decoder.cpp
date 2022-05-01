@@ -312,6 +312,9 @@ size_t OptionDecoder::process_iterate(const const_buffer& chunk,
 
             case OptionDeltaAndLengthDone:
                 built_option->number_delta += option_delta();
+#if __has_cpp_attribute(fallthrough)
+                [[fallthrough]];
+#endif
 
             case OptionLengthDone:
                 built_option->length = option_length();

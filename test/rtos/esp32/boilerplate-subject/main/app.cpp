@@ -80,14 +80,5 @@ void udp_coap_recv(void *arg,
     AppContext context(pcb, addr, port);
 
     // _recv plumbing depends on us to frees p,
-    // so be sure we do NOT bump up reference, which
-    // makes the auto pbuf_free call completely free
-    // up p as LwIP wants
-    //StreambufDecoder<ipbuf_streambuf> decoder(p, false);
-
-    // DEBT: Very confusing, this flavor of decode_and_notify requires
-    // iteration, while the below one does not
-    //decode_and_notify(decoder, app_subject, context);
-
     decode_and_notify(p, app_subject, context);
 }
