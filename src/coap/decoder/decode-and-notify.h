@@ -135,4 +135,19 @@ iterated::decode_result decode_and_notify(Decoder& decoder, TSubject& subject, i
     return coap::decode_and_notify(decoder, subject, context, empty_app_context);
 }
 
+
+// NOTE: Not functional yet
+#ifdef FEATURE_CPP_MOVESEMANTIC
+/// Auto iterating decoder/notifier.  Runs until a stopping point is encountered
+/// Uses an empty monostate for app_context
+/// \return iterated::decode_result indicates reason for stopping
+template <class TSubject>
+iterated::decode_result decode_and_notify(Decoder& decoder, TSubject&& subject, internal::DecoderContext& context)
+{
+    estd::monostate empty_app_context;
+
+    return coap::decode_and_notify(decoder, std::move(subject), context, empty_app_context);
+}
+#endif
+
 }}
