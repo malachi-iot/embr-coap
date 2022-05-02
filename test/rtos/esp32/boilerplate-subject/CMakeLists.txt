@@ -11,3 +11,6 @@ include($ENV{IDF_PATH}/tools/cmake/project.cmake)
 include(${ESTDLIB_DIR}/tools/esp-idf/version_finder.cmake)
 
 project(coap-boilerplate-subject)
+
+# 02MAY22 MB - No .su files getting generated that I can find
+idf_build_set_property(COMPILE_OPTIONS "-fstack-usage" APPEND)
