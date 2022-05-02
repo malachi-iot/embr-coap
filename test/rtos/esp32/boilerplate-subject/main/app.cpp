@@ -73,11 +73,11 @@ void udp_coap_recv(void *arg,
 {
     const char* TAG = "udp_coap_recv";
 
-    ESP_LOGD(TAG, "p->len=%d", p->len);
-
     // Because AppContext is on the stack and app_subject is layer0 (stateless)
     // This code is, in theory, reentrant.  That has not been tested well, however
     AppContext context(pcb, addr, port);
+
+    ESP_LOGD(TAG, "p->len=%d, sizeof context=%u", p->len, sizeof(context));
 
     // _recv plumbing depends on us to frees p,
     decode_and_notify(p, app_subject, context);
