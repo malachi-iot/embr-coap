@@ -40,7 +40,7 @@ decode_result decode_and_notify(
 /// \param context
 /// \return decode_result reflecting eof, waitstate or bad decode
 template <class TSubject>
-decode_result decode_and_notify(Decoder& decoder, TSubject& subject, internal::DecoderContext& context)
+inline decode_result decode_and_notify(Decoder& decoder, TSubject& subject, internal::DecoderContext& context)
 {
     estd::monostate empty_app_context;
 
@@ -48,7 +48,7 @@ decode_result decode_and_notify(Decoder& decoder, TSubject& subject, internal::D
 }
 
 template <class TSubject, class TStreambuf>
-decode_result decode_and_notify(StreambufDecoder<TStreambuf>& decoder, TSubject& subject)
+inline decode_result decode_and_notify(StreambufDecoder<TStreambuf>& decoder, TSubject& subject)
 {
     estd::monostate empty_app_context;
 
@@ -68,7 +68,7 @@ decode_result decode_and_notify(StreambufDecoder<TStreambuf>& decoder, TSubject&
 /// \param app_context
 /// \return @see iterated::decode_result
 template <class TSubject, class TStreambuf, class TContext>
-iterated::decode_result decode_and_notify(
+inline iterated::decode_result decode_and_notify(
     StreambufDecoder<TStreambuf>& decoder,
     TSubject& subject,
     TContext& app_context)
@@ -95,7 +95,7 @@ iterated::decode_result decode_and_notify(
 /// \param app_context
 /// \return iterated::decode_result indicates reason for stopping
 template <class TSubject, class TContext>
-iterated::decode_result decode_and_notify(
+inline iterated::decode_result decode_and_notify(
     Decoder& decoder,
     TSubject& subject,
     internal::DecoderContext& context,
@@ -117,7 +117,7 @@ iterated::decode_result decode_and_notify(
 /// Uses an empty monostate for app_context
 /// \return iterated::decode_result indicates reason for stopping
 template <class TSubject, class TStreambuf>
-iterated::decode_result decode_and_notify(StreambufDecoder<TStreambuf>& decoder, TSubject& subject)
+inline iterated::decode_result decode_and_notify(StreambufDecoder<TStreambuf>& decoder, TSubject& subject)
 {
     estd::monostate empty_app_context;
 
@@ -128,7 +128,7 @@ iterated::decode_result decode_and_notify(StreambufDecoder<TStreambuf>& decoder,
 /// Uses an empty monostate for app_context
 /// \return iterated::decode_result indicates reason for stopping
 template <class TSubject>
-iterated::decode_result decode_and_notify(Decoder& decoder, TSubject& subject, internal::DecoderContext& context)
+inline iterated::decode_result decode_and_notify(Decoder& decoder, TSubject& subject, internal::DecoderContext& context)
 {
     estd::monostate empty_app_context;
 

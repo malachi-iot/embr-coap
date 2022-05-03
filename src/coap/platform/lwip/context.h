@@ -19,7 +19,7 @@ namespace embr { namespace coap {
 // pbuf also.  bumpref = false stops us from auto-bumping ref with our
 // pbuf-netbuf, so that when it leaves scope it issues a pbuf_free
 template <class TSubject, class TContext>
-static iterated::decode_result decode_and_notify(
+inline static iterated::decode_result decode_and_notify(
     struct pbuf* incoming,
     TSubject& subject, TContext& context,
     bool bumpref = false)
