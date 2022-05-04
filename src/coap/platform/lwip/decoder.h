@@ -8,7 +8,7 @@ namespace embr { namespace coap {
 
 // Consider moving this into coap-lwip area if we can nail down bump vs not bump
 // reference count on pbuf
-StreambufDecoder<embr::lwip::upgrading::ipbuf_streambuf> make_decoder(embr::lwip::Pbuf* netbuf)
+inline StreambufDecoder<embr::lwip::upgrading::ipbuf_streambuf> make_decoder(embr::lwip::Pbuf* netbuf)
 {
     // TODO: No copy-constructor version yet, may want to make one
     //StreambufDecoder<streambuf_type> decoder(in);
