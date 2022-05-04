@@ -75,6 +75,9 @@
         "forward_list": "cpp",
         "string": "cpp",
         "string_view": "cpp",
-        "random": "cpp"
+        "random": "cpp",
+        "bit": "cpp",
+        "set": "cpp",
+        "stop_token": "cpp"
     }
 }

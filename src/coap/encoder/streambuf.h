@@ -216,6 +216,7 @@ public:
     }
 
     // FIX: rename to 'option'
+    //__attribute__ ((noinline))
     bool option_int(option_number_type number, int option_value)
     {
         embr::coap::layer2::UInt<> v;
