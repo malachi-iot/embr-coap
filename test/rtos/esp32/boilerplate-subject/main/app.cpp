@@ -37,6 +37,8 @@ struct Observer
 {
     static constexpr const char* TAG = "Observer";
 
+    
+    __attribute__ ((noinline))  // Not necessary, just useful for stack usage analysis
     static void on_notify(event::completed, AppContext& context)
     {
         ESP_LOGI(TAG, "on_notify completed");
@@ -79,6 +81,6 @@ void udp_coap_recv(void *arg,
 
     ESP_LOGD(TAG, "p->len=%d, sizeof context=%u", p->len, sizeof(context));
 
-    // _recv plumbing depends on us to frees p,
+    // _recv plumbing depends on us to free p,
     decode_and_notify(p, app_subject, context);
 }
