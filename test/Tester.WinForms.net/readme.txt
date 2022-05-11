@@ -1,3 +1,0 @@
-﻿Why Tester.net (Tester.Gtk.net) and Tester.WinForms.net?
-
-because alas, the GTK flavor doesn't easily compile on Windows platforms...
