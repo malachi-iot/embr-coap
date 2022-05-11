@@ -6,7 +6,7 @@
 
 // FIX: string_view needs include guards
 //#include <estd/string_view.h>
-//#include "../coap.h"
+#include "../option.h"
 
 namespace embr { namespace coap { namespace event {
 

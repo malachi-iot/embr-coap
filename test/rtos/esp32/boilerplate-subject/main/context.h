@@ -5,7 +5,7 @@
 // the URI code base is cleaned up
 #include <coap/decoder/observer/util.h>
 
-typedef embr::coap::experimental::UriPathMap UriPathMap;
+typedef embr::coap::internal::UriPathMap UriPathMap;
 
 // NOTE: Not ideal, directly specifying '7' here
 extern const UriPathMap uri_map[7];

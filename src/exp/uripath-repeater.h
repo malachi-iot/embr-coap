@@ -334,12 +334,12 @@ inline int match(UriPathMap2* items, int count, estd::layer3::const_string s)
     return MCCOAP_URIPATH_NONE;
 }
 
-inline triad<int, UriPathMap2*, int>* match(triad<int, UriPathMap2*, int>* items, int count,
+inline internal::triad<int, UriPathMap2*, int>* match(internal::triad<int, UriPathMap2*, int>* items, int count,
                                             int key)
 {
     while(count--)
     {
-        triad<int, UriPathMap2*, int>* candidate = items++;
+        internal::triad<int, UriPathMap2*, int>* candidate = items++;
 
         if(candidate->first == key) return candidate;
     }

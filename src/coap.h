@@ -6,29 +6,21 @@
 //#define DEBUG2
 
 
-#include "coap/platform.h"
-#include "coap/option.h"
-
 #ifndef SRC_COAP_H
 #define SRC_COAP_H
 
-
-#include "mc/memory-chunk.h"
-
 #include <stdint.h>
 #include <stdlib.h>
-#include <new>
 
-#if __cplusplus >= 201103L
-#include <type_traits>
-#else
+#include <estd/internal/platform.h> // DEBT: Need to do this because we forgot to do it inside new.h
+#include <estd/new.h>
 #include <estd/type_traits.h>
-#endif
 
+#include "coap/platform.h"
+#include "coap/option.h"
 #include "coap/header.h"
 
-namespace embr {
-namespace coap {
+namespace embr { namespace coap {
 
 // all timeouts/delays/etc for these COAP_ constants are in seconds
 // https://tools.ietf.org/html/rfc7252#section-4.8
@@ -101,7 +93,6 @@ public:
 
 typedef Root::State root_state_t;
 typedef Root _root_state_t;
-typedef Option::Numbers option_number_t;
 
 }
 

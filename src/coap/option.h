@@ -98,4 +98,10 @@ public:
     };
 };
 
+namespace internal {
+
+typedef Option::Numbers option_number_t;
+
+}
+
 }}

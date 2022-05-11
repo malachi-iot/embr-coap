@@ -133,7 +133,7 @@ TEST_CASE("experimental 2 tests")
         // first = parent
         // second = list of children
         // third = count of children
-        triad<int, UriPathMap2*, int> relations[]
+        internal::triad<int, UriPathMap2*, int> relations[]
         {
             { MCCOAP_URIPATH_NONE,  map_root, 1 },
             { id_path_v1,           map_v1, 1 },
@@ -293,10 +293,11 @@ TEST_CASE("experimental 2 tests")
             //embr::s
             //NetBufDecoder<decltype(netbuf)&> decoder(netbuf);
         }
-        SECTION("UriPathMatcher3")
+        // TODO: Move this out of experimental area
+        SECTION("internal UriPathMatcher (formerly UriPathMatcher3)")
         {
-            embr::coap::experimental::UriPathMatcher3 m(map);
-            typedef const embr::coap::experimental::UriPathMap* result_type;
+            embr::coap::internal::UriPathMatcher m(map);
+            typedef const embr::coap::internal::UriPathMap* result_type;
 
             SECTION("Look in v2/api")
             {

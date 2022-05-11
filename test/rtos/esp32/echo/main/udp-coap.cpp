@@ -44,9 +44,9 @@ void udp_coap_recv(void *arg,
 
         bool eof;
 
-        eof = decoder.process_iterate_streambuf();
+        eof = decoder.process_iterate_streambuf().eof;
         ESP_LOGI(TAG, "state = %s", get_description(decoder.state()));
-        eof = decoder.process_iterate_streambuf();
+        eof = decoder.process_iterate_streambuf().eof;
 
         Header header = decoder.header_decoder();
         uint8_t tkl = header.token_length();
@@ -55,17 +55,17 @@ void udp_coap_recv(void *arg,
             get_description(decoder.state()),
             header.message_id(),
             tkl);
-        eof = decoder.process_iterate_streambuf();
+        eof = decoder.process_iterate_streambuf().eof;
         ESP_LOGI(TAG, "state = %s", get_description(decoder.state()));
-        eof = decoder.process_iterate_streambuf();
+        eof = decoder.process_iterate_streambuf().eof;
         ESP_LOGI(TAG, "state = %s", get_description(decoder.state()));
-        eof = decoder.process_iterate_streambuf();
+        eof = decoder.process_iterate_streambuf().eof;
         ESP_LOGI(TAG, "state = %s", get_description(decoder.state()));
 
         const uint8_t* token = decoder.token_decoder().data();
 
         ESP_LOG_BUFFER_HEX(TAG, token, tkl);
-        eof = decoder.process_iterate_streambuf();
+        eof = decoder.process_iterate_streambuf().eof;
         ESP_LOGI(TAG, "state = %s", get_description(decoder.state()));
 
         // these two send npm coap into a tizzy, even it seems in nonconfirmable mode

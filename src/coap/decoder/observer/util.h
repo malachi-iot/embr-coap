@@ -17,20 +17,21 @@
 #include <coap/context.h>
 #include "../uri.h"   // brings in UriPathMatcher and friends
 #include "../events.h"
+#include "../../../exp/events.h"
 
 namespace embr { namespace coap {
 
 // Candidate for 'Provider' since this mostly just holds on the an instance
 class UriParserContext
 {
-    typedef embr::coap::experimental::UriPathMatcher3 matcher_type;
+    typedef embr::coap::internal::UriPathMatcher matcher_type;
     typedef matcher_type::optional_int_type optional_int_type;
 
     // tracks current parsed/requested URI in incoming context
     matcher_type _uri_matcher;
 
 protected:
-    typedef embr::coap::experimental::UriPathMap UriPathMap;
+    typedef embr::coap::internal::UriPathMap UriPathMap;
     
     template <int N>
     UriParserContext(const UriPathMap (&paths)[N]) : _uri_matcher(paths) {}
