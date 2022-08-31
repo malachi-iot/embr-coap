@@ -15,9 +15,8 @@
 
 // Just before we went with on_notify approach we had a forming useful
 // on_payload, on_token etc. approach.  That approach was more built out
-// with some interesting experimental features, but I think I abandoned
-// it.  I am not sure.  So it's wrapped up with this flag - importantly
-// as it is one of the main dependents on the outdated mc-memory
+// with some interesting experimental features, but is now displaced by
+// 'decode_and_notify'.
 #ifndef FEATURE_MCCOAP_LEGACY_EVENTS
 #define FEATURE_MCCOAP_LEGACY_EVENTS 1
 #endif

@@ -23,7 +23,7 @@ add_subdirectory(${MC_COAP_DIR} coap)
 
 #message(${PROJECT_SOURCE_DIR})
 
-set(MC_MEM_DIR ${ROOT_DIR}/ext/moducom-memory/src)
+#set(MC_MEM_DIR ${ROOT_DIR}/ext/moducom-memory/src)
 set(ESTDLIB_DIR ${ROOT_DIR}/ext/estdlib/src)
 set(EMBR_DIR ${ROOT_DIR}/ext/embr/src)
 
@@ -64,7 +64,6 @@ set(SOURCE_FILES
         #coap-datapump-test.cpp
 
         coap-decoder-test.cpp
-        #coap-dispatcher-test.cpp
         test-data.h coap-encoder-test.cpp
         coap-token-test.cpp
         coap-observable-test.cpp
@@ -79,9 +78,15 @@ set(SOURCE_FILES
 
         decoder-subject-test.cpp
         mc/opts.h
-        netbuf-test.cpp
+
+        # Removed as part of mc-mem removal.  Netbufs are phased out
+        #netbuf-test.cpp
+
         test-observer.h
-        retry-test.cpp
+
+        # Removed as part of mc-mem removal.  This version of retry is fully obsolete
+        #retry-test.cpp
+
         uint-test.cpp
         )
 
