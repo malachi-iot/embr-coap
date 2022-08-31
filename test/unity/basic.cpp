@@ -6,7 +6,7 @@
 
 #include "unit-test.h"
 
-using namespace moducom;
+using namespace embr;
 
 void test_default_header()
 {

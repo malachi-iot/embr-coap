@@ -9,7 +9,7 @@
 
 #include "unit-test.h"
 
-using namespace moducom;
+using namespace embr;
 
 typedef estd::experimental::ospanbuf streambuf_type;
 typedef coap::StreambufEncoder<streambuf_type> encoder_type;

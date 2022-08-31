@@ -4,7 +4,7 @@
 
 #include "unit-test.h"
 
-using namespace moducom;
+using namespace embr;
 
 static estd::span<const uint8_t> in(buffer_16bit_delta, sizeof(buffer_16bit_delta));
 typedef estd::experimental::ispanbuf streambuf_type;
@@ -26,27 +26,27 @@ static void test_streambuf_decode()
     estd::span<char> in((char*)buffer_16bit_delta, sizeof(buffer_16bit_delta));
     coap::StreambufDecoder<streambuf_type> decoder(in);
 
-    bool eol = decoder.process_iterate_streambuf();
+    bool eol = decoder.process_iterate_streambuf().eof;
 
     TEST_ASSERT(!eol);
     TEST_ASSERT_EQUAL(coap::Decoder::Header, decoder.state());
 
-    eol = decoder.process_iterate_streambuf();
+    eol = decoder.process_iterate_streambuf().eof;
 
     TEST_ASSERT(!eol);
     TEST_ASSERT_EQUAL(coap::Decoder::HeaderDone, decoder.state());
 
-    eol = decoder.process_iterate_streambuf();
+    eol = decoder.process_iterate_streambuf().eof;
 
     TEST_ASSERT(!eol);
     TEST_ASSERT_EQUAL(coap::Decoder::TokenDone, decoder.state());
 
-    eol = decoder.process_iterate_streambuf();
+    eol = decoder.process_iterate_streambuf().eof;
 
     TEST_ASSERT(!eol);
     TEST_ASSERT_EQUAL(coap::Decoder::OptionsStart, decoder.state());
 
-    eol = decoder.process_iterate_streambuf();
+    eol = decoder.process_iterate_streambuf().eof;
 
     TEST_ASSERT(!eol);
     // DEBT: Don't like repeatedly kicking top-level CoAP parser to do clicky decode of
@@ -73,22 +73,22 @@ static void test_streambuf_decode()
     TEST_ASSERT_EQUAL(270, decoder.option_number());
     TEST_ASSERT_EQUAL(3, decoder.option()[0]);
 
-    TEST_ASSERT(!decoder.process_iterate_streambuf());
+    TEST_ASSERT(!decoder.process_iterate_streambuf().eof);
     TEST_ASSERT_EQUAL(coap::OptionDecoder::OptionValueDone, decoder.option_decoder().state());
 
-    TEST_ASSERT(!decoder.process_iterate_streambuf());
+    TEST_ASSERT(!decoder.process_iterate_streambuf().eof);
     TEST_ASSERT_EQUAL(coap::Decoder::Options, decoder.state());
     TEST_ASSERT_EQUAL(coap::OptionDecoder::ValueStart, decoder.option_decoder().state());
     TEST_ASSERT_EQUAL(271, decoder.option_number());
 
-    TEST_ASSERT(!decoder.process_iterate_streambuf());
+    TEST_ASSERT(!decoder.process_iterate_streambuf().eof);
     TEST_ASSERT_EQUAL(coap::Decoder::Options, decoder.state());
     TEST_ASSERT_EQUAL(coap::OptionDecoder::OptionValueDone, decoder.option_decoder().state());
 
-    TEST_ASSERT(!decoder.process_iterate_streambuf());
+    TEST_ASSERT(!decoder.process_iterate_streambuf().eof);
     TEST_ASSERT_EQUAL(coap::Decoder::OptionsDone, decoder.state());
 
-    TEST_ASSERT(!decoder.process_iterate_streambuf());
+    TEST_ASSERT(!decoder.process_iterate_streambuf().eof);
     TEST_ASSERT_EQUAL(coap::Decoder::Payload, decoder.state());
 }
 
@@ -144,7 +144,7 @@ static void test_decode_and_notify()
 
     context.counter = 0;
 
-    while(!coap::decode_and_notify(decoder, l, context));
+    while(!coap::decode_and_notify(decoder, l, context).eof);
 
     // runs once more at end to trigger completed event, don't remember
     // exactly why we have to do it that way - it has something to do with

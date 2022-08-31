@@ -3,7 +3,7 @@
 #include <exp/uripathmap.h>
 //#include  <coap/decoder/uri.h>
 
-using namespace moducom;
+using namespace embr;
 using namespace uri;
 
 typedef coap::experimental::UriPathMap map_type;
@@ -19,7 +19,8 @@ void test_uri_match()
 void test_uri_match2()
 {
     const map_type* result;
-    coap::experimental::UriPathMatcher3 matcher(uri::map);
+    coap::internal::UriPathMatcher matcher(uri::map);
+    //coap::experimental::UriPathMatcher3 matcher(uri::map);
 
     result = matcher.find("v1");
     TEST_ASSERT_EQUAL_INT(id_path_v1, result->second);
