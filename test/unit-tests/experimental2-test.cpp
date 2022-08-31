@@ -8,14 +8,14 @@
 
 #include <exp/retry.h>
 
-#include <exp/message-observer.h>
+//#include <exp/message-observer.h>
 #include "test-observer.h"
 
 #include "exp/prototype/observer-idea1.h"
 
 #include "coap/decoder/subject.hpp"
 #if __cplusplus >= 201103L
-#include "obsolete/platform/generic/malloc_netbuf.h"
+//#include "obsolete/platform/generic/malloc_netbuf.h"
 #endif
 
 #include "exp/events.h"
@@ -31,8 +31,8 @@
 using namespace embr::coap;
 using namespace embr::coap::experimental;
 
-typedef moducom::pipeline::MemoryChunk::readonly_t ro_chunk_t;
-typedef moducom::pipeline::MemoryChunk chunk_t;
+//typedef moducom::pipeline::MemoryChunk::readonly_t ro_chunk_t;
+//typedef moducom::pipeline::MemoryChunk chunk_t;
 
 
 
@@ -41,6 +41,8 @@ TEST_CASE("experimental 2 tests")
     typedef uint32_t addr_t;
 
 
+    /*
+     * Disabled as part of mc-mem removal
 #ifdef FEATURE_CPP_VARIADIC
     SECTION("AggregateMessageObserver")
     {
@@ -64,6 +66,7 @@ TEST_CASE("experimental 2 tests")
         amo.on_option((embr::coap::Option::Numbers) 270, 1);
     }
 #endif
+     */
     SECTION("prototype observer idea1")
     {
         using namespace ::experimental::prototype::idea1;

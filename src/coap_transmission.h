@@ -154,7 +154,7 @@ class OptionOpaque : public OptionBase
 public:
     OptionOpaque(uint8_t number) : OptionBase(number) {}
 
-    moducom::dynamic::MemoryBuffer* value;
+    //moducom::dynamic::MemoryBuffer* value;
 };
 
 

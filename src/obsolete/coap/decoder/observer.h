@@ -2,7 +2,7 @@
 // We now use embr subject-observer mechanism, this is not compatible
 #pragma once
 
-#include <mc/memory-pool.h>
+//#include <mc/memory-pool.h>
 #include <coap/context.h>
 
 namespace embr { namespace coap {

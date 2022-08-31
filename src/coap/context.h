@@ -7,7 +7,7 @@
 #include "token.h"
 #include "header.h"
 #include "../coap-features.h"
-#include "mc/objstack.h"
+//#include "mc/objstack.h"
 #include <estd/type_traits.h>
 
 #include <estd/span.h>
@@ -293,7 +293,8 @@ public:
     decoder_t& decoder() { return m_decoder; }
 };
 
-
+/*
+ * Disabled during mc-mem removal
 struct ObjStackContext
 {
     // NOTE: Facing a small cunundrum: objstack doesn't know during a free operation
@@ -304,7 +305,6 @@ struct ObjStackContext
     ObjStackContext(const moducom::pipeline::MemoryChunk& chunk) : objstack(chunk) {}
 };
 
-
 // FIX: Seems more appropriate that ObserverContext and IncomingContext
 // would be one and the same, but for now in a semi-experimental fashion
 // keep them separate
@@ -314,7 +314,7 @@ struct ObserverContext :
 {
     ObserverContext(const moducom::pipeline::MemoryChunk& chunk) : ObjStackContext(chunk) {}
 };
-
+*/
 
 template <class TContext>
 struct incoming_context_traits

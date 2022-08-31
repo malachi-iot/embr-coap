@@ -34,7 +34,7 @@ include_directories(${EMBR_DIR})
 
 set(SOURCE_FILES
         coap.cpp coap.h
-        coap_transmission.h
+        #coap_transmission.h
         cbor.h
         cbor/cbor.cpp cbor/features.h
         cbor/decoder.cpp
@@ -91,20 +91,20 @@ set(SOURCE_FILES
 
         exp/prototype/observer-idea1.h
 
-        obsolete/cbor/encoder.h
-        obsolete/coap-dispatcher.cpp
-        obsolete/coap-dispatcher.h
-        obsolete/coap-dispatcher.hpp
-        obsolete/coap/decoder/observer.h
-        obsolete/coap/decoder/observer-aggregate.h
-        obsolete/coap/decoder/observer-aggregate.hpp
-        obsolete/coap/decoder/subject.h
-        obsolete/coap/encoder.h
-        obsolete/coap/encoder.hpp
-        obsolete/coap/experimental-observer.h
-        obsolete/coap/observable.h
-        obsolete/platform/generic/malloc_netbuf.h
-        obsolete/platform/lwip/lwip-portandaddress.h
+        #obsolete/cbor/encoder.h
+        #obsolete/coap-dispatcher.cpp
+        #obsolete/coap-dispatcher.h
+        #obsolete/coap-dispatcher.hpp
+        #obsolete/coap/decoder/observer.h
+        #obsolete/coap/decoder/observer-aggregate.h
+        #obsolete/coap/decoder/observer-aggregate.hpp
+        #obsolete/coap/decoder/subject.h
+        #obsolete/coap/encoder.h
+        #obsolete/coap/encoder.hpp
+        #obsolete/coap/experimental-observer.h
+        #obsolete/coap/observable.h
+        #obsolete/platform/generic/malloc_netbuf.h
+        #obsolete/platform/lwip/lwip-portandaddress.h
 
         platform/arduino/arduino-eth-datapump.cpp
 
@@ -129,8 +129,8 @@ set(SOURCE_FILES
         mc/experimental.h
         coap-observable.h
 
-        mc/experimental.cpp
-        mc/experimental-factory.h
+        #mc/experimental.cpp
+        #mc/experimental-factory.h
         )
 
 # DEBT: get rid of old moducom-coap-lib extended name

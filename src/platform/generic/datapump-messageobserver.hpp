@@ -1,9 +1,9 @@
 #include <embr/datapump.h>
 #include <embr/events.h>
 
-#include <obsolete/coap/encoder.h>
+//#include <obsolete/coap/encoder.h>
 #include <coap/decoder/netbuf.h>
-#include <obsolete/coap/decoder/subject.h>
+//#include <obsolete/coap/decoder/subject.h>
 
 namespace embr { namespace coap {
 

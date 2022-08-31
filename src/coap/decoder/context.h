@@ -42,21 +42,9 @@ struct DataContextBase
         return chunk_type(chunk.data() + pos, chunk.size() - pos);
     }
 
-    // Helper method as we transition to estd::const_buffer
-    moducom::pipeline::MemoryChunk::readonly_t remainder_legacy() const
-    {
-        moducom::pipeline::MemoryChunk::readonly_t r(chunk.data() + pos, chunk.size() - pos);
-        return r;
-    }
-
 public:
     DataContextBase(const chunk_type& chunk, bool last_chunk) :
         chunk(chunk),
-        pos(0),
-        last_chunk(last_chunk) {}
-
-    DataContextBase(const moducom::pipeline::MemoryChunk::readonly_t& legacy_chunk, bool last_chunk) :
-        chunk(legacy_chunk.data(), legacy_chunk.length()),
         pos(0),
         last_chunk(last_chunk) {}
 };

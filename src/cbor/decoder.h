@@ -259,7 +259,8 @@ class StreamDecoder
 {
     Decoder item_decoder;
 
-    typedef moducom::pipeline::MemoryChunk::readonly_t ro_chunk_t;
+    //typedef moducom::pipeline::MemoryChunk::readonly_t ro_chunk_t;
+    typedef estd::const_buffer ro_chunk_t;
 
     friend class SimpleData;
     friend class SimpleDataHelper;
@@ -283,12 +284,14 @@ public:
     public:
         const uint8_t* unprocessed() const
         {
-            return chunk.data(pos);
+            //return chunk.data(pos);
+            return chunk.data() + pos;
         }
 
         void advance(int count = 1) { pos += count; }
 
-        int length_unprocessed() const { return chunk.length() - pos; }
+        //int length_unprocessed() const { return chunk.length() - pos; }
+        int length_unprocessed() const { return chunk.size_bytes() - pos; }
 
         Context(const ro_chunk_t& chunk, bool last_chunk) :
             //base_t(chunk),

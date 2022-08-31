@@ -2,7 +2,7 @@
 
 #include <estd/cstdint.h>
 #include "platform.h"
-#include <mc/memory-chunk.h>
+//#include <mc/memory-chunk.h>
 
 #include <estd/array.h>
 #include <estd/vector.h>

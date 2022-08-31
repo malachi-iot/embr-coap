@@ -7,7 +7,7 @@
 
 #include "coap/decoder.h"
 //#include "mc/linkedlist.h"
-#include "mc/array-helper.h"
+//#include "mc/array-helper.h"
 #include "coap/context.h"
 #include "coap/decoder/observer.h"
 

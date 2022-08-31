@@ -5,7 +5,7 @@
 
 #include <obsolete/coap-dispatcher.h>
 #include "mc/experimental-factory.h"
-#include "mc/objstack.h"
+//#include "mc/objstack.h"
 
 namespace embr { namespace coap {
 

@@ -4,15 +4,15 @@
 #include "cbor/encoder.h"
 #include "cbor/decoder.h"
 #if __cplusplus >= 201103L
-#include "obsolete/platform/generic/malloc_netbuf.h"
+//#include "obsolete/platform/generic/malloc_netbuf.h"
 #endif
 #include "test-data.h"
 
-#include "obsolete/cbor/encoder.h"
+//#include "obsolete/cbor/encoder.h"
 
 using namespace embr;
 
-namespace pipeline = moducom::pipeline;
+//namespace pipeline = moducom::pipeline;
 
 static const uint8_t* cbor_assert(CBOR::Decoder& decoder, const uint8_t* v, std::string expected)
 {
@@ -29,8 +29,10 @@ static const uint8_t* cbor_assert(CBOR::Decoder& decoder, const uint8_t* v, std:
 
 static std::string decoder_get_string(CBOR::Decoder& decoder, const uint8_t** v)
 {
-    pipeline::MemoryChunk::readonly_t chunk = decoder.get_string_experimental(v, 999);
-    std::string s((const char*)chunk.data(), chunk.length());
+    estd::const_buffer chunk = decoder.get_string_experimental(v, 999);
+    std::string s((const char*)chunk.data(), chunk.size_bytes());
+    //pipeline::MemoryChunk::readonly_t chunk = decoder.get_string_experimental(v, 999);
+    //std::string s((const char*)chunk.data(), chunk.length());
     return s;
 }
 
@@ -62,9 +64,11 @@ struct DecoderHelper
 
     std::string string()
     {
-        pipeline::MemoryChunk::readonly_t chunk = decoder.get_string_experimental(&value, 999, &result);
+        estd::const_buffer chunk = decoder.get_string_experimental(&value, 999, &result);
+        //pipeline::MemoryChunk::readonly_t chunk = decoder.get_string_experimental(&value, 999, &result);
         __glibcxx_assert(result == CBOR::Decoder::OK);
-        std::string s((const char*)chunk.data(), chunk.length());
+        std::string s((const char*)chunk.data(), chunk.size_bytes());
+        //std::string s((const char*)chunk.data(), chunk.length());
         return s;
     }
 
@@ -279,6 +283,8 @@ TEST_CASE("CBOR decoder tests", "[cbor-decoder]")
         REQUIRE(decoder.state() == cbor::Decoder::AdditionalDone);
         REQUIRE(decoder.integer<int32_t>() == -123456789);
     }
+    /*
+     * Disabled as part of mc-mem removal
 #if __cplusplus >= 201103L
     SECTION("revamped netbuf encoder")
     {
@@ -334,11 +340,13 @@ TEST_CASE("CBOR decoder tests", "[cbor-decoder]")
 #endif
     }
 #endif
+     */
     SECTION("experimental cbor decoder")
     {
         using namespace cbor::experimental;
 
-        pipeline::MemoryChunk::readonly_t chunk(cbor_int);
+        //pipeline::MemoryChunk::readonly_t chunk(cbor_int);
+        estd::const_buffer chunk(cbor_int);
         StreamDecoder decoder;
         StreamDecoder::Context context(chunk, true);
 
@@ -368,7 +376,8 @@ TEST_CASE("CBOR decoder tests", "[cbor-decoder]")
     {
         using namespace cbor::experimental;
 
-        pipeline::MemoryChunk::readonly_t chunk(cbor_int);
+        estd::const_buffer chunk(cbor_int);
+        //pipeline::MemoryChunk::readonly_t chunk(cbor_int);
         StreamDecoder decoder;
         StreamDecoder::Context context(chunk, true);
 
@@ -378,7 +387,8 @@ TEST_CASE("CBOR decoder tests", "[cbor-decoder]")
     {
         using namespace cbor::experimental;
 
-        pipeline::MemoryChunk::readonly_t chunk(cbor_cred);
+        estd::const_buffer chunk(cbor_cred);
+        //pipeline::MemoryChunk::readonly_t chunk(cbor_cred);
         StreamDecoder decoder;
         StreamDecoder::Context context(chunk, true);
 
@@ -396,6 +406,8 @@ TEST_CASE("CBOR decoder tests", "[cbor-decoder]")
         require_string(decoder, context, "pass");
         require_string(decoder, context, "secret");
     }
+    /*
+     * Disabled as part of mc-mem removal
 #if __cplusplus >= 201103L
     SECTION("encoder: boolean and NULL")
     {
@@ -416,6 +428,7 @@ TEST_CASE("CBOR decoder tests", "[cbor-decoder]")
         REQUIRE(len == 2);
     }
 #endif
+     */
     SECTION("encoder+decoder: self-contained dogfooding")
     {
 

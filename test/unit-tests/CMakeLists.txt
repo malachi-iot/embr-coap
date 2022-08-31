@@ -60,11 +60,15 @@ set(SOURCE_FILES
         cbor-test.cpp
         coap-datapump-test.cpp
         coap-decoder-test.cpp
-        coap-dispatcher-test.cpp test-data.h coap-encoder-test.cpp
+        #coap-dispatcher-test.cpp
+        test-data.h coap-encoder-test.cpp
         coap-token-test.cpp
         coap-observable-test.cpp
         blockwise-test.cpp
-        experimental-test.cpp
+
+        # Disabled as part of mc-mem removal.  Contains almost exclusively obsolete code
+        #experimental-test.cpp
+
         decoder-subject-test.cpp
         mc/opts.h
         netbuf-test.cpp

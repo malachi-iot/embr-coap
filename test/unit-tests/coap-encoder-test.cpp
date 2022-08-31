@@ -7,13 +7,13 @@
 #include <stddef.h>
 
 #include "coap-encoder.h"
-#include "mc/memory.h"
+//#include "mc/memory.h"
 #include "coap_transmission.h"
 #include "coap/token.h"
-#include "mc/experimental.h"
-#include <obsolete/coap/encoder.hpp>
+//#include "mc/experimental.h"
+//#include <obsolete/coap/encoder.hpp>
 
-#include "exp/netbuf.h"
+//#include "exp/netbuf.h"
 
 #include "coap/encoder/streambuf.h"
 #include <estd/string.h>
@@ -21,7 +21,7 @@
 #include "test-data.h"
 
 using namespace embr::coap;
-using namespace moducom::pipeline;
+//using namespace moducom::pipeline;
 
 #include <stdio.h>
 
@@ -44,6 +44,8 @@ TEST_CASE("CoAP encoder tests", "[coap-encoder]")
 {
     typedef Option number_t;
 
+    // Extending UNUSED section to include netbuf during
+    // removal of mc-mem
 #ifdef UNUSED
     SECTION("1")
     {
@@ -102,7 +104,6 @@ TEST_CASE("CoAP encoder tests", "[coap-encoder]")
         REQUIRE(chunk[option_pos + 6] == 0xFF);
 //#endif
     }
-#endif
     // TODO: Move this to more proper test file location
     SECTION("Read Only Memory Buffer")
     {
@@ -218,6 +219,7 @@ TEST_CASE("CoAP encoder tests", "[coap-encoder]")
         REQUIRE(netbuf.processed()[8] == 0xFF);
         REQUIRE(netbuf.processed()[9] == s[0]);
     }
+#endif
     SECTION("streambuf encoder")
     {
         // for << operator, which I'm still undecided about
