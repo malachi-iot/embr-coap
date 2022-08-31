@@ -1,5 +1,5 @@
 #include "coap.h"
-#include "mc/memory.h"
+//#include "mc/memory.h"
 
 namespace embr {
 namespace coap {

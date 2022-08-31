@@ -1,7 +1,7 @@
 #pragma once
 
 #include <estd/cstdint.h>
-#include <mc/mem/platform.h>    // needed for ASSERT_WARN
+//#include <mc/mem/platform.h>    // needed for ASSERT_WARN
 #include <estd/vector.h>
 #include <estd/span.h>
 #include <estd/array.h>

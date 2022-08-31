@@ -13,7 +13,7 @@ set(EMBR_DIR ${ROOT_DIR}/ext/embr/src)
 
 include_directories(${PROJECT_SOURCE_DIR})
 
-include_directories(${MC_MEM_DIR})
+#include_directories(${MC_MEM_DIR})
 include_directories(${ESTDLIB_DIR})
 include_directories(${EMBR_DIR})
 

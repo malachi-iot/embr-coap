@@ -29,7 +29,7 @@ set(EMBR_DIR ${ROOT_DIR}/ext/embr/src)
 
 include_directories(${ROOT_DIR}/ext/Catch/include)
 
-include_directories(${MC_MEM_DIR})
+#include_directories(${MC_MEM_DIR})
 include_directories(${ESTDLIB_DIR})
 
 include_directories(${EMBR_DIR})
@@ -43,7 +43,7 @@ include_directories(${EMBR_DIR})
 # for that
 # add_subdirectory(${ESTDLIB_DIR} estd)
 
-add_subdirectory(${MC_MEM_DIR} mem)
+#add_subdirectory(${MC_MEM_DIR} mem)
 
 add_subdirectory(${EMBR_DIR} embr)
 
@@ -75,5 +75,7 @@ set(SOURCE_FILES
 
 add_executable(mc-coap-test ${SOURCE_FILES})
 
-target_link_libraries(mc-coap-test moducom-coap-lib moducom_memory_lib embr-lib)
+target_link_libraries(mc-coap-test mc-coap
+#       moducom_memory_lib
+        embr-lib)
 

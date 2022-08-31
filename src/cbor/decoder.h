@@ -5,7 +5,7 @@
 #include <stdint.h> // for uint8_t and friends
 #include "../coap/uint.h"
 #include <estd/string.h>
-#include "mc/memory-chunk.h"
+//#include "mc/memory-chunk.h"
 
 namespace embr { namespace cbor {
 
