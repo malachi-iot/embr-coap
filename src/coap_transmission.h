@@ -5,8 +5,8 @@
 #ifndef SRC_COAP_TRANSMISSION_H
 #define SRC_COAP_TRANSMISSION_H
 
-#include <mc/mem/platform.h>
-#include <mc/memory.h>
+//#include <mc/mem/platform.h>
+//#include <mc/memory.h>
 #include "coap.h"
 
 // interim: eventually provide our own memory pool version of map
