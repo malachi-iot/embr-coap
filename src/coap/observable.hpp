@@ -5,6 +5,7 @@
 
 namespace embr { namespace coap {
 
+// Extended OBSELETE as part of mc-mem removal
 #ifdef OBSOLETE
 template <class TCollection,
           class TIncomingContext,
@@ -74,7 +75,6 @@ void ObservableRegistrar<TCollection, TIncomingContext, TRequestContextTraits>::
         datapump.enqueue_out(encoder.netbuf(), addr);
 #endif
     }}
-#endif
 
 template <class TRequestContext>
 void ObservableOptionObserverBase<TRequestContext>::on_option(option_number_t number,
@@ -161,5 +161,6 @@ void ObservableOptionObserverBase<TRequestContext>::on_complete()
         }
     }
 }
+#endif
 
 }}

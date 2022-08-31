@@ -5,7 +5,7 @@
 
 #pragma once
 
-#include <obsolete/coap/decoder/subject.h>
+//#include <obsolete/coap/decoder/subject.h>
 #include "subject-core.hpp"
 
 namespace embr { namespace coap {

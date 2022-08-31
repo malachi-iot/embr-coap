@@ -2,7 +2,7 @@
 
 //#include "decoder/subject.h"
 //#include "encoder.h"
-#include <obsolete/coap/experimental-observer.h>
+//#include <obsolete/coap/experimental-observer.h>
 #include "exp/datapump-observer.h"
 #include "coap/platform.h"
 #include "context.h"
@@ -50,7 +50,8 @@ template <class TCollection,
           class TRequestContextTraits = incoming_context_traits<TIncomingContext> >
 class ObservableRegistrar
 {
-    typedef moducom::pipeline::MemoryChunk::readonly_t ro_chunk_t;
+    typedef estd::const_buffer ro_chunk_t;
+    //typedef moducom::pipeline::MemoryChunk::readonly_t ro_chunk_t;
 
     // Enumeration shall be of type ObservableSession, or something similar to it
     TCollection registrations;
@@ -193,6 +194,8 @@ class ObservableRegistrar :
 
 }
 
+/*
+ * Commented out as part of mc-mem removal
 template <class TRequestContext = ObserverContext>
 class ObservableOptionObserverBase : public experimental::MessageObserverBase<TRequestContext>
 {
@@ -237,6 +240,7 @@ public:
 
     void on_complete();
 };
+ */
 
 }}
 

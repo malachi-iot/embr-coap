@@ -58,7 +58,11 @@ set(SOURCE_FILES
         main_test.cpp coap.cpp
         coap_lowlevel.cpp
         cbor-test.cpp
-        coap-datapump-test.cpp
+
+        # Disabled as part of mc-mem removal.  DataPump is crusty but usable -
+        # its netbuf naming is a misnomer, really it can be just about any buffer - IIRC
+        #coap-datapump-test.cpp
+
         coap-decoder-test.cpp
         #coap-dispatcher-test.cpp
         test-data.h coap-encoder-test.cpp
@@ -69,10 +73,14 @@ set(SOURCE_FILES
         # Disabled as part of mc-mem removal.  Contains almost exclusively obsolete code
         #experimental-test.cpp
 
+        # Disabled as part of mc-mem removal.  Contains DataPump which is crusty but usable -
+        # its netbuf naming is a misnomer, really it can be just about any buffer - IIRC
+        experimental2-test.cpp
+
         decoder-subject-test.cpp
         mc/opts.h
         netbuf-test.cpp
-        test-observer.h experimental2-test.cpp
+        test-observer.h
         retry-test.cpp
         uint-test.cpp
         )

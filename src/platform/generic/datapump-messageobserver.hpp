@@ -7,6 +7,8 @@
 
 namespace embr { namespace coap {
 
+/*
+ * Commented out as part of mc-mem removal
 template <class TMessageObserver, class TNetBuf>
 void process_messageobserver_helper(DecoderSubjectBase<TMessageObserver>& ds, TNetBuf& netbuf,
     typename TMessageObserver::context_t& context)
@@ -54,6 +56,7 @@ void process_messageobserver_netbuf(DecoderSubjectBase<TMessageObserver>& ds, TN
 
     process_messageobserver_helper(ds, netbuf, request_context);
 }
+*/
 
 template <class TDataPump, class TDecoderSubject>
 void process_messageobserver(TDataPump& datapump, TDecoderSubject& ds)

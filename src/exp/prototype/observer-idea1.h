@@ -1,7 +1,7 @@
 #pragma once
 
 #include "coap/platform.h"
-#include <obsolete/coap/decoder/observer.h>
+//#include <obsolete/coap/decoder/observer.h>
 
 // only for observing class/method signatures, no expectation of functional code
 namespace experimental { namespace prototype {

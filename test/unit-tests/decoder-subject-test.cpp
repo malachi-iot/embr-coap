@@ -2,7 +2,7 @@
 
 #include "coap/decoder/subject.hpp"
 #include "coap/decoder/streambuf.hpp"
-#include <obsolete/coap/decoder/observer-aggregate.hpp>
+//#include <obsolete/coap/decoder/observer-aggregate.hpp>
 #include <coap/decoder/decode-and-notify.h>
 #include <exp/diagnostic-decoder-observer.h>
 #include "test-data.h"
@@ -19,7 +19,7 @@ typedef TokenAndHeaderContext<true, false> request_context_t;
 // +++ just to test compilation, eliminate once decent unit tests for
 // DecoderSubjectBase is in place
 static request_context_t test_ctx;
-static DecoderSubjectBase<embr::coap::experimental::ContextDispatcherHandler<request_context_t> > test(test_ctx);
+//static DecoderSubjectBase<embr::coap::experimental::ContextDispatcherHandler<request_context_t> > test(test_ctx);
 // ---
 
 // FIX: putting this above causes compilation issues, clean that up
@@ -50,12 +50,14 @@ struct test_static_observer
 
 int test_static_observer::counter = 0;
 
-using namespace moducom::pipeline;
+//using namespace moducom::pipeline;
 
 TEST_CASE("CoAP decoder subject tests", "[coap-decoder-subject]")
 {
     typedef estd::const_buffer ro_chunk_t;
 
+    /*
+     * Disabled as part of mc-mem removal
     SECTION("16 bit delta: ContextDispatcherHandler")
     {
         ro_chunk_t chunk(buffer_16bit_delta);
@@ -106,6 +108,7 @@ TEST_CASE("CoAP decoder subject tests", "[coap-decoder-subject]")
         //AggregateDecoderObserver<ObserverContext, estd::layer2::vector<IDecoderObserver<ObserverContext>*, 10> >
           //      ado = preset;
     }
+     */
     SECTION("embr subject flavor of things")
     {
         ro_chunk_t chunk(buffer_16bit_delta);

@@ -6,16 +6,20 @@
 
 #include <catch.hpp>
 
-#include <obsolete/coap-dispatcher.h>
-#include <obsolete/coap/decoder/subject.h> // for event definitions
-#include <obsolete/coap/experimental-observer.h>
+//#include <obsolete/coap-dispatcher.h>
+#include <exp/events.h>
+//#include <obsolete/coap/decoder/subject.h> // for event definitions
+//#include <obsolete/coap/experimental-observer.h>
 #include <coap/decoder/netbuf.h>
 //#include <exp/netbuf.h>
 #include "test-data.h"
 
 using namespace embr::coap;
 using namespace embr::coap::experimental;
-using namespace moducom::pipeline;
+//using namespace moducom::pipeline;
+
+// Made unused as part of mc-mem removal
+#if UNUSED
 
 /// @brief designed specifically to test against "buffer_16bit_delta" buffer
 /// @remarks the whole DecoderObserverBase chain is deprecated
@@ -134,7 +138,7 @@ public:
         return base_t::_chunk.length();
     }
 };
-
+#endif
 
 struct test_observer
 {
