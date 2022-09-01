@@ -38,7 +38,7 @@ public:
 
 protected:
     typedef Decoder base_t;
-    typedef estd::const_buffer ro_chunk_t;
+    typedef internal::const_buffer ro_chunk_t;
 
     DecoderWithContext(const ro_chunk_t& chunk, bool last_chunk) :
         context(chunk, last_chunk)
@@ -450,7 +450,7 @@ class option_iterator
     typedef TNetBufDecoder decoder_t;
     typedef typename decoder_t::netbuf_t netbuf_t;
     typedef Option::Numbers value_type;
-    typedef estd::const_buffer ro_chunk_t;
+    typedef internal::const_buffer ro_chunk_t;
 
     decoder_t& decoder;
 

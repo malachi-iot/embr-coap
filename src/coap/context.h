@@ -188,7 +188,7 @@ public:
 // be mindful to validate this data before tossing it in here
 class SimpleBufferContext
 {
-    estd::const_buffer chunk;
+    internal::const_buffer chunk;
 
 public:
     const Header& header() const
@@ -225,7 +225,7 @@ struct TokenAndHeaderContext<true, false> :
                              header().token_length());
     }
 
-    void token(const estd::const_buffer& t)
+    void token(const internal::const_buffer& t)
     {
         TokenContext<true>::token(t);
     }
@@ -242,7 +242,7 @@ struct TokenAndHeaderContext<false, false> :
         return layer3::Token(_token, header().token_length());
     }
 
-    void token(const estd::const_buffer &t)
+    void token(const internal::const_buffer &t)
     {
         TokenContext<false>::token(t);
     }

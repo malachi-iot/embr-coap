@@ -260,7 +260,7 @@ class StreamDecoder
     Decoder item_decoder;
 
     //typedef moducom::pipeline::MemoryChunk::readonly_t ro_chunk_t;
-    typedef estd::const_buffer ro_chunk_t;
+    typedef coap::internal::const_buffer ro_chunk_t;
 
     friend class SimpleData;
     friend class SimpleDataHelper;

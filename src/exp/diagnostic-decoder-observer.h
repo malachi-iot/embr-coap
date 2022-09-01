@@ -14,7 +14,7 @@ namespace experimental {
 
 struct DiagnosticMessageObserver
 {
-    static void opaque_dump_line(estd::const_buffer b, bool indent = false, int max_size = 0)
+    static void opaque_dump_line(internal::const_buffer b, bool indent = false, int max_size = 0)
     {
         if(indent)
         {
@@ -49,7 +49,7 @@ struct DiagnosticMessageObserver
         puts("");
     }
 
-    static void opaque_dump(estd::const_buffer b)
+    static void opaque_dump(internal::const_buffer b)
     {
         /*
         int len = b.size();

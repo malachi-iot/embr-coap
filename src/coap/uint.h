@@ -4,6 +4,7 @@
 
 //#include <mc/mem/platform.h>    // needed for ASSERT_WARN
 #include "../platform/assert.h"
+#include "internal/buffer.h"
 
 #include <estd/vector.h>
 #include <estd/span.h>
@@ -51,7 +52,7 @@ inline uint8_t uint_get<uint8_t>(const uint8_t* value, const size_t len)
 class UInt
 {
 public:
-    typedef estd::span<const uint8_t> const_buffer;
+    typedef internal::const_buffer const_buffer;
 
     template <class TReturn>
     static TReturn get(const uint8_t* value, const size_t len = sizeof(TReturn))

@@ -190,7 +190,7 @@ public:
 
 
     // NOTE: token size must have already been specified in header!
-    void token(const estd::const_buffer token)
+    void token(const internal::const_buffer token)
     {
         _assert(state_type::HeaderDone);
         // TODO: Chunked not handled, but we could still check for fail to write
@@ -362,14 +362,14 @@ inline _Option option(embr::coap::Option::Numbers number, uint16_t sz)
 
 struct _Token
 {
-    estd::const_buffer raw;
+    internal::const_buffer raw;
 
 #ifndef __cpp_initializer_lists
-    _Token(estd::const_buffer raw) : raw(raw) {}
+    _Token(internal::const_buffer raw) : raw(raw) {}
 #endif
 };
 
-inline _Token token(estd::const_buffer raw)
+inline _Token token(internal::const_buffer raw)
 {
 #ifdef __cpp_initializer_lists
     return _Token { raw };

@@ -79,7 +79,7 @@ public:
 #ifdef FEATURE_MCCOAP_EXPCONTEXT
             // FIX: in_avail() can come back with a '0' or '-1' , still need to address that
             // FIX: Need better assessment of 'last_chunk'
-            ,context(estd::const_buffer(
+            ,context(internal::const_buffer(
                     (const uint8_t*)streambuf.gptr(),
                     streambuf.in_avail()),
                     total_size <= streambuf.in_avail()),
@@ -141,7 +141,7 @@ public:
                 // the spirit of the const_buffer
                 // FIX: Need better assessment of 'last_chunk'
                 new (&context) internal::DecoderContext(
-                        estd::const_buffer(
+                        internal::const_buffer(
                                 (const uint8_t*)streambuf.gptr(),
                                 in_avail),
                         total_size_remaining <= in_avail);

@@ -281,7 +281,7 @@ size_t OptionDecoder::process_iterate_streambuf(TStreambuf& streambuf, Holder* b
         return 0;
     }
 
-    estd::const_buffer chunk((const uint8_t*) streambuf.gptr(), length);
+    internal::const_buffer chunk((const uint8_t*) streambuf.gptr(), length);
 
     int count = process_iterate(chunk, built_option);
 
