@@ -144,12 +144,14 @@ static void test_decode_and_notify()
 
     context.counter = 0;
 
-    while(!coap::decode_and_notify(decoder, l, context).eof);
+    // NOTE: We could have used coap::decode_and_notify but I like the lower
+    // level testing done here
+    while(!coap::iterated::decode_and_notify(decoder, l, context).eof);
 
     // runs once more at end to trigger completed event, don't remember
     // exactly why we have to do it that way - it has something to do with
     // giving consumer chance to fully consume payload
-    coap::decode_and_notify(decoder, l, context);
+    coap::iterated::decode_and_notify(decoder, l, context);
 
     TEST_ASSERT_EQUAL_INT(6, context.counter);
 }
