@@ -9,7 +9,6 @@ set(ESTDLIB_DIR ${ROOT_DIR}/ext/estdlib)
 set(EMBR_DIR ${ROOT_DIR}/ext/embr)
 set(UNITY_DIR ${ESTDLIB_DIR}/ext/Unity)
 set(COAP_DIR ${ROOT_DIR}/src)
-set(MC_MEM_DIR ${ROOT_DIR}/ext/moducom-memory)
 
 add_subdirectory(${COAP_DIR} coap)
 add_subdirectory(${UNITY_DIR} unity)
@@ -29,4 +28,3 @@ target_include_directories(${PROJECT_NAME} PUBLIC
     .
     )
 target_include_directories(${PROJECT_NAME} PUBLIC ${COAP_DIR})
-target_include_directories(${PROJECT_NAME} PUBLIC ${MC_MEM_DIR}/src)

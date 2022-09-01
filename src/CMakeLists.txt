@@ -15,21 +15,6 @@ include_directories(${PROJECT_SOURCE_DIR})
 include_directories(${ESTDLIB_DIR})
 include_directories(${EMBR_DIR})
 
-# set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "../../../bin")
-
-# add_subdirectory(. CMAKE_RUNTIME_OUTPUT_DIRECTORY)
-# add_subdirectory(${MC_MEM_DIR} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
-
-# add_subdirectory(${MC_MEM_DIR} mcmem)
-# add_subdirectory(${ESTDLIB_DIR} estdlib)
-
-# using technique from https://coderwall.com/p/y3zzbq/use-cmake-enabled-libraries-in-your-cmake-project
-#include(ExternalProject)
-
-#ExternalProject_Add(moducom_memory SOURCE_DIR "../../ext/moducom-memory/src")
-
-#find_package ( moducom_memory )
-
 set(SOURCE_FILES
         coap.cpp coap.h
         #coap_transmission.h

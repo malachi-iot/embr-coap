@@ -4,10 +4,6 @@
 [submodule "ext/lwipcpp"]
 	path = ext/lwipcpp
 	url = git@github.com:malachi-iot/lwipcpp.git
-[submodule "ext/moducom-memory"]
-	path = ext/moducom-memory
-	url = git@github.com:moducom/memory.git
-	branch = dev
 [submodule "ext/estdlib"]
 	path = ext/estdlib
 	url = git@github.com:malachi-iot/estdlib.git
