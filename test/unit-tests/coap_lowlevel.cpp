@@ -46,7 +46,7 @@ TEST_CASE("CoAP low level tests", "[coap-lowlevel]")
 
         for (int i = 0; i < sizeof(buffer); i++)
         {
-            estd::const_buffer temp_chunk(&buffer[i], 1);
+            internal::const_buffer temp_chunk(&buffer[i], 1);
 
             embr::void_subject s;
             Decoder::Context context(temp_chunk, i == sizeof(buffer) - 1);
@@ -115,7 +115,7 @@ TEST_CASE("CoAP low level tests", "[coap-lowlevel]")
         for (int i = 0; i < sizeof(buffer_16bit_delta); i++)
         {
             // A little clunky but should work, just to stay 1:1 with old test
-            estd::const_buffer temp_chunk(&buffer[i], 1);
+            internal::const_buffer temp_chunk(&buffer[i], 1);
             parser_t::Context context(temp_chunk, i == sizeof(buffer_16bit_delta) - 1);
 
             iterated::decode_result r;

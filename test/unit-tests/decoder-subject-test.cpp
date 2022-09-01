@@ -54,7 +54,7 @@ int test_static_observer::counter = 0;
 
 TEST_CASE("CoAP decoder subject tests", "[coap-decoder-subject]")
 {
-    typedef estd::const_buffer ro_chunk_t;
+    typedef internal::const_buffer ro_chunk_t;
 
 
     SECTION("embr subject flavor of things")

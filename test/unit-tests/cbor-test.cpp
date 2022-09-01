@@ -27,9 +27,11 @@ static const uint8_t* cbor_assert(CBOR::Decoder& decoder, const uint8_t* v, std:
 }
 
 
+typedef embr::coap::internal::const_buffer const_buffer;
+
 static std::string decoder_get_string(CBOR::Decoder& decoder, const uint8_t** v)
 {
-    estd::const_buffer chunk = decoder.get_string_experimental(v, 999);
+    const_buffer chunk = decoder.get_string_experimental(v, 999);
     std::string s((const char*)chunk.data(), chunk.size_bytes());
     //pipeline::MemoryChunk::readonly_t chunk = decoder.get_string_experimental(v, 999);
     //std::string s((const char*)chunk.data(), chunk.length());
@@ -64,7 +66,7 @@ struct DecoderHelper
 
     std::string string()
     {
-        estd::const_buffer chunk = decoder.get_string_experimental(&value, 999, &result);
+        const_buffer chunk = decoder.get_string_experimental(&value, 999, &result);
         //pipeline::MemoryChunk::readonly_t chunk = decoder.get_string_experimental(&value, 999, &result);
         __glibcxx_assert(result == CBOR::Decoder::OK);
         std::string s((const char*)chunk.data(), chunk.size_bytes());
@@ -346,7 +348,7 @@ TEST_CASE("CBOR decoder tests", "[cbor-decoder]")
         using namespace cbor::experimental;
 
         //pipeline::MemoryChunk::readonly_t chunk(cbor_int);
-        estd::const_buffer chunk(cbor_int);
+        const_buffer chunk(cbor_int);
         StreamDecoder decoder;
         StreamDecoder::Context context(chunk, true);
 
@@ -376,7 +378,7 @@ TEST_CASE("CBOR decoder tests", "[cbor-decoder]")
     {
         using namespace cbor::experimental;
 
-        estd::const_buffer chunk(cbor_int);
+        const_buffer chunk(cbor_int);
         //pipeline::MemoryChunk::readonly_t chunk(cbor_int);
         StreamDecoder decoder;
         StreamDecoder::Context context(chunk, true);
@@ -387,7 +389,7 @@ TEST_CASE("CBOR decoder tests", "[cbor-decoder]")
     {
         using namespace cbor::experimental;
 
-        estd::const_buffer chunk(cbor_cred);
+        const_buffer chunk(cbor_cred);
         //pipeline::MemoryChunk::readonly_t chunk(cbor_cred);
         StreamDecoder decoder;
         StreamDecoder::Context context(chunk, true);

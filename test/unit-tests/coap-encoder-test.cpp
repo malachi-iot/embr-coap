@@ -168,7 +168,7 @@ TEST_CASE("CoAP encoder tests", "[coap-encoder]")
             // clear this out to avoid false successes
             memset(buffer, 0, sizeof(buffer));
 
-            estd::const_buffer empty(NULLPTR, 0);
+            internal::const_buffer empty(NULLPTR, 0);
 
             // Consider making encode_type *itself* an ostream rather than generating one
             // this would be particularly useful for the ostream-style of tracking eof, erroneous
