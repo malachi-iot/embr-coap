@@ -7,13 +7,11 @@ project(mc-coap)
 # set(CMAKE_CXX_STANDARD 98)
 
 set(ROOT_DIR ..)
-set(MC_MEM_DIR ${ROOT_DIR}/ext/moducom-memory/src)
 set(ESTDLIB_DIR ${ROOT_DIR}/ext/estdlib/src)
 set(EMBR_DIR ${ROOT_DIR}/ext/embr/src)
 
 include_directories(${PROJECT_SOURCE_DIR})
 
-#include_directories(${MC_MEM_DIR})
 include_directories(${ESTDLIB_DIR})
 include_directories(${EMBR_DIR})
 
@@ -91,21 +89,6 @@ set(SOURCE_FILES
 
         exp/prototype/observer-idea1.h
 
-        #obsolete/cbor/encoder.h
-        #obsolete/coap-dispatcher.cpp
-        #obsolete/coap-dispatcher.h
-        #obsolete/coap-dispatcher.hpp
-        #obsolete/coap/decoder/observer.h
-        #obsolete/coap/decoder/observer-aggregate.h
-        #obsolete/coap/decoder/observer-aggregate.hpp
-        #obsolete/coap/decoder/subject.h
-        #obsolete/coap/encoder.h
-        #obsolete/coap/encoder.hpp
-        #obsolete/coap/experimental-observer.h
-        #obsolete/coap/observable.h
-        #obsolete/platform/generic/malloc_netbuf.h
-        #obsolete/platform/lwip/lwip-portandaddress.h
-
         platform/arduino/arduino-eth-datapump.cpp
 
         platform/generic/datapump-messageobserver.hpp
@@ -121,18 +104,9 @@ set(SOURCE_FILES
         mc/opts.h
         mc/opts-internal.h
         mc/encoder-base.h
-        #mc/pipeline.h
-        #mc/pipeline.cpp
-        #mc/pipeline-encoder.h mc/pipeline-writer.h
-        #mc/pipeline-reader.h
-        #mc/pipeline-decoder.h
         mc/experimental.h
         coap-observable.h
 
-        #mc/experimental.cpp
-        #mc/experimental-factory.h
         )
 
-# DEBT: get rid of old moducom-coap-lib extended name
-add_library(moducom-coap-lib ${SOURCE_FILES})
-add_library(${PROJECT_NAME} ALIAS moducom-coap-lib)
+add_library(${PROJECT_NAME} ${SOURCE_FILES})
