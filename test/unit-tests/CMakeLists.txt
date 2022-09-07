@@ -58,6 +58,7 @@ set(SOURCE_FILES
         #coap-datapump-test.cpp
 
         coap-decoder-test.cpp
+        coap-header-test.cpp
         test-data.h coap-encoder-test.cpp
         coap-token-test.cpp
         coap-observable-test.cpp

@@ -28,9 +28,18 @@ struct EnumBase
     typedef TypeEnum Types;
 };
 
+// DEBT: Phase this particular flavor out after addressing request_method
+// and friends' ADL concerns
 typedef EnumBase::RequestMethods RequestMethods;
 typedef EnumBase::Types Types;
 
 }}
+
+namespace header {
+
+typedef internal::header::EnumBase::RequestMethods RequestMethods;
+typedef internal::header::EnumBase::Types Types;
+
+}
 
 }}

@@ -19,7 +19,7 @@ namespace internal { namespace cxx_03 {
 
 // https://tools.ietf.org/html/rfc7252#section-3
 class Header : public internal::header::EnumBase,
-   embr::bits::internal::word<32>
+   public embr::bits::internal::word<32>
 {
     typedef embr::bits::internal::word<32> base_type;
 
