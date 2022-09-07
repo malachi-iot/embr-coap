@@ -17,7 +17,7 @@
 #include <embr/events.h>
 #include <embr/exp/pbuf.h>
 
-#include "datapump-observer.h" // for IDataPumpObserver
+#include "retry/metadata.h"
 
 #if defined(__unix__) || defined(__POSIX__) || defined(__MACH__)
 #include <sys/time.h>
@@ -133,62 +133,15 @@ private:
         return decoder.header();
     }
 
-#ifdef UNUSED
-    ///
-    /// \brief Old-style listener.  Do not use
-    /// @deprecated
-    struct AlwaysConsumeNetbuf : IDataPumpObserver<netbuf_t, addr_t>
-    {
-
-
-        // IDataPumpObserver interface
-    public:
-        virtual void on_message_transmitting(netbuf_t *netbuf, const addr_t &addr) OVERRIDE
-        {}
-
-        virtual bool on_message_transmitted(netbuf_t *netbuf, const addr_t &addr) OVERRIDE
-        {
-            return true;
-        }
-    };
-#endif
-
 public:
     ///
     /// \brief Underlying data associated with any potential-retry item
     ///
-    struct Metadata
+    struct Metadata : retry::Metadata
     {
-        // from 0-4 (COAP_MAX_RETRANSMIT)
-        // NOTE: Technically at this time this actually represents *queued for transmit* and may
-        // or may not reflect whether it has actually been transmitted yet
-        uint16_t retransmission_counter : 3;
-
-        // represents in milliseconds initial timeout as described in section 4.2.
-        // This is  between COAP_ACK_TIMEOUT and COAP_ACK_TIMEOUT*COAP_ACK_RANDOM_FACTOR
-        // which for this variable works out to be 2000-3000
-        uint16_t initial_timeout_ms : 12;
-
-        // helper bit to help us avoid decoding outgoing message to see if it's really
-        // a CON message.  Or, in otherwords, a cached value indicating outgoing message
-        // REALLY is CON.
-        // value: 1 = definitely a CON message
-        // value: 0 = maybe a CON message, decode required
-        uint16_t con_helper_flag_bit : 1;
-
         //bool is_definitely_con() { return con_helper_flag_bit; }
         // TODO: an optimization, and we aren't there quite yet
         bool is_definitely_con() { return false; }
-
-        // TODO: optimize.  Consider making initial_timeout_ms actually at
-        // 10-ms resolution, which should be fully adequate for coap timeouts
-        uint32_t delta()
-        {
-            // double initial_timeout_ms with each retransmission
-            uint16_t multiplier = 1 << retransmission_counter;
-
-            return initial_timeout_ms * multiplier;
-        }
     };
 
     // proper MID and Token are buried in netbuf, so don't need to be carried

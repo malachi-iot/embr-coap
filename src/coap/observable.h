@@ -2,8 +2,6 @@
 
 //#include "decoder/subject.h"
 //#include "encoder.h"
-//#include <obsolete/coap/experimental-observer.h>
-#include "exp/datapump-observer.h"
 #include "coap/platform.h"
 #include "context.h"
 #include <estd/vector.h>
