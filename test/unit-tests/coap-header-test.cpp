@@ -29,7 +29,7 @@ TEST_CASE("CoAP header tests", "[coap-header]")
     {
         SECTION("c++03")
         {
-            //internal::cxx_03::Header header;
+            internal::cxx_03::Header header;
         }
         SECTION("c++11")
         {

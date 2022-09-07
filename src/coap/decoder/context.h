@@ -1,6 +1,7 @@
 #pragma once
 
 #include <estd/span.h>
+#include <estd/cstddef.h>
 
 //#include <mc/memory-chunk.h>
 
@@ -68,6 +69,20 @@ struct decode_result
     uint16_t failure : 1;
     /// CoAP completed decoding the packet normally
     uint16_t done: 1;
+
+#ifndef __cpp_initializer_lists
+    decode_result() {}
+    decode_result(bool eof, bool waitstate, bool failure, bool done) :
+        eof(eof), waitstate(waitstate), failure(failure), done(done)
+    {}
+#else
+    decode_result() = default;
+#endif
+    /*
+     * FIX: Something is broken about this
+    decode_result(estd::nullptr_t) :
+        eof(0), waitstate(0), failure(0), done(0)
+    {} */
 };
 
 }

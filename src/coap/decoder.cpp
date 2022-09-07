@@ -43,7 +43,13 @@ iterated::decode_result Decoder::process_iterate(Context& context)
     typedef Context::chunk_type ro_chunk_t;
     const ro_chunk_t& chunk = context.chunk;
 
+#ifdef __cpp_initializer_lists
     iterated::decode_result r{false, false, false, false};
+#else
+    iterated::decode_result r(false, false, false, false);
+#endif
+    // FIX: Broken somehow
+    //iterated::decode_result r(estd::nullptr_t());
 
     switch (state())
     {
