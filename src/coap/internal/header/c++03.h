@@ -15,6 +15,8 @@
 
 namespace embr { namespace coap {
 
+namespace internal { namespace cxx_03 {
+
 // https://tools.ietf.org/html/rfc7252#section-3
 class Header : public internal::header::EnumBase,
    embr::bits::internal::word<32>
@@ -35,5 +37,7 @@ public:
         Code(uint8_t code) : internal::header::Code(code) {}
     };
 };
+
+}}
 
 }}

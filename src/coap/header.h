@@ -3,18 +3,24 @@
 #include <estd/cstdint.h>
 #include "platform.h"
 
-#if FEATURE_MCCOAP_HEADER_VERSION == FEATURE_MCCOAP_HEADER_LEGACY
+#if FEATURE_MCCOAP_HEADER_LEGACY_COMPILE
 #include "internal/header/legacy.h"
-#elif FEATURE_MCCOAP_HEADER_VERSION == FEATURE_MCCOAP_HEADER_CXX_03
+#endif
 #include "internal/header/c++03.h"
-#else
+#if __cplusplus >= 201103L
 #include "internal/header/c++11.h"
 #endif
 #include <new>
 
 namespace embr { namespace coap {
 
-
+#if FEATURE_MCCOAP_HEADER_VERSION == FEATURE_MCCOAP_HEADER_LEGACY
+typedef internal::legacy::Header Header;
+#elif FEATURE_MCCOAP_HEADER_VERSION == FEATURE_MCCOAP_HEADER_CXX_03
+typedef internal::cxx_03::Header Header;
+#else
+typedef internal::cxx_11::Header Header;
+#endif
 
 
 // in regular conditions:

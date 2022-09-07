@@ -14,6 +14,8 @@
 
 namespace embr { namespace coap {
 
+namespace internal { namespace cxx_11 {
+
 // https://tools.ietf.org/html/rfc7252#section-3
 class Header : public internal::header::EnumBase,
     public embr::bits::layer1::material<embr::bits::big_endian, 4>
@@ -44,5 +46,7 @@ public:
     Types type() const { return (Types) type_native().value(); }
     void type(Types v) { type_native(v); }
 };
+
+}}
 
 }}

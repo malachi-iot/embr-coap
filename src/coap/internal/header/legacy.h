@@ -61,6 +61,7 @@ inline uint16_t ntoh(const uint8_t* bytes)
 
 }
 
+namespace internal { namespace legacy {
 
 // https://tools.ietf.org/html/rfc7252#section-3
 class Header : public internal::header::EnumBase
@@ -267,5 +268,7 @@ public:
         mask_or<COAP_HEADER_FIXED_TYPE_POS>(0, type);
     }
 };
+
+}}
 
 }}
