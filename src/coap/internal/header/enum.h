@@ -28,6 +28,9 @@ struct EnumBase
     typedef TypeEnum Types;
 };
 
+typedef EnumBase::RequestMethods RequestMethods;
+typedef EnumBase::Types Types;
+
 }}
 
 }}

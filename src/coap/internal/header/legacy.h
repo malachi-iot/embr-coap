@@ -153,31 +153,6 @@ public:
         return *instance;
     }
 
-    bool is_request() const
-    {
-        return (code() >> 5) == 0;
-    }
-
-    bool is_response() const { return !is_request(); }
-
-    Code::Codes response_code() const
-    {
-        ASSERT_WARN(true, is_response(), "Invalid response code detected");
-
-        return Code(code()).code();
-    }
-
-    void response_code(Code::Codes value)
-    {
-        code((Code::Codes)value);
-    }
-
-    RequestMethodEnum request_method() const
-    {
-        return (RequestMethodEnum) code();
-    }
-
-
     void code(uint8_t code)
     {
         bytes[1] = code;
