@@ -12,9 +12,10 @@ TEST_CASE("retry tests", "[retry]")
 {
     SECTION("experimental v4 retry")
     {
+        typedef estd::span<const uint8_t> buffer_type;
+
         SECTION("factory")
         {
-            typedef estd::span<const uint8_t> buffer_type;
             typedef DecoderFactory<buffer_type> factory;
 
             buffer_type b(buffer_simplest_request);
@@ -38,6 +39,26 @@ TEST_CASE("retry tests", "[retry]")
 
                 REQUIRE(h.message_id() == 0x123);
             }
+        }
+        SECTION("tracker")
+        {
+            typedef retry::Tracker<unsigned, unsigned, buffer_type> tracker_type;
+
+            tracker_type tracker;
+
+            buffer_type b(buffer_simplest_request);
+
+            auto i = tracker.track(0, 0, b);
+
+            auto match = tracker.match(0, 0x123);
+
+            REQUIRE(match != tracker.tracked.end());
+
+            match = tracker.match(0, 0x1234);
+
+            REQUIRE(match == tracker.tracked.end());
+
+            tracker.untrack(i);
         }
     }
 }

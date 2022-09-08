@@ -3,8 +3,6 @@
 #include <estd/span.h>
 #include <estd/cstddef.h>
 
-//#include <mc/memory-chunk.h>
-
 // This is the legacy way of pushing data through our decoder.  It has the advantage
 // that is that it is dead simple while still being relatively powerful owing to the
 // 'last_chunk' flag.  And C++03 friendly.  Our streambufs are great, but they are not that.

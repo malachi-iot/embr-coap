@@ -13,6 +13,9 @@ namespace embr { namespace coap { namespace experimental { namespace retry {
 ///
 struct Metadata
 {
+    // Lower precision milliseconds
+    typedef estd::chrono::duration<uint32_t, estd::milli> milliseconds;
+
     // from 0-4 (COAP_MAX_RETRANSMIT)
     // NOTE: Technically at this time this actually represents *queued for transmit* and may
     // or may not reflect whether it has actually been transmitted yet
@@ -30,14 +33,17 @@ struct Metadata
     // value: 0 = maybe a CON message, decode required
     uint16_t con_helper_flag_bit : 1;
 
-    // TODO: optimize.  Consider making initial_timeout_ms actually at
-    // 10-ms resolution, which should be fully adequate for coap timeouts
-    uint32_t delta()
+    /// Retrieve ms expected to elapse from last send to next retry
+    /// @return
+    milliseconds delta() const
     {
+        // TODO: optimize.  Consider making initial_timeout_ms actually at
+        // 10-ms resolution, which should be fully adequate for coap timeouts
+
         // double initial_timeout_ms with each retransmission
         uint16_t multiplier = 1 << retransmission_counter;
 
-        return initial_timeout_ms * multiplier;
+        return milliseconds(initial_timeout_ms * multiplier);
     }
 };
 
@@ -56,36 +62,73 @@ struct Item : Metadata
 private:
     const endpoint_type endpoint_;
     buffer_type buffer_;
-    timepoint_type due_;
+
+    // NOTE: Tracking way more than we need here while we hone down architecture
+    timepoint_type
+        first_transmit_,
+        last_transmit_;
 
     bool ack_received_;
 
 public:
-    Item(const endpoint_type& endpoint) : endpoint_{endpoint}
+    Item(const endpoint_type& endpoint, const buffer_type& buffer) :
+        endpoint_{endpoint},
+        buffer_{buffer}
     {
 
+    }
+
+    // FIX: This is needed for vector/memory pooling
+    // Consider revising estd::vector to not use default constructor as per
+    // https://stackoverflow.com/questions/2376989/why-dont-stdvectors-elements-need-a-default-constructor
+    Item() : endpoint_{endpoint_type{}}
+    {
+
+    }
+
+    Item(const Item& copy_from) = default;
+    Item& operator=(const Item& copy_from)
+    {
+        new (this) Item(copy_from);
+        return *this;
     }
 
     // get MID from sent netbuf, for incoming ACK comparison
     inline uint16_t mid() const
     {
         auto decoder = DecoderFactory<buffer_type>::create(buffer_);
-        Header header = decoder.header();
+
+        // FIX: Although this works, it's too sloppy even to be debt.
+        // this uses foreknowledge of decoder state machine behavior to
+        // do exactly 2 iterations which results in a fully parsed Header
+        decoder.process_iterate_streambuf();
+        decoder.process_iterate_streambuf();
+
+        Header header = decoder.header_decoder();
         return header.message_id();
     }
 
 
     // get Token from sent buffer, for incoming ACK comparison
+    // QUESTION: Isn't this only for observable, not CON/ACK?
     coap::layer2::Token token() const
     {
         // TODO: optimize and use header & token decoder only and directly
         auto decoder = DecoderFactory<buffer_type>::create(buffer_);
         coap::layer2::Token token;
 
-        decoder.header();
-        decoder.token(&token);
+        // FIX: Still need to iterate
+        decoder.header_decoder();
+        decoder.token_decoder();
+
+        //decoder.token(&token);
 
         return token;
+    }
+
+    ESTD_CPP_CONSTEXPR_RET const endpoint_type& endpoint() const
+    {
+        return endpoint_;
     }
 };
 
