@@ -4,6 +4,8 @@ So many different retry attempts.  This folder does not attempt to
 end the cycle, but does attempt to organize portions so that they can be
 reused if they pass muster
 
+Consider this "v4 retry"
+
 ## Detail
 
 Code here need not be absolutely specific to retry - its focus is reusability

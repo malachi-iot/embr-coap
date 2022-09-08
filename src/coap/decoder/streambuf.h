@@ -27,8 +27,11 @@ public:
     typedef typename streambuf_type::int_type int_type;
     typedef typename streambuf_type::size_type size_type;
     typedef typename streambuf_type::traits_type traits_type;
+
+    // Removing CV from char_type is OK since we are always making copies of it anyhow
     // DEBT: Must assert that char_type is an 8-bit type
-    typedef typename traits_type::char_type char_type;
+    typedef typename estd::remove_cv<typename traits_type::char_type>::type char_type;
+
     typedef typename estd::span<const char_type> span_type;
 
 private:

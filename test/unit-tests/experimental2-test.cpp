@@ -340,4 +340,25 @@ TEST_CASE("experimental 2 tests")
             }
         }
     }
+    SECTION("v4 retry")
+    {
+        SECTION("factory")
+        {
+            typedef estd::span<const uint8_t> buffer_type;
+            typedef DecoderFactory<buffer_type> factory;
+
+            buffer_type b(buffer_simplest_request);
+
+            auto d = factory::create(b);
+
+            auto r = d.process_iterate_streambuf();
+            r = d.process_iterate_streambuf();
+
+            REQUIRE(d.state() == Decoder::HeaderDone);
+
+            Header h = d.header_decoder();
+
+            REQUIRE(h.message_id() == 0x123);
+        }
+    }
 }
