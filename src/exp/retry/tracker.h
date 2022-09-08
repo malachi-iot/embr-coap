@@ -34,7 +34,7 @@ struct Tracker
         const item_type& i = tracked.back();
         return &i; */
 
-        const item_type& i = tracked.emplace_back(endpoint, buffer);
+        const item_type& i = tracked.emplace_back(endpoint, time_sent, buffer);
 
         return &i;
     }
@@ -49,7 +49,10 @@ struct Tracker
         time_point due = time_sent + i->delta();
 
         // NOTE: Can't use thisafy and friends because 'this' pointer is getting moved around
-        //scheduler.schedule()
+        // So in the short term we need a true dynamic allocation
+        //scheduler.schedule(due)
+
+        return i;
     }
 
     decltype(tracked.begin()) match(const endpoint_type& endpoint, uint16_t mid)

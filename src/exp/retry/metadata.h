@@ -56,7 +56,8 @@ template <class TEndpoint, class TTimePoint, class TBuffer>
 struct Item : Metadata
 {
     typedef TEndpoint endpoint_type;
-    typedef TTimePoint timepoint_type;
+    // DEBT: Would be nice if timepoint didn't mandate estd::chrono
+    typedef TTimePoint time_point;
     typedef TBuffer buffer_type;
 
 private:
@@ -64,16 +65,17 @@ private:
     buffer_type buffer_;
 
     // NOTE: Tracking way more than we need here while we hone down architecture
-    timepoint_type
+    time_point
         first_transmit_,
         last_transmit_;
 
     bool ack_received_;
 
 public:
-    Item(const endpoint_type& endpoint, const buffer_type& buffer) :
+    Item(const endpoint_type& endpoint, const time_point& time_sent, const buffer_type& buffer) :
         endpoint_{endpoint},
-        buffer_{buffer}
+        buffer_{buffer},
+        first_transmit_{time_sent}
     {
 
     }

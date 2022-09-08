@@ -12,7 +12,16 @@ TEST_CASE("retry tests", "[retry]")
 {
     SECTION("experimental v4 retry")
     {
+        // DEBT: Doesn't play nice because std::chrono::time_point doesn't like converting
+        // to estd::chrono::time_point (or is it vice versa?)
+        //typedef typename estd::chrono::steady_clock::time_point time_point;
+
+        typedef estd::chrono::time_point<void, estd::chrono::milliseconds> time_point;
+        typedef embr::internal::layer1::Scheduler<8, embr::internal::scheduler::impl::Function<time_point> > scheduler_type;
         typedef estd::span<const uint8_t> buffer_type;
+        time_point zero_time;
+
+        scheduler_type scheduler;
 
         SECTION("factory")
         {
@@ -42,23 +51,30 @@ TEST_CASE("retry tests", "[retry]")
         }
         SECTION("tracker")
         {
-            typedef retry::Tracker<unsigned, unsigned, buffer_type> tracker_type;
+            typedef retry::Tracker<unsigned, time_point, buffer_type> tracker_type;
 
             tracker_type tracker;
 
             buffer_type b(buffer_simplest_request);
 
-            auto i = tracker.track(0, 0, b);
+            SECTION("core")
+            {
+                auto i = tracker.track(0, zero_time, b);
 
-            auto match = tracker.match(0, 0x123);
+                auto match = tracker.match(0, 0x123);
 
-            REQUIRE(match != tracker.tracked.end());
+                REQUIRE(match != tracker.tracked.end());
 
-            match = tracker.match(0, 0x1234);
+                match = tracker.match(0, 0x1234);
 
-            REQUIRE(match == tracker.tracked.end());
+                REQUIRE(match == tracker.tracked.end());
 
-            tracker.untrack(i);
+                tracker.untrack(i);
+            }
+            SECTION("scheduled")
+            {
+                tracker.track(0, zero_time, b, scheduler);
+            }
         }
     }
 }
