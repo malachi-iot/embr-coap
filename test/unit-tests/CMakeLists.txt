@@ -23,21 +23,9 @@ add_subdirectory(${MC_COAP_DIR} coap)
 
 #message(${PROJECT_SOURCE_DIR})
 
-set(ESTDLIB_DIR ${ROOT_DIR}/ext/estdlib/src)
 set(EMBR_DIR ${ROOT_DIR}/ext/embr/src)
 
 include_directories(${ROOT_DIR}/ext/Catch/include)
-
-# set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "../../../bin")
-# add_subdirectory(. CMAKE_RUNTIME_OUTPUT_DIRECTORY)
-# add_subdirectory(${MC_MEM_DIR} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
-
-# doesn't work because MC_MEM is already pulling it in this way, but
-# preferably MC_MEM would only do include_directories.  Refactor MC_MEM
-# for that
-# add_subdirectory(${ESTDLIB_DIR} estd)
-
-#add_subdirectory(${MC_MEM_DIR} mem)
 
 add_subdirectory(${EMBR_DIR} embr)
 
@@ -74,13 +62,9 @@ set(SOURCE_FILES
         decoder-subject-test.cpp
         mc/opts.h
 
-        # Removed as part of mc-mem removal.  Netbufs are phased out
-        #netbuf-test.cpp
-
         test-observer.h
 
-        # Removed as part of mc-mem removal.  This version of retry is fully obsolete
-        #retry-test.cpp
+        retry-test.cpp
 
         uint-test.cpp
         )
