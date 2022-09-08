@@ -1,7 +1,5 @@
 #include <catch.hpp>
 
-#include "exp/misc.h"
-
 #include <embr/datapump.hpp>
 #include <embr/observer.h>
 #include <embr/netbuf-static.h>

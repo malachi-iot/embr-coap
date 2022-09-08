@@ -6,9 +6,12 @@ reused if they pass muster
 
 ## Detail
 
+Code here need not be absolutely specific to retry - its focus is reusability
+in the context of retry.
 ### Requirements
 
-Code in this folder refers to the bibliography in this README 
+Code in this folder refers to the bibliography in this README
+Due to complexity of retry and scheduling, c++11 is required
 
 ## Bibliography
 
