@@ -8,6 +8,10 @@
 using namespace embr::coap;
 using namespace embr::coap::experimental;
 
+// using "native" literals makes compilers mad sometimes.
+// Using explicit seconds, milliseconds, etc
+//using namespace estd::chrono_literals;
+
 struct SyntheticTransport
 {
     typedef unsigned endpoint_type;
@@ -93,6 +97,10 @@ TEST_CASE("retry tests", "[retry]")
             SECTION("scheduled")
             {
                 manager.send(0, zero_time, b, scheduler);
+
+                time_point t(estd::chrono::seconds(5));
+
+                scheduler.process(t);
             }
         }
     }
