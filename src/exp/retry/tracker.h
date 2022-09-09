@@ -19,8 +19,6 @@ struct Tracker
     typedef TTimePoint time_point;
     typedef TBuffer buffer_type;
 
-    typedef embr::internal::scheduler::impl::Function<time_point> scheduler_impl;
-
     typedef Item<TEndpoint, TTimePoint, TBuffer> item_type;
 
     // DEBT: Replace this with a proper memory pool
@@ -37,22 +35,6 @@ struct Tracker
         const item_type& i = tracked.emplace_back(endpoint, time_sent, buffer);
 
         return &i;
-    }
-
-    // NOT USED YET
-    template <class TContainer, class TSubject>
-    const item_type* track(const endpoint_type& endpoint, time_point time_sent, buffer_type buffer,
-        embr::internal::Scheduler<TContainer, scheduler_impl, TSubject>& scheduler)
-    {
-        const item_type* i = track(endpoint, time_sent, buffer);
-
-        time_point due = time_sent + i->delta();
-
-        // NOTE: Can't use thisafy and friends because 'this' pointer is getting moved around
-        // So in the short term we need a true dynamic allocation
-        //scheduler.schedule(due)
-
-        return i;
     }
 
     decltype(tracked.begin()) match(const endpoint_type& endpoint, uint16_t mid)
@@ -74,6 +56,43 @@ struct Tracker
             return;
 
         tracked.erase(it);
+    }
+};
+
+
+// DEBT: TTransport = TTransportDescriptor
+template <class TClock, class TTransport>
+struct Manager
+{
+    typedef TTransport transport_type;
+    typedef typename transport_type::endpoint_type endpoint_type;
+    typedef typename transport_type::buffer_type buffer_type;
+
+    typedef TClock clock_type;
+    typedef typename clock_type::time_point time_point;
+
+    typedef Tracker<endpoint_type, time_point, buffer_type> tracker_type;
+    typedef typename tracker_type::item_type item_type;
+
+    typedef embr::internal::scheduler::impl::Function<time_point> scheduler_impl;
+
+
+    tracker_type tracker;
+
+    // NOT USED YET
+    template <class TContainer, class TSubject>
+    const item_type* send(const endpoint_type& endpoint, time_point time_sent, buffer_type buffer,
+        embr::internal::Scheduler<TContainer, scheduler_impl, TSubject>& scheduler)
+    {
+        const item_type* i = track(endpoint, time_sent, buffer);
+
+        time_point due = time_sent + i->delta();
+
+        // NOTE: Can't use thisafy and friends because 'this' pointer is getting moved around
+        // So in the short term we need a true dynamic allocation
+        //scheduler.schedule(due)
+
+        return i;
     }
 };
 

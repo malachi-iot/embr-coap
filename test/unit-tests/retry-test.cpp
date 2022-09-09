@@ -8,6 +8,17 @@
 using namespace embr::coap;
 using namespace embr::coap::experimental;
 
+struct SyntheticTransport
+{
+    typedef unsigned endpoint_type;
+    typedef estd::span<uint8_t> buffer_type;
+};
+
+struct SyntheticClock
+{
+    typedef estd::chrono::time_point<SyntheticClock, estd::chrono::milliseconds> time_point;
+};
+
 TEST_CASE("retry tests", "[retry]")
 {
     SECTION("experimental v4 retry")
@@ -16,18 +27,18 @@ TEST_CASE("retry tests", "[retry]")
         // to estd::chrono::time_point (or is it vice versa?)
         //typedef typename estd::chrono::steady_clock::time_point time_point;
 
-        typedef estd::chrono::time_point<void, estd::chrono::milliseconds> time_point;
+        typedef estd::chrono::time_point<SyntheticClock, estd::chrono::milliseconds> time_point;
         typedef embr::internal::layer1::Scheduler<8, embr::internal::scheduler::impl::Function<time_point> > scheduler_type;
         typedef estd::span<const uint8_t> buffer_type;
         time_point zero_time;
 
         scheduler_type scheduler;
 
+        buffer_type b(buffer_simplest_request);
+
         SECTION("factory")
         {
             typedef DecoderFactory<buffer_type> factory;
-
-            buffer_type b(buffer_simplest_request);
 
             SECTION("core")
             {
@@ -55,8 +66,6 @@ TEST_CASE("retry tests", "[retry]")
 
             tracker_type tracker;
 
-            buffer_type b(buffer_simplest_request);
-
             SECTION("core")
             {
                 auto i = tracker.track(0, zero_time, b);
@@ -71,9 +80,14 @@ TEST_CASE("retry tests", "[retry]")
 
                 tracker.untrack(i);
             }
+        }
+        SECTION("manager")
+        {
+            retry::Manager<SyntheticClock, SyntheticTransport> manager;
+
             SECTION("scheduled")
             {
-                tracker.track(0, zero_time, b, scheduler);
+                //manager.send(0, zero_time, b, scheduler);
             }
         }
     }
