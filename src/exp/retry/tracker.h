@@ -67,11 +67,12 @@ struct Manager
     typedef TTransport transport_type;
     typedef typename transport_type::endpoint_type endpoint_type;
     typedef typename transport_type::buffer_type buffer_type;
+    typedef typename transport_type::const_buffer_type const_buffer_type;
 
     typedef TClock clock_type;
     typedef typename clock_type::time_point time_point;
 
-    typedef Tracker<endpoint_type, time_point, buffer_type> tracker_type;
+    typedef Tracker<endpoint_type, time_point, const_buffer_type> tracker_type;
     typedef typename tracker_type::item_type item_type;
 
     typedef embr::internal::scheduler::impl::Function<time_point> scheduler_impl;
@@ -81,10 +82,10 @@ struct Manager
 
     // NOT USED YET
     template <class TContainer, class TSubject>
-    const item_type* send(const endpoint_type& endpoint, time_point time_sent, buffer_type buffer,
+    const item_type* send(const endpoint_type& endpoint, time_point time_sent, const_buffer_type buffer,
         embr::internal::Scheduler<TContainer, scheduler_impl, TSubject>& scheduler)
     {
-        const item_type* i = track(endpoint, time_sent, buffer);
+        const item_type* i = tracker.track(endpoint, time_sent, buffer);
 
         time_point due = time_sent + i->delta();
 

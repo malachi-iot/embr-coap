@@ -12,6 +12,11 @@ struct SyntheticTransport
 {
     typedef unsigned endpoint_type;
     typedef estd::span<uint8_t> buffer_type;
+
+    // EXPERIMENTAL
+    // Needed because span itself isn't const, but stuff it points to is.  So
+    // regular add/remove cv doesn't quite apply
+    typedef estd::span<const uint8_t> const_buffer_type;
 };
 
 struct SyntheticClock
@@ -87,7 +92,7 @@ TEST_CASE("retry tests", "[retry]")
 
             SECTION("scheduled")
             {
-                //manager.send(0, zero_time, b, scheduler);
+                manager.send(0, zero_time, b, scheduler);
             }
         }
     }
