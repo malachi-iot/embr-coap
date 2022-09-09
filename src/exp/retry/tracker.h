@@ -20,7 +20,9 @@ struct Tracker
     typedef Item<TEndpoint, TTimePoint, TBuffer> item_type;
 
     // DEBT: Replace this with a proper memory pool
-    estd::layer1::vector<item_type, 10> tracked;
+    // DEBT: Doing this as item_type* because memory location needs to be fixed
+    // for estd::detail::function to find its model
+    estd::layer1::vector<item_type*, 10> tracked;
 
     const item_type* track(const endpoint_type& endpoint, time_point time_sent, buffer_type buffer)
     {
@@ -30,16 +32,20 @@ struct Tracker
         const item_type& i = tracked.back();
         return &i; */
 
-        const item_type& i = tracked.emplace_back(endpoint, time_sent, buffer);
+        //const item_type& i = tracked.emplace_back(endpoint, time_sent, buffer);
+        //return &i;
 
-        return &i;
+        auto i = new item_type(endpoint, time_sent, buffer);
+        tracked.push_back(i);
+        return i;
     }
 
     decltype(tracked.begin()) match(const endpoint_type& endpoint, uint16_t mid)
     {
-        auto it = estd::find_if(tracked.begin(), tracked.end(), [&](const item_type& v)
+        auto it = estd::find_if(tracked.begin(), tracked.end(), [&](const item_type* v)
         {
-            return endpoint == v.endpoint() && mid == v.mid();
+            //return endpoint == v.endpoint() && mid == v.mid();
+            return endpoint == v->endpoint() && mid == v->mid();
         });
         return it;
     }
@@ -54,6 +60,7 @@ struct Tracker
             return;
 
         tracked.erase(it);
+        delete item;
     }
 };
 
