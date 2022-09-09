@@ -18,17 +18,30 @@ struct Tracker
     typedef TTimePoint time_point;
     typedef TBuffer buffer_type;
 
-    typedef Item<TEndpoint, TTimePoint, TBuffer> item_type;
+    typedef Item<TEndpoint, TTimePoint, TBuffer> item_base;
 
-    struct Item2 : item_type
+    struct item_type : item_base
     {
-        typedef item_type base_type;
+        typedef item_base base_type;
+
+        void test(time_point* p, time_point p2)
+        {
+
+        }
 
         // DEBT: This violates separation of concerns, effectively putting 'Manager' code into
         // 'Tracker'
-        typename estd::internal::thisify_function<void(time_point, time_point)>::model m;
+        typename estd::internal::thisify_function<void(time_point*, time_point)>::
+            template model<item_type, &item_type::test> m;
 
-        ESTD_CPP_FORWARDING_CTOR(Item2);
+        //ESTD_CPP_FORWARDING_CTOR(Item2);
+
+        item_type(endpoint_type e, time_point t, buffer_type b) :
+            base_type(e, t, b),
+            m(this)
+        {
+
+        }
     };
 
     // DEBT: Replace this with a proper memory pool
