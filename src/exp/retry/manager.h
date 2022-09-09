@@ -42,9 +42,12 @@ struct Manager
 
         time_point due = time_sent + i->delta();
 
+        // 9 billion errors, none of them clear
+        //estd::detail::function<void(time_point*, time_point)> f(&i->m);
+
         // NOTE: Can't use thisafy and friends because 'this' pointer is getting moved around
         // So in the short term we need a true dynamic allocation
-        //scheduler.schedule(due, i->m);
+        //scheduler.schedule(due, f);
 
         return i;
     }

@@ -24,7 +24,7 @@ struct Tracker
     {
         typedef item_base base_type;
 
-        void test(time_point* p, time_point p2)
+        void resend(time_point* p, time_point p2)
         {
 
         }
@@ -32,7 +32,7 @@ struct Tracker
         // DEBT: This violates separation of concerns, effectively putting 'Manager' code into
         // 'Tracker'
         typename estd::internal::thisify_function<void(time_point*, time_point)>::
-            template model<item_type, &item_type::test> m;
+            template model<item_type, &item_type::resend> m;
 
         //ESTD_CPP_FORWARDING_CTOR(Item2);
 
