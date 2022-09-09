@@ -40,6 +40,7 @@ struct Manager
     {
         const item_type* i = tracker.track(endpoint, time_sent, buffer);
 
+        //time_point now = clock_type::now();   // TODO
         time_point due = time_sent + i->delta();
 
         // 9 billion errors, none of them clear
