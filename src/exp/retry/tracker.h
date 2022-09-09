@@ -4,6 +4,7 @@
 #include <estd/algorithm.h>
 #include <estd/cstdint.h>
 #include <estd/forward_list.h>
+#include <estd/functional.h>
 
 #include "metadata.h"
 
@@ -19,10 +20,27 @@ struct Tracker
 
     typedef Item<TEndpoint, TTimePoint, TBuffer> item_type;
 
+    struct Item2 : item_type
+    {
+        typedef item_type base_type;
+
+        // DEBT: This violates separation of concerns, effectively putting 'Manager' code into
+        // 'Tracker'
+        typename estd::internal::thisify_function<void(time_point, time_point)>::model m;
+
+        ESTD_CPP_FORWARDING_CTOR(Item2);
+    };
+
     // DEBT: Replace this with a proper memory pool
     // DEBT: Doing this as item_type* because memory location needs to be fixed
     // for estd::detail::function to find its model
     estd::layer1::vector<item_type*, 10> tracked;
+
+    ~Tracker()
+    {
+        for(item_type* i : tracked)
+            delete i;
+    }
 
     const item_type* track(const endpoint_type& endpoint, time_point time_sent, buffer_type buffer)
     {
