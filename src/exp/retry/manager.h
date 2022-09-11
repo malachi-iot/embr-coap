@@ -25,7 +25,7 @@ struct Manager
     typedef TClock clock_type;
     typedef typename clock_type::time_point time_point;
 
-    typedef Tracker<endpoint_type, time_point, const_buffer_type> tracker_type;
+    typedef Tracker<time_point, transport_type> tracker_type;
     typedef typename tracker_type::item_type item_type;
 
     typedef embr::internal::scheduler::impl::Function<time_point> scheduler_impl;

@@ -11,14 +11,16 @@
 namespace embr { namespace coap { namespace experimental { namespace retry {
 
 // A connection tracker of sorts.  Does not participate in any scheduling
-template <class TEndpoint, class TTimePoint, class TBuffer>
+template <class TTimePoint, class TTransport>
 struct Tracker
 {
-    typedef TEndpoint endpoint_type;
+    typedef TTransport transport_type;
+    typedef typename transport_type::endpoint_type endpoint_type;
     typedef TTimePoint time_point;
-    typedef TBuffer buffer_type;
+    typedef typename transport_type::buffer_type buffer_type;
+    typedef typename transport_type::const_buffer_type const_buffer_type;
 
-    typedef Item<TEndpoint, TTimePoint, TBuffer> item_base;
+    typedef Item<endpoint_type, TTimePoint, const_buffer_type> item_base;
 
     struct item_type : item_base
     {
@@ -36,7 +38,7 @@ struct Tracker
 
         //ESTD_CPP_FORWARDING_CTOR(Item2);
 
-        item_type(endpoint_type e, time_point t, buffer_type b) :
+        item_type(endpoint_type e, time_point t, const_buffer_type b) :
             base_type(e, t, b),
             m(this)
         {
@@ -55,7 +57,7 @@ struct Tracker
             delete i;
     }
 
-    const item_type* track(const endpoint_type& endpoint, time_point time_sent, buffer_type buffer)
+    const item_type* track(const endpoint_type& endpoint, time_point time_sent, const_buffer_type buffer)
     {
         /*
         item_type _i{endpoint};

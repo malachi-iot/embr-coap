@@ -71,7 +71,7 @@ TEST_CASE("retry tests", "[retry]")
         }
         SECTION("tracker")
         {
-            typedef retry::Tracker<unsigned, time_point, buffer_type> tracker_type;
+            typedef retry::Tracker<time_point, SyntheticTransport> tracker_type;
 
             tracker_type tracker;
 
