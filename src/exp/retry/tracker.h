@@ -26,10 +26,31 @@ struct Tracker
     {
         typedef item_base base_type;
 
+        // If ack_received or retransmission counter passes threshold,
+        //
         void resend(time_point* p, time_point p2)
         {
+            // DEBT: 'delete this' inside here works, but is easy to get wrong.
+
+            if(base_type::ack_received())
+            {
+                delete this;
+                return;
+            }
+
             // DEBT: Still don't like direct transport interaction here
             transport_type::send(item_base::endpoint(), item_base::buffer());
+
+            // If retransmit counter is within threshold
+            if(++base_type::retransmission_counter < 3)
+            {
+                // Reschedule
+                *p += base_type::delta();
+            }
+
+            // FIX: Leaks memory right now, since only received ACK performs a delete.
+            // Current architecture we need to remove this from both the vector AND do
+            // a delete manually when retransmit counter exceeds threshold
         }
 
         // DEBT: This violates separation of concerns, effectively putting 'Manager' code into
@@ -50,7 +71,11 @@ struct Tracker
     // DEBT: Replace this with a proper memory pool
     // DEBT: Doing this as item_type* because memory location needs to be fixed
     // for estd::detail::function to find its model
-    estd::layer1::vector<item_type*, 10> tracked;
+    typedef estd::layer1::vector<item_type*, 10> vector_type;
+
+    vector_type tracked;
+
+    typedef typename vector_type::iterator iterator;
 
     ~Tracker()
     {
@@ -84,6 +109,15 @@ struct Tracker
         return it;
     }
 
+    void untrack(iterator it)
+    {
+        tracked.erase(it);
+
+        // NOTE: Cannot delete this here because scheduler still wants to pick up model contained
+        // in 'it'
+        //delete it.lock();
+    }
+
     void untrack(const item_type* item)
     {
         // DEBT: Add https://en.cppreference.com/w/cpp/algorithm/remove and consider using
@@ -93,8 +127,7 @@ struct Tracker
         if(it == tracked.end())
             return;
 
-        tracked.erase(it);
-        delete item;
+        untrack(it);
     }
 };
 

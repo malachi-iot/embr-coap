@@ -60,7 +60,7 @@ struct DecoderFactory
     }
 };
 
-// DEBT: Helper function - not problematic, but it free-floating
+// DEBT: Helper function - somewhat problematic.  It free-floating
 // out here with ADL making it consume all buffers is a little concerning.
 // However, DecoderFactory specializations will only take on certain TBuffers
 template <class TBuffer>

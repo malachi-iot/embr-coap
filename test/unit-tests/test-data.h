@@ -55,13 +55,13 @@ const static uint8_t buffer_oversimplified_observe[] =
 
 const static uint8_t buffer_simplest_request[] =
 {
-    0x40, 0x00, 0x01, 0x23, // 4: mid = 123, tkl = 0, GET
+    0x40, 0x00, 0x01, 0x23, // mid = 123, tkl = 0, GET, CON
 };
 
 
 const static uint8_t buffer_ack[] =
 {
-    0x60, 0x00, 0x01, 0x23
+    0x60, 0x00, 0x01, 0x23  // mid = 123, tkl = 0, GET, ACK
 };
 
 

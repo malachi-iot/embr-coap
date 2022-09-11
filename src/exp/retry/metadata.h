@@ -69,13 +69,17 @@ private:
         first_transmit_,
         last_transmit_;
 
+    // DEBT: This can likely be optimized into bit struct in parent class
+    // DEBT: This does double duty to indicate this class should be deleted/garbage collected.
+    // If possible, that would likely be better served as a unique_ptr/shared_ptr
     bool ack_received_;
 
 public:
     Item(const endpoint_type& endpoint, const time_point& time_sent, const buffer_type& buffer) :
         endpoint_{endpoint},
         buffer_{buffer},
-        first_transmit_{time_sent}
+        first_transmit_{time_sent},
+        ack_received_{false}
     {
 
     }
@@ -136,6 +140,17 @@ public:
     ESTD_CPP_CONSTEXPR_RET const buffer_type& buffer() const
     {
         return buffer_;
+    }
+
+    ESTD_CPP_CONSTEXPR_RET bool ack_received() const
+    {
+        return ack_received_;
+    }
+
+    // DEBT: We'd prefer a friend class or some other less visible way of presenting this
+    void ack_received(bool value)
+    {
+        ack_received_ = value;
     }
 };
 

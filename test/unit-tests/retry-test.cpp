@@ -112,11 +112,17 @@ TEST_CASE("retry tests", "[retry]")
 
             SECTION("scheduled")
             {
-                manager.send(0, zero_time, b, scheduler);
+                manager.send(1, zero_time, b, scheduler);
+                bool result = manager.on_received(1, buffer_ack);
+
+                REQUIRE(result);
 
                 time_point t(estd::chrono::seconds(5));
 
+                // FIX: retry code not running here, but still should to clean up ACK at least
                 scheduler.process(t);
+
+                REQUIRE(SyntheticTransport::last_sent.e == 1);
             }
         }
     }
