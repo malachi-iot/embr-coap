@@ -21,7 +21,23 @@ struct SyntheticTransport
     // Needed because span itself isn't const, but stuff it points to is.  So
     // regular add/remove cv doesn't quite apply
     typedef estd::span<const uint8_t> const_buffer_type;
+
+    struct Item
+    {
+        endpoint_type e;
+        const_buffer_type b;
+    };
+
+    static Item last_sent;
+
+    static void send(endpoint_type e, const_buffer_type b)
+    {
+        last_sent = Item{e, b};
+    }
 };
+
+// DEBT: Don't think I like a static here, even in a synthetic sense
+SyntheticTransport::Item SyntheticTransport::last_sent;
 
 struct SyntheticClock
 {

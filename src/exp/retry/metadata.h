@@ -132,6 +132,11 @@ public:
     {
         return endpoint_;
     }
+
+    ESTD_CPP_CONSTEXPR_RET const buffer_type& buffer() const
+    {
+        return buffer_;
+    }
 };
 
 }}}}

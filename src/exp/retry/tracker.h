@@ -28,7 +28,8 @@ struct Tracker
 
         void resend(time_point* p, time_point p2)
         {
-
+            // DEBT: Still don't like direct transport interaction here
+            transport_type::send(item_base::endpoint(), item_base::buffer());
         }
 
         // DEBT: This violates separation of concerns, effectively putting 'Manager' code into
