@@ -133,7 +133,7 @@ TEST_CASE("retry tests", "[retry]")
 
                 // NOTE: For vector flavor this is true right after on_received.
                 // For upcoming linked list version, we'll need to process first
-                REQUIRE(manager.tracker.tracked.empty());
+                REQUIRE(manager.tracker.empty());
 
                 REQUIRE(SyntheticTransport::last_sent.e == 1);
                 REQUIRE(SyntheticTransport::counter == 1);

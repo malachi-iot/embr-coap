@@ -82,12 +82,17 @@ struct Tracker
     // for estd::detail::function to find its model
     typedef estd::layer1::vector<item_type*, 10> vector_type;
 
+private:
     vector_type tracked;
+
+public:
 
     typedef typename vector_type::iterator iterator;
     typedef typename vector_type::const_iterator const_iterator;
 
     const_iterator end() const { return tracked.end(); }
+
+    bool empty() const { return tracked.empty(); }
 
     ~Tracker()
     {
@@ -111,7 +116,7 @@ struct Tracker
         return i;
     }
 
-    decltype(tracked.begin()) match(const endpoint_type& endpoint, uint16_t mid)
+    iterator match(const endpoint_type& endpoint, uint16_t mid)
     {
         auto it = estd::find_if(tracked.begin(), tracked.end(), [&](const item_type* v)
         {
