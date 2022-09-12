@@ -144,6 +144,8 @@ TEST_CASE("retry tests", "[retry]")
 
                 manager.send(1, zero_time, b, scheduler);
 
+                REQUIRE(SyntheticTransport::counter == 1);
+
                 scheduler.process(t2);
 
                 REQUIRE(SyntheticTransport::counter == 1);
@@ -152,6 +154,16 @@ TEST_CASE("retry tests", "[retry]")
 
                 // At this point 'process' has sent a 2nd packet
                 REQUIRE(SyntheticTransport::counter == 2);
+
+                scheduler.process(time_point(estd::chrono::seconds(10)));
+
+                // At this point 'process' has sent a 3rd packet
+                REQUIRE(SyntheticTransport::counter == 3);
+
+                //scheduler.process(time_point(estd::chrono::seconds(20)));
+
+                // At this point 'process' has sent a 3rd packet
+                //REQUIRE(SyntheticTransport::counter == 3);
             }
         }
     }
