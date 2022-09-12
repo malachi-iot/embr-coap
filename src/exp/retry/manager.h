@@ -70,16 +70,15 @@ struct Manager
         embr::internal::Scheduler<TContainer, scheduler_impl, TSubject>& scheduler)
     {
         const item_type* i = tracker.track(endpoint, time_sent, buffer);
+        item_type* i2 = (item_type*) i; // FIX: Kludgey, assign f model requires non-const
 
         //time_point now = clock_type::now();   // TODO
         time_point due = time_sent + i->delta();
 
-        // 9 billion errors, none of them clear
-        //estd::detail::function<void(time_point*, time_point)> f(&i->m);
+        estd::detail::function<void(time_point*, time_point)> f(&i2->m);
 
-        // NOTE: Can't use thisafy and friends because 'this' pointer is getting moved around
-        // So in the short term we need a true dynamic allocation
-        //scheduler.schedule(due, f);
+        // NOTE: Can only use thisafy and friends when 'this' pointer isn't getting moved around
+        scheduler.schedule(due, f);
 
         transport_type::send(endpoint, buffer);
 
