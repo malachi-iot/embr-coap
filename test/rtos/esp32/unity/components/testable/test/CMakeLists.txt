@@ -1,0 +1,6 @@
+set(COMPONENT_SRCDIRS "." ${MCCOAP_DIR}/test/unity)
+set(COMPONENT_ADD_INCLUDEDIRS ".")
+
+set(COMPONENT_REQUIRES estdlib esp_timer unity testable)
+
+register_component()

@@ -9,6 +9,7 @@ int main()
     test_decoder();
     test_encoder();
     test_header();
+    test_retry();
     test_uri();
     UNITY_END();
 

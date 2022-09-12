@@ -7,8 +7,6 @@
 
 #include <coap/encoder/streambuf.h>
 
-#include "unit-test.h"
-
 using namespace embr;
 
 typedef estd::experimental::ospanbuf streambuf_type;

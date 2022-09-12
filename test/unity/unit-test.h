@@ -8,4 +8,5 @@
 void test_decoder();
 void test_encoder();
 void test_header();
+void test_retry();
 void test_uri();

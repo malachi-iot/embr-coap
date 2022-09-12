@@ -3,6 +3,8 @@
 #include "esp_system.h"
 #include "esp_wifi.h"
 
+#include "unity.h"
+
 extern "C" void app_main()
 {
     init_flash();
@@ -12,5 +14,14 @@ extern "C" void app_main()
 #else
     wifi_init_sta(event_handler);
 #endif
+
+    UNITY_BEGIN();
+    unity_run_all_tests();
+    UNITY_END();
+
+    /* This function will not return, and will be busy waiting for UART input.
+     * Make sure that task watchdog is disabled if you use this function.
+     */
+    unity_run_menu();    
 }
 
