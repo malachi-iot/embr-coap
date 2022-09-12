@@ -80,7 +80,7 @@ struct Manager
         // NOTE: Can only use thisafy and friends when 'this' pointer isn't getting moved around
         scheduler.schedule(due, f);
 
-        transport_type::send(endpoint, buffer);
+        transport_type::send(buffer, endpoint);
 
         return i;
     }

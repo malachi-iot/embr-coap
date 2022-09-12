@@ -12,6 +12,9 @@ using namespace embr::coap::experimental;
 // Using explicit seconds, milliseconds, etc
 //using namespace estd::chrono_literals;
 
+// NOTE: Remember, embr's Transport concept wants send with signature
+// 'buffer', 'endpoint' - lwip style.  In retrospect I would have preferred
+// 'endpoint', 'buffer'
 struct SyntheticTransport
 {
     typedef unsigned endpoint_type;
@@ -31,7 +34,7 @@ struct SyntheticTransport
     static Item last_sent;
     static int counter;
 
-    static void send(endpoint_type e, const_buffer_type b)
+    static void send(const_buffer_type b, endpoint_type e)
     {
         ++counter;
         last_sent = Item{e, b};

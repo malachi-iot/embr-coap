@@ -24,7 +24,7 @@ struct Tracker
     typedef Item<endpoint_type, TTimePoint, const_buffer_type> item_base;
 
     // DEBT: This violates separation of concerns, effectively putting 'Manager' code into
-    // 'Tracker'
+    // 'Tracker'.  Likely we'll want to solve this by passing in a TImpl
     struct item_type : item_base
     {
         typedef item_base base_type;
@@ -44,8 +44,9 @@ struct Tracker
                 return;
             }
 
-            // DEBT: Still don't like direct transport interaction here
-            transport_type::send(item_base::endpoint(), item_base::buffer());
+            // DEBT: Still don't like direct transport interaction here (Tracker
+            // knowing way too much)
+            transport_type::send(item_base::buffer(), item_base::endpoint());
 
             // If retransmit counter is within threshold
             if(++base_type::retransmission_counter < 3)
