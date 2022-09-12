@@ -11,6 +11,7 @@
 namespace embr { namespace coap { namespace experimental { namespace retry {
 
 // A connection tracker of sorts.  Does not participate in any scheduling
+// DEBT: Tracker not threadsafe, but will need to be for FreeRTOS operation
 template <class TTimePoint, class TTransport>
 struct Tracker
 {
@@ -22,9 +23,14 @@ struct Tracker
 
     typedef Item<endpoint_type, TTimePoint, const_buffer_type> item_base;
 
+    // DEBT: This violates separation of concerns, effectively putting 'Manager' code into
+    // 'Tracker'
     struct item_type : item_base
     {
         typedef item_base base_type;
+        typedef Tracker parent_type;
+
+        parent_type* const parent;
 
         // If ack_received or retransmission counter passes threshold,
         //
@@ -47,20 +53,22 @@ struct Tracker
                 // Reschedule
                 *p += base_type::delta();
             }
-
-            // FIX: Leaks memory right now, since only received ACK performs a delete.
-            // Current architecture we need to remove this from both the vector AND do
-            // a delete manually when retransmit counter exceeds threshold
+            else
+            {
+                // Current architecture we need to remove this from both the vector AND do
+                // a delete manually when retransmit counter exceeds threshold
+                parent->untrack(this);
+                delete this;
+            }
         }
 
-        // DEBT: This violates separation of concerns, effectively putting 'Manager' code into
-        // 'Tracker'
         typename estd::internal::thisify_function<void(time_point*, time_point)>::
             template model<item_type, &item_type::resend> m;
 
         //ESTD_CPP_FORWARDING_CTOR(Item2);
 
-        item_type(endpoint_type e, time_point t, const_buffer_type b) :
+        item_type(parent_type* parent, endpoint_type e, time_point t, const_buffer_type b) :
+            parent(parent),
             base_type(e, t, b),
             m(this)
         {
@@ -76,6 +84,9 @@ struct Tracker
     vector_type tracked;
 
     typedef typename vector_type::iterator iterator;
+    typedef typename vector_type::const_iterator const_iterator;
+
+    const_iterator end() const { return tracked.end(); }
 
     ~Tracker()
     {
@@ -94,7 +105,7 @@ struct Tracker
         //const item_type& i = tracked.emplace_back(endpoint, time_sent, buffer);
         //return &i;
 
-        auto i = new item_type(endpoint, time_sent, buffer);
+        auto i = new item_type(this, endpoint, time_sent, buffer);
         tracked.push_back(i);
         return i;
     }

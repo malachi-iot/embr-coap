@@ -100,11 +100,11 @@ TEST_CASE("retry tests", "[retry]")
 
                 auto match = tracker.match(0, 0x123);
 
-                REQUIRE(match != tracker.tracked.end());
+                REQUIRE(match != tracker.end());
 
                 match = tracker.match(0, 0x1234);
 
-                REQUIRE(match == tracker.tracked.end());
+                REQUIRE(match == tracker.end());
 
                 tracker.untrack(i);
             }

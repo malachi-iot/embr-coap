@@ -51,7 +51,7 @@ struct Manager
         typename tracker_type::iterator m = tracker.match(endpoint, h.message_id());
 
         // If we can't find one, then stop here and indicate nothing found
-        if(m == tracker.tracked.end()) return false;
+        if(m == tracker.end()) return false;
 
         auto v = m.lock();
 
