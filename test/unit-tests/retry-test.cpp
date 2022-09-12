@@ -29,15 +29,18 @@ struct SyntheticTransport
     };
 
     static Item last_sent;
+    static int counter;
 
     static void send(endpoint_type e, const_buffer_type b)
     {
+        ++counter;
         last_sent = Item{e, b};
     }
 };
 
 // DEBT: Don't think I like a static here, even in a synthetic sense
 SyntheticTransport::Item SyntheticTransport::last_sent;
+int SyntheticTransport::counter = 0;
 
 struct SyntheticClock
 {
@@ -109,20 +112,36 @@ TEST_CASE("retry tests", "[retry]")
         SECTION("manager")
         {
             retry::Manager<SyntheticClock, SyntheticTransport> manager;
+            const time_point t5(estd::chrono::seconds(5));
 
-            SECTION("scheduled")
+            SECTION("ACK received immediately")
             {
+                SyntheticTransport::counter = 0;
+
                 manager.send(1, zero_time, b, scheduler);
+
                 bool result = manager.on_received(1, buffer_ack);
 
                 REQUIRE(result);
 
-                time_point t(estd::chrono::seconds(5));
+                scheduler.process(t5);
 
-                // FIX: retry code not running here, but still should to clean up ACK at least
-                scheduler.process(t);
+                // NOTE: For vector flavor this is true right after on_received.
+                // For upcoming linked list version, we'll need to process first
+                REQUIRE(manager.tracker.tracked.empty());
 
                 REQUIRE(SyntheticTransport::last_sent.e == 1);
+                REQUIRE(SyntheticTransport::counter == 1);
+            }
+            SECTION("other")
+            {
+                SyntheticTransport::counter = 0;
+
+                manager.send(1, zero_time, b, scheduler);
+
+                scheduler.process(t5);
+
+                //REQUIRE(SyntheticTransport::counter == 1);
             }
         }
     }
