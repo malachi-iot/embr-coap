@@ -22,3 +22,7 @@ always be more efficient than this one.
 This one uses `embr::bits::material` which is theoretically the most elegant of all.  It has deep endian
 awareness and is specifically designed for handling arbitrary streams of binary packed integers.  To do
 all its tricks requires c++11.
+
+# References
+
+1. https://www.rfc-editor.org/rfc/rfc7252

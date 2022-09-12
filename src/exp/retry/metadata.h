@@ -5,6 +5,8 @@
 
 #include "factory.h"
 
+#include "../../coap/internal/constants.h"
+
 namespace embr { namespace coap { namespace experimental { namespace retry {
 
 
@@ -44,6 +46,12 @@ struct Metadata
         uint16_t multiplier = 1 << retransmission_counter;
 
         return milliseconds(initial_timeout_ms * multiplier);
+    }
+
+    // DEBT: Need an actual random factor here
+    Metadata() : initial_timeout_ms{2500}
+    {
+
     }
 };
 

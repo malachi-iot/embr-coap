@@ -112,6 +112,8 @@ TEST_CASE("retry tests", "[retry]")
         SECTION("manager")
         {
             retry::Manager<SyntheticClock, SyntheticTransport> manager;
+            const time_point t2(estd::chrono::seconds(2));
+            const time_point t3(estd::chrono::seconds(3));
             const time_point t5(estd::chrono::seconds(5));
 
             SECTION("ACK received immediately")
@@ -139,9 +141,14 @@ TEST_CASE("retry tests", "[retry]")
 
                 manager.send(1, zero_time, b, scheduler);
 
+                scheduler.process(t2);
+
+                REQUIRE(SyntheticTransport::counter == 1);
+
                 scheduler.process(t5);
 
-                //REQUIRE(SyntheticTransport::counter == 1);
+                // At this point 'process' has sent a 2nd packet
+                REQUIRE(SyntheticTransport::counter == 2);
             }
         }
     }
