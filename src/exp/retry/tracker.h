@@ -11,8 +11,16 @@
 namespace embr { namespace coap { namespace experimental { namespace retry {
 
 // A connection tracker of sorts.  Does not participate in any scheduling
+// TItem is more or less an impl pattern to help avoid virtual functions
 // DEBT: Tracker not threadsafe, but will need to be for FreeRTOS operation
-template <class TTimePoint, class TTransport>
+// DEBT: Can probably unwind TTransport and pass endpoint/buffer in directly again
+template <class TTimePoint, class TTransport,
+    // DEBT: Might be able to do an Item with TTransport specialization.
+    // Remember also this default class is for reference
+    class TItem = Item<
+        typename TTransport::endpoint_type,
+        TTimePoint,
+        typename TTransport::const_buffer_type> >
 struct Tracker
 {
     typedef TTransport transport_type;
@@ -21,63 +29,7 @@ struct Tracker
     typedef typename transport_type::buffer_type buffer_type;
     typedef typename transport_type::const_buffer_type const_buffer_type;
 
-    typedef Item<endpoint_type, TTimePoint, const_buffer_type> item_base;
-
-    // DEBT: This violates separation of concerns, effectively putting 'Manager' code into
-    // 'Tracker'.  Likely we'll want to solve this by passing in a TImpl
-    struct item_type : item_base
-    {
-        typedef item_base base_type;
-        typedef Tracker parent_type;
-
-        parent_type* const parent;
-
-        // If ack_received or retransmission counter passes threshold,
-        //
-        void resend(time_point* p, time_point p2)
-        {
-            // DEBT: 'delete this' inside here works, but is easy to get wrong.
-
-            if(base_type::ack_received())
-            {
-                delete this;
-                return;
-            }
-
-            // DEBT: Still don't like direct transport interaction here (Tracker
-            // knowing way too much)
-            // DEBT: pbuf's maybe-kinda demand non const
-            //transport_type::send(item_base::buffer(), item_base::endpoint());
-            transport_type::send(item_base::buffer_, item_base::endpoint());
-
-            // If retransmit counter is within threshold.  See [1] Section 4.2
-            if(++base_type::retransmission_counter < COAP_MAX_RETRANSMIT)
-            {
-                // Reschedule
-                *p += base_type::delta();
-            }
-            else
-            {
-                // Current architecture we need to remove this from both the vector AND do
-                // a delete manually when retransmit counter exceeds threshold
-                parent->untrack(this);
-                delete this;
-            }
-        }
-
-        typename estd::internal::thisify_function<void(time_point*, time_point)>::
-            template model<item_type, &item_type::resend> m;
-
-        //ESTD_CPP_FORWARDING_CTOR(Item2);
-
-        item_type(parent_type* parent, endpoint_type e, time_point t, const_buffer_type b) :
-            parent(parent),
-            base_type(e, t, b),
-            m(this)
-        {
-
-        }
-    };
+    typedef TItem item_type;
 
     // DEBT: Replace this with a proper memory pool
     // DEBT: Doing this as item_type* because memory location needs to be fixed
@@ -102,7 +54,14 @@ public:
             delete i;
     }
 
-    const item_type* track(const endpoint_type& endpoint, time_point time_sent, const_buffer_type buffer)
+    // DEBT: Would prefer TArgs prepend, but that breaks typical C++ paradigm
+    // for variadic on a method
+    template <class ...TArgs>
+    const item_type* track(
+        const endpoint_type& endpoint,
+        time_point time_sent,
+        const_buffer_type buffer,
+        TArgs...args)
     {
         /*
         item_type _i{endpoint};
@@ -113,7 +72,8 @@ public:
         //const item_type& i = tracked.emplace_back(endpoint, time_sent, buffer);
         //return &i;
 
-        auto i = new item_type(this, endpoint, time_sent, buffer);
+        // DEBT: Do std::forward
+        auto i = new item_type(endpoint, time_sent, buffer, args...);
         tracked.push_back(i);
         return i;
     }
@@ -134,6 +94,8 @@ public:
 
         // NOTE: Cannot delete this here because scheduler still wants to pick up model contained
         // in 'it'
+        // DEBT: This now means consumer is responsible for GC, which is not thought through
+        // at this time
         //delete it.lock();
     }
 

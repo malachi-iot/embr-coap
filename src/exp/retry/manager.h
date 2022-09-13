@@ -14,6 +14,7 @@ namespace embr { namespace coap { namespace experimental { namespace retry {
 
 
 // DEBT: TTransport = TTransportDescriptor
+// TODO: Put an instance provider in here to handle TTransport and TTransport&
 template <class TClock, class TTransport>
 struct Manager
 {
@@ -25,11 +26,65 @@ struct Manager
     typedef TClock clock_type;
     typedef typename clock_type::time_point time_point;
 
-    typedef Tracker<time_point, transport_type> tracker_type;
-    typedef typename tracker_type::item_type item_type;
+    typedef Item<endpoint_type, time_point, const_buffer_type> item_base;
+
+    // DEBT: item_type name only temporary.  If we hide the struct then
+    // name is permissible
+    struct item_type : item_base
+    {
+        typedef item_base base_type;
+        typedef Manager parent_type;
+
+        parent_type* const parent;
+
+        // If ack_received or retransmission counter passes threshold
+        void resend(time_point* p, time_point p2)
+        {
+            // DEBT: 'delete this' inside here works, but is easy to get wrong.
+
+            if(base_type::ack_received())
+            {
+                delete this;
+                return;
+            }
+
+            // DEBT: Still don't like direct transport interaction here (Tracker
+            // knowing way too much)
+            // DEBT: pbuf's maybe-kinda demand non const
+            //transport_type::send(item_base::buffer(), item_base::endpoint());
+            transport_type::send(item_base::buffer_, item_base::endpoint());
+
+            // If retransmit counter is within threshold.  See [1] Section 4.2
+            if(++base_type::retransmission_counter < COAP_MAX_RETRANSMIT)
+            {
+                // Reschedule
+                *p += base_type::delta();
+            }
+            else
+            {
+                // Current architecture we need to remove this from both the vector AND do
+                // a delete manually when retransmit counter exceeds threshold
+                parent->tracker.untrack(this);
+                delete this;
+            }
+        }
+
+        typename estd::internal::thisify_function<void(time_point*, time_point)>::
+            template model<item_type, &item_type::resend> m;
+
+        item_type(endpoint_type e, time_point t, const_buffer_type b, parent_type* parent) :
+            parent(parent),
+            base_type(e, t, b),
+            m(this)
+        {
+
+        }
+    };
+
+    typedef Tracker<time_point, transport_type, item_type> tracker_type;
+    //typedef typename tracker_type::item_type item_type;
 
     typedef embr::internal::scheduler::impl::Function<time_point> scheduler_impl;
-
 
     tracker_type tracker;
 
@@ -69,7 +124,7 @@ struct Manager
     const item_type* send(const endpoint_type& endpoint, time_point time_sent, const_buffer_type buffer,
         embr::internal::Scheduler<TContainer, scheduler_impl, TSubject>& scheduler)
     {
-        const item_type* i = tracker.track(endpoint, time_sent, buffer);
+        const item_type* i = tracker.track(endpoint, time_sent, buffer, this);
         item_type* i2 = (item_type*) i; // FIX: Kludgey, assign f model requires non-const
 
         //time_point now = clock_type::now();   // TODO
