@@ -18,7 +18,11 @@ namespace embr::lwip::experimental {
 template <bool use_pointer>
 bool operator ==(const Endpoint<use_pointer>& lhs, const Endpoint<use_pointer>& rhs)
 {
-    return false;
+    // *lhs.address() == *rhs.address();
+    // We need an ipv4 vs ipv6 version to properly compare addresses
+    bool address_match = ip_addr_cmp(lhs.address(), rhs.address());
+
+    return lhs.port() == rhs.port() && address_match;
 }
 
 }
