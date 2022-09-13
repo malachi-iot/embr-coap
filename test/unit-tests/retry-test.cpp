@@ -142,28 +142,37 @@ TEST_CASE("retry tests", "[retry]")
             {
                 SyntheticTransport::counter = 0;
 
-                manager.send(1, zero_time, b, scheduler);
+                auto item = manager.send(1, zero_time, b, scheduler);
 
-                REQUIRE(SyntheticTransport::counter == 1);
+                REQUIRE(item->retransmission_counter == 0);
 
                 scheduler.process(t2);
 
-                REQUIRE(SyntheticTransport::counter == 1);
+                // No retransmit yet
+                REQUIRE(item->retransmission_counter == 0);
 
                 scheduler.process(t5);
 
-                // At this point 'process' has sent a 2nd packet
-                REQUIRE(SyntheticTransport::counter == 2);
+                // At this point 'process' has sent a 2nd packet, 1st retransmit
+                REQUIRE(item->retransmission_counter == 1);
 
                 scheduler.process(time_point(estd::chrono::seconds(10)));
 
-                // At this point 'process' has sent a 3rd packet
-                REQUIRE(SyntheticTransport::counter == 3);
+                // At this point 'process' has sent a 3rd packet, 2nd retransmit
+                REQUIRE(item->retransmission_counter == 2);
 
-                //scheduler.process(time_point(estd::chrono::seconds(20)));
+                scheduler.process(time_point(estd::chrono::seconds(20)));
 
-                // At this point 'process' has sent a 3rd packet
-                //REQUIRE(SyntheticTransport::counter == 3);
+                // At this point 'process' has sent a 4th packet, 3rd retransmit
+                REQUIRE(item->retransmission_counter == 3);
+
+                scheduler.process(time_point(estd::chrono::seconds(40)));
+
+                auto it = manager.tracker.match(1, 0x123);
+
+                // At this point 'process' gives up, because MAX_RETRANSMIT is 4.
+                // Therefore, no connection with endpoint and mid is matched
+                REQUIRE(it == manager.tracker.end());
             }
         }
     }

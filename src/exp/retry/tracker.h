@@ -48,8 +48,8 @@ struct Tracker
             // knowing way too much)
             transport_type::send(item_base::buffer(), item_base::endpoint());
 
-            // If retransmit counter is within threshold
-            if(++base_type::retransmission_counter < 3)
+            // If retransmit counter is within threshold.  See [1] Section 4.2
+            if(++base_type::retransmission_counter < COAP_MAX_RETRANSMIT)
             {
                 // Reschedule
                 *p += base_type::delta();
