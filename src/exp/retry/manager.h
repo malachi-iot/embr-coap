@@ -16,7 +16,7 @@ namespace embr { namespace coap { namespace experimental { namespace retry {
 // DEBT: TTransport = TTransportDescriptor
 // TODO: Put an instance provider in here to handle TTransport and TTransport&
 template <class TClock, class TTransport>
-struct Manager
+struct Manager : TTransport
 {
     typedef TTransport transport_type;
     typedef typename transport_type::endpoint_type endpoint_type;
@@ -27,6 +27,9 @@ struct Manager
     typedef typename clock_type::time_point time_point;
 
     typedef Item<endpoint_type, time_point, const_buffer_type> item_base;
+
+    transport_type& transport() { return *this; }
+    const transport_type& transport() const { return *this; }
 
     // DEBT: item_type name only temporary.  If we hide the struct then
     // name is permissible
@@ -52,7 +55,7 @@ struct Manager
             // knowing way too much)
             // DEBT: pbuf's maybe-kinda demand non const
             //transport_type::send(item_base::buffer(), item_base::endpoint());
-            transport_type::send(item_base::buffer_, item_base::endpoint());
+            parent->transport().send(item_base::buffer_, item_base::endpoint());
 
             // If retransmit counter is within threshold.  See [1] Section 4.2
             if(++base_type::retransmission_counter < COAP_MAX_RETRANSMIT)
@@ -135,7 +138,7 @@ struct Manager
         // NOTE: Can only use thisafy and friends when 'this' pointer isn't getting moved around
         scheduler.schedule(due, f);
 
-        transport_type::send(buffer, endpoint);
+        transport().send(buffer, endpoint);
 
         return i;
     }

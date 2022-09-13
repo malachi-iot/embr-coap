@@ -15,7 +15,10 @@ using namespace embr;
 // DEBT: const_buffer_type still in flux
 struct transport_type : lwip::experimental::TransportUdp<>
 {
-    typedef typename lwip::experimental::TransportUdp<>::buffer_type const_buffer_type;
+    typedef lwip::experimental::TransportUdp<> base_type;
+    typedef typename base_type::buffer_type const_buffer_type;
+
+    ESTD_CPP_FORWARDING_CTOR(transport_type);
 };
 
 typedef estd::chrono::freertos_clock clock_type;
