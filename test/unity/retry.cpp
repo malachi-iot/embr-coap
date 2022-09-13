@@ -3,6 +3,34 @@
 #include <estd/chrono.h>
 
 #if __cplusplus >= 201103L
+#ifdef ESP_IDF_TESTING
+#include <embr/platform/lwip/endpoint.h>
+#include <embr/platform/lwip/pbuf.h>
+#include <embr/platform/lwip/istream.h>
+#include <embr/platform/lwip/ostream.h>
+
+using Endpoint = embr::lwip::experimental::Endpoint<true>;
+
+bool operator ==(const Endpoint& lhs, const Endpoint& rhs)
+{
+    return false;
+}
+
+#include <exp/retry/factory.h>
+
+namespace embr { namespace coap { namespace experimental {
+
+template <>
+struct StreambufProvider<embr::lwip::Pbuf>
+{
+    typedef embr::lwip::upgrading::basic_opbuf_streambuf<uint8_t> ostreambuf_type;
+    typedef embr::lwip::upgrading::basic_ipbuf_streambuf<uint8_t> istreambuf_type;
+};
+
+}}}
+
+#endif
+
 #include <exp/retry.h>
 
 using namespace embr;
