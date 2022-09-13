@@ -46,7 +46,9 @@ struct Tracker
 
             // DEBT: Still don't like direct transport interaction here (Tracker
             // knowing way too much)
-            transport_type::send(item_base::buffer(), item_base::endpoint());
+            // DEBT: pbuf's maybe-kinda demand non const
+            //transport_type::send(item_base::buffer(), item_base::endpoint());
+            transport_type::send(item_base::buffer_, item_base::endpoint());
 
             // If retransmit counter is within threshold.  See [1] Section 4.2
             if(++base_type::retransmission_counter < COAP_MAX_RETRANSMIT)

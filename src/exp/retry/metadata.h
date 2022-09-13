@@ -68,7 +68,9 @@ struct Item : Metadata
     typedef TTimePoint time_point;
     typedef TBuffer buffer_type;
 
-private:
+// DEBT: Making protected while building things out
+//private:
+protected:
     const endpoint_type endpoint_;
     buffer_type buffer_;
 
