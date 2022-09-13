@@ -9,11 +9,18 @@
 #include <embr/platform/lwip/istream.h>
 #include <embr/platform/lwip/ostream.h>
 
-using Endpoint = embr::lwip::experimental::Endpoint<true>;
 
-bool operator ==(const Endpoint& lhs, const Endpoint& rhs)
+// DEBT: Put this into embr proper
+namespace embr::lwip::experimental {
+
+// NOTE: Evidently we need this operator to reside in the namespace matching
+// its class
+template <bool use_pointer>
+bool operator ==(const Endpoint<use_pointer>& lhs, const Endpoint<use_pointer>& rhs)
 {
     return false;
+}
+
 }
 
 #include <exp/retry/factory.h>
