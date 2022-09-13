@@ -19,6 +19,7 @@ template <class TClock, class TTransport>
 struct Manager : TTransport
 {
     typedef TTransport transport_type;
+    typedef TTransport base_type;
     typedef typename transport_type::endpoint_type endpoint_type;
     typedef typename transport_type::buffer_type buffer_type;
     typedef typename transport_type::const_buffer_type const_buffer_type;
@@ -142,6 +143,8 @@ struct Manager : TTransport
 
         return i;
     }
+
+    ESTD_CPP_FORWARDING_CTOR(Manager);
 };
 
 }}}}

@@ -60,11 +60,26 @@ struct transport_type : lwip::experimental::TransportUdp<>
     ESTD_CPP_FORWARDING_CTOR(transport_type);
 };
 
+typedef typename transport_type::endpoint_type endpoint_type;
+
 typedef estd::chrono::freertos_clock clock_type;
+typedef typename clock_type::time_point time_point;
+typedef embr::internal::layer1::Scheduler<8, embr::internal::scheduler::impl::Function<time_point> > scheduler_type;
 
 static void test_retry_1()
 {
-    coap::experimental::retry::Manager<clock_type, transport_type> manager;
+    embr::lwip::udp::Pcb pcb;
+    embr::lwip::Pbuf buffer(128);
+
+    scheduler_type scheduler;
+    //endpoint_type endpoint;
+
+    // DEBT: Add copy/move constructor to TransportUdp
+    //transport_type transport(pcb);
+
+    coap::experimental::retry::Manager<clock_type, transport_type> manager(pcb);
+
+    //manager.send(endpoint, time_point(estd::chrono::seconds(5)), buffer, scheduler);
 }
 
 #endif
