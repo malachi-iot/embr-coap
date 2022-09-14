@@ -13,6 +13,8 @@
 #ifdef ESP_IDF_TESTING
 #include "esp_log.h"
 
+#include "lwip/tcpip.h"
+
 #include <embr/platform/lwip/endpoint.h>
 #include <embr/platform/lwip/pbuf.h>
 #include <embr/platform/lwip/istream.h>
@@ -86,7 +88,9 @@ typedef embr::internal::layer1::Scheduler<8, embr::internal::scheduler::impl::Fu
 
 static void udp_receive(void* arg, struct udp_pcb* pcb, struct pbuf* p, const ip_addr_t* addr, u16_t port)
 {
-    puts("Got here");
+    static const char* TAG = "udp_receive";
+
+    ESP_LOGI(TAG, "entry");
 }
 
 static void test_retry_1()
@@ -127,19 +131,28 @@ static void test_retry_1()
     pcb_recv.alloc();
     pcb_recv.bind(endpoint.address(), endpoint.port());
     pcb_recv.recv(udp_receive);
-    pcb_recv.free();
 #endif
 
-    ESP_LOGI(TAG, "ref=%d", buffer.pbuf()->ref);
+    ESP_LOGV(TAG, "ref=%d", buffer.pbuf()->ref);
 
-    // Turns out you can only have pbuf ref == 1 when doing a send, which is problematic
-    // to our retry model which expects to hold on to the pbuf to send it again later.
-    // 'tracker' naturally bumps this ref up, and so we have a problem
     // [1] indicates udp_send doesn't free the thing.  Also, udp.c source code
     // indicates "p is still referenced by the caller, and will live on"
+
+    // DEBT: This really needs to be put into TransportUdp
+    LOCK_TCPIP_CORE();
+    
     manager.send(endpoint, time_point(estd::chrono::seconds(5)),
         std::move(buffer), scheduler);
 
+    UNLOCK_TCPIP_CORE();
+
+#if FEATURE_COAP_LWIP_LOOPBACK_TESTS
+    // Just to ensure loopback has time to get received again.  Not
+    // sure if this is actually required
+    estd::this_thread::sleep_for(estd::chrono::milliseconds(250));
+
+    pcb_recv.free();
+#endif
     pcb.free();
 }
 
