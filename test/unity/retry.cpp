@@ -137,7 +137,8 @@ static void test_retry_1()
     // 'tracker' naturally bumps this ref up, and so we have a problem
     // [1] indicates udp_send doesn't free the thing.  Also, udp.c source code
     // indicates "p is still referenced by the caller, and will live on"
-    //manager.send(endpoint, time_point(estd::chrono::seconds(5)), buffer, scheduler);
+    manager.send(endpoint, time_point(estd::chrono::seconds(5)),
+        std::move(buffer), scheduler);
 
     pcb.free();
 }

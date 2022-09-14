@@ -56,13 +56,12 @@ public:
 
     // DEBT: Would prefer TArgs prepend, but that breaks typical C++ paradigm
     // for variadic on a method
-    // FIX: Need to do a && on buffer so that we have the equivelant of a unique_ptr
     template <class ...TArgs>
     const item_type* track(
         const endpoint_type& endpoint,
         time_point time_sent,
-        const_buffer_type& buffer,
-        TArgs...args)
+        const_buffer_type&& buffer,
+        TArgs&&...args)
     {
         /*
         item_type _i{endpoint};
@@ -73,6 +72,21 @@ public:
         //const item_type& i = tracked.emplace_back(endpoint, time_sent, buffer);
         //return &i;
 
+        auto i = new item_type(endpoint, time_sent, std::move(buffer), 
+            std::forward<TArgs>(args)...);
+        tracked.push_back(i);
+        return i;
+    }
+
+
+    // copy of buffer holder version, not used at the moment
+    template <class ...TArgs>
+    const item_type* track(
+        const endpoint_type& endpoint,
+        time_point time_sent,
+        const const_buffer_type& buffer,
+        TArgs...args)
+    {
         // DEBT: Do std::forward
         auto i = new item_type(endpoint, time_sent, buffer, args...);
         tracked.push_back(i);

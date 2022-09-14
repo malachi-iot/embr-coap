@@ -125,10 +125,12 @@ struct Manager : TTransport
     }
 
     template <class TContainer, class TSubject>
-    const item_type* send(const endpoint_type& endpoint, time_point time_sent, const_buffer_type& buffer,
+    const item_type* send(const endpoint_type& endpoint,
+        time_point time_sent,
+        const_buffer_type&& buffer,
         embr::internal::Scheduler<TContainer, scheduler_impl, TSubject>& scheduler)
     {
-        const item_type* i = tracker.track(endpoint, time_sent, buffer, this);
+        const item_type* i = tracker.track(endpoint, time_sent, std::move(buffer), this);
         item_type* i2 = (item_type*) i; // FIX: Kludgey, assign f model requires non-const
 
         //time_point now = clock_type::now();   // TODO
@@ -139,7 +141,11 @@ struct Manager : TTransport
         // NOTE: Can only use thisafy and friends when 'this' pointer isn't getting moved around
         scheduler.schedule(due, f);
 
-        transport().send(buffer, endpoint);
+        // DEBT: Whole semantic vs bitwise confusion necessitates this.  Perhaps we
+        // permit a const Pbuf& on the way in to transport?
+        const_buffer_type& b = const_cast<const_buffer_type&>(i->buffer());
+
+        transport().send(b, endpoint);
 
         return i;
     }

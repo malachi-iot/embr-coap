@@ -99,7 +99,7 @@ TEST_CASE("retry tests", "[retry]")
 
             SECTION("core")
             {
-                auto i = tracker.track(0, zero_time, b);
+                auto i = tracker.track(0, zero_time, std::move(b));
 
                 auto match = tracker.match(0, 0x123);
 
@@ -123,7 +123,7 @@ TEST_CASE("retry tests", "[retry]")
             {
                 SyntheticTransport::counter = 0;
 
-                manager.send(1, zero_time, b, scheduler);
+                manager.send(1, zero_time, std::move(b), scheduler);
 
                 bool result = manager.on_received(1, buffer_ack);
 
@@ -142,7 +142,7 @@ TEST_CASE("retry tests", "[retry]")
             {
                 SyntheticTransport::counter = 0;
 
-                auto item = manager.send(1, zero_time, b, scheduler);
+                auto item = manager.send(1, zero_time, std::move(b), scheduler);
 
                 REQUIRE(item->retransmission_counter == 0);
 
