@@ -125,7 +125,7 @@ struct Manager : TTransport
     }
 
     template <class TContainer, class TSubject>
-    const item_type* send(const endpoint_type& endpoint, time_point time_sent, const_buffer_type buffer,
+    const item_type* send(const endpoint_type& endpoint, time_point time_sent, const_buffer_type& buffer,
         embr::internal::Scheduler<TContainer, scheduler_impl, TSubject>& scheduler)
     {
         const item_type* i = tracker.track(endpoint, time_sent, buffer, this);

@@ -1,15 +1,31 @@
+/**
+ * 
+ * References:
+ * 
+ * 1. lwip.fandom.com/wiki/Raw/UDP
+ */
+
 #include "unit-test.h"
 
 #include <estd/chrono.h>
 
 #if __cplusplus >= 201103L
 #ifdef ESP_IDF_TESTING
+#include "esp_log.h"
+
 #include <embr/platform/lwip/endpoint.h>
 #include <embr/platform/lwip/pbuf.h>
 #include <embr/platform/lwip/istream.h>
 #include <embr/platform/lwip/ostream.h>
 
 #include <coap/platform/ip.h>
+
+// If LwIP loopback capability is present, then consider enabling our loopback tests
+#if LWIP_HAVE_LOOPIF && LWIP_LOOPBACK_MAX_PBUFS
+#ifndef FEATURE_COAP_LWIP_LOOPBACK_TESTS
+#define FEATURE_COAP_LWIP_LOOPBACK_TESTS 1
+#endif
+#endif
 
 
 // DEBT: Put this into embr proper
@@ -68,10 +84,19 @@ typedef estd::chrono::freertos_clock clock_type;
 typedef typename clock_type::time_point time_point;
 typedef embr::internal::layer1::Scheduler<8, embr::internal::scheduler::impl::Function<time_point> > scheduler_type;
 
+static void udp_receive(void* arg, struct udp_pcb* pcb, struct pbuf* p, const ip_addr_t* addr, u16_t port)
+{
+    puts("Got here");
+}
+
 static void test_retry_1()
 {
+    static const char* TAG = "test_retry_1";
+
     embr::lwip::udp::Pcb pcb;
     embr::lwip::Pbuf buffer(128);
+
+    pcb.alloc();
 
     ip_addr_t addr;
 
@@ -92,7 +117,29 @@ static void test_retry_1()
 
     coap::experimental::retry::Manager<clock_type, transport_type> manager(pcb);
 
-    manager.send(endpoint, time_point(estd::chrono::seconds(5)), buffer, scheduler);
+    //pbuf_ref(buffer);
+
+#if FEATURE_COAP_LWIP_LOOPBACK_TESTS
+    // Tried doing a separate pcb_recv to avoid ref == 1 errors, but no
+    // dice.  It's more tied to tracker behavior
+    embr::lwip::udp::Pcb pcb_recv;
+
+    pcb_recv.alloc();
+    pcb_recv.bind(endpoint.address(), endpoint.port());
+    pcb_recv.recv(udp_receive);
+    pcb_recv.free();
+#endif
+
+    ESP_LOGI(TAG, "ref=%d", buffer.pbuf()->ref);
+
+    // Turns out you can only have pbuf ref == 1 when doing a send, which is problematic
+    // to our retry model which expects to hold on to the pbuf to send it again later.
+    // 'tracker' naturally bumps this ref up, and so we have a problem
+    // [1] indicates udp_send doesn't free the thing.  Also, udp.c source code
+    // indicates "p is still referenced by the caller, and will live on"
+    //manager.send(endpoint, time_point(estd::chrono::seconds(5)), buffer, scheduler);
+
+    pcb.free();
 }
 
 #endif

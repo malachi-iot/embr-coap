@@ -56,11 +56,12 @@ public:
 
     // DEBT: Would prefer TArgs prepend, but that breaks typical C++ paradigm
     // for variadic on a method
+    // FIX: Need to do a && on buffer so that we have the equivelant of a unique_ptr
     template <class ...TArgs>
     const item_type* track(
         const endpoint_type& endpoint,
         time_point time_sent,
-        const_buffer_type buffer,
+        const_buffer_type& buffer,
         TArgs...args)
     {
         /*
