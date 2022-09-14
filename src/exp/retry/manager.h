@@ -77,8 +77,8 @@ struct Manager : TTransport
             template model<item_type, &item_type::resend> m;
 
         item_type(endpoint_type e, time_point t, const_buffer_type b, parent_type* parent) :
-            parent(parent),
             base_type(e, t, b),
+            parent(parent),
             m(this)
         {
 

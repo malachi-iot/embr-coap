@@ -9,6 +9,8 @@
 #include <embr/platform/lwip/istream.h>
 #include <embr/platform/lwip/ostream.h>
 
+#include <coap/platform/ip.h>
+
 
 // DEBT: Put this into embr proper
 namespace embr::lwip::experimental {
@@ -71,15 +73,26 @@ static void test_retry_1()
     embr::lwip::udp::Pcb pcb;
     embr::lwip::Pbuf buffer(128);
 
+    ip_addr_t addr;
+
+    //ip4_addr_set_u32(&addr, IP_LOOPBACKNET);
+
+    // Have to do a little dance because ipv6 might be present also,
+    // so ip_2_ip4 macro is needed to navigate that
+    ip4_addr_set_loopback(ip_2_ip4(&addr));
+
+    //addr.u_addr.ip4 = PP_HTONL(IPADDR_LOOPBACK);
+    
+
     scheduler_type scheduler;
-    //endpoint_type endpoint;
+    endpoint_type endpoint(&addr, embr::coap::IP_PORT);
 
     // DEBT: Add copy/move constructor to TransportUdp
     //transport_type transport(pcb);
 
     coap::experimental::retry::Manager<clock_type, transport_type> manager(pcb);
 
-    //manager.send(endpoint, time_point(estd::chrono::seconds(5)), buffer, scheduler);
+    manager.send(endpoint, time_point(estd::chrono::seconds(5)), buffer, scheduler);
 }
 
 #endif
