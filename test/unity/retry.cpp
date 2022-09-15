@@ -85,12 +85,60 @@ typedef typename transport_type::endpoint_type endpoint_type;
 typedef estd::chrono::freertos_clock clock_type;
 typedef typename clock_type::time_point time_point;
 typedef embr::internal::layer1::Scheduler<8, embr::internal::scheduler::impl::Function<time_point> > scheduler_type;
+typedef coap::experimental::retry::Manager<clock_type, transport_type> manager_type;
 
-static void udp_receive(void* arg, struct udp_pcb* pcb, struct pbuf* p, const ip_addr_t* addr, u16_t port)
+static ip_addr_t loopback_addr;
+constexpr static int port = 10000;
+
+static void udp_ack_receive(void* arg, struct udp_pcb* _pcb, struct pbuf* p, const ip_addr_t* addr, u16_t port)
 {
-    static const char* TAG = "udp_receive";
+    static const char* TAG = "udp_ack_receive";
 
     ESP_LOGI(TAG, "entry");
+
+    embr::lwip::udp::Pcb pcb(_pcb);
+    auto manager = (manager_type*) arg;
+}
+
+
+static void udp_resent_receive(void* arg, struct udp_pcb* _pcb, struct pbuf* p, const ip_addr_t* addr, u16_t port)
+{
+    static const char* TAG = "udp_resent_receive";
+
+    ESP_LOGI(TAG, "entry");
+
+    embr::lwip::udp::Pcb pcb(_pcb);
+    
+    // DEBT: Would vastly prefer PbufBase here and maybe in general,
+    // but streams are kinda hard wired to Pbuf
+    embr::lwip::Pbuf pbuf(p);
+
+    // In this instance, auto-allating Pbuf is perfect
+    embr::lwip::Pbuf outgoing_pbuf(4);   // Header is 4 bytes
+
+    embr::coap::Header header = embr::coap::experimental::get_header(pbuf);
+
+    header.type(embr::coap::Header::Acknowledgement);
+
+    // Copy header into outgoing pbuf
+    // DEBT: Make a 'take' helper method for embr::lwip::udp::Pcb, and
+    // consider omitting 'len' since it's expected to match buf->tot_len
+    pbuf_take(outgoing_pbuf, &header, 4);
+
+    // Send ACK back to test_retry_1::pcb
+    // FIX: This doesn't seem to actually send
+    pcb.send(outgoing_pbuf, &loopback_addr, port + 1);
+}
+
+static void setup()
+{
+    //ip4_addr_set_u32(&addr, IP_LOOPBACKNET);
+
+    // Have to do a little dance because ipv6 might be present also,
+    // so ip_2_ip4 macro is needed to navigate that
+    ip4_addr_set_loopback(ip_2_ip4(&loopback_addr));
+
+    //addr.u_addr.ip4 = PP_HTONL(IPADDR_LOOPBACK);
 }
 
 static void test_retry_1()
@@ -102,24 +150,16 @@ static void test_retry_1()
 
     pcb.alloc();
 
-    ip_addr_t addr;
-
-    //ip4_addr_set_u32(&addr, IP_LOOPBACKNET);
-
-    // Have to do a little dance because ipv6 might be present also,
-    // so ip_2_ip4 macro is needed to navigate that
-    ip4_addr_set_loopback(ip_2_ip4(&addr));
-
-    //addr.u_addr.ip4 = PP_HTONL(IPADDR_LOOPBACK);
-    
-
     scheduler_type scheduler;
-    endpoint_type endpoint(&addr, embr::coap::IP_PORT);
+    endpoint_type endpoint(&loopback_addr, port);
 
     // DEBT: Add copy/move constructor to TransportUdp
     //transport_type transport(pcb);
 
-    coap::experimental::retry::Manager<clock_type, transport_type> manager(pcb);
+    manager_type manager(pcb);
+
+    pcb.bind(endpoint.address(), port + 1);
+    pcb.recv(udp_ack_receive, &manager);
 
     //pbuf_ref(buffer);
 
@@ -129,8 +169,8 @@ static void test_retry_1()
     embr::lwip::udp::Pcb pcb_recv;
 
     pcb_recv.alloc();
-    pcb_recv.bind(endpoint.address(), endpoint.port());
-    pcb_recv.recv(udp_receive);
+    pcb_recv.bind(endpoint.address(), port);
+    pcb_recv.recv(udp_resent_receive);
 #endif
 
     ESP_LOGV(TAG, "ref=%d", buffer.pbuf()->ref);
@@ -166,6 +206,10 @@ TEST_CASE("retry tests", "[retry]")
 void test_retry()
 #endif
 {
+#if FEATURE_COAP_LWIP_LOOPBACK_TESTS
+    setup();
+#endif
+
 #if __cplusplus >= 201103L
     RUN_TEST(test_retry_1);
 #endif
