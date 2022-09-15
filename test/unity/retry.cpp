@@ -126,8 +126,11 @@ static void udp_resent_receive(void* arg, struct udp_pcb* _pcb, struct pbuf* p, 
     pbuf_take(outgoing_pbuf, &header, 4);
 
     // Send ACK back to test_retry_1::pcb
-    // FIX: This doesn't seem to actually send
+    // FIX: LwIP logs indicate this is sent and received again on loopback,
+    // yet udp_ack_receive doesn't activate
+    LOCK_TCPIP_CORE();
     pcb.send(outgoing_pbuf, &loopback_addr, port + 1);
+    UNLOCK_TCPIP_CORE();
 }
 
 static void setup()
