@@ -95,6 +95,9 @@ typedef coap::experimental::retry::Manager<clock_type, transport_type> manager_t
 static ip_addr_t loopback_addr;
 constexpr static int port = 10000;
 
+static estd::freertos::counting_semaphore<1, true> signal1;
+
+
 // loopback:port+1 destination
 static void udp_ack_receive(void* arg, struct udp_pcb* _pcb, struct pbuf* p, const ip_addr_t* addr, u16_t port)
 {
@@ -105,7 +108,34 @@ static void udp_ack_receive(void* arg, struct udp_pcb* _pcb, struct pbuf* p, con
     embr::lwip::udp::Pcb pcb(_pcb);
     auto manager = (manager_type*) arg;
 
+    signal1.release();
+
     ESP_LOGI(TAG, "exit");
+}
+
+// NOTE: Before consolidating into send_ack, we were getting odd behavior where the packet
+// seemed to send and be looped back, but udp_ack_receive never picked it up.  Furthermore,
+// that was accompanied by a ping going over loopback.  Never determined why that happened.
+static void send_ack(embr::lwip::udp::Pcb& pcb, embr::coap::Header incoming_header)
+{
+    static const char* TAG = "send_ack";
+
+    ESP_LOGI(TAG, "entry: header.mid=%x", incoming_header.message_id());
+
+    // In this instance, auto-allating Pbuf is perfect
+    embr::lwip::Pbuf pbuf(4);   // Header is 4 bytes
+    embr::coap::Header& header = incoming_header;
+
+    header.type(embr::coap::Header::Acknowledgement);
+
+    // Copy header into outgoing pbuf
+    // DEBT: Make a 'take' helper method for embr::lwip::udp::Pcb, and
+    // consider omitting 'len' since it's expected to match buf->tot_len
+    pbuf_take(pbuf, &header, 4);
+
+    err_t result = pcb.send(pbuf, &loopback_addr, port + 1);
+
+    ESP_LOGD(TAG, "sent: result=%d", result);
 }
 
 // loopback:port destination
@@ -120,18 +150,7 @@ static void udp_resent_receive(void* arg, struct udp_pcb* _pcb, struct pbuf* p, 
     // DEBT: Would vastly prefer PbufBase here and maybe in general,
     // but streams are kinda hard wired to Pbuf
     embr::lwip::Pbuf pbuf(p);
-
-    // In this instance, auto-allating Pbuf is perfect
-    embr::lwip::Pbuf outgoing_pbuf(4);   // Header is 4 bytes
-
     embr::coap::Header header = embr::coap::experimental::get_header(pbuf);
-
-    header.type(embr::coap::Header::Acknowledgement);
-
-    // Copy header into outgoing pbuf
-    // DEBT: Make a 'take' helper method for embr::lwip::udp::Pcb, and
-    // consider omitting 'len' since it's expected to match buf->tot_len
-    pbuf_take(outgoing_pbuf, &header, 4);
 
     // Send ACK back to test_retry_1::pcb
     
@@ -146,15 +165,18 @@ static void udp_resent_receive(void* arg, struct udp_pcb* _pcb, struct pbuf* p, 
     // in recv function - maybe because we're already in TCPIP core scope?
 
     //LOCK_TCPIP_CORE();
-    ESP_LOGD(TAG, "sending ACK phase 1");
-    pcb.send(outgoing_pbuf, &loopback_addr, port + 1);
+    send_ack(pcb, header);
     //UNLOCK_TCPIP_CORE();
     
     ESP_LOGI(TAG, "exit");
 }
 
 
-static estd::freertos::counting_semaphore<1, true> signal1;
+static void setup_outgoing_packet(embr::lwip::Pbuf& buffer)
+{
+    
+}
+
 
 static void test_retry_1_worker(void* parameter)
 {
