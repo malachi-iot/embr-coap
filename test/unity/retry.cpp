@@ -23,6 +23,9 @@
 
 #include <coap/platform/ip.h>
 
+// Needed for 'finalize' specialization, though that doesn't compile even with this include so far
+#include <coap/platform/lwip/encoder.h>
+
 // If LwIP loopback capability is present, then consider enabling our loopback tests
 #if LWIP_HAVE_LOOPIF && LWIP_LOOPBACK_MAX_PBUFS
 #ifndef FEATURE_COAP_LWIP_LOOPBACK_TESTS
@@ -91,6 +94,7 @@ typedef estd::chrono::freertos_clock clock_type;
 typedef typename clock_type::time_point time_point;
 typedef embr::internal::layer1::Scheduler<8, embr::internal::scheduler::impl::Function<time_point> > scheduler_type;
 typedef coap::experimental::retry::Manager<clock_type, transport_type> manager_type;
+typedef coap::experimental::EncoderFactory<embr::lwip::Pbuf> encoder_factory;
 
 static ip_addr_t loopback_addr;
 constexpr static int port = 10000;
@@ -106,6 +110,12 @@ static void udp_ack_receive(void* arg, struct udp_pcb* _pcb, struct pbuf* p, con
     ESP_LOGI(TAG, "entry");
 
     embr::lwip::udp::Pcb pcb(_pcb);
+    embr::lwip::Pbuf pbuf(p);
+
+    embr::coap::Header header = embr::coap::experimental::get_header(pbuf);
+
+    ESP_LOGD(TAG, "mid=%x", header.message_id());
+
     auto manager = (manager_type*) arg;
 
     signal1.release();
@@ -174,7 +184,26 @@ static void udp_resent_receive(void* arg, struct udp_pcb* _pcb, struct pbuf* p, 
 
 static void setup_outgoing_packet(embr::lwip::Pbuf& buffer)
 {
+    auto encoder = encoder_factory::create(buffer);
+
+    // DEBT: CON Not yet a requirement, but needs to be
+    coap::Header header{coap::Header::Confirmable};
+
+    header.message_id(0x123);
     
+    encoder.header(header);
+    encoder.option(coap::Option::LocationPath, "v1");   // TODO: Can't remember if this is the right URI option
+    encoder.option(coap::Option::ContentFormat, coap::Option::ApplicationJson);
+
+    encoder.payload();
+
+    //auto o = encoder.ostream();
+
+    // FIX: uint8_t vs char issue here
+    //o << "{ 'val': 'hi2u' }";
+
+    // FIX: can't seem to find specialization
+    //encoder.finalize();
 }
 
 
@@ -186,6 +215,8 @@ static void test_retry_1_worker(void* parameter)
 
     embr::lwip::udp::Pcb pcb;
     embr::lwip::Pbuf buffer(128);
+
+    setup_outgoing_packet(buffer);
 
     pcb.alloc();
 

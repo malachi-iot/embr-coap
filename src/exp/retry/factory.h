@@ -3,6 +3,7 @@
 
 #include <estd/span.h>
 #include "../../coap/decoder/streambuf.hpp"
+#include "../../coap/encoder/streambuf.h"
 
 // Different than parent factory.h, this one focuses on specializations
 // to create encoders and decoders depending on the buffers at play
@@ -39,6 +40,28 @@ struct DecoderFactory<estd::span<const uint8_t> >
         return decoder_type(buffer);
     }
 }; */
+
+
+template <class TBuffer>
+struct EncoderFactory
+{
+    typedef TBuffer buffer_type;
+    typedef typename StreambufProvider<buffer_type>::ostreambuf_type streambuf_type;
+    typedef StreambufEncoder<streambuf_type> encoder_type;
+
+#ifdef __cpp_rvalue_references
+    inline static encoder_type create(buffer_type&& buffer)
+    {
+        return encoder_type(std::move(buffer));
+    }
+#endif
+
+    inline static encoder_type create(const buffer_type& buffer)
+    {
+        return encoder_type(buffer);
+    }
+};
+
 
 template <class TBuffer>
 struct DecoderFactory

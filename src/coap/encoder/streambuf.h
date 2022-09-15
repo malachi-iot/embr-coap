@@ -298,7 +298,10 @@ public:
     {
         int n = strlen(str);
         option(number, n);
-        estd::streamsize written = rdbuf()->sputn(str, n);
+        // DEBT: Be sure this cast is safe.  We expect char_type to always
+        // be same bitness as 'char' but a safeguard would be prudent
+        const char_type* s = reinterpret_cast<const char_type*>(str);
+        estd::streamsize written = rdbuf()->sputn(s, n);
         // FIX: we don't address chunking yet at all, even with this (how does it know
         // where in the string to resume from?)
         return written == n;
