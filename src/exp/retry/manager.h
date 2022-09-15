@@ -154,6 +154,15 @@ struct Manager : embr::internal::instance_or_reference_provider<TTransport>
         return i;
     }
 
+
+    template <class TContainer, class TSubject>
+    const item_type* send(const endpoint_type& endpoint,
+        const_buffer_type&& buffer,
+        embr::internal::Scheduler<TContainer, scheduler_impl, TSubject>& scheduler)
+    {
+        return send(endpoint, clock_type::now(), std::move(buffer), scheduler);
+    }
+
     ESTD_CPP_FORWARDING_CTOR(Manager);
 };
 

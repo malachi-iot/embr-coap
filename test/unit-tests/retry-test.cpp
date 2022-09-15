@@ -15,6 +15,7 @@ using namespace embr::coap::experimental;
 // NOTE: Remember, embr's Transport concept wants send with signature
 // 'buffer', 'endpoint' - lwip style.  In retrospect I would have preferred
 // 'endpoint', 'buffer'
+// DEBT: Combine this with embr's test transport, and include that here instead
 struct SyntheticTransport
 {
     typedef unsigned endpoint_type;
@@ -41,10 +42,22 @@ struct SyntheticTransport
     }
 };
 
+// DEBT: Combine this with estd's test clock, and include that here instead
 struct SyntheticClock
 {
-    typedef estd::chrono::time_point<SyntheticClock, estd::chrono::milliseconds> time_point;
+    typedef typename estd::chrono::milliseconds duration;
+    typedef estd::chrono::time_point<SyntheticClock> time_point;
+
+    static time_point now_;
+
+    // is monotonic -- i.e. doesn't decrease.  This is only held true because unit tests
+    // don't decrease time within themselves
+    static constexpr bool is_steady = true;
+
+    static time_point now() { return now_; }
 };
+
+SyntheticClock::time_point SyntheticClock::now_;
 
 TEST_CASE("retry tests", "[retry]")
 {
@@ -57,7 +70,7 @@ TEST_CASE("retry tests", "[retry]")
         typedef estd::chrono::time_point<SyntheticClock, estd::chrono::milliseconds> time_point;
         typedef embr::internal::layer1::Scheduler<8, embr::internal::scheduler::impl::Function<time_point> > scheduler_type;
         typedef estd::span<const uint8_t> buffer_type;
-        time_point zero_time;
+        constexpr time_point zero_time;
 
         scheduler_type scheduler;
 
@@ -119,7 +132,8 @@ TEST_CASE("retry tests", "[retry]")
 
             SECTION("ACK received immediately")
             {
-                manager.send(1, zero_time, std::move(b), scheduler);
+                // 'send' call without explicit time uses clock_type::now()
+                manager.send(1, std::move(b), scheduler);
 
                 bool result = manager.on_received(1, buffer_ack);
 
