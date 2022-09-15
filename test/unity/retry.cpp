@@ -8,6 +8,7 @@
 #include "unit-test.h"
 
 #include <estd/chrono.h>
+#include <estd/semaphore.h>
 
 #if __cplusplus >= 201103L
 #ifdef ESP_IDF_TESTING
@@ -27,6 +28,10 @@
 #ifndef FEATURE_COAP_LWIP_LOOPBACK_TESTS
 #define FEATURE_COAP_LWIP_LOOPBACK_TESTS 1
 #endif
+#endif
+
+#if LWIP_TCPIP_CORE_LOCKING != 1
+#error Need LWIP_TCPIP_CORE_LOCKING feature
 #endif
 
 
@@ -90,6 +95,7 @@ typedef coap::experimental::retry::Manager<clock_type, transport_type> manager_t
 static ip_addr_t loopback_addr;
 constexpr static int port = 10000;
 
+// loopback:port+1 destination
 static void udp_ack_receive(void* arg, struct udp_pcb* _pcb, struct pbuf* p, const ip_addr_t* addr, u16_t port)
 {
     static const char* TAG = "udp_ack_receive";
@@ -98,9 +104,11 @@ static void udp_ack_receive(void* arg, struct udp_pcb* _pcb, struct pbuf* p, con
 
     embr::lwip::udp::Pcb pcb(_pcb);
     auto manager = (manager_type*) arg;
+
+    ESP_LOGI(TAG, "exit");
 }
 
-
+// loopback:port destination
 static void udp_resent_receive(void* arg, struct udp_pcb* _pcb, struct pbuf* p, const ip_addr_t* addr, u16_t port)
 {
     static const char* TAG = "udp_resent_receive";
@@ -126,11 +134,74 @@ static void udp_resent_receive(void* arg, struct udp_pcb* _pcb, struct pbuf* p, 
     pbuf_take(outgoing_pbuf, &header, 4);
 
     // Send ACK back to test_retry_1::pcb
-    // FIX: LwIP logs indicate this is sent and received again on loopback,
+    
+    ESP_LOGD(TAG, "sending ACK phase 0");
+
+    // FIX: 
+    // -- With LWIP_TCPIP_CORE_LOCKING == 0:
+    // LwIP logs indicate this is sent and received again on loopback,
     // yet udp_ack_receive doesn't activate
-    LOCK_TCPIP_CORE();
+    // -- With LWIP_TCPIP_CORE_LOCKING == 1:
+    // We never get past LOCK_TCPIP_CORE.  So, presumably we can't run that
+    // in recv function - maybe because we're already in TCPIP core scope?
+
+    //LOCK_TCPIP_CORE();
+    ESP_LOGD(TAG, "sending ACK phase 1");
     pcb.send(outgoing_pbuf, &loopback_addr, port + 1);
+    //UNLOCK_TCPIP_CORE();
+    
+    ESP_LOGI(TAG, "exit");
+}
+
+
+static estd::freertos::counting_semaphore<1, true> signal1;
+
+static void test_retry_1_worker(void* parameter)
+{
+    static const char* TAG = "test_retry_1_worker";
+
+    ESP_LOGI(TAG, "entry");
+
+    embr::lwip::udp::Pcb pcb;
+    embr::lwip::Pbuf buffer(128);
+
+    pcb.alloc();
+
+    scheduler_type scheduler;
+    endpoint_type endpoint(&loopback_addr, port);
+
+    // DEBT: Add copy/move constructor to TransportUdp
+    //transport_type transport(pcb);
+
+    manager_type manager(pcb);
+
+    LOCK_TCPIP_CORE();  // Just experimenting, this lock/unlock doesn't seem to help
+    pcb.bind(endpoint.address(), port + 1);
+    pcb.recv(udp_ack_receive, &manager);
     UNLOCK_TCPIP_CORE();
+
+    //pbuf_ref(buffer);
+
+    ESP_LOGV(TAG, "ref=%d", buffer.pbuf()->ref);
+
+    // [1] indicates udp_send doesn't free the thing.  Also, udp.c source code
+    // indicates "p is still referenced by the caller, and will live on"
+
+    // DEBT: This really needs to be put into TransportUdp
+    LOCK_TCPIP_CORE();
+    
+    manager.send(endpoint, time_point(estd::chrono::seconds(5)),
+        std::move(buffer), scheduler);
+
+    UNLOCK_TCPIP_CORE();
+
+    signal1.try_acquire_for(estd::chrono::milliseconds(250));
+
+    pcb.free();
+
+    ESP_LOGI(TAG, "exit");
+
+    vTaskDelete(NULL);
 }
 
 static void setup()
@@ -148,23 +219,14 @@ static void test_retry_1()
 {
     static const char* TAG = "test_retry_1";
 
-    embr::lwip::udp::Pcb pcb;
-    embr::lwip::Pbuf buffer(128);
+    ESP_LOGI(TAG, "entry");
 
-    pcb.alloc();
-
-    scheduler_type scheduler;
-    endpoint_type endpoint(&loopback_addr, port);
-
-    // DEBT: Add copy/move constructor to TransportUdp
-    //transport_type transport(pcb);
-
-    manager_type manager(pcb);
-
-    pcb.bind(endpoint.address(), port + 1);
-    pcb.recv(udp_ack_receive, &manager);
-
-    //pbuf_ref(buffer);
+    xTaskCreate(test_retry_1_worker,
+        "test retry #1 worker",
+        4096,
+        nullptr,
+        2,
+        nullptr);
 
 #if FEATURE_COAP_LWIP_LOOPBACK_TESTS
     // Tried doing a separate pcb_recv to avoid ref == 1 errors, but no
@@ -172,31 +234,18 @@ static void test_retry_1()
     embr::lwip::udp::Pcb pcb_recv;
 
     pcb_recv.alloc();
-    pcb_recv.bind(endpoint.address(), port);
+    pcb_recv.bind(&loopback_addr, port);
     pcb_recv.recv(udp_resent_receive);
-#endif
 
-    ESP_LOGV(TAG, "ref=%d", buffer.pbuf()->ref);
-
-    // [1] indicates udp_send doesn't free the thing.  Also, udp.c source code
-    // indicates "p is still referenced by the caller, and will live on"
-
-    // DEBT: This really needs to be put into TransportUdp
-    LOCK_TCPIP_CORE();
-    
-    manager.send(endpoint, time_point(estd::chrono::seconds(5)),
-        std::move(buffer), scheduler);
-
-    UNLOCK_TCPIP_CORE();
-
-#if FEATURE_COAP_LWIP_LOOPBACK_TESTS
     // Just to ensure loopback has time to get received again.  Not
-    // sure if this is actually required
+    // sure if this is actually required.
+    // DEBT: Make this into a semaphore
     estd::this_thread::sleep_for(estd::chrono::milliseconds(250));
 
     pcb_recv.free();
 #endif
-    pcb.free();
+
+    ESP_LOGI(TAG, "exit");
 }
 
 #endif
