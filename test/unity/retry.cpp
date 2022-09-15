@@ -167,6 +167,8 @@ static void test_retry_1_worker(void* parameter)
 
     pcb.alloc();
 
+    ESP_LOGD(TAG, "pcb.has_pcb()=%d", pcb.has_pcb());
+
     scheduler_type scheduler;
     endpoint_type endpoint(&loopback_addr, port);
 
@@ -177,6 +179,7 @@ static void test_retry_1_worker(void* parameter)
 
     LOCK_TCPIP_CORE();  // Just experimenting, this lock/unlock doesn't seem to help
     pcb.bind(endpoint.address(), port + 1);
+    //pcb.bind(IP_ADDR_ANY, port + 1);  // Doesn't make a difference
     pcb.recv(udp_ack_receive, &manager);
     UNLOCK_TCPIP_CORE();
 
@@ -195,7 +198,9 @@ static void test_retry_1_worker(void* parameter)
 
     UNLOCK_TCPIP_CORE();
 
-    signal1.try_acquire_for(estd::chrono::milliseconds(250));
+    ESP_LOGD(TAG, "data packet sent, now waiting");
+
+    signal1.try_acquire_for(estd::chrono::milliseconds(1000));
 
     pcb.free();
 
@@ -234,6 +239,9 @@ static void test_retry_1()
     embr::lwip::udp::Pcb pcb_recv;
 
     pcb_recv.alloc();
+
+    ESP_LOGD(TAG, "pcb_recv.has_pcb()=%d", pcb_recv.has_pcb());
+
     pcb_recv.bind(&loopback_addr, port);
     pcb_recv.recv(udp_resent_receive);
 
