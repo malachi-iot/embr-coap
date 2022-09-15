@@ -31,19 +31,15 @@ struct SyntheticTransport
         const_buffer_type b;
     };
 
-    static Item last_sent;
-    static int counter;
+    Item last_sent;
+    int counter = 0;
 
-    static void send(const_buffer_type b, endpoint_type e)
+    void send(const_buffer_type b, endpoint_type e)
     {
         ++counter;
         last_sent = Item{e, b};
     }
 };
-
-// DEBT: Don't think I like a static here, even in a synthetic sense
-SyntheticTransport::Item SyntheticTransport::last_sent;
-int SyntheticTransport::counter = 0;
 
 struct SyntheticClock
 {
@@ -114,15 +110,15 @@ TEST_CASE("retry tests", "[retry]")
         }
         SECTION("manager")
         {
-            retry::Manager<SyntheticClock, SyntheticTransport> manager;
+            SyntheticTransport transport;
+            retry::Manager<SyntheticClock, SyntheticTransport&> manager(transport);
+
             const time_point t2(estd::chrono::seconds(2));
             const time_point t3(estd::chrono::seconds(3));
             const time_point t5(estd::chrono::seconds(5));
 
             SECTION("ACK received immediately")
             {
-                SyntheticTransport::counter = 0;
-
                 manager.send(1, zero_time, std::move(b), scheduler);
 
                 bool result = manager.on_received(1, buffer_ack);
@@ -135,13 +131,11 @@ TEST_CASE("retry tests", "[retry]")
                 // For upcoming linked list version, we'll need to process first
                 REQUIRE(manager.tracker.empty());
 
-                REQUIRE(SyntheticTransport::last_sent.e == 1);
-                REQUIRE(SyntheticTransport::counter == 1);
+                REQUIRE(transport.last_sent.e == 1);
+                REQUIRE(transport.counter == 1);
             }
             SECTION("other")
             {
-                SyntheticTransport::counter = 0;
-
                 auto item = manager.send(1, zero_time, std::move(b), scheduler);
 
                 REQUIRE(item->retransmission_counter == 0);
@@ -173,6 +167,9 @@ TEST_CASE("retry tests", "[retry]")
                 // At this point 'process' gives up, because MAX_RETRANSMIT is 4.
                 // Therefore, no connection with endpoint and mid is matched
                 REQUIRE(it == manager.tracker.end());
+
+                // DEBT: Document exactly why we expect '5' here
+                REQUIRE(transport.counter == 5);
             }
         }
     }

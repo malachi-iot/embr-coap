@@ -7,6 +7,7 @@
 
 #include <embr/scheduler.h>
 
+#include "provider.h"
 #include "tracker.h"
 
 namespace embr { namespace coap { namespace experimental { namespace retry {
@@ -16,10 +17,13 @@ namespace embr { namespace coap { namespace experimental { namespace retry {
 // DEBT: TTransport = TTransportDescriptor
 // TODO: Put an instance provider in here to handle TTransport and TTransport&
 template <class TClock, class TTransport>
-struct Manager : TTransport
+struct Manager : embr::internal::instance_or_reference_provider<TTransport>
 {
-    typedef TTransport transport_type;
-    typedef TTransport base_type;
+    typedef embr::internal::instance_or_reference_provider<TTransport> base_type;
+
+    typedef base_type transport_provider;
+    typedef typename transport_provider::value_type transport_type;
+
     typedef typename transport_type::endpoint_type endpoint_type;
     typedef typename transport_type::buffer_type buffer_type;
     typedef typename transport_type::const_buffer_type const_buffer_type;
@@ -29,8 +33,8 @@ struct Manager : TTransport
 
     typedef Item<endpoint_type, time_point, const_buffer_type> item_base;
 
-    transport_type& transport() { return *this; }
-    const transport_type& transport() const { return *this; }
+    transport_type& transport() { return transport_provider::value(); }
+    const transport_type& transport() const { return transport_provider::value(); }
 
     // DEBT: item_type name only temporary.  If we hide the struct then
     // name is permissible
