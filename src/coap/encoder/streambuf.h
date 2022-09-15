@@ -66,8 +66,6 @@ struct StreambufEncoderImpl<::embr::mem::out_netbuf_streambuf<char, TNetbuf> >
 }
 
 
-// experimental replacement for netbuf encoder.  it's possible streambufs
-// are an all around replacement for netbufs, or at least most of the time
 // TODO: Still need to address partial (chunked) writes
 // NOTE: header and token no chunking is not planned, we'd have to employ HeaderEncoder and
 // TokenEncoder.  That use case is an edge case, since maximum size of header + token = 12 bytes
@@ -103,7 +101,7 @@ class StreambufEncoder
 
 public:
     typedef typename estd::remove_reference<TStreambuf>::type streambuf_type;
-    typedef TStreambufEncoderImpl streambuf_encoder_traits;
+    typedef TStreambufEncoderImpl impl_type;
     typedef estd::internal::basic_ostream<streambuf_type&> ostream_type;
     typedef embr::coap::experimental::layer2::OptionBase option_type;
     typedef embr::coap::Option::Numbers option_number_type;
@@ -315,14 +313,14 @@ public:
         return write(COAP_PAYLOAD_MARKER);
     }
 
-    // since CoAP depends on transport packet size, utilize streambuf_encoder_traits
+    // since CoAP depends on transport packet size, utilize impl_type
     // to demarkate/process output streambuf in the specific way needed for coap
     // encoding
     // For UDP, this means ensuring the UDP packet is exactly the size of the CoAP packet, which
     // for LwIP, usually means realloc (shrinking) the PBUF chain
     void finalize()
     {
-        streambuf_encoder_traits::finalize(rdbuf());
+        impl_type::finalize(rdbuf());
     }
 
     this_type& operator<<(this_type& (*__pf)(this_type&))

@@ -62,7 +62,9 @@ namespace embr { namespace coap { namespace experimental {
 template <>
 struct StreambufProvider<embr::lwip::Pbuf>
 {
-    typedef embr::lwip::upgrading::basic_opbuf_streambuf<uint8_t> ostreambuf_type;
+    // NOTE: char or uint8_t are fully functional.  However, ostreambuf of uint8_t
+    // has big limitations if using the 'ostream' helper method.
+    typedef embr::lwip::upgrading::basic_opbuf_streambuf<char> ostreambuf_type;
     typedef embr::lwip::upgrading::basic_ipbuf_streambuf<uint8_t> istreambuf_type;
 };
 
@@ -139,9 +141,8 @@ static void send_ack(embr::lwip::udp::Pcb& pcb, embr::coap::Header incoming_head
     header.type(embr::coap::Header::Acknowledgement);
 
     // Copy header into outgoing pbuf
-    // DEBT: Make a 'take' helper method for embr::lwip::udp::Pcb, and
-    // consider omitting 'len' since it's expected to match buf->tot_len
-    pbuf_take(pbuf, &header, 4);
+    // DEBT: consider omitting 'len' since it's expected to match buf->tot_len
+    pbuf.take(&header, 4);
 
     err_t result = pcb.send(pbuf, &loopback_addr, port + 1);
 
@@ -184,6 +185,10 @@ static void udp_resent_receive(void* arg, struct udp_pcb* _pcb, struct pbuf* p, 
 
 static void setup_outgoing_packet(embr::lwip::Pbuf& buffer)
 {
+    const char* TAG = "setup_outgoing_packet";
+
+    ESP_LOGI(TAG, "entry");
+
     auto encoder = encoder_factory::create(buffer);
 
     // DEBT: CON Not yet a requirement, but needs to be
@@ -191,19 +196,30 @@ static void setup_outgoing_packet(embr::lwip::Pbuf& buffer)
 
     header.message_id(0x123);
     
+    ESP_LOGD(TAG, "phase 1");
+
     encoder.header(header);
+
+    ESP_LOGD(TAG, "phase 2");
+
+    // FIX: Currently there seems to be a bug in opbuf_streambuf or encoder itself that expands
+    // underlying buffer from 128 to 256 during this operation
     encoder.option(coap::Option::LocationPath, "v1");   // TODO: Can't remember if this is the right URI option
     encoder.option(coap::Option::ContentFormat, coap::Option::ApplicationJson);
 
+    ESP_LOGD(TAG, "phase 3");
+
     encoder.payload();
 
-    //auto o = encoder.ostream();
+    auto o = encoder.ostream();
 
-    // FIX: uint8_t vs char issue here
-    //o << "{ 'val': 'hi2u' }";
+    o << "{ 'val': 'hi2u' }";
 
-    // FIX: can't seem to find specialization
-    //encoder.finalize();
+    ESP_LOGD(TAG, "phase 4");
+
+    encoder.finalize();
+
+    ESP_LOGI(TAG, "exit");
 }
 
 
