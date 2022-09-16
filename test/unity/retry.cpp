@@ -38,23 +38,6 @@
 #endif
 
 
-// DEBT: Put this into embr proper
-namespace embr::lwip::experimental {
-
-// NOTE: Evidently we need this operator to reside in the namespace matching
-// its class
-template <bool use_pointer>
-bool operator ==(const Endpoint<use_pointer>& lhs, const Endpoint<use_pointer>& rhs)
-{
-    // *lhs.address() == *rhs.address();
-    // We need an ipv4 vs ipv6 version to properly compare addresses
-    bool address_match = ip_addr_cmp(lhs.address(), rhs.address());
-
-    return lhs.port() == rhs.port() && address_match;
-}
-
-}
-
 #include <exp/retry/factory.h>
 
 namespace embr { namespace coap { namespace experimental {
@@ -303,11 +286,7 @@ static void test_retry_1()
         nullptr);
 
 #if FEATURE_COAP_LWIP_LOOPBACK_TESTS
-    // Tried doing a separate pcb_recv to avoid ref == 1 errors, but no
-    // dice.  It's more tied to tracker behavior
-    embr::lwip::udp::Pcb pcb_recv;
-
-    pcb_recv.alloc();
+    embr::experimental::Unique<embr::lwip::udp::Pcb> pcb_recv;
 
     ESP_LOGD(TAG, "pcb_recv.has_pcb()=%d", pcb_recv.has_pcb());
 
@@ -318,8 +297,6 @@ static void test_retry_1()
     // sure if this is actually required.
     // DEBT: Make this into a semaphore
     estd::this_thread::sleep_for(estd::chrono::milliseconds(250));
-
-    pcb_recv.free();
 #endif
 
     ESP_LOGI(TAG, "exit");
