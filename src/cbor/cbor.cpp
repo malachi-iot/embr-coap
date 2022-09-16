@@ -1,5 +1,5 @@
 #include <string.h>
-#include "cbor.h"
+#include "../cbor.h"
 
 namespace embr {
 

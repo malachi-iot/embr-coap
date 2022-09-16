@@ -10,14 +10,12 @@ set(ROOT_DIR ..)
 set(ESTDLIB_DIR ${ROOT_DIR}/ext/estdlib/src)
 set(EMBR_DIR ${ROOT_DIR}/ext/embr/src)
 
-include_directories(${PROJECT_SOURCE_DIR})
-
 include_directories(${ESTDLIB_DIR})
 include_directories(${EMBR_DIR})
 
 set(SOURCE_FILES
         coap.cpp coap.h
-        #coap_transmission.h
+
         cbor.h
         cbor/cbor.cpp cbor/features.h
         cbor/decoder.cpp
@@ -86,9 +84,11 @@ set(SOURCE_FILES
         mc/opts.h
         mc/opts-internal.h
         mc/encoder-base.h
-        mc/experimental.h
+
         coap-observable.h
 
         )
 
 add_library(${PROJECT_NAME} ${SOURCE_FILES})
+
+target_include_directories(${PROJECT_NAME} PUBLIC .)

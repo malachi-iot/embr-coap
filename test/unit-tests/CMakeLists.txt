@@ -18,7 +18,6 @@ set(MC_COAP_DIR ${ROOT_DIR}/src)
 # this must come first so that it picks up proper opts.h file
 include_directories(${PROJECT_SOURCE_DIR})
 
-include_directories(${MC_COAP_DIR})
 add_subdirectory(${MC_COAP_DIR} coap)
 
 #message(${PROJECT_SOURCE_DIR})
