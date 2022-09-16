@@ -192,5 +192,48 @@ TEST_CASE("CoAP encoder tests", "[coap-encoder]")
 
             compare_array(buffer_16bit_delta, ubuffer);
         }
+        SECTION("sanity checks")
+        {
+            SECTION("synthetic retry outgoing packet")
+            {
+                using namespace embr;
+
+                const auto& rdbuf = *encoder.rdbuf();
+
+                // when doing retry code, noticed LwIP was allocating way too much.
+                // embr tests indicate pbuf output stream is OK, so maybe encoder itself is malfunctioning?
+
+                coap::Header header(coap::Header::Confirmable);
+
+                header.message_id(0x123);
+
+                encoder.header(header);
+
+                REQUIRE(rdbuf.pos() == 4);
+
+                encoder.option(coap::Option::LocationPath, "v1");
+
+                REQUIRE(rdbuf.pos() == 7);
+
+                //encoder.option(coap::Option::ContentFormat, coap::Option::ApplicationJson);
+
+                // FIX: this ends up being 128, so there's our issue
+                //REQUIRE(rdbuf.pos() == 9);
+
+                encoder.payload();
+
+                REQUIRE(rdbuf.pos() == 8);
+
+                {
+                    auto o = encoder.ostream();
+
+                    // This line sometimes crashes, which makes sense because
+                    // sure enough streambuf is at pos 128 when it gets here
+                    //o << "{ 'val': 'hi2u' }";
+                }
+
+                encoder.finalize();
+            }
+        }
     }
 }
