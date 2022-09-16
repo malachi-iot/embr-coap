@@ -64,7 +64,7 @@ OptionEncoder::output_t OptionEncoder::generate_iterate()
             pos = 0;
             state(_state_t::FirstByteDone);
 
-            uint8_t combined = option_length_root | (option_delta_root << 4);
+            const uint8_t combined = option_length_root | (option_delta_root << 4);
 
             return combined;
         }

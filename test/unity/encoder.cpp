@@ -24,13 +24,13 @@ static void test_encoder_1()
 
     encoder.header(h);
 
-    encoder.option(coap::Option::UriPath, 4);
+    encoder.option_raw(coap::Option::UriPath, 4);
 
     encoder_type::ostream_type out = encoder.ostream();
 
     out << "TEST";
 
-    encoder.option(coap::Option::UriPath, 3);
+    encoder.option_raw(coap::Option::UriPath, 3);
 
     out << "POS";
 
@@ -80,7 +80,7 @@ static void test_build_reply()
     // 'Accept' option actually doesn't belong in replies, but we'll allow it for
     // synthetic.  Also, since 'Accept' is 17, it hangs over the 13-boundary and
     // results in a two-byte option header
-    encoder.option_int(coap::Option::Accept, coap::Option::ApplicationJson);
+    encoder.option(coap::Option::Accept, coap::Option::ApplicationJson);
 
     // add in payload marker
     encoder.payload();

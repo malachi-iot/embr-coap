@@ -213,9 +213,8 @@ public:
         token(ctx.token());
     }
 
-    // FIX: rename to 'option'
     //__attribute__ ((noinline))
-    bool option_int(option_number_type number, int option_value)
+    bool option(option_number_type number, int option_value)
     {
         embr::coap::layer2::UInt<> v;
 
@@ -227,13 +226,9 @@ public:
     // returns false if chunking is needed
     // returns true if entire data was output
     // NOTE: interrogating option state may be a better way to ascertain that info
-    // FIX: rename to 'option_raw'
-    bool option(embr::coap::Option::Numbers number, uint16_t length = 0)
+    // Does not write out value portion
+    bool option_raw(const option_type& option)
     {
-        option_type option(number);
-
-        option.length = length;
-
         option_encoder.next(option);
 
         // TODO: run option encoder up until OptionDeltaAndLengthDone or
@@ -256,6 +251,21 @@ public:
         return true;
     }
 
+    // Outputs delta and length, but not associated value
+    bool option_raw(embr::coap::Option::Numbers number, uint16_t length)
+    {
+        option_type o(number);
+
+        o.length = length;
+
+        return option_raw(o);
+    }
+
+    bool option(embr::coap::Option::Numbers number)
+    {
+        return option_raw(number, 0);
+    }
+
 
     template <class TImpl>
     bool option(embr::coap::Option::Numbers number, estd::internal::allocated_array<TImpl>& a)
@@ -263,7 +273,7 @@ public:
         typedef typename estd::internal::allocated_array<TImpl>::value_type value_type;
 
         // TODO: ensure a.size() is size in bytes
-        if(!option(number, a.size())) return false;
+        if(!option_raw(number, a.size())) return false;
 
         // TODO: ensure value_type is 8-bit (strong overlap with
         // checking that size is in bytes)
@@ -295,7 +305,7 @@ public:
     bool option(embr::coap::Option::Numbers number, const char* str)
     {
         int n = strlen(str);
-        option(number, n);
+        option_raw(number, n);
         // DEBT: Be sure this cast is safe.  We expect char_type to always
         // be same bitness as 'char' but a safeguard would be prudent
         const char_type* s = reinterpret_cast<const char_type*>(str);
@@ -383,7 +393,7 @@ inline _Token token(internal::const_buffer raw)
 template <class TStreambuf>
 inline StreambufEncoder<TStreambuf>& operator<<(StreambufEncoder<TStreambuf>& encoder, _Option o)
 {
-    encoder.option(o.number, o.sz);
+    encoder.option_raw(o.number, o.sz);
 
     return encoder;
 }

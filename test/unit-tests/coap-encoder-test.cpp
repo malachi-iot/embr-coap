@@ -146,14 +146,14 @@ TEST_CASE("CoAP encoder tests", "[coap-encoder]")
             auto const rdbuf = encoder.rdbuf();
 
             encoder.header(header);
-            encoder.option((Option::Numbers)270, 1);
+            encoder.option_raw((Option::Numbers)270, 1);
             rdbuf->sputc(3);
             // Not quite as interesting because strings always maintain a runtime
             // size
             //encoder.option((Option::Numbers)271, s);
             // Doesn't work yet since array doesn't share allocated_array base (yet)
             //encoder.option((Option::Numbers)271, v);
-            encoder.option((Option::Numbers)271, 2);
+            encoder.option_raw((Option::Numbers)271, 2);
             rdbuf->sputc(4);
             rdbuf->sputc(5);
             encoder.payload();
