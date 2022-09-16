@@ -15,7 +15,9 @@ void OptionEncoder::initialize()
     pos = 0;
 }
 
-
+/// Returns the special option-encoded integer, byte by byte
+/// Used for both option delta encoding as well as option length
+// DEBT: Fix naming!
 uint8_t generator_helper(uint16_t value, int pos = 0)
 {
     if (value < experimental::_extended_mode_t::Extended8Bit)
@@ -50,18 +52,22 @@ uint8_t generator_helper(uint16_t value, int pos = 0)
 OptionEncoder::output_t OptionEncoder::generate_iterate()
 {
     const option_base_t& option_base = *this->option_base;
-    uint8_t option_delta_root = generator_helper(option_base.number - current_option_number);
-    uint8_t option_length_root = generator_helper(option_base.length);
+
+    // These root variables also indicate if we're regular, 8-bit extended or 16-bit extended modes
+    const uint8_t option_delta_root = generator_helper(option_base.number - current_option_number);
+    const uint8_t option_length_root = generator_helper(option_base.length);
 
     switch (state())
     {
         case _state_t::FirstByte:
+        {
             pos = 0;
             state(_state_t::FirstByteDone);
 
-            option_length_root |= option_delta_root << 4;
+            uint8_t combined = option_length_root | (option_delta_root << 4);
 
-            return option_length_root;
+            return combined;
+        }
 
         case _state_t::FirstByteDone:
             if (option_delta_root >= _state_t::Extended8Bit)
@@ -99,9 +105,9 @@ OptionEncoder::output_t OptionEncoder::generate_iterate()
         case _state_t::OptionLength:
         {
             uint8_t option_length_next = generator_helper(option_base.length, ++pos);
-            if (option_length_next == _state_t::Extended8Bit)
+            if (option_length_root == _state_t::Extended8Bit)
                 state(_state_t::OptionLengthDone);
-            else if (option_length_next == _state_t::Extended16Bit && pos == 2)
+            else if (option_length_root == _state_t::Extended16Bit && pos == 2)
                 state(_state_t::OptionLengthDone);
             else if (pos > 2)
             {

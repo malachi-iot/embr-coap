@@ -215,14 +215,13 @@ TEST_CASE("CoAP encoder tests", "[coap-encoder]")
 
                 REQUIRE(rdbuf.pos() == 7);
 
-                //encoder.option(coap::Option::ContentFormat, coap::Option::ApplicationJson);
+                encoder.option(coap::Option::ContentFormat, coap::Option::ApplicationJson);
 
-                // FIX: this ends up being 128, so there's our issue
-                //REQUIRE(rdbuf.pos() == 9);
+                REQUIRE(rdbuf.pos() == 9);
 
                 encoder.payload();
 
-                REQUIRE(rdbuf.pos() == 8);
+                REQUIRE(rdbuf.pos() == 10);
 
                 {
                     auto o = encoder.ostream();
