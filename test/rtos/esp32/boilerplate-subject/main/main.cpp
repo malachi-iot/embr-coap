@@ -1,1 +1,1 @@
-../../echo/main/main.cpp
+../../template/main.cpp

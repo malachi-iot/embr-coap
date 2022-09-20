@@ -35,7 +35,9 @@ void build_version_response(
     build_reply(context, encoder, Header::Code::Content);
 
     // text/plain
-    encoder.option_int(Option::Numbers::ContentFormat, 0);
+    encoder.option(
+        Option::Numbers::ContentFormat,
+        Option::ContentFormats::TextPlain);
 
     // NOTE: ember::mem::impl::out_netbuf_streambuf doesn't implement sputc, so this fails
     // Since that is streambuf not the coap encoder, this is a NOTE not a FIX
