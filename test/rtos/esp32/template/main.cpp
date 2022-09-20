@@ -13,9 +13,12 @@ void udp_coap_recv(void *arg,
     const ip_addr_t *addr, u16_t port);
 
 __attribute__((weak))
+void app_init(void** pcb_recv_arg) {}
+
+__attribute__((weak))
 void app_loop() {}
 
-void udp_coap_init(void)
+void udp_coap_init(void* pcb_recv_arg)
 {
     embr::lwip::udp::Pcb pcb;
 
@@ -33,7 +36,7 @@ void udp_coap_init(void)
 
     /* set udp_echo_recv() as callback function
        for received packets */
-    pcb.recv(udp_coap_recv);
+    pcb.recv(udp_coap_recv, pcb_recv_arg);
 }
 
 
@@ -48,7 +51,11 @@ extern "C" void app_main()
     wifi_init_sta(event_handler);
 #endif
 
-    udp_coap_init();
+    void* pcb_recv_arg = nullptr;
+
+    app_init(&pcb_recv_arg);
+
+    udp_coap_init(pcb_recv_arg);
 
     app_loop();
 }
