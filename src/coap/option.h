@@ -1,3 +1,8 @@
+/**
+ * References:
+ *
+ * 1. https://www.iana.org/assignments/core-parameters/core-parameters.xhtml#content-formats
+ */
 #pragma once
 
 #include "platform.h"
@@ -24,6 +29,11 @@ public:
 
     enum ContentFormats
     {
+        // As per [1]
+        ImageGif                = 21,
+        ImageJpeg               = 22,
+        ImagePng                = 23,
+
         // RFC 7252 Section 12.3
         TextPlain               = 0,
         ApplicationLinkFormat   = 40,
@@ -32,8 +42,19 @@ public:
         ApplicationExi          = 47,
         ApplicationJson         = 50,
 
+        // As per [1]
+        ApplicationPatchJson    = 51,
+        ApplicationMergeJson    = 52,
+
         // RFC 7049
-        ApplicationCbor         = 60
+        ApplicationCbor         = 60,
+
+        // As per [1]
+        ApplicationCwt              = 61,
+        ApplicationMultipartCore    = 62,
+        ApplicationCborSeq          = 63,
+
+        ApplicationCoapGroupJson    = 256,      // RFC 7390
     };
 
     enum Numbers
