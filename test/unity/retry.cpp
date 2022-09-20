@@ -84,7 +84,12 @@ typedef coap::experimental::EncoderFactory<embr::lwip::Pbuf> encoder_factory;
 static ip_addr_t loopback_addr;
 constexpr static int port = 10000;
 
-static estd::freertos::counting_semaphore<1, true> signal1;
+static estd::freertos::counting_semaphore<1, true>
+    signal1,
+    signal2;
+
+volatile bool end_signaled = false;
+volatile bool ack_received = false;
 
 
 // loopback:port+1 destination
@@ -96,13 +101,21 @@ static void udp_ack_receive(void* arg, struct udp_pcb* _pcb, struct pbuf* p, con
 
     embr::lwip::udp::Pcb pcb(_pcb);
     embr::lwip::Pbuf pbuf(p);
+    endpoint_type endpoint(addr, port);
 
     embr::coap::Header header = embr::coap::experimental::get_header(pbuf);
 
     ESP_LOGD(TAG, "mid=%x", header.message_id());
 
+    // NOTE: As expected, this misbehaves because it's not in the main app
+    // thread.  So, queuing up asserted variables instead
+    //TEST_ASSERT_NULL(arg);
+
     auto manager = (manager_type*) arg;
 
+    ack_received = manager->on_received(endpoint, pbuf);
+
+    // DEBT: Do direct task notifications, since we tightly control all the tasks
     signal1.release();
 
     ESP_LOGI(TAG, "exit");
@@ -117,7 +130,7 @@ static void send_ack(embr::lwip::udp::Pcb& pcb, embr::coap::Header incoming_head
 
     ESP_LOGI(TAG, "entry: header.mid=%x", incoming_header.message_id());
 
-    // In this instance, auto-allating Pbuf is perfect
+    // In this instance, auto-allocating Pbuf is perfect
     embr::lwip::Pbuf pbuf(4);   // Header is 4 bytes
     embr::coap::Header& header = incoming_header;
 
@@ -252,11 +265,13 @@ static void test_retry_1_worker(void* parameter)
 
     ESP_LOGD(TAG, "data packet sent, now waiting");
 
-    signal1.try_acquire_for(estd::chrono::milliseconds(1000));
+    end_signaled = signal1.try_acquire_for(estd::chrono::milliseconds(1000));
 
     pcb.free();
 
     ESP_LOGI(TAG, "exit");
+
+    signal2.release();
 
     vTaskDelete(NULL);
 }
@@ -279,7 +294,7 @@ static void test_retry_1()
     ESP_LOGI(TAG, "entry");
 
     xTaskCreate(test_retry_1_worker,
-        "test retry #1 worker",
+        "retry worker",
         4096,
         nullptr,
         2,
@@ -296,7 +311,11 @@ static void test_retry_1()
     // Just to ensure loopback has time to get received again.  Not
     // sure if this is actually required.
     // DEBT: Make this into a semaphore
-    estd::this_thread::sleep_for(estd::chrono::milliseconds(250));
+    signal2.try_acquire_for(estd::chrono::milliseconds(1000));
+    //estd::this_thread::sleep_for(estd::chrono::milliseconds(250));
+
+    TEST_ASSERT_TRUE(end_signaled);
+    TEST_ASSERT_TRUE(ack_received);
 #endif
 
     ESP_LOGI(TAG, "exit");
