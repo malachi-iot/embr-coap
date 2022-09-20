@@ -43,6 +43,19 @@ const char* get_description(internal::Root::State state)
     }
 }
 
+const char* get_description(header::Types type)
+{
+    switch(type)
+    {
+        case header::Types::Acknowledgement:    return "ACK";
+        case header::Types::Confirmable:        return "CON";
+        case header::Types::NonConfirmable:     return "NON";
+        case header::Types::Reset:              return "RST";
+        default:                                return NULLPTR;
+    }
+}
+
+
 namespace experimental {
 
 const char* get_description(Option::State state)

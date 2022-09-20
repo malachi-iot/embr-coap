@@ -89,6 +89,7 @@ typedef Root _root_state_t;
 
 const char* get_description(Option::Numbers number);
 const char* get_description(internal::root_state_t state);
+const char* get_description(header::Types type);
 
 namespace experimental {
 

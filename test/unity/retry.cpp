@@ -105,7 +105,11 @@ static void udp_ack_receive(void* arg, struct udp_pcb* _pcb, struct pbuf* p, con
 
     embr::coap::Header header = embr::coap::experimental::get_header(pbuf);
 
-    ESP_LOGD(TAG, "mid=%x", header.message_id());
+    ESP_LOGD(TAG, "addr=%s, port=%u, mid=%x, type=%s",
+        ipaddr_ntoa(addr),
+        port,
+        header.message_id(),
+        embr::coap::get_description(header.type()));
 
     // NOTE: As expected, this misbehaves because it's not in the main app
     // thread.  So, queuing up asserted variables instead
@@ -114,6 +118,8 @@ static void udp_ack_receive(void* arg, struct udp_pcb* _pcb, struct pbuf* p, con
     auto manager = (manager_type*) arg;
 
     ack_received = manager->on_received(endpoint, pbuf);
+
+    ESP_LOGD(TAG, "ack_received=%d", ack_received);
 
     // DEBT: Do direct task notifications, since we tightly control all the tasks
     signal1.release();
@@ -260,6 +266,9 @@ static void test_retry_1_worker(void* parameter)
     
     manager.send(endpoint, time_point(estd::chrono::seconds(5)),
         std::move(buffer), scheduler);
+
+    // DEBT: Consider adding semaphore here to make ack inspector wait
+    // for send to completely finish
 
     UNLOCK_TCPIP_CORE();
 
