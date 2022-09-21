@@ -1,6 +1,10 @@
 // See README.md
 #pragma once
 
+#if defined(ESP_PLATFORM)
+#include "esp_log.h"
+#endif
+
 #include <estd/algorithm.h>
 #include <estd/cstdint.h>
 #include <estd/forward_list.h>
@@ -19,6 +23,10 @@ namespace embr { namespace coap { namespace experimental { namespace retry {
 template <class TClock, class TTransport>
 struct Manager : embr::internal::instance_or_reference_provider<TTransport>
 {
+#if defined(ESP_PLATFORM)
+    static constexpr const char* TAG = "retry::Manager";
+#endif
+
     typedef embr::internal::instance_or_reference_provider<TTransport> base_type;
 
     typedef base_type transport_provider;
@@ -150,6 +158,13 @@ struct Manager : embr::internal::instance_or_reference_provider<TTransport>
         const_buffer_type& b = const_cast<const_buffer_type&>(i->buffer());
 
         transport().send(b, endpoint);
+
+#if defined(ESP_PLATFORM)
+        // DEBT: Filter this further by LwIP - perhaps put this log right into transport itself
+        ESP_LOGD(TAG, "sent to/tracking: %s:%u",
+            ipaddr_ntoa(endpoint.address()),
+            endpoint.port());
+#endif
 
         return i;
     }

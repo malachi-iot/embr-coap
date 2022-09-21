@@ -82,7 +82,10 @@ typedef coap::experimental::retry::Manager<clock_type, transport_type> manager_t
 typedef coap::experimental::EncoderFactory<embr::lwip::Pbuf> encoder_factory;
 
 static ip_addr_t loopback_addr;
-constexpr static int port = 10000;
+constexpr static int base_port = 10000,
+    server_port = base_port,    // port to which CON gets sent
+    ack_port = base_port + 1;   // port on which to receive ACK
+    
 
 static estd::freertos::counting_semaphore<1, true>
     signal1,
@@ -101,6 +104,8 @@ static void udp_ack_receive(void* arg, struct udp_pcb* _pcb, struct pbuf* p, con
 
     embr::lwip::udp::Pcb pcb(_pcb);
     embr::lwip::Pbuf pbuf(p);
+
+    // endpoint = from where we received this ACK
     endpoint_type endpoint(addr, port);
 
     embr::coap::Header header = embr::coap::experimental::get_header(pbuf);
@@ -146,7 +151,7 @@ static void send_ack(embr::lwip::udp::Pcb& pcb, embr::coap::Header incoming_head
     // DEBT: consider omitting 'len' since it's expected to match buf->tot_len
     pbuf.take(&header, 4);
 
-    err_t result = pcb.send(pbuf, &loopback_addr, port + 1);
+    err_t result = pcb.send(pbuf, &loopback_addr, ack_port);
 
     ESP_LOGD(TAG, "sent: result=%d", result);
 }
@@ -241,7 +246,7 @@ static void test_retry_1_worker(void* parameter)
     ESP_LOGD(TAG, "pcb.has_pcb()=%d", pcb.has_pcb());
 
     scheduler_type scheduler;
-    endpoint_type endpoint(&loopback_addr, port);
+    endpoint_type server_endpoint(&loopback_addr, server_port);
 
     // DEBT: Add copy/move constructor to TransportUdp
     //transport_type transport(pcb);
@@ -249,7 +254,7 @@ static void test_retry_1_worker(void* parameter)
     manager_type manager(pcb);
 
     LOCK_TCPIP_CORE();  // Just experimenting, this lock/unlock doesn't seem to help
-    pcb.bind(endpoint.address(), port + 1);
+    pcb.bind(&loopback_addr, ack_port);
     //pcb.bind(IP_ADDR_ANY, port + 1);  // Doesn't make a difference
     pcb.recv(udp_ack_receive, &manager);
     UNLOCK_TCPIP_CORE();
@@ -264,7 +269,7 @@ static void test_retry_1_worker(void* parameter)
     // DEBT: This really needs to be put into TransportUdp
     LOCK_TCPIP_CORE();
     
-    manager.send(endpoint, time_point(estd::chrono::seconds(5)),
+    manager.send(server_endpoint, time_point(estd::chrono::seconds(5)),
         std::move(buffer), scheduler);
 
     // DEBT: Consider adding semaphore here to make ack inspector wait
@@ -314,14 +319,11 @@ static void test_retry_1()
 
     ESP_LOGD(TAG, "pcb_recv.has_pcb()=%d", pcb_recv.has_pcb());
 
-    pcb_recv.bind(&loopback_addr, port);
+    pcb_recv.bind(&loopback_addr, server_port);
     pcb_recv.recv(udp_resent_receive);
 
-    // Just to ensure loopback has time to get received again.  Not
-    // sure if this is actually required.
-    // DEBT: Make this into a semaphore
+    // Just to ensure loopback has time to get received again.
     signal2.try_acquire_for(estd::chrono::milliseconds(1000));
-    //estd::this_thread::sleep_for(estd::chrono::milliseconds(250));
 
     TEST_ASSERT_TRUE(end_signaled);
     TEST_ASSERT_TRUE(ack_received);
