@@ -100,7 +100,13 @@ static void udp_ack_receive(void* arg, struct udp_pcb* _pcb, struct pbuf* p, con
 {
     static const char* TAG = "udp_ack_receive";
 
-    ESP_LOGI(TAG, "entry");
+    // NOTE: As expected, this misbehaves because it's not in the main app
+    // thread.  So, queuing up asserted variables instead
+    //TEST_ASSERT_NULL(arg);
+
+    auto& manager = * (manager_type*) arg;
+
+    ESP_LOGI(TAG, "entry. manager.empty()=%u", manager.tracker.empty());
 
     embr::lwip::udp::Pcb pcb(_pcb);
     embr::lwip::Pbuf pbuf(p);
@@ -116,13 +122,7 @@ static void udp_ack_receive(void* arg, struct udp_pcb* _pcb, struct pbuf* p, con
         header.message_id(),
         embr::coap::get_description(header.type()));
 
-    // NOTE: As expected, this misbehaves because it's not in the main app
-    // thread.  So, queuing up asserted variables instead
-    //TEST_ASSERT_NULL(arg);
-
-    auto manager = (manager_type*) arg;
-
-    ack_received = manager->on_received(endpoint, pbuf);
+    ack_received = manager.on_received(endpoint, pbuf);
 
     ESP_LOGD(TAG, "ack_received=%d", ack_received);
 
@@ -277,7 +277,8 @@ static void test_retry_1_worker(void* parameter)
 
     UNLOCK_TCPIP_CORE();
 
-    ESP_LOGD(TAG, "data packet sent, now waiting");
+    ESP_LOGD(TAG, "data packet sent, now waiting.  manager.empty()=%u",
+        manager.tracker.empty());
 
     end_signaled = signal1.try_acquire_for(estd::chrono::milliseconds(1000));
 

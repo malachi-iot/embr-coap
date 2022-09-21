@@ -1,5 +1,7 @@
 #include <catch.hpp>
 
+#include <estd/algorithm.h>
+
 #include <exp/retry.h>
 
 #include "test-data.h"
@@ -134,6 +136,8 @@ TEST_CASE("retry tests", "[retry]")
             {
                 // 'send' call without explicit time uses clock_type::now()
                 manager.send(1, std::move(b), scheduler);
+
+                REQUIRE(!manager.tracker.empty());
 
                 bool result = manager.on_received(1, buffer_ack);
 

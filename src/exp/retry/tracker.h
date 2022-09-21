@@ -44,6 +44,7 @@ public:
     typedef typename vector_type::iterator iterator;
     typedef typename vector_type::const_iterator const_iterator;
 
+    const_iterator begin() const { return tracked.begin(); }
     const_iterator end() const { return tracked.end(); }
 
     bool empty() const { return tracked.empty(); }
