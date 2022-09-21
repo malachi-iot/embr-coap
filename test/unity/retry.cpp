@@ -307,13 +307,6 @@ static void test_retry_1()
 
     ESP_LOGI(TAG, "entry");
 
-    xTaskCreate(test_retry_1_worker,
-        "retry worker",
-        4096,
-        nullptr,
-        2,
-        nullptr);
-
 #if FEATURE_COAP_LWIP_LOOPBACK_TESTS
     embr::experimental::Unique<embr::lwip::udp::Pcb> pcb_recv;
 
@@ -322,10 +315,19 @@ static void test_retry_1()
     pcb_recv.bind(&loopback_addr, server_port);
     pcb_recv.recv(udp_resent_receive);
 
+    xTaskCreate(test_retry_1_worker,
+        "retry worker",
+        4096,
+        nullptr,
+        2,
+        nullptr);
+
     // Just to ensure loopback has time to get received again.
     signal2.try_acquire_for(estd::chrono::milliseconds(1000));
 
     TEST_ASSERT_TRUE(end_signaled);
+
+    // FIX: This one fails.  Perhaps endpoint == is broken?
     TEST_ASSERT_TRUE(ack_received);
 #endif
 
