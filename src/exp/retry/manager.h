@@ -115,14 +115,31 @@ struct Manager : embr::internal::instance_or_reference_provider<TTransport>
 
         // We only look for ACK here
         if(h.type() != header::Types::Acknowledgement)
+        {
+#if defined(ESP_PLATFORM)
+            ESP_LOGD(TAG, "on_received: aborting since type is not ACK");
+#endif
             return false;
+        }
+
+        const uint16_t mid = h.message_id();
 
         // Once we establish it's an ACK, then evaluated tracked connections to see if
         // a matching MID and endpoint are out there
-        typename tracker_type::iterator m = tracker.match(endpoint, h.message_id());
+        typename tracker_type::iterator m = tracker.match(endpoint, mid);
 
         // If we can't find one, then stop here and indicate nothing found
-        if(m == tracker.end()) return false;
+        if(m == tracker.end())
+        {
+#if defined(ESP_PLATFORM)
+            // DEBT: Assumes LwIP
+            ESP_LOGD(TAG, "on_received: aborting since endpoint %s:%u and mid %x were not matched",
+                ipaddr_ntoa(endpoint.address()),
+                endpoint.port(),
+                mid);
+#endif
+            return false;
+        }
 
         auto v = m.lock();
 
