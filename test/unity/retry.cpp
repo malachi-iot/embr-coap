@@ -186,21 +186,29 @@ static void udp_ack_receive(void* arg, struct udp_pcb* _pcb, struct pbuf* p, con
 
     auto& manager = * (manager_type*) arg;
 
-    ESP_LOGI(TAG, "entry. manager.empty()=%u", manager.tracker.empty());
+    ESP_LOGI(TAG, "entry. receive from %s:%u, manager.empty()=%u",
+        ipaddr_ntoa(addr),
+        port,
+        manager.tracker.empty());
 
     embr::lwip::udp::Pcb pcb(_pcb);
     embr::lwip::Pbuf pbuf(p);
 
-    // endpoint = from where we received this ACK
-    endpoint_type endpoint(addr, port);
+    endpoint_type
+        // endpoint = from where we received this ACK
+        endpoint(addr, port),
+        // reconstructed = what we expect endpoint to be
+        endpoint_reconstructed(&loopback_addr, port);
 
     embr::coap::Header header = embr::coap::experimental::get_header(pbuf);
 
-    ESP_LOGD(TAG, "addr=%s, port=%u, mid=%x, type=%s",
-        ipaddr_ntoa(addr),
-        port,
+    // TODO: Can't do this yet due to a const issue
+    //const auto& item = *manager.tracker.begin();
+
+    ESP_LOGD(TAG, "mid=%x, type=%s, pre-match=%u",
         header.message_id(),
-        embr::coap::get_description(header.type()));
+        embr::coap::get_description(header.type()),
+        endpoint == endpoint_reconstructed);
 
     ack_received = manager.on_received(endpoint, pbuf);
 
@@ -219,7 +227,7 @@ static void udp_resent_receive(void* arg, struct udp_pcb* _pcb, struct pbuf* p, 
 {
     static const char* TAG = "udp_resent_receive";
 
-    ESP_LOGI(TAG, "entry");
+    ESP_LOGI(TAG, "entry: receive from port %u", port);
 
     embr::lwip::udp::Pcb pcb(_pcb);
     
