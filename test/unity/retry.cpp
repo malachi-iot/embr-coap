@@ -10,6 +10,9 @@
 #include <estd/chrono.h>
 #include <estd/semaphore.h>
 
+#include <exp/retry/factory.h>
+#include <exp/retry.h>
+
 #if __cplusplus >= 201103L
 #ifdef ESP_IDF_TESTING
 // DEBT: Really we want to test against any LwIP capable target - not just from esp-idf
@@ -17,7 +20,54 @@
 #include "esp_log.h"
 #endif
 
-#if LWIP_PRESENT && defined(ESTD_OS_FREERTOS)
+using namespace embr;
+
+
+#if defined(ESTD_OS_FREERTOS)
+typedef estd::chrono::freertos_clock clock_type;
+#else
+// DEBT: Not tested in this context
+typedef estd::chrono::steady_clock clock_type;
+#endif
+typedef typename clock_type::time_point time_point;
+typedef embr::internal::layer1::Scheduler<8, embr::internal::scheduler::impl::Function<time_point> > scheduler_type;
+
+
+template <class TStreambuf>
+static void setup_outgoing_packet(embr::coap::StreambufEncoder<TStreambuf>& encoder, uint16_t mid = 0x123)
+{
+    const char* TAG = "setup_outgoing_packet";
+
+    // DEBT: CON Not yet a requirement, but needs to be
+    coap::Header header{coap::Header::Confirmable};
+
+    header.message_id(mid);
+    
+    ESP_LOGV(TAG, "phase 1");
+
+    encoder.header(header);
+
+    ESP_LOGV(TAG, "phase 2");
+
+    // FIX: Currently there seems to be a bug in opbuf_streambuf or encoder itself that expands
+    // underlying buffer from 128 to 256 during this operation
+    encoder.option(coap::Option::LocationPath, "v1");   // TODO: Can't remember if this is the right URI option
+    encoder.option(coap::Option::ContentFormat, coap::Option::ApplicationJson);
+
+    ESP_LOGV(TAG, "phase 3");
+
+    encoder.payload();
+
+    auto o = encoder.ostream();
+
+    o << "{ 'val': 'hi2u' }";
+
+    ESP_LOGV(TAG, "phase 4");
+
+    encoder.finalize();
+}
+
+#if LWIP_PRESENT
 #include "lwip/tcpip.h"
 
 #include <embr/platform/lwip/endpoint.h>
@@ -42,8 +92,6 @@
 #endif
 
 
-#include <exp/retry/factory.h>
-
 namespace embr { namespace coap { namespace experimental {
 
 template <>
@@ -56,10 +104,6 @@ struct StreambufProvider<embr::lwip::Pbuf>
 };
 
 }}}
-
-#include <exp/retry.h>
-
-using namespace embr;
 
 #include <embr/platform/lwip/transport.hpp>
 
@@ -75,11 +119,7 @@ struct transport_type : lwip::experimental::TransportUdp<>
 
 typedef typename transport_type::endpoint_type endpoint_type;
 
-typedef estd::chrono::freertos_clock clock_type;
-typedef typename clock_type::time_point time_point;
-typedef embr::internal::layer1::Scheduler<8, embr::internal::scheduler::impl::Function<time_point> > scheduler_type;
 typedef coap::experimental::retry::Manager<clock_type, transport_type> manager_type;
-typedef coap::experimental::retry::Tracker<time_point, transport_type> tracker_type;
 typedef coap::experimental::EncoderFactory<embr::lwip::Pbuf> encoder_factory;
 
 static ip_addr_t loopback_addr;
@@ -88,6 +128,45 @@ constexpr static int base_port = 10000,
     ack_port = base_port + 1;   // port on which to receive ACK
     
 
+static void setup_outgoing_packet(embr::lwip::Pbuf& buffer)
+{
+    const char* TAG = "setup_outgoing_packet";
+
+    ESP_LOGD(TAG, "entry");
+
+    auto encoder = encoder_factory::create(buffer);
+
+    setup_outgoing_packet(encoder);
+
+    ESP_LOGD(TAG, "exit");
+}
+
+
+// NOTE: Before consolidating into send_ack, we were getting odd behavior where the packet
+// seemed to send and be looped back, but udp_ack_receive never picked it up.  Furthermore,
+// that was accompanied by a ping going over loopback.  Never determined why that happened.
+static void send_ack(embr::lwip::udp::Pcb& pcb, embr::coap::Header incoming_header)
+{
+    static const char* TAG = "send_ack";
+
+    ESP_LOGI(TAG, "entry: header.mid=%x", incoming_header.message_id());
+
+    // In this instance, auto-allocating Pbuf is perfect
+    embr::lwip::Pbuf pbuf(4);   // Header is 4 bytes
+    embr::coap::Header& header = incoming_header;
+
+    header.type(embr::coap::Header::Acknowledgement);
+
+    // Copy header into outgoing pbuf
+    // DEBT: consider omitting 'len' since it's expected to match buf->tot_len
+    pbuf.take(&header, 4);
+
+    err_t result = pcb.send(pbuf, &loopback_addr, ack_port);
+
+    ESP_LOGV(TAG, "sent: result=%d", result);
+}
+
+#if defined(ESTD_OS_FREERTOS)
 static estd::freertos::counting_semaphore<1, true>
     signal1,
     signal2;
@@ -133,29 +212,7 @@ static void udp_ack_receive(void* arg, struct udp_pcb* _pcb, struct pbuf* p, con
     ESP_LOGI(TAG, "exit");
 }
 
-// NOTE: Before consolidating into send_ack, we were getting odd behavior where the packet
-// seemed to send and be looped back, but udp_ack_receive never picked it up.  Furthermore,
-// that was accompanied by a ping going over loopback.  Never determined why that happened.
-static void send_ack(embr::lwip::udp::Pcb& pcb, embr::coap::Header incoming_header)
-{
-    static const char* TAG = "send_ack";
 
-    ESP_LOGI(TAG, "entry: header.mid=%x", incoming_header.message_id());
-
-    // In this instance, auto-allocating Pbuf is perfect
-    embr::lwip::Pbuf pbuf(4);   // Header is 4 bytes
-    embr::coap::Header& header = incoming_header;
-
-    header.type(embr::coap::Header::Acknowledgement);
-
-    // Copy header into outgoing pbuf
-    // DEBT: consider omitting 'len' since it's expected to match buf->tot_len
-    pbuf.take(&header, 4);
-
-    err_t result = pcb.send(pbuf, &loopback_addr, ack_port);
-
-    ESP_LOGD(TAG, "sent: result=%d", result);
-}
 
 // loopback:port destination
 static void udp_resent_receive(void* arg, struct udp_pcb* _pcb, struct pbuf* p, const ip_addr_t* addr, u16_t port)
@@ -187,46 +244,6 @@ static void udp_resent_receive(void* arg, struct udp_pcb* _pcb, struct pbuf* p, 
     send_ack(pcb, header);
     //UNLOCK_TCPIP_CORE();
     
-    ESP_LOGI(TAG, "exit");
-}
-
-
-static void setup_outgoing_packet(embr::lwip::Pbuf& buffer)
-{
-    const char* TAG = "setup_outgoing_packet";
-
-    ESP_LOGI(TAG, "entry");
-
-    auto encoder = encoder_factory::create(buffer);
-
-    // DEBT: CON Not yet a requirement, but needs to be
-    coap::Header header{coap::Header::Confirmable};
-
-    header.message_id(0x123);
-    
-    ESP_LOGD(TAG, "phase 1");
-
-    encoder.header(header);
-
-    ESP_LOGD(TAG, "phase 2");
-
-    // FIX: Currently there seems to be a bug in opbuf_streambuf or encoder itself that expands
-    // underlying buffer from 128 to 256 during this operation
-    encoder.option(coap::Option::LocationPath, "v1");   // TODO: Can't remember if this is the right URI option
-    encoder.option(coap::Option::ContentFormat, coap::Option::ApplicationJson);
-
-    ESP_LOGD(TAG, "phase 3");
-
-    encoder.payload();
-
-    auto o = encoder.ostream();
-
-    o << "{ 'val': 'hi2u' }";
-
-    ESP_LOGD(TAG, "phase 4");
-
-    encoder.finalize();
-
     ESP_LOGI(TAG, "exit");
 }
 
@@ -292,12 +309,6 @@ static void test_retry_1_worker(void* parameter)
     vTaskDelete(NULL);
 }
 
-static void setup()
-{
-#if FEATURE_COAP_LWIP_LOOPBACK_TESTS
-    ip_addr_set_loopback(false, &loopback_addr);    // IPv4 loopback
-#endif
-}
 
 static void test_retry_1()
 {
@@ -332,13 +343,55 @@ static void test_retry_1()
     ESP_LOGI(TAG, "exit");
 }
 
+#endif // FREERTOS
+
+static void setup()
+{
+#if FEATURE_COAP_LWIP_LOOPBACK_TESTS
+    ip_addr_set_loopback(false, &loopback_addr);    // IPv4 loopback
+#endif
+}
+
+#else   // LWIP_PRESENT
+
+// TODO: Create transport_type and endpoint_type not dependent on LwIP
+
+#endif  // LWIP_PRESENT
+
+typedef coap::experimental::retry::Tracker<time_point, transport_type> tracker_type;
+
 static void test_tracker()
 {
     tracker_type tracker;
+    time_point zero_time;
+    typedef typename transport_type::buffer_type buffer_type;
+    typedef typename tracker_type::item_type item_type;
+    constexpr uint16_t mid = 0x4321;
+
+    // DEBT: Decouple from LwIP
+    endpoint_type endpoint(&loopback_addr, server_port);
+    buffer_type buffer(128);
+    auto encoder = encoder_factory::create(buffer);
+    setup_outgoing_packet(encoder, mid);
+
+    TEST_ASSERT_TRUE(tracker.empty());
+
+    const item_type* item = tracker.track(endpoint, zero_time, std::move(buffer));
+
+    TEST_ASSERT_FALSE(tracker.empty());
+    TEST_ASSERT_EQUAL(mid, item->mid());
+
+    auto it = tracker.match(endpoint, mid);
+
+    TEST_ASSERT_TRUE(it == tracker.begin());
+    TEST_ASSERT_FALSE(it == tracker.end());
+
+    tracker.untrack(it);
+
+    TEST_ASSERT_TRUE(tracker.empty());
 }
 
 
-#endif  // LWIP_PRESENT && defined(ESTD_OS_FREERTOS)
 
 #endif  // c++11
 
