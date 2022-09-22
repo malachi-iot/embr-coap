@@ -12,8 +12,12 @@
 
 #if __cplusplus >= 201103L
 #ifdef ESP_IDF_TESTING
+// DEBT: Really we want to test against any LwIP capable target - not just from esp-idf
+#define LWIP_PRESENT 1
 #include "esp_log.h"
+#endif
 
+#if LWIP_PRESENT && defined(ESTD_OS_FREERTOS)
 #include "lwip/tcpip.h"
 
 #include <embr/platform/lwip/endpoint.h>
@@ -53,14 +57,10 @@ struct StreambufProvider<embr::lwip::Pbuf>
 
 }}}
 
-#endif
-
 #include <exp/retry.h>
 
 using namespace embr;
 
-// DEBT: Really we want to test against any LwIP capable target
-#ifdef ESP_IDF_TESTING
 #include <embr/platform/lwip/transport.hpp>
 
 //typedef lwip::experimental::TransportUdp<> transport_type;
@@ -79,6 +79,7 @@ typedef estd::chrono::freertos_clock clock_type;
 typedef typename clock_type::time_point time_point;
 typedef embr::internal::layer1::Scheduler<8, embr::internal::scheduler::impl::Function<time_point> > scheduler_type;
 typedef coap::experimental::retry::Manager<clock_type, transport_type> manager_type;
+typedef coap::experimental::retry::Tracker<time_point, transport_type> tracker_type;
 typedef coap::experimental::EncoderFactory<embr::lwip::Pbuf> encoder_factory;
 
 static ip_addr_t loopback_addr;
@@ -293,7 +294,9 @@ static void test_retry_1_worker(void* parameter)
 
 static void setup()
 {
+#if FEATURE_COAP_LWIP_LOOPBACK_TESTS
     ip_addr_set_loopback(false, &loopback_addr);    // IPv4 loopback
+#endif
 }
 
 static void test_retry_1()
@@ -329,9 +332,16 @@ static void test_retry_1()
     ESP_LOGI(TAG, "exit");
 }
 
-#endif
+static void test_tracker()
+{
+    tracker_type tracker;
+}
 
-#endif
+
+#endif  // LWIP_PRESENT && defined(ESTD_OS_FREERTOS)
+
+#endif  // c++11
+
 
 #ifdef ESP_IDF_TESTING
 TEST_CASE("retry tests", "[retry]")
@@ -339,11 +349,10 @@ TEST_CASE("retry tests", "[retry]")
 void test_retry()
 #endif
 {
-#if FEATURE_COAP_LWIP_LOOPBACK_TESTS
     setup();
-#endif
 
 #if __cplusplus >= 201103L
+    RUN_TEST(test_tracker);
     RUN_TEST(test_retry_1);
 #endif
 }
