@@ -112,7 +112,15 @@ struct StreambufProvider<embr::lwip::Pbuf>
 struct transport_type : lwip::experimental::TransportUdp<>
 {
     typedef lwip::experimental::TransportUdp<> base_type;
+
+    using typename base_type::endpoint_type;
     typedef typename base_type::buffer_type const_buffer_type;
+
+    // DEBT: Not yet tested against a real resend scenario
+    void send(const const_buffer_type& b, const endpoint_type& e)
+    {
+        base_type::send_experimental(b, e);
+    }
 
     ESTD_CPP_FORWARDING_CTOR(transport_type);
 };
