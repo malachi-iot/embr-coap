@@ -94,6 +94,15 @@ public:
 
     }
 
+    Item(const endpoint_type& endpoint, const time_point& time_sent, buffer_type&& buffer) :
+        endpoint_{endpoint},
+        buffer_(std::move(buffer)),
+        first_transmit_{time_sent},
+        ack_received_{false}
+    {
+
+    }
+
     // FIX: This is needed for vector/memory pooling
     // Consider revising estd::vector to not use default constructor as per
     // https://stackoverflow.com/questions/2376989/why-dont-stdvectors-elements-need-a-default-constructor

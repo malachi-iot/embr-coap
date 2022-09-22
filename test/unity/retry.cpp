@@ -268,6 +268,7 @@ static void test_retry_1_worker(void* parameter)
 
     embr::lwip::udp::Pcb pcb;
     embr::lwip::Pbuf buffer(128);
+    auto raw_pbuf = buffer.pbuf();
 
     setup_outgoing_packet(buffer);
 
@@ -291,7 +292,8 @@ static void test_retry_1_worker(void* parameter)
 
     //pbuf_ref(buffer);
 
-    ESP_LOGV(TAG, "ref=%d", buffer.pbuf()->ref);
+    //ESP_LOGD(TAG, "ref=%d, tot_len=%d", buffer.pbuf()->ref, buffer.total_length());
+    ESP_LOGD(TAG, "ref=%d, tot_len=%d", raw_pbuf->ref, raw_pbuf->tot_len);
 
     // [1] indicates udp_send doesn't free the thing.  Also, udp.c source code
     // indicates "p is still referenced by the caller, and will live on"
@@ -302,14 +304,12 @@ static void test_retry_1_worker(void* parameter)
     manager.send(server_endpoint, time_point(estd::chrono::seconds(5)),
         std::move(buffer), scheduler);
 
+    // FIX: I read somewhere the udp_send modifies underlying buffer.
+    // it appears this may be true - mid and tot_len both get changed
+    ESP_LOGD(TAG, "ref=%d, tot_len=%d", raw_pbuf->ref, raw_pbuf->tot_len);
+
     // DEBT: Consider adding semaphore here to make ack inspector wait
     // for send to completely finish
-
-    // FIX: This crashes, because transport.send operation inside
-    // manager probably deallocates the pbuf.  We're told
-    // frequently that udp_send doesn't deallocate the pbuf -- but is that
-    // really true?
-    //ESP_LOGD(TAG, "ref=%d", buffer.pbuf()->ref);
 
     UNLOCK_TCPIP_CORE();
 

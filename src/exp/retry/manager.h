@@ -88,8 +88,8 @@ struct Manager : embr::internal::instance_or_reference_provider<TTransport>
         typename estd::internal::thisify_function<void(time_point*, time_point)>::
             template model<item_type, &item_type::resend> m;
 
-        item_type(endpoint_type e, time_point t, const_buffer_type b, parent_type* parent) :
-            base_type(e, t, b),
+        item_type(endpoint_type e, time_point t, const_buffer_type&& b, parent_type* parent) :
+            base_type(e, t, std::move(b)),
             parent(parent),
             m(this)
         {
@@ -161,11 +161,6 @@ struct Manager : embr::internal::instance_or_reference_provider<TTransport>
     {
         const item_type* i = tracker.track(endpoint, time_sent, std::move(buffer), this);
 
-#if defined(ESP_PLATFORM)
-        // mid() is slightly expensive, so only enable this if we really need it
-        //ESP_LOGD(TAG, "mid=%x", i->mid());
-#endif
-
         item_type* i2 = (item_type*) i; // FIX: Kludgey, assign f model requires non-const
 
         //time_point now = clock_type::now();   // TODO
@@ -179,6 +174,11 @@ struct Manager : embr::internal::instance_or_reference_provider<TTransport>
         // DEBT: Whole semantic vs bitwise confusion necessitates this.  Perhaps we
         // permit a const Pbuf& on the way in to transport?
         const_buffer_type& b = const_cast<const_buffer_type&>(i->buffer());
+
+#if defined(ESP_PLATFORM)
+        // mid() is slightly expensive, so only enable this if we really need it
+        //ESP_LOGD(TAG, "mid=%x", i->mid());
+#endif
 
         transport().send(b, endpoint);
 
