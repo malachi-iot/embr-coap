@@ -160,6 +160,12 @@ struct Manager : embr::internal::instance_or_reference_provider<TTransport>
         embr::internal::Scheduler<TContainer, scheduler_impl, TSubject>& scheduler)
     {
         const item_type* i = tracker.track(endpoint, time_sent, std::move(buffer), this);
+
+#if defined(ESP_PLATFORM)
+        // mid() is slightly expensive, so only enable this if we really need it
+        //ESP_LOGD(TAG, "mid=%x", i->mid());
+#endif
+
         item_type* i2 = (item_type*) i; // FIX: Kludgey, assign f model requires non-const
 
         //time_point now = clock_type::now();   // TODO
@@ -178,9 +184,10 @@ struct Manager : embr::internal::instance_or_reference_provider<TTransport>
 
 #if defined(ESP_PLATFORM)
         // DEBT: Filter this further by LwIP - perhaps put this log right into transport itself
-        ESP_LOGD(TAG, "sent to/tracking: %s:%u",
+        ESP_LOGD(TAG, "sent to/tracking: %s:%u, mid=%x",
             ipaddr_ntoa(endpoint.address()),
-            endpoint.port());
+            endpoint.port(),
+            i->mid());
 #endif
 
         return i;

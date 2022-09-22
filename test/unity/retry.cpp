@@ -202,13 +202,17 @@ static void udp_ack_receive(void* arg, struct udp_pcb* _pcb, struct pbuf* p, con
 
     embr::coap::Header header = embr::coap::experimental::get_header(pbuf);
 
-    // TODO: Can't do this yet due to a const issue
-    //const auto& item = *manager.tracker.begin();
+    const auto& item = **manager.tracker.begin();
 
-    ESP_LOGD(TAG, "mid=%x, type=%s, pre-match=%u",
+    ESP_LOGV(TAG, "mid=%x, type=%s, pre-match=%u",
         header.message_id(),
         embr::coap::get_description(header.type()),
         endpoint == endpoint_reconstructed);
+
+    ESP_LOGD(TAG, "tracked endpoint=%s:%u, mid=%x",
+        ipaddr_ntoa(item.endpoint().address()),
+        item.endpoint().port(),
+        item.mid());
 
     ack_received = manager.on_received(endpoint, pbuf);
 
@@ -300,6 +304,12 @@ static void test_retry_1_worker(void* parameter)
 
     // DEBT: Consider adding semaphore here to make ack inspector wait
     // for send to completely finish
+
+    // FIX: This crashes, because transport.send operation inside
+    // manager probably deallocates the pbuf.  We're told
+    // frequently that udp_send doesn't deallocate the pbuf -- but is that
+    // really true?
+    //ESP_LOGD(TAG, "ref=%d", buffer.pbuf()->ref);
 
     UNLOCK_TCPIP_CORE();
 
