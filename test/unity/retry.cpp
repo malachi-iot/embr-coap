@@ -268,7 +268,7 @@ static void test_retry_1_worker(void* parameter)
 
     embr::lwip::udp::Pcb pcb;
     embr::lwip::Pbuf buffer(128);
-    auto raw_pbuf = buffer.pbuf();
+    auto raw_pbuf = buffer.pbuf();  // using because std::move nulls out buffer
 
     setup_outgoing_packet(buffer);
 
@@ -293,7 +293,8 @@ static void test_retry_1_worker(void* parameter)
     //pbuf_ref(buffer);
 
     //ESP_LOGD(TAG, "ref=%d, tot_len=%d", buffer.pbuf()->ref, buffer.total_length());
-    ESP_LOGD(TAG, "ref=%d, tot_len=%d", raw_pbuf->ref, raw_pbuf->tot_len);
+    ESP_LOGD(TAG, "ref=%d, tot_len=%d, payload=%p, next=%p",
+        raw_pbuf->ref, raw_pbuf->tot_len, raw_pbuf->payload, raw_pbuf->next);
 
     // [1] indicates udp_send doesn't free the thing.  Also, udp.c source code
     // indicates "p is still referenced by the caller, and will live on"
@@ -304,9 +305,11 @@ static void test_retry_1_worker(void* parameter)
     manager.send(server_endpoint, time_point(estd::chrono::seconds(5)),
         std::move(buffer), scheduler);
 
-    // FIX: I read somewhere the udp_send modifies underlying buffer.
-    // it appears this may be true - mid and tot_len both get changed
-    ESP_LOGD(TAG, "ref=%d, tot_len=%d", raw_pbuf->ref, raw_pbuf->tot_len);
+    // FIX: udp_send modifies pbuf. tot_len and payload are changed to
+    // accomodate header.  So far this botches our resend mechanism
+    // https://stackoverflow.com/questions/68786784/is-it-possible-to-use-udp-sendto-to-resend-an-udp-packet
+    ESP_LOGD(TAG, "ref=%d, tot_len=%d, payload=%p, next=%p",
+        raw_pbuf->ref, raw_pbuf->tot_len, raw_pbuf->payload, raw_pbuf->next);
 
     // DEBT: Consider adding semaphore here to make ack inspector wait
     // for send to completely finish
