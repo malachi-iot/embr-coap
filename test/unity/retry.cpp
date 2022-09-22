@@ -293,13 +293,7 @@ static void test_retry_1_worker(void* parameter)
 
 static void setup()
 {
-    //ip4_addr_set_u32(&addr, IP_LOOPBACKNET);
-
-    // Have to do a little dance because ipv6 might be present also,
-    // so ip_2_ip4 macro is needed to navigate that
-    ip4_addr_set_loopback(ip_2_ip4(&loopback_addr));
-
-    //addr.u_addr.ip4 = PP_HTONL(IPADDR_LOOPBACK);
+    ip_addr_set_loopback(false, &loopback_addr);    // IPv4 loopback
 }
 
 static void test_retry_1()
