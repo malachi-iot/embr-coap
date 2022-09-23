@@ -66,7 +66,9 @@ void udp_coap_recv(void *arg,
 
         ESP_LOG_BUFFER_HEX(TAG, token, tkl);
         eof = decoder.process_iterate_streambuf().eof;
-        ESP_LOGI(TAG, "state = %s", get_description(decoder.state()));
+        ESP_LOGI(TAG, "state = %s, eof=%u",
+            get_description(decoder.state()),
+            eof);
 
         // these two send npm coap into a tizzy, even it seems in nonconfirmable mode
         //header.type(Header::TypeEnum::Reset);

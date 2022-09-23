@@ -24,21 +24,21 @@ inline static iterated::decode_result decode_and_notify(
     TSubject& subject, TContext& context,
     bool bumpref = false)
 {
-    typedef StreambufDecoder<embr::lwip::upgrading::ipbuf_streambuf> decoder_type;
+    typedef StreambufDecoder<embr::lwip::ipbuf_streambuf> decoder_type;
     decoder_type decoder(incoming, bumpref);
 
     return decode_and_notify(decoder, subject, context);
 }
 
 
-#ifdef FEATURE_CPP_MOVESEMANTIC
+#ifdef __cpp_rvalue_references
 template <class TSubject, class TContext>
 static iterated::decode_result decode_and_notify(
     struct pbuf* incoming,
     TSubject&& subject, TContext& context,
     bool bumpref = false)
 {
-    typedef StreambufDecoder<embr::lwip::upgrading::ipbuf_streambuf> decoder_type;
+    typedef StreambufDecoder<embr::lwip::ipbuf_streambuf> decoder_type;
     decoder_type decoder(incoming, bumpref);
 
     return decode_and_notify(decoder, std::move(subject), context);
@@ -67,7 +67,7 @@ struct LwipContext
     typedef embr::coap::StreambufEncoder<out_streambuf_type> encoder_type;
     typedef embr::coap::StreambufDecoder<in_streambuf_type> decoder_type;
 
-    typedef embr::lwip::experimental::Endpoint<> endpoint_type;
+    typedef embr::lwip::internal::Endpoint<> endpoint_type;
 
 #ifdef FEATURE_MCCOAP_LWIP_TRANSPORT
     LwipContext(pcb_pointer pcb) : 
