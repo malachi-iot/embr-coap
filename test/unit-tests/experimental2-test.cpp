@@ -1,8 +1,8 @@
 #include <catch.hpp>
 
-#include <embr/datapump.hpp>
+//#include <embr/datapump.hpp>
 #include <embr/observer.h>
-#include <embr/netbuf-static.h>
+//#include <embr/netbuf-static.h>
 
 #include <exp/retry.h>
 
@@ -271,28 +271,6 @@ TEST_CASE("experimental 2 tests")
         embr::coap::experimental::FactoryAggregator<int, decltype (t)&> fa(t);
 
         fa.create(1);
-        }
-
-        SECTION("decoder interaction")
-        {
-            // NOTE: layer2 not what I expected (remembered).  layer2 for netbuf is preallocated
-            // memory with a variable size parameter
-            //embr::mem::layer2::NetBuf<sizeof(buffer_plausible)> netbuf(buffer_plausible);
-            embr::mem::layer1::NetBuf<sizeof(buffer_plausible)> netbuf;
-
-            memcpy(netbuf.data(), buffer_plausible, sizeof(buffer_plausible));
-
-            typedef decltype(netbuf) netbuf_type;
-            typedef decltype(netbuf)& netbuf_ref_type;
-
-            // FIX: these fail still.  thought I had repaired it
-            /*
-            REQUIRE(NetBufDecoder<netbuf_type>::has_data_method<netbuf_type>::value);
-            REQUIRE(NetBufDecoder<netbuf_ref_type>::has_data_method<
-                    typename estd::remove_reference<netbuf_ref_type&>::type>::value);
-            */
-            //embr::s
-            //NetBufDecoder<decltype(netbuf)&> decoder(netbuf);
         }
         // TODO: Move this out of experimental area
         SECTION("internal UriPathMatcher (formerly UriPathMatcher3)")

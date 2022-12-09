@@ -10,7 +10,7 @@
 #include <estd/chrono.h>
 #include <estd/functional.h>
 //#include <mc/memory-pool.h>
-#include "coap/decoder/netbuf.h"
+//#include "coap/decoder/netbuf.h"
 #include <stdint.h> // for uint8_t
 
 //#include <embr/datapump.h>

@@ -11,4 +11,4 @@
 // uses move semantic so that someone always owns the netbuf, somewhat
 // sidestepping shared_ptr/ref counters (even though implementations
 // like PBUF have inbuilt ref counters)
-#define FEATURE_MCCOAP_RETRY_INLINE
+//#define FEATURE_MCCOAP_RETRY_INLINE

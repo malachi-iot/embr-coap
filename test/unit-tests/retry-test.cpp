@@ -1,8 +1,10 @@
 #include <catch.hpp>
 
 #include <estd/algorithm.h>
+#include <embr/scheduler.hpp>
 
 #include <exp/retry.h>
+#include <exp/retry/manager.hpp>
 
 #include "test-data.h"
 #include "test-uri-data.h"
