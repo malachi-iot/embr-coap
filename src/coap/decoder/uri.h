@@ -53,8 +53,17 @@ struct UriPathMatcher
             // of -1
             if(_current->third == parent_id.value())
             {
+                // wildcard, for use with parameterized URIs
+                // DEBT: Further parameters on URI options are undefined i.e.
+                // "coap://v1/api/gpio/0" works but
+                // "coap://v1/api/gpio/0/true" is undefined
+                if(_current->first == "*")
+                {
+                    parent_id = (int)_current->second;
+                    return _current;
+                }
                 // if evaluated node then matches path segment
-                if(_current->first == uripath)
+                else if(_current->first == uripath)
                 {
                     // new parent becomes this node
                     // cast to value needed because optional takes move semantic

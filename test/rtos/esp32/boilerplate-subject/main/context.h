@@ -7,8 +7,8 @@
 
 typedef embr::coap::internal::UriPathMap UriPathMap;
 
-// NOTE: Not ideal, directly specifying '7' here
-extern const UriPathMap uri_map[7];
+// NOTE: Not ideal, directly specifying '8' here
+extern const UriPathMap uri_map[8];
 
 struct AppContext : 
     embr::coap::LwipIncomingContext,
@@ -21,6 +21,15 @@ struct AppContext :
         UriParserContext(uri_map)
     {
     }
+
+    union
+    {
+        struct
+        {
+            int pin;
+            
+        }   gpio;
+    };
 };
 
 

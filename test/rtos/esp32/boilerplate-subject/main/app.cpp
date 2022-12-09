@@ -22,6 +22,7 @@ constexpr int id_path_v1_api = 1;
 constexpr int id_path_v1_api_gpio = 3;
 constexpr int id_path_v1_api_version = 4;
 constexpr int id_path_v1_api_stats = 5;
+constexpr int id_path_v1_api_gpio_value = 6;
 constexpr int id_path_well_known = 20;
 constexpr int id_path_well_known_core = 21;
 
@@ -32,6 +33,7 @@ const UriPathMap uri_map[] =
     { "v1",         id_path_v1,                 MCCOAP_URIPATH_NONE },
     { "api",        id_path_v1_api,             id_path_v1 },
     { "gpio",       id_path_v1_api_gpio,        id_path_v1_api },
+    { "*",          id_path_v1_api_gpio_value,  id_path_v1_api_gpio },
     { "stats",      id_path_v1_api_stats,       id_path_v1_api },
     { "version",    id_path_v1_api_version,     id_path_v1_api },
 
@@ -44,25 +46,57 @@ struct Observer
 {
     static constexpr const char* TAG = "Observer";
 
+    static void on_notify(const event::option& e, AppContext& context)
+    {
+        switch(context.found_node())
+        {
+            case id_path_v1_api_gpio_value:
+            {
+                int& pin = context.gpio.pin;
+
+                // DEBT: As is the case all over, 'chunk' is assumed to be complete
+                // data here
+                auto option = (const char*) e.chunk.data();
+                
+                if(estd::from_chars<int>(option, option + e.chunk.size(), pin).ec == 0)
+                    ESP_LOGD(TAG, "Selecting gpio # %d", pin);
+                else
+                    pin = -1;
+
+                break;
+            }
+        }
+    }
+
     static void on_notify(event::streambuf_payload<ipbuf_streambuf> e, AppContext& context)
     {
         switch(context.found_node())
         {
-            case id_path_v1_api_gpio:
+            case id_path_v1_api_gpio_value:
             {
-                //auto& s = e.streambuf;
-                // DEBT: I think this can be promoted out of internal, I believe I put
-                // this in there way back when because the signature doesn't match std - but
-                // by this point, that's a feature not a bug
-                estd::internal::basic_istream<ipbuf_streambuf&> in(e.streambuf);
+                if(context.gpio.pin == -1) break;
 
-                int val = -1;
+                if(context.header().code() == Header::Code::Put)
+                {
+                    //auto& s = e.streambuf;
+                    // DEBT: I think this can be promoted out of internal, I believe I put
+                    // this in there way back when because the signature doesn't match std - but
+                    // by this point, that's a feature not a bug
+                    estd::internal::basic_istream<ipbuf_streambuf&> in(e.streambuf);
 
-                in >> val;
+                    int val = -1;
 
-                ESP_LOGI(TAG, "Setting gpio # %d", val);
+                    in >> val;
 
-                embr::esp_idf::gpio gpio((gpio_num_t)val);
+                    ESP_LOGI(TAG, "gpio: set #%d to %d", context.gpio.pin, val);
+
+                    embr::esp_idf::gpio gpio((gpio_num_t)context.gpio.pin);
+
+                    gpio.set_direction(GPIO_MODE_OUTPUT);
+                    gpio.level(val);
+                }
+                else
+                    ESP_LOGW(TAG, "gpio: undefined behavior - payload present, but not a put");
 
                 break;
             }
@@ -79,6 +113,40 @@ struct Observer
 
         switch(context.found_node())
         {
+            case id_path_v1_api_gpio:
+                build_reply(context, encoder, Header::Code::NotImplemented);
+                break;
+                
+            case id_path_v1_api_gpio_value:
+            {
+                if(context.header().code() == Header::Code::Get)
+                {
+                    ESP_LOGI(TAG, "gpio: get %d", context.gpio.pin);
+
+                    embr::esp_idf::gpio gpio((gpio_num_t)context.gpio.pin);
+
+                    int val = gpio.level();
+
+                    build_reply(context, encoder, Header::Code::Content);
+
+                    encoder.option(
+                        Option::Numbers::ContentFormat,
+                        Option::ContentFormats::TextPlain);
+
+                    encoder.payload();
+
+                    auto out = encoder.ostream();
+
+                    out << val;
+                }
+                else if(context.header().code() == Header::Code::Put && context.gpio.pin != -1)
+                    build_reply(context, encoder, Header::Code::Valid);
+                else
+                    build_reply(context, encoder, Header::Code::BadRequest);
+
+                break;
+            }
+                
             case id_path_v1_api_version:
                 build_version_response(context, encoder);
                 break;
