@@ -15,14 +15,19 @@ using namespace embr::coap;
 
 using embr::lwip::ipbuf_streambuf;
 
-constexpr int id_path_v1 = 0;
-constexpr int id_path_v1_api = 1;
-constexpr int id_path_v1_api_gpio = 3;
-constexpr int id_path_v1_api_version = 4;
-constexpr int id_path_v1_api_stats = 5;
-constexpr int id_path_v1_api_gpio_value = 6;
-constexpr int id_path_well_known = 20;
-constexpr int id_path_well_known_core = 21;
+enum
+{
+    id_path_v1 = 0,
+    id_path_v1_api,
+    id_path_v1_api_gpio,
+    id_path_v1_api_version,
+    id_path_v1_api_stats,
+    id_path_v1_api_gpio_value,
+
+    id_path_well_known,
+    id_path_well_known_core
+};
+
 
 // NOTE: Alphabetization per path segment is important.  id# ordering is not
 // DEBT: Document this behavior in detail
