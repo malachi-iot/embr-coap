@@ -20,16 +20,14 @@ void AppContext::select_gpio(const event::option& e)
     // data here
     auto option = (const char*) e.chunk.data();
     
-    if(estd::from_chars(option, option + e.chunk.size(), gpio.pin).ec == 0)
-        ESP_LOGD(TAG, "Selecting gpio # %d", gpio.pin);
-    else
-        gpio.pin = -1;
+    if(estd::from_chars(option, option + e.chunk.size(), gpio.pin.value()).ec == 0)
+        ESP_LOGD(TAG, "Selecting gpio # %d", gpio.pin.value());
 }
 
 // NOTE: Expects to run at 'streambuf_payload' event
 void AppContext::put_gpio(istreambuf_type& streambuf)
 {
-    if(gpio.pin == -1) return;
+    if(!gpio.pin.has_value()) return;
 
     if(header().code() == Header::Code::Put)
     {
@@ -43,16 +41,18 @@ void AppContext::put_gpio(istreambuf_type& streambuf)
 
         if(in >> val)
         {
-            ESP_LOGI(TAG, "gpio: set #%d to %d", gpio.pin, val);
+            auto pin = (gpio_num_t)*gpio.pin;
 
-            embr::esp_idf::gpio gpio((gpio_num_t)this->gpio.pin);
+            ESP_LOGI(TAG, "gpio: set #%d to %d", pin, val);
+
+            embr::esp_idf::gpio gpio(pin);
 
             gpio.set_direction(GPIO_MODE_OUTPUT);
             gpio.level(val);
         }
         else
         {
-            gpio.pin = -1;
+            gpio.pin.reset();
             ESP_LOGW(TAG, "gpio: could not set value, invalid payload");
         }
     }
@@ -74,9 +74,11 @@ void AppContext::completed_gpio(encoder_type& encoder)
 
     if(header().code() == Header::Code::Get)
     {
-        ESP_LOGI(TAG, "gpio: get %d", gpio.pin);
+        auto pin = (gpio_num_t)gpio.pin.value();
 
-        embr::esp_idf::gpio gpio((gpio_num_t)this->gpio.pin);
+        ESP_LOGI(TAG, "gpio: get %d", pin);
+
+        embr::esp_idf::gpio gpio(pin);
 
         int val = gpio.level();
 
@@ -92,7 +94,7 @@ void AppContext::completed_gpio(encoder_type& encoder)
 
         out << val;
     }
-    else if(header().code() == Header::Code::Put && gpio.pin != -1)
+    else if(header().code() == Header::Code::Put && gpio.pin.has_value())
         build_reply(*this, encoder, Header::Code::Valid);
     else
         build_reply(*this, encoder, Header::Code::BadRequest);

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <estd/optional.h>
+
 #include <coap/platform/lwip/context.h>
 // TODO: We mainly include util.h for UriParserContext.  Include more obvious/cleaner include source once
 // the URI code base is cleaned up
@@ -19,7 +21,7 @@ struct AppContext :
     {
         struct
         {
-            int16_t pin;
+            estd::layer1::optional<int16_t, -1> pin;
 
         }   gpio;
     };
