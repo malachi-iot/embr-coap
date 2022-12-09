@@ -1,7 +1,7 @@
-set(COMPONENT_SRCS "main.cpp" "app.cpp")
-set(COMPONENT_ADD_INCLUDEDIRS ".")
-
-register_component()
+idf_component_register(SRCS "main.cpp" "app.cpp"
+                    INCLUDE_DIRS "."
+                    REQUIRES estdlib embr esp_helper mc-coap
+                    )
 
 component_compile_options("-fstack-usage" "-Wstack-usage=128")
 
