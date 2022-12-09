@@ -44,12 +44,21 @@ void AppContext::put_gpio(istreambuf_type& streambuf)
 
         in >> val;
 
-        ESP_LOGI(TAG, "gpio: set #%d to %d", gpio.pin, val);
+        // DEBT: Looks like istream doesn't register parse error here
+        if(in.good())
+        {
+            ESP_LOGI(TAG, "gpio: set #%d to %d", gpio.pin, val);
 
-        embr::esp_idf::gpio gpio((gpio_num_t)this->gpio.pin);
+            embr::esp_idf::gpio gpio((gpio_num_t)this->gpio.pin);
 
-        gpio.set_direction(GPIO_MODE_OUTPUT);
-        gpio.level(val);
+            gpio.set_direction(GPIO_MODE_OUTPUT);
+            gpio.level(val);
+        }
+        else
+        {
+            gpio.pin = -1;
+            ESP_LOGW(TAG, "gpio: could not set value, invalid payload");
+        }
     }
     else
         ESP_LOGW(TAG, "gpio: undefined behavior - payload present, but not a put");

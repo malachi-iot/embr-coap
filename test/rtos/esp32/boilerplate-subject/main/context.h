@@ -19,7 +19,7 @@ struct AppContext :
     {
         struct
         {
-            int pin;
+            int pin : 16;
 
         }   gpio;
     };
