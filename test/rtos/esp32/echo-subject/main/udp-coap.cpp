@@ -8,6 +8,7 @@
 
 #include <coap/header.h>
 #include <coap/decoder/streambuf.hpp>
+#include <coap/decoder/observer/util.h>
 #include <coap/encoder/streambuf.h>
 #include <coap/platform/lwip/encoder.h>
 
