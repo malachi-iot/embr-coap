@@ -15,16 +15,14 @@ static const char* TAG = "AppContext::gpio";
 // NOTE: Expects to run at 'option' event
 void AppContext::select_gpio(const event::option& e)
 {
-    int& pin = gpio.pin;
-
     // DEBT: As is the case all over, 'chunk' is assumed to be complete
     // data here
     auto option = (const char*) e.chunk.data();
     
-    if(estd::from_chars<int>(option, option + e.chunk.size(), pin).ec == 0)
-        ESP_LOGD(TAG, "Selecting gpio # %d", pin);
+    if(estd::from_chars(option, option + e.chunk.size(), gpio.pin).ec == 0)
+        ESP_LOGD(TAG, "Selecting gpio # %d", gpio.pin);
     else
-        pin = -1;
+        gpio.pin = -1;
 }
 
 // NOTE: Expects to run at 'streambuf_payload' event
