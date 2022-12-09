@@ -11,6 +11,7 @@
 #include <estd/semaphore.h>
 
 #include <exp/retry/factory.h>
+#include <exp/retry/manager.hpp>
 #include <exp/retry.h>
 
 #if __cplusplus >= 201103L

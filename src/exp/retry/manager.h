@@ -57,6 +57,9 @@ struct Manager : embr::internal::instance_or_reference_provider<TTransport>
         void resend(time_point* p, time_point p2)
         {
             // DEBT: 'delete this' inside here works, but is easy to get wrong.
+            // Specifically, functor scheduler invokes this and as long as 'p'
+            // remains unchanged, it is considered a one shot event.  Therefore,
+            // no further activity happens and it is safe to delete 'this'
 
             if(base_type::ack_received())
             {
@@ -104,54 +107,7 @@ struct Manager : embr::internal::instance_or_reference_provider<TTransport>
 
     tracker_type tracker;
 
-    /// Evaluates whether this is an ACK for something we're tracking.
-    /// @param endpoint
-    /// @param buffer
-    /// @return true if we this is an ACK and we have now untracked it
-    bool on_received(const endpoint_type& endpoint, const const_buffer_type& buffer)
-    {
-        //auto h = DecoderFactory<const_buffer_type>::header(buffer);
-        Header h = get_header(buffer);
-
-        // We only look for ACK here
-        if(h.type() != header::Types::Acknowledgement)
-        {
-#if defined(ESP_PLATFORM)
-            ESP_LOGD(TAG, "on_received: aborting since type is not ACK");
-#endif
-            return false;
-        }
-
-        const uint16_t mid = h.message_id();
-
-        // Once we establish it's an ACK, then evaluated tracked connections to see if
-        // a matching MID and endpoint are out there
-        typename tracker_type::iterator m = tracker.match(endpoint, mid);
-
-        // If we can't find one, then stop here and indicate nothing found
-        if(m == tracker.end())
-        {
-#if defined(ESP_PLATFORM)
-            // DEBT: Assumes LwIP
-            ESP_LOGD(TAG, "on_received: aborting since endpoint %s:%u and mid %x were not matched",
-                ipaddr_ntoa(endpoint.address()),
-                endpoint.port(),
-                mid);
-#endif
-            return false;
-        }
-
-        auto v = m.lock();
-
-        v->ack_received(true);
-
-        m.unlock();
-
-        // If we do find a match, then this means we no longer need to look for ACKs because
-        // we just got it.
-        tracker.untrack(m);
-        return true;
-    }
+    bool on_received(const endpoint_type& endpoint, const const_buffer_type& buffer);
 
     template <class TContainer, class TSubject>
     const item_type* send(const endpoint_type& endpoint,
