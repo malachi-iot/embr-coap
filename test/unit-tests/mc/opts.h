@@ -11,4 +11,5 @@
 // uses move semantic so that someone always owns the netbuf, somewhat
 // sidestepping shared_ptr/ref counters (even though implementations
 // like PBUF have inbuilt ref counters)
+// 09DEC22 Only applies to pre-v4-retry code and relies on obsolete datapump
 //#define FEATURE_MCCOAP_RETRY_INLINE
