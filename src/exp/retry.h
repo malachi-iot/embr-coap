@@ -13,8 +13,8 @@
 #include "coap/decoder/netbuf.h"
 #include <stdint.h> // for uint8_t
 
-#include <embr/datapump.h>
-#include <embr/events.h>
+//#include <embr/datapump.h>
+//#include <embr/events.h>
 #include <embr/exp/pbuf.h>
 
 #include "retry/metadata.h"
@@ -577,7 +577,11 @@ public:
     }
 };
 
-
+// FIX: 09DEC22 MB Adding in this FEATURE_EMBR_TRANSPORT_EVENTS guard, but no such feature
+// exists.  During an embr cleanup phase I removed events since they were attached to
+// the obsolete datapump and dataport mechanism.  I plan to bring a similar creature back,
+// likely in the context of transport absractions.
+#if FEATURE_EMBR_TRANSPORT_EVENTS
 // TRetry = retry manager.  can be inline or a ref whatever is convenient
 template <class TRetry>//, class TDataport>
 class RetryObserver
@@ -611,5 +615,6 @@ public:
         }
     }
 };
+#endif
 
 }}}

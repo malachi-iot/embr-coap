@@ -20,7 +20,7 @@ add_library(${PROJECT_NAME}
     retry.cpp
     uri.cpp)
 
-target_link_libraries(${PROJECT_NAME} unity mc-coap)
+target_link_libraries(${PROJECT_NAME} unity embr mc-coap)
 
 target_include_directories(${PROJECT_NAME} PUBLIC
     ${ESTDLIB_DIR}/src

@@ -1,4 +1,6 @@
+set(EXT_DIR ${CMAKE_CURRENT_LIST_DIR}/../../../ext)
 set(EXTRA_COMPONENT_DIRS
+    "${EXT_DIR}/embr/tools/esp-idf/components"
     "${CMAKE_CURRENT_LIST_DIR}/components")
 
 include($ENV{IDF_PATH}/tools/cmake/project.cmake)
