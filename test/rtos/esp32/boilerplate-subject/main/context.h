@@ -14,6 +14,8 @@ struct AppContext :
     embr::coap::LwipIncomingContext,
     embr::coap::UriParserContext
 {
+    typedef embr::lwip::ipbuf_streambuf istreambuf_type;
+
     AppContext(struct udp_pcb* pcb, 
         const ip_addr_t* addr,
         uint16_t port) : 
@@ -27,9 +29,13 @@ struct AppContext :
         struct
         {
             int pin;
-            
+
         }   gpio;
     };
+
+    void select_gpio(const embr::coap::event::option& e);
+    void put_gpio(istreambuf_type& payload);
+    void get_gpio(encoder_type& encoder);
 };
 
 
