@@ -14,6 +14,8 @@ namespace embr { namespace coap { namespace experimental { namespace retry {
 // TItem is more or less an impl pattern to help avoid virtual functions
 // DEBT: Tracker not threadsafe, but will need to be for FreeRTOS operation
 // DEBT: Can probably unwind TTransport and pass endpoint/buffer in directly again
+// NOTE: Shaping up to not be CoAP specific, which is long term goal.  Goal may
+// be suspended with minimal debt - completion more important than non-CoAP reusability
 template <class TTimePoint, class TTransport,
     // DEBT: Might be able to do an Item with TTransport specialization.
     // Remember also this default class is for reference

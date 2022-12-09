@@ -54,39 +54,7 @@ struct Manager : embr::internal::instance_or_reference_provider<TTransport>
         parent_type* const parent;
 
         // If ack_received or retransmission counter passes threshold
-        void resend(time_point* p, time_point p2)
-        {
-            // DEBT: 'delete this' inside here works, but is easy to get wrong.
-            // Specifically, functor scheduler invokes this and as long as 'p'
-            // remains unchanged, it is considered a one shot event.  Therefore,
-            // no further activity happens and it is safe to delete 'this'
-
-            if(base_type::ack_received())
-            {
-                delete this;
-                return;
-            }
-
-            // DEBT: Still don't like direct transport interaction here (Tracker
-            // knowing way too much)
-            // DEBT: pbuf's maybe-kinda demand non const
-            //transport_type::send(item_base::buffer(), item_base::endpoint());
-            parent->transport().send(item_base::buffer_, item_base::endpoint());
-
-            // If retransmit counter is within threshold.  See [1] Section 4.2
-            if(++base_type::retransmission_counter < COAP_MAX_RETRANSMIT)
-            {
-                // Reschedule
-                *p += base_type::delta();
-            }
-            else
-            {
-                // Current architecture we need to remove this from both the vector AND do
-                // a delete manually when retransmit counter exceeds threshold
-                parent->tracker.untrack(this);
-                delete this;
-            }
-        }
+        void resend(time_point* p, time_point p2);
 
         typename estd::internal::thisify_function<void(time_point*, time_point)>::
             template model<item_type, &item_type::resend> m;
