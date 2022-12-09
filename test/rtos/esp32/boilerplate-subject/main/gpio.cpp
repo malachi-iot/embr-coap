@@ -12,7 +12,8 @@ using namespace embr::coap;
 
 static const char* TAG = "AppContext::gpio";
 
-// NOTE: Expects to run at 'option' event
+// NOTE: Expects to run at 'option' event.  Not 'option_completed' because we need
+// to extract the particular GPIO value when it appears
 void AppContext::select_gpio(const event::option& e)
 {
     // DEBT: As is the case all over, 'chunk' is assumed to be complete
@@ -38,12 +39,9 @@ void AppContext::put_gpio(istreambuf_type& streambuf)
         // by this point, that's a feature not a bug
         estd::internal::basic_istream<istreambuf_type&> in(streambuf);
 
-        int val = -1;
+        int val;
 
-        in >> val;
-
-        // DEBT: Looks like istream doesn't register parse error here
-        if(in.good())
+        if(in >> val)
         {
             ESP_LOGI(TAG, "gpio: set #%d to %d", gpio.pin, val);
 

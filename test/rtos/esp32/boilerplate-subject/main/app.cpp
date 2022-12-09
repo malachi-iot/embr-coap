@@ -13,7 +13,7 @@ using namespace embr::coap;
 
 #include <coap/platform/lwip/encoder.h>
 
-using embr::lwip::ipbuf_streambuf;
+using istreambuf_type = AppContext::istreambuf_type;
 
 enum
 {
@@ -57,7 +57,7 @@ struct Observer
             context.select_gpio(e);
     }
 
-    static void on_notify(event::streambuf_payload<ipbuf_streambuf> e, AppContext& context)
+    static void on_notify(event::streambuf_payload<istreambuf_type> e, AppContext& context)
     {
         switch(context.found_node())
         {
@@ -129,6 +129,7 @@ void udp_coap_recv(void *arg,
 
     ESP_LOGD(TAG, "p->len=%d, sizeof context=%u", p->len, sizeof(context));
 
-    // _recv plumbing depends on us to free p,
+    // _recv plumbing depends on us to free p, and decode_and_notify here helps us with that
+    // DEBT: I think I prefer explicitly freeing here, decode_and_notify assistance is too magic
     decode_and_notify(p, app_subject, context);
 }
