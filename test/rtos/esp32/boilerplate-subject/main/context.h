@@ -26,7 +26,7 @@ struct AppContext :
 
 inline AppContext::encoder_type make_encoder(const AppContext&)
 {
-    ESP_LOGD("TEST", "Got to special encoder");
+    ESP_LOGV("TEST", "Got to special encoder");
 
     return AppContext::encoder_type(32);
 }

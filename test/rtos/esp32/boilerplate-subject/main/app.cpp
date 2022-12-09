@@ -5,6 +5,8 @@
 using namespace embr::coap;
 
 #include "context.h"
+
+// This gets us 'build_version_response' which is indeed esp-idf specific
 #include <coap/platform/esp-idf/observer.h>
 
 #include <coap/platform/lwip/encoder.h>
@@ -19,7 +21,8 @@ constexpr int id_path_v1_api_stats = 5;
 constexpr int id_path_well_known = 20;
 constexpr int id_path_well_known_core = 21;
 
-// NOTE: Alphabetization is important.  id# ordering is not
+// NOTE: Alphabetization per path segment is important.  id# ordering is not
+// DEBT: Document this behavior in detail
 const UriPathMap uri_map[] =
 {
     { "v1",         id_path_v1,                 MCCOAP_URIPATH_NONE },
