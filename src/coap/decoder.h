@@ -66,6 +66,13 @@ public:
 
 
 private:
+    // Not yet active, if it's safe after option phase is done we can use this
+    // to emit some useful data on completion event
+    struct CompletionState
+    {
+        bool payloadPresent;
+    };
+
     // TODO: This will become more complex as we branch out and handle decoder traits.  Note
     // that when we do, to really take advantage of optimizations, we'll have to turn Decoder::process_iterate
     // into an .hpp/templatized function
@@ -74,11 +81,13 @@ private:
     {
         token_decoder_t tokenDecoder;
         OptionDecoder optionDecoder;
+        CompletionState completionState;
     };
 #else
     // C++03 sensitive to unions with classes with constructors
     token_decoder_t tokenDecoder;
     OptionDecoder optionDecoder;
+    CompletionState completionState;
 #endif
 
     // FIX: have to non-unionize headerDecoder because Decoder::process_iterate processes tokenDecoder

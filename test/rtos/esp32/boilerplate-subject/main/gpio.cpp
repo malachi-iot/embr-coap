@@ -62,6 +62,11 @@ void AppContext::put_gpio(istreambuf_type& streambuf)
 // In other cases, returns a 'bad request'
 void AppContext::completed_gpio(encoder_type& encoder)
 {
+    // TODO: Detect if no payload was present during a put operation and indicate bad request
+    // Slightly tricky at the moment as we don't get a payload event at all when there is none (naturally)
+    // meaning we'd have to keep an extra flag around to tag that we got one.  However, that makes
+    // more sense at the Decoder state machine level, where it may be zero-cost to do that
+
     if(header().code() == Header::Code::Get)
     {
         ESP_LOGI(TAG, "gpio: get %d", gpio.pin);

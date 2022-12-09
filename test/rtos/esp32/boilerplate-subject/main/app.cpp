@@ -82,7 +82,7 @@ struct Observer
                 break;
                 
             case id_path_v1_api_gpio_value:
-                context.get_gpio(encoder);
+                context.completed_gpio(encoder);
                 break;
                 
             case id_path_v1_api_version:
