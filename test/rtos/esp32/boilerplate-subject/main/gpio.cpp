@@ -12,6 +12,7 @@ using namespace embr::coap;
 
 static const char* TAG = "AppContext::gpio";
 
+// NOTE: Expects to run at 'option' event
 void AppContext::select_gpio(const event::option& e)
 {
     int& pin = gpio.pin;
@@ -26,7 +27,7 @@ void AppContext::select_gpio(const event::option& e)
         pin = -1;
 }
 
-
+// NOTE: Expects to run at 'streambuf_payload' event
 void AppContext::put_gpio(istreambuf_type& streambuf)
 {
     if(gpio.pin == -1) return;
@@ -55,7 +56,11 @@ void AppContext::put_gpio(istreambuf_type& streambuf)
 }
 
 
-void AppContext::get_gpio(encoder_type& encoder)
+// Runs at 'completed' event and generates a response
+// If called during 'put', only returns code matching success of previous put operation
+// If called during 'get', commences with get operation
+// In other cases, returns a 'bad request'
+void AppContext::completed_gpio(encoder_type& encoder)
 {
     if(header().code() == Header::Code::Get)
     {

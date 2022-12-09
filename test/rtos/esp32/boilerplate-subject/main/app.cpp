@@ -29,6 +29,8 @@ enum
 };
 
 
+using embr::coap::internal::UriPathMap;
+
 // NOTE: Alphabetization per path segment is important.  id# ordering is not
 // DEBT: Document this behavior in detail
 const UriPathMap uri_map[] =
@@ -51,12 +53,8 @@ struct Observer
 
     static void on_notify(const event::option& e, AppContext& context)
     {
-        switch(context.found_node())
-        {
-            case id_path_v1_api_gpio_value:
-                context.select_gpio(e);
-                break;
-        }
+        if(context.found_node() == id_path_v1_api_gpio_value)
+            context.select_gpio(e);
     }
 
     static void on_notify(event::streambuf_payload<ipbuf_streambuf> e, AppContext& context)
@@ -107,6 +105,16 @@ embr::layer0::subject<
     UriParserObserver,
     Observer
     > app_subject;
+
+
+AppContext::AppContext(struct udp_pcb* pcb, 
+    const ip_addr_t* addr,
+    uint16_t port) : 
+    LwipIncomingContext(pcb, addr, port),
+    UriParserContext(uri_map)
+{
+
+}
 
 
 void udp_coap_recv(void *arg, 
