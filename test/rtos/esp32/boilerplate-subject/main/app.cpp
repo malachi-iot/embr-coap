@@ -1,3 +1,7 @@
+#include <estd/istream.h>
+
+#include <embr/platform/esp-idf/gpio.h>
+
 // remember to do this and not regular subject.h, otherwise not all the deductions will work
 #include <coap/decoder/subject.hpp>
 #include <coap/decoder/streambuf.hpp>
@@ -15,7 +19,7 @@ using embr::lwip::upgrading::ipbuf_streambuf;
 
 constexpr int id_path_v1 = 0;
 constexpr int id_path_v1_api = 1;
-constexpr int id_path_v1_api_test = 3;
+constexpr int id_path_v1_api_gpio = 3;
 constexpr int id_path_v1_api_version = 4;
 constexpr int id_path_v1_api_stats = 5;
 constexpr int id_path_well_known = 20;
@@ -27,8 +31,8 @@ const UriPathMap uri_map[] =
 {
     { "v1",         id_path_v1,                 MCCOAP_URIPATH_NONE },
     { "api",        id_path_v1_api,             id_path_v1 },
+    { "gpio",       id_path_v1_api_gpio,        id_path_v1_api },
     { "stats",      id_path_v1_api_stats,       id_path_v1_api },
-    { "test",       id_path_v1_api_test,        id_path_v1_api },
     { "version",    id_path_v1_api_version,     id_path_v1_api },
 
     { ".well-known",    id_path_well_known,         MCCOAP_URIPATH_NONE },
@@ -39,6 +43,31 @@ const UriPathMap uri_map[] =
 struct Observer
 {
     static constexpr const char* TAG = "Observer";
+
+    static void on_notify(event::streambuf_payload<ipbuf_streambuf> e, AppContext& context)
+    {
+        switch(context.found_node())
+        {
+            case id_path_v1_api_gpio:
+            {
+                //auto& s = e.streambuf;
+                // DEBT: I think this can be promoted out of internal, I believe I put
+                // this in there way back when because the signature doesn't match std - but
+                // by this point, that's a feature not a bug
+                estd::internal::basic_istream<ipbuf_streambuf&> in(e.streambuf);
+
+                int val = -1;
+
+                in >> val;
+
+                ESP_LOGI(TAG, "Setting gpio # %d", val);
+
+                embr::esp_idf::gpio gpio((gpio_num_t)val);
+
+                break;
+            }
+        }
+    }
 
     
     __attribute__ ((noinline))  // Not necessary, just useful for stack usage analysis
