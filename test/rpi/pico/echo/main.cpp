@@ -6,6 +6,8 @@
 #include <pico/cyw43_arch.h>
 #include <pico/stdio_usb.h>
 
+void udp_coap_init();
+
 
 void main_task(__unused void *params)
 {
@@ -25,6 +27,8 @@ void main_task(__unused void *params)
 int main()
 {
     stdio_init_all();
+
+    udp_coap_init();
 
     for(;;)
     {

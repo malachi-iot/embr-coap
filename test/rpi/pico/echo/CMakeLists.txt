@@ -8,6 +8,8 @@ include($ENV{PICO_SDK_PATH}/pico_sdk_init.cmake)
 project(echo LANGUAGES C CXX)
 
 set(ROOT_DIR ../../../..)
+set(SRC_DIR ${ROOT_DIR}/test/rtos/esp32/echo/main)
+set(TEMPLATE_DIR ${ROOT_DIR}/test/template)
 
 # initialize the Raspberry Pi Pico SDK
 pico_sdk_init()
@@ -20,6 +22,8 @@ add_subdirectory(${ROOT_DIR}/src coap)
 
 add_executable(${PROJECT_NAME}
     main.cpp
+    ${SRC_DIR}/udp-coap.cpp
+    ${TEMPLATE_DIR}/lwip.cpp
 )
 
 target_include_directories(${PROJECT_NAME} PRIVATE .)
@@ -27,7 +31,7 @@ target_include_directories(${PROJECT_NAME} PRIVATE .)
 target_link_libraries(${PROJECT_NAME}
     pico_stdlib
     pico_cyw43_arch_lwip_poll
-    malachi-iot::estd mc-coap)
+    malachi-iot::estd embr mc-coap)
 
 # enable usb output, disable uart output
 pico_enable_stdio_usb(${PROJECT_NAME} 1)
