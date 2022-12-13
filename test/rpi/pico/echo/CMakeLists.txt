@@ -32,13 +32,14 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
         WIFI_PASSWORD=\"${WIFI_PASSWORD}\"
         )
 
-
+# Gets esp_log.h wrapper - might be better as a tiny interface library instead though. hmm
+target_include_directories(${PROJECT_NAME} PRIVATE ${ROOT_DIR}/ext/estdlib/src/estd/port/esp-idf/fake)
 target_include_directories(${PROJECT_NAME} PRIVATE .)
 
 target_link_libraries(${PROJECT_NAME}
     pico_stdlib
     pico_cyw43_arch_lwip_poll
-    malachi-iot::estd embr mc-coap)
+    estd embr mc-coap)
 
 # enable usb output, disable uart output
 pico_enable_stdio_usb(${PROJECT_NAME} 1)
