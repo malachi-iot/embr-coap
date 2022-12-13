@@ -33,7 +33,6 @@ set(SOURCE_FILES
         coap/decoder/context.h
         coap/decoder/decode-and-notify.h
         coap/decoder/events.h
-        coap/decoder/netbuf.h
         coap/decoder/option.h
         coap/decoder/simple.h
 
