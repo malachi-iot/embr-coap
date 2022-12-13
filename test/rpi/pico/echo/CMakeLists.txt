@@ -4,6 +4,7 @@ set(PICO_BOARD "pico_w")
 
 # initialize the SDK directly
 include($ENV{PICO_SDK_PATH}/pico_sdk_init.cmake)
+include(wifi.cmake)
 
 project(echo LANGUAGES C CXX)
 
@@ -25,6 +26,12 @@ add_executable(${PROJECT_NAME}
     ${SRC_DIR}/udp-coap.cpp
     ${TEMPLATE_DIR}/lwip.cpp
 )
+
+target_compile_definitions(${PROJECT_NAME} PRIVATE
+        WIFI_SSID=\"${WIFI_SSID}\"
+        WIFI_PASSWORD=\"${WIFI_PASSWORD}\"
+        )
+
 
 target_include_directories(${PROJECT_NAME} PRIVATE .)
 
