@@ -11,6 +11,7 @@
 #include <estd/vector.h>
 
 #include <embr/observer.h>
+#include <coap/decoder/observer/util.h>
 
 using namespace embr::coap;
 

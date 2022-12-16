@@ -353,4 +353,25 @@ public:
 };
 
 
+namespace internal {
+
+// DEBT: Poor naming and organization
+// This is where utility bitmask goes + auto reply info
+class ExtraContext
+{
+    // For auto response
+    Header::Code::Codes response_code;
+    struct
+    {
+        // duplicate MID encountered
+        bool dup_mid : 1;
+        // payload encountered
+        bool payload : 1;
+
+    }   flags;
+};
+
+}
+
+
 }}

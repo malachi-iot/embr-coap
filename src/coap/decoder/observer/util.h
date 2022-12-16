@@ -1,6 +1,7 @@
 #pragma once
 
 #include <estd/port/identify_platform.h>
+#include <estd/type_traits.h>
 
 #ifdef ESTD_IDF_VER
 #include "esp_log.h"
@@ -155,5 +156,39 @@ struct Auto404Observer : ExperimentalDecoderEventTypedefs
         context.reply(encoder);
     }
 };
+
+
+struct AutoReplyObserver : ExperimentalDecoderEventTypedefs
+{
+    template <class TContext, class Enabled =
+        typename estd::enable_if<
+            estd::is_base_of<HeaderContext, TContext>::value>::type >
+    static void on_notify(option_completed_event, TContext& context)
+    {
+    }
+};
+
+
+namespace experimental {
+
+struct CoreObserver
+{
+    typedef TokenContextObserver token;
+    typedef HeaderContextObserver header;
+
+    // FIX: Almost definitely not gonna work since different events
+    // don't have fallbacks in underlying types...
+    // But they could
+    template <class TEvent, class TContext>
+    static void on_notify(const TEvent& e, TContext& c)
+    {
+        header::on_notify(e, c);
+        token::on_notify(e, c);
+    }
+};
+
+}
+
+
 
 }}
