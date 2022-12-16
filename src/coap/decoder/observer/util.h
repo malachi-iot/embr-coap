@@ -157,14 +157,50 @@ struct Auto404Observer : ExperimentalDecoderEventTypedefs
     }
 };
 
-
+// Generates either 404 or specific response codes, depending on context
+// NOTE: Not functional yet
 struct AutoReplyObserver : ExperimentalDecoderEventTypedefs
 {
-    template <class TContext, class Enabled =
-        typename estd::enable_if<
-            estd::is_base_of<HeaderContext, TContext>::value>::type >
+    static constexpr const char* TAG = "AutoReplyObserver";
+
+    template <class TContext>
+    static void do_404(TContext& context)
+    {
+#ifdef ESTD_IDF_VER
+        ESP_LOGD(TAG, "do_404: entry");
+#endif
+
+        if(context.found_node() != MCCOAP_URIPATH_NONE)
+            return;
+
+        auto encoder = make_encoder_reply(context, Header::Code::NotFound);
+
+        context.reply(encoder);
+    }
+
+    template <class TContext, typename estd::enable_if<
+            !estd::is_base_of<internal::ExtraContext, TContext>::value &&
+            //estd::is_base_of<HeaderContext, TContext>::value
+            true
+            , int>::type = 0>
     static void on_notify(option_completed_event, TContext& context)
     {
+    }
+
+
+    template <class TContext, typename estd::enable_if<
+            estd::is_base_of<internal::ExtraContext, TContext>::value &&
+            //estd::is_base_of<HeaderContext, TContext>::value
+            true
+            , int>::type = 0>
+    static void on_notify(option_completed_event, TContext& context)
+    {
+        if(context.response_code.has_value())
+        {
+            //auto encoder = make_encoder_reply(context, context.response_code);
+
+            //context.reply(encoder);
+        }
     }
 };
 

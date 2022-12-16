@@ -8,6 +8,7 @@
 #include "header.h"
 #include "../coap-features.h"
 //#include "mc/objstack.h"
+#include <estd/optional.h>
 #include <estd/type_traits.h>
 
 #include <estd/span.h>
@@ -359,8 +360,9 @@ namespace internal {
 // This is where utility bitmask goes + auto reply info
 class ExtraContext
 {
+public:
     // For auto response
-    Header::Code::Codes response_code;
+    estd::layer1::optional<Header::Code::Codes, Header::Code::Empty> response_code;
     struct
     {
         // duplicate MID encountered

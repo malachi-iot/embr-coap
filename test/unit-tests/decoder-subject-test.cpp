@@ -1,5 +1,6 @@
 #include <catch.hpp>
 
+#include "coap/encoder/streambuf.h"
 #include "coap/decoder/subject.hpp"
 #include "coap/decoder/streambuf.hpp"
 //#include <obsolete/coap/decoder/observer-aggregate.hpp>
@@ -14,6 +15,11 @@
 #include <coap/decoder/observer/util.h>
 
 using namespace embr::coap;
+
+typedef estd::internal::streambuf<
+    estd::internal::impl::out_span_streambuf<char> > span_streambuf_type;
+typedef StreambufEncoder<span_streambuf_type> span_encoder_type;
+
 
 typedef TokenAndHeaderContext<true, false> request_context_t;
 
@@ -166,6 +172,21 @@ TEST_CASE("CoAP decoder subject tests", "[coap-decoder-subject]")
             decode_and_notify(decoder, s, context);
 
             REQUIRE(o.counter == 3);
+        }
+    }
+    SECTION("AutoReplyObserver")
+    {
+        AutoReplyObserver r;
+
+        SECTION("Auto 404")
+        {
+            request_context_t ctx;
+            r.on_notify(event::option_completed{}, ctx);
+        }
+        SECTION("")
+        {
+            internal::ExtraContext ctx;
+            r.on_notify(event::option_completed{}, ctx);
         }
     }
 }
