@@ -200,4 +200,8 @@ TEST_CASE("CoAP decoder subject tests", "[coap-decoder-subject]")
             r.on_notify(event::option_completed{}, ctx);
         }
     }
+    SECTION("MessageKey")
+    {
+        experimental::MessageKey<int> key{0, 0};
+    }
 }

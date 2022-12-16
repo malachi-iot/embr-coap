@@ -207,6 +207,30 @@ struct AutoReplyObserver : ExperimentalDecoderEventTypedefs
 
 namespace experimental {
 
+// Uniquely identifies a message
+// NOTE: TTimePoint may or may not participate in uniquely identifying the message, depending
+// on the task at hand
+// initially for use with dup mid matcher, but could be useful for observable as well
+template <typename TEndpoint, typename TTimePoint = void>
+struct MessageKey
+{
+    typedef TEndpoint endpoint_type;
+    typedef TTimePoint timepoint;
+
+    const uint16_t mid;
+    const timepoint timestamp;
+    const endpoint_type endpoint;
+};
+
+template <typename TEndpoint>
+struct MessageKey<TEndpoint, void>
+{
+    typedef TEndpoint endpoint_type;
+
+    const uint16_t mid;
+    const endpoint_type endpoint;
+};
+
 struct ExtraObserver
 {
     static void on_notify(event::tags::payload, internal::ExtraContext& context)
