@@ -207,6 +207,15 @@ struct AutoReplyObserver : ExperimentalDecoderEventTypedefs
 
 namespace experimental {
 
+struct ExtraObserver
+{
+    static void on_notify(event::tags::payload, internal::ExtraContext& context)
+    {
+        context.flags.payload = true;
+    }
+};
+
+
 struct CoreObserver
 {
     typedef TokenContextObserver token;
@@ -222,6 +231,8 @@ struct CoreObserver
         token::on_notify(e, c);
     }
 };
+
+
 
 }
 

@@ -71,9 +71,16 @@ struct option_start {};
 // FIX: naming inconsistency with Decoder::OptionsDone
 struct option_completed {};
 
+namespace tags {
+
+struct payload {};
+
+}
+
 // doing struct instead of typedef to ensure it overloads as
 // a different type during on_notify
-struct payload : chunk_event_base
+struct payload : chunk_event_base,
+    tags::payload
 {
     payload(
             const buffer_t& chunk,
@@ -84,7 +91,8 @@ struct payload : chunk_event_base
 
 
 template <class TStreambuf>
-struct streambuf_payload : streambuf_event_base<TStreambuf>
+struct streambuf_payload : streambuf_event_base<TStreambuf>,
+    tags::payload
 {
     typedef streambuf_event_base<TStreambuf> base_type;
     typedef typename base_type::streambuf_type streambuf_type;

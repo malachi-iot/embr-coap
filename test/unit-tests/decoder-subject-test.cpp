@@ -174,6 +174,17 @@ TEST_CASE("CoAP decoder subject tests", "[coap-decoder-subject]")
             REQUIRE(o.counter == 3);
         }
     }
+    // DEBT: Break these and other isolated observer tests out elsewhere
+    SECTION("ExtraObserver")
+    {
+        internal::ExtraContext ctx;
+        experimental::ExtraObserver o;
+        estd::span<const uint8_t> chunk(buffer_16bit_delta, sizeof(buffer_16bit_delta));
+
+        o.on_notify(event::payload(chunk, true), ctx);
+
+        REQUIRE(ctx.flags.payload);
+    }
     SECTION("AutoReplyObserver")
     {
         AutoReplyObserver r;

@@ -363,6 +363,7 @@ class ExtraContext
 public:
     // For auto response
     estd::layer1::optional<Header::Code::Codes, Header::Code::Empty> response_code;
+    
     struct
     {
         // duplicate MID encountered
@@ -371,6 +372,12 @@ public:
         bool payload : 1;
 
     }   flags;
+
+    ExtraContext()
+    {
+        flags.dup_mid = false;
+        flags.payload = false;
+    }
 };
 
 }
