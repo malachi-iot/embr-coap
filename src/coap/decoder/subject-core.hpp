@@ -47,7 +47,7 @@ void decode_and_notify(Decoder& decoder, TSubject& subject, TContext& app_contex
             bool payload_present = decoder.completion_state().payloadPresent;
 
             if (payload_present == false)
-                subject.notify(event::internal::no_paylod(), app_context);
+                subject.notify(event::internal::no_payload(), app_context);
 
             subject.notify(event::completed(payload_present), app_context);
             break;
@@ -71,12 +71,7 @@ decode_result decode_and_notify(StreambufDecoder<TStreambuf>& decoder, TSubject&
     typedef StreambufDecoder<TStreambuf> decoder_type;
     typedef typename decoder_type::span_type span_type;
 
-    typedef event::header header_event;
-    typedef event::token token_event;
     typedef event::option option_event;
-    typedef event::option_completed option_completed_event;
-    typedef event::option_start option_start_event;
-    typedef event::completed completed_event;
 
     // NOTE: We deviate from norm and do state machine processing before then evaluating
     // state.  This means we'll miss out on responding to 'Uninitialized' state (oh no)
@@ -161,7 +156,9 @@ decode_result decode_and_notify(StreambufDecoder<TStreambuf>& decoder, TSubject&
 
         case Decoder::Done:
             at_end.done = true;
-            // Falls through on purpose here
+#if __has_cpp_attribute(fallthrough)
+            [[fallthrough]];
+#endif
 
         default:
             internal::decode_and_notify(decoder, subject, app_context);

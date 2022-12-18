@@ -70,7 +70,7 @@ struct option_start {};
 
 namespace internal {
 
-struct no_paylod {};
+struct no_payload {};
 
 }
 

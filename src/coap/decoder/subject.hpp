@@ -31,13 +31,8 @@ decode_result decode_and_notify(Decoder& decoder, TSubject& subject, Decoder::Co
     // and importantly, means that we can consistently respond to 'done' state
     iterated::decode_result r = decoder.process_iterate(context);
 
-    typedef event::header header_event;
-    typedef event::token token_event;
     typedef event::option option_event;
     typedef event::payload payload_event;
-    typedef event::option_completed option_completed_event;
-    typedef event::option_start option_start_event;
-    typedef event::completed completed_event;
 
     switch (decoder.state())
     {
@@ -74,8 +69,10 @@ decode_result decode_and_notify(Decoder& decoder, TSubject& subject, Decoder::Co
             break;
 
         case Decoder::Done:
-            // Falls through on purpose here
             r.done = true;
+#if __has_cpp_attribute(fallthrough)
+            [[fallthrough]];
+#endif
 
         default:
             internal::decode_and_notify(decoder, subject, app_context);

@@ -97,6 +97,9 @@ struct Context : coap::TokenAndHeaderContext<true>
     int counter;
 };
 
+
+// DEBT: Since Listener is an observer, not a subject, we must
+// implement all possible notifications here with context
 struct Listener
 {
     void notify(coap::event::header e, Context& context)
@@ -113,6 +116,7 @@ struct Listener
 
     void notify(coap::event::option_start, Context&) {}
     void notify(coap::event::option_completed, Context&) {}
+    void notify(coap::event::internal::no_payload, Context&) {}
 
     void notify(coap::event::option e, Context& context)
     {
