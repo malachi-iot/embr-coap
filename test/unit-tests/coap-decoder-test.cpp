@@ -125,6 +125,7 @@ TEST_CASE("CoAP decoder tests", "[coap-decoder]")
     SECTION("Parity test with bronze-star project (incoming request header)")
     {
         Decoder decoder;
+        // tkl of 4
         uint8_t header[] = { 0x44, 0x01, 0x6F, 0x34 };
         ro_chunk_t chunk(header);
 
@@ -136,7 +137,26 @@ TEST_CASE("CoAP decoder tests", "[coap-decoder]")
         decoder.process_iterate(context);
         REQUIRE(decoder.state() == Decoder::HeaderDone);
         decoder.process_iterate(context);
-        decoder.process_iterate(context);
+        SECTION("without token")
+        {
+            // DEBT: At this point I think we want to detect a waitstate or similar since
+            // token data is not appearing and last chunk was set to true
+        }
+        SECTION("with token")
+        {
+            // DEBT: Since above debt is in place, we'll plunge forward acting like last_chunk
+            // was false
+            uint8_t token[] = { 0x1, 0x2, 0x3, 0x4 };
+
+            Decoder::Context context_token(token, true);
+
+            while(!decoder.process_iterate(context_token).done);
+
+            // DEBT: Definitely incongruous looking for post-done uninitialized
+            // state yet also looking for payload not present flag
+            REQUIRE(decoder.state() == Decoder::Uninitialized);
+            REQUIRE(decoder.completion_state().payloadPresent == false);
+        }
     }
     SECTION("streambuf decoder")
     {
