@@ -161,6 +161,7 @@ iterated::decode_result Decoder::process_iterate(Context& context)
             if(option_state() == OptionDecoder::Payload)
             {
                 state(Payload);
+                init_completion_state(true);
             } else
             // TODO: Need to peer into incoming data stream to determine if a payload is on the way
             // or not - specifically need to also check size.  Here there are 3 possibilities:
@@ -174,6 +175,7 @@ iterated::decode_result Decoder::process_iterate(Context& context)
             {
                 // this is for condition b.1)
                 state(Done);
+                init_completion_state(false);
             }
             else if (chunk[pos] == 0xFF)
             {
@@ -183,6 +185,7 @@ iterated::decode_result Decoder::process_iterate(Context& context)
 
                 // this is for condition a.1 or 1.2
                 state(Payload);
+                init_completion_state(true);
             }
             else
             {
@@ -190,6 +193,7 @@ iterated::decode_result Decoder::process_iterate(Context& context)
                 // falls through to condition c, but could get a false positive on header 0xFF
                 // so this is unsupported.  Plus we can't really get here properly from Options state
                 state(Done);
+                init_completion_state(false);
             }
             break;
 

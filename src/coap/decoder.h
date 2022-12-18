@@ -108,10 +108,17 @@ public:
     const HeaderDecoder& header_decoder() const { return headerDecoder; }
     const OptionDecoder& option_decoder() const { return optionDecoder; }
     const token_decoder_t& token_decoder() const { return tokenDecoder; }
+    const CompletionState& completion_state() const { return completionState; }
 
 protected:
     bool header_process_iterate(internal::DecoderContext& context);
     bool token_process_iterate(internal::DecoderContext& context);
+
+    inline void init_completion_state(bool payloadPresent)
+    {
+        new (&completionState) CompletionState;
+        completionState.payloadPresent = payloadPresent;
+    }
 
     inline void init_header_decoder() { new (&header_decoder()) HeaderDecoder; }
 

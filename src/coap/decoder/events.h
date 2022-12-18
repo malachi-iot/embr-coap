@@ -68,6 +68,12 @@ struct option : chunk_event_base
 
 struct option_start {};
 
+namespace internal {
+
+struct no_paylod {};
+
+}
+
 // FIX: naming inconsistency with Decoder::OptionsDone
 struct option_completed {};
 
@@ -101,7 +107,14 @@ struct streambuf_payload : streambuf_event_base<TStreambuf>,
 };
 
 
-struct completed {};
+struct completed
+{
+    const bool payload_present;
+
+    ESTD_CPP_CONSTEXPR_RET completed(bool payload_present) :
+        payload_present(payload_present)
+    {}
+};
 
 
 struct header

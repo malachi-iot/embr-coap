@@ -6,6 +6,27 @@
 // DEBT: Move this and subject.hpp contents into decode-and-notify.hpp
 namespace embr { namespace coap { namespace iterated {
 
+namespace internal {
+
+// Shared base state machine, agnostic to streambuf vs span/chunk technique
+// NOTE: Not yet used
+template <class TSubject, class TContext>
+void decode_and_notify(Decoder& decoder, TSubject& subject, TContext& app_context)
+{
+    switch(decoder.state())
+    {
+        case Decoder::HeaderDone:
+            subject.notify(event::header(decoder.header_decoder()), app_context);
+            break;
+
+        case Decoder::OptionsStart:
+            subject.notify(event::option_start(), app_context);
+            break;
+    }
+}
+
+}
+
 // inspects state of incoming decoder+context, and fires off associated decoder events via
 // provided subject.
 // copy/paste of existing context-based decode_and_notify
@@ -130,9 +151,16 @@ decode_result decode_and_notify(StreambufDecoder<TStreambuf>& decoder, TSubject&
         }
 
         case Decoder::Done:
+        {
+            bool payload_present = decoder.completion_state().payloadPresent;
+
+            if (payload_present == false)
+                subject.notify(event::internal::no_paylod(), app_context);
+
             at_end.done = true;
-            subject.notify(completed_event(), app_context);
+            subject.notify(completed_event(payload_present), app_context);
             break;
+        }
 
         default: break;
     }

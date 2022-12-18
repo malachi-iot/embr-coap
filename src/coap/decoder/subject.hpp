@@ -18,7 +18,8 @@ namespace iterated {
 // provided subject.
 // shall bear very strong resemblace to predecessor's DecoderSubjectBase dispatch_iterate
 // TODO: Phase this out in favor of streambuf flavor, since most any C++ spec which handles TSubject
-// is going to handle streambufs
+// is going to handle streambufs - OR -
+// Make the implementations share a common utility base function
 /// @return true when at end of context buffer, false otherwise
 template <class TSubject, class TContext>
 decode_result decode_and_notify(Decoder& decoder, TSubject& subject, Decoder::Context& context, TContext& app_context)
@@ -96,9 +97,16 @@ decode_result decode_and_notify(Decoder& decoder, TSubject& subject, Decoder::Co
             break;
 
         case Decoder::Done:
+        {
+            bool payload_present = decoder.completion_state().payloadPresent;
+
+            if (payload_present == false)
+                subject.notify(event::internal::no_paylod(), app_context);
+
             r.done = true;
-            subject.notify(completed_event(), app_context);
+            subject.notify(completed_event(payload_present), app_context);
             break;
+        }
 
         default:
             break;
