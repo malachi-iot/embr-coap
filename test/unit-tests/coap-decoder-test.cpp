@@ -65,6 +65,11 @@ TEST_CASE("CoAP decoder tests", "[coap-decoder]")
         // so failing unit test here is a bug
         REQUIRE(decoder.process_iterate(context).eof == false);
         REQUIRE(decoder.state() == Decoder::Payload);
+        REQUIRE(decoder.process_iterate(context).eof == true);
+        REQUIRE(decoder.state() == Decoder::PayloadDone);
+        REQUIRE(decoder.completion_state().payloadPresent);
+        REQUIRE(decoder.process_iterate(context).eof == true);
+        REQUIRE(decoder.state() == Decoder::Done);
     }
     SECTION("16 bit delta test")
     {
