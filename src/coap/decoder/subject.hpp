@@ -41,25 +41,6 @@ decode_result decode_and_notify(Decoder& decoder, TSubject& subject, Decoder::Co
 
     switch (decoder.state())
     {
-        case Decoder::HeaderDone:
-            subject.notify(header_event(decoder.header_decoder()), app_context);
-            break;
-
-        case Decoder::TokenDone:
-        {
-            // FIX: Not 100% sure token_length is available at this point
-            buffer_t chunk(decoder.token_decoder().data(),
-                           decoder.header_decoder().token_length());
-
-            // TODO: Do chunking
-            subject.notify(token_event(chunk, true), app_context);
-            break;
-        }
-
-        case Decoder::OptionsStart:
-            subject.notify(option_start_event{}, app_context);
-            break;
-
         case Decoder::Options:
             switch (decoder.option_state())
             {
@@ -87,28 +68,17 @@ decode_result decode_and_notify(Decoder& decoder, TSubject& subject, Decoder::Co
             }
             break;
 
-        case Decoder::OptionsDone:
-            subject.notify(option_completed_event{}, app_context);
-            break;
-
         case Decoder::Payload:
             subject.notify(payload_event(context.remainder(), context.last_chunk),
                            app_context);
             break;
 
         case Decoder::Done:
-        {
-            bool payload_present = decoder.completion_state().payloadPresent;
-
-            if (payload_present == false)
-                subject.notify(event::internal::no_paylod(), app_context);
-
+            // Falls through on purpose here
             r.done = true;
-            subject.notify(completed_event(payload_present), app_context);
-            break;
-        }
 
         default:
+            internal::decode_and_notify(decoder, subject, app_context);
             break;
     }
 

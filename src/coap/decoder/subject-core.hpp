@@ -13,15 +13,47 @@ namespace internal {
 template <class TSubject, class TContext>
 void decode_and_notify(Decoder& decoder, TSubject& subject, TContext& app_context)
 {
+    typedef event::event_base::buffer_t buffer_t;
+
     switch(decoder.state())
     {
         case Decoder::HeaderDone:
             subject.notify(event::header(decoder.header_decoder()), app_context);
             break;
 
+        case Decoder::TokenDone:
+        {
+            // DEBT: Not 100% sure token_length is available at this point, but nearly always is so
+            // considering this debt and not a FIX (which it was before)
+            buffer_t chunk(decoder.token_decoder().data(),
+                           decoder.header_decoder().token_length());
+
+            // TODO: As mentioned above, we need chunking
+            subject.notify(event::token(chunk, true), app_context);
+            break;
+        }
+
+
         case Decoder::OptionsStart:
             subject.notify(event::option_start(), app_context);
             break;
+
+        case Decoder::OptionsDone:
+            subject.notify(event::option_completed(), app_context);
+            break;
+
+        case Decoder::Done:
+        {
+            bool payload_present = decoder.completion_state().payloadPresent;
+
+            if (payload_present == false)
+                subject.notify(event::internal::no_paylod(), app_context);
+
+            subject.notify(event::completed(payload_present), app_context);
+            break;
+        }
+
+        default: break;
     }
 }
 
@@ -53,25 +85,6 @@ decode_result decode_and_notify(StreambufDecoder<TStreambuf>& decoder, TSubject&
 
     switch(decoder.state())
     {
-        case Decoder::HeaderDone:
-            subject.notify(header_event(decoder.header_decoder()), app_context);
-            break;
-
-        case Decoder::TokenDone:
-        {
-            // FIX: Not 100% sure token_length is available at this point
-            buffer_t chunk(decoder.token_decoder().data(),
-                           decoder.header_decoder().token_length());
-
-            // TODO: Do chunking
-            subject.notify(token_event(chunk, true), app_context);
-            break;
-        }
-
-        case Decoder::OptionsStart:
-            subject.notify(option_start_event(), app_context);
-            break;
-
         case Decoder::Options:
             switch(decoder.option_state())
             {
@@ -128,10 +141,6 @@ decode_result decode_and_notify(StreambufDecoder<TStreambuf>& decoder, TSubject&
             }
             break;
 
-        case Decoder::OptionsDone:
-            subject.notify(option_completed_event(), app_context);
-            break;
-
         case Decoder::Payload:
         {
             typename decoder_type::streambuf_type& rdbuf = *decoder.rdbuf();
@@ -151,18 +160,12 @@ decode_result decode_and_notify(StreambufDecoder<TStreambuf>& decoder, TSubject&
         }
 
         case Decoder::Done:
-        {
-            bool payload_present = decoder.completion_state().payloadPresent;
-
-            if (payload_present == false)
-                subject.notify(event::internal::no_paylod(), app_context);
-
             at_end.done = true;
-            subject.notify(completed_event(payload_present), app_context);
-            break;
-        }
+            // Falls through on purpose here
 
-        default: break;
+        default:
+            internal::decode_and_notify(decoder, subject, app_context);
+            break;
     }
 
     return at_end;
