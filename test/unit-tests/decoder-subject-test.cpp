@@ -54,10 +54,25 @@ struct test_static_observer
     }
 };
 
+struct payload_no_payload
+{
+    int counter = 0;
+    bool expecting_payload;
+
+    void on_notify(event::option_completed)
+    {
+        ++counter;
+    }
+
+    void on_notify(event::completed e)
+    {
+        ++counter;
+        REQUIRE(e.payload_present == expecting_payload);
+    }
+};
+
 
 int test_static_observer::counter = 0;
-
-//using namespace moducom::pipeline;
 
 TEST_CASE("CoAP decoder subject tests", "[coap-decoder-subject]")
 {
@@ -203,5 +218,36 @@ TEST_CASE("CoAP decoder subject tests", "[coap-decoder-subject]")
     SECTION("MessageKey")
     {
         experimental::MessageKey<int> key{0, 0};
+    }
+    SECTION("payload/no payload")
+    {
+        typedef embr::layer1::subject<payload_no_payload> subject_type;
+        subject_type subject;
+
+        typedef
+        estd::internal::streambuf<
+            estd::internal::impl::in_span_streambuf<char> >
+            streambuf_type;
+
+        SECTION("buffer_16bit_delta")
+        {
+            estd::span<char> chunk((char*)buffer_16bit_delta, sizeof(buffer_16bit_delta));
+            StreambufDecoder<streambuf_type> decoder(chunk);
+
+            // DEBT: Make an estd::get for this
+            subject.get<0>().expecting_payload = true;
+
+            decode_and_notify(decoder, subject);
+        }
+        SECTION("flawed_power_request")
+        {
+            estd::span<char> chunk((char*)flawed_power_request, sizeof(flawed_power_request));
+            StreambufDecoder<streambuf_type> decoder(chunk);
+
+            // DEBT: Make an estd::get for this
+            subject.get<0>().expecting_payload = false;
+
+            decode_and_notify(decoder, subject);
+        }
     }
 }

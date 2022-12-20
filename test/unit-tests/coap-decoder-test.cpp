@@ -326,5 +326,11 @@ TEST_CASE("CoAP decoder tests", "[coap-decoder]")
 
             REQUIRE(decoder.completion_state().payloadPresent == false);
         }
+        SECTION("flawed_power_request")
+        {
+            completion_state(decoder, flawed_power_request);
+
+            REQUIRE(decoder.completion_state().payloadPresent == false);
+        }
     }
 }

@@ -9,6 +9,8 @@ namespace embr { namespace coap {
 // roll a test for it and strongly consider changing return type from bool to a packed struct
 // with both eof and waitstate flags.  Nonblocking consumers can really use the info as to
 // why exactly processing isn't complete
+// DEBT: Also, if we can we really need to leverage chunk-version Decoder here - two code bases
+// is asking for trouble
 template <class TStreambuf>
 iterated::decode_result StreambufDecoder<TStreambuf>::process_iterate_streambuf(size_t& pos)
 {
@@ -22,6 +24,7 @@ iterated::decode_result StreambufDecoder<TStreambuf>::process_iterate_streambuf(
     // FIX: that underflow() API is blocking, even though so far my implementation isn't.  Check out
     // estdlib branch exp/streambuf-nonblocking
     bool eof = in_avail == 0 ? streambuf.underflow() == traits_type::eof() : in_avail == -1;
+    bool done = false;
 
     // DEBT: Untested code
     if(!eof && in_avail == 0)
@@ -161,6 +164,7 @@ iterated::decode_result StreambufDecoder<TStreambuf>::process_iterate_streambuf(
             if(option_state() == OptionDecoder::Payload)
             {
                 state(Payload);
+                init_completion_state(true);
             } else
                 // TODO: Need to peer into incoming data stream to determine if a payload is on the way
                 // or not - specifically need to also check size.  Here there are 3 possibilities:
@@ -174,6 +178,7 @@ iterated::decode_result StreambufDecoder<TStreambuf>::process_iterate_streambuf(
             {
                 // this is for condition b.1)
                 state(Done);
+                init_completion_state(false);
             }
             else if (streambuf.sgetc() == COAP_PAYLOAD_MARKER)
             {
@@ -184,6 +189,7 @@ iterated::decode_result StreambufDecoder<TStreambuf>::process_iterate_streambuf(
 
                 // this is for condition a.1 or 1.2
                 state(Payload);
+                init_completion_state(true);
             }
             else
             {
@@ -191,6 +197,7 @@ iterated::decode_result StreambufDecoder<TStreambuf>::process_iterate_streambuf(
                 // falls through to condition c, but could get a false positive on header 0xFF
                 // so this is unsupported.  Plus we can't really get here properly from Options state
                 state(Done);
+                init_completion_state(false);
             }
             break;
         }
@@ -214,12 +221,13 @@ iterated::decode_result StreambufDecoder<TStreambuf>::process_iterate_streambuf(
             break;
 
         case Done:
+            done = true;
             state(Uninitialized);
             break;
 
     }
 
-    return iterated::decode_result { eof, false, false, false };
+    return iterated::decode_result { eof, false, false, done };
 }
 
 // Copy/pasted from decoder.cpp.  Consider making a low-level one which shares
