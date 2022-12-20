@@ -195,7 +195,9 @@ struct AutoReplyObserver : ExperimentalDecoderEventTypedefs
             , int>::type = 0>
     static void on_notify(option_completed_event, TContext& context)
     {
-        if(context.response_code.has_value())
+        const Header header = context.header();
+
+        if(context.response_code.has_value() && header.type() == header::Types::Confirmable)
         {
             //auto encoder = make_encoder_reply(context, context.response_code);
 

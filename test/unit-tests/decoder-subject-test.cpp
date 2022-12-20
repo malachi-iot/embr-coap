@@ -23,6 +23,12 @@ typedef StreambufEncoder<span_streambuf_type> span_encoder_type;
 
 typedef TokenAndHeaderContext<true, false> request_context_t;
 
+// DEBT: Do up a synthetic IncomingContext which we can do replies on
+// DEBT: Do this with aforementioned IncomingContext
+struct ExtraContext : TokenAndHeaderContext<true, false>,
+    embr::coap::internal::ExtraContext
+{};
+
 // +++ just to test compilation, eliminate once decent unit tests for
 // DecoderSubjectBase is in place
 static request_context_t test_ctx;
@@ -211,7 +217,7 @@ TEST_CASE("CoAP decoder subject tests", "[coap-decoder-subject]")
         }
         SECTION("")
         {
-            internal::ExtraContext ctx;
+            ExtraContext ctx;
             r.on_notify(event::option_completed{}, ctx);
         }
     }
