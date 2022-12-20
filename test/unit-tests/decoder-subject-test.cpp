@@ -23,9 +23,19 @@ typedef StreambufEncoder<span_streambuf_type> span_encoder_type;
 
 typedef TokenAndHeaderContext<true, false> request_context_t;
 
+// NOTE: If experimental transport stuff from embr comes together, this and other incoming context
+// will become more organized
+struct SyntheticIncomingContext : IncomingContext<unsigned>
+{
+    void reply()
+    {
+
+    }
+};
+
 // DEBT: Do up a synthetic IncomingContext which we can do replies on
 // DEBT: Do this with aforementioned IncomingContext
-struct ExtraContext : TokenAndHeaderContext<true, false>,
+struct ExtraContext : SyntheticIncomingContext,
     embr::coap::internal::ExtraContext
 {};
 
