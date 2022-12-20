@@ -29,6 +29,9 @@ public:
 
     // RFC7252 Section 12.1.2 and 12.1.1
     enum Codes
+#if __cplusplus >= 201103L
+        : uint8_t
+#endif
     {
         Empty =             COAP_RESPONSE_CODE(0, 00),
         Get =               COAP_RESPONSE_CODE(0, 01),
