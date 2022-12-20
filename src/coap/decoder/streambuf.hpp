@@ -36,12 +36,6 @@ iterated::decode_result StreambufDecoder<TStreambuf>::process_iterate_streambuf(
 
     switch (state())
     {
-        case Uninitialized:
-            // If necessary, initialize header decoder
-            state(Header);
-            init_header_decoder();
-            break;
-
         case Header:
         {
             bool process_done = false;
@@ -56,26 +50,6 @@ iterated::decode_result StreambufDecoder<TStreambuf>::process_iterate_streambuf(
 
             break;
         }
-
-        case HeaderDone:
-            if(header_decoder().token_length() > 0)
-            {
-                state(TokenStart);
-            }
-            else
-                // We used to skip this and go direct to OptionsStart, which is not a terrible idea
-                // but debatable.  However, due to this quote from RFC7252:
-                // "(Note that every message carries a token, even if it is of zero length.)"
-                // we are definitely going to indicate TokenDone even with an empty token
-                state(TokenDone);
-            break;
-
-        case TokenStart:
-            // Being that we initialize token decoder just after reaching TokenStart,
-            // tkl in header_decoder() is still there until we get here, if we want it
-            state(Token);
-            init_token_decoder();
-            break;
 
         case Token:
         {
@@ -92,10 +66,6 @@ iterated::decode_result StreambufDecoder<TStreambuf>::process_iterate_streambuf(
 
             break;
         }
-
-        case TokenDone:
-            state(OptionsStart);
-            break;
 
             // OptionsStart is always reached.  We determine here if we
             // need to process any options
@@ -216,15 +186,14 @@ iterated::decode_result StreambufDecoder<TStreambuf>::process_iterate_streambuf(
             if(eof)  state(PayloadDone);
             break;
 
-        case PayloadDone:
-            state(Done);
-            break;
-
         case Done:
             done = true;
             state(Uninitialized);
             break;
 
+        default:
+            process_iterate_internal();
+            break;
     }
 
     return iterated::decode_result { eof, false, false, done };

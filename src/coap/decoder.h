@@ -150,6 +150,8 @@ class Decoder :
     typedef DecoderBase<DefaultDecoderTraits> decoder_base_t;
 
 protected:
+    void process_iterate_internal();
+
     // NOTE: This is necessary to use because OptionDecoder in due course of its
     // operation *might* clobber its option_number() before it fully evaluates option_length()
     // the 'length' field in optionHolder isn't *technically* necessary, as that doesn't

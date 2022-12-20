@@ -34,23 +34,13 @@ Decoder::ro_chunk_t Decoder::option(Context& context, bool* completed)
     return ret;
 }
 
-
-iterated::decode_result Decoder::process_iterate(Context& context)
+// This is an attempt to consolidate chunk and streambuf versions
+// NOTE: Just as I start writing this, it hits me that it may make sense for *everything* to be
+// streambuf version and to totally phase out chunk version.  Until that point though, it
+// still seems valuable to dedup the code
+// DEBT: Consider making inline (moving to decoder.hpp>
+void Decoder::process_iterate_internal()
 {
-    size_t& pos = context.pos;
-    bool last_chunk = context.last_chunk;
-    //typedef pipeline::MemoryChunk::readonly_t ro_chunk_t;
-    typedef Context::chunk_type ro_chunk_t;
-    const ro_chunk_t& chunk = context.chunk;
-
-#ifdef __cpp_initializer_lists
-    iterated::decode_result r{false, false, false, false};
-#else
-    iterated::decode_result r(false, false, false, false);
-#endif
-    // FIX: Broken somehow
-    //iterated::decode_result r(estd::nullptr_t());
-
     switch (state())
     {
         case Uninitialized:
@@ -58,15 +48,6 @@ iterated::decode_result Decoder::process_iterate(Context& context)
             state(Header);
             init_header_decoder();
             break;
-
-        case Header:
-        {
-            bool process_done = decoder_base_t::header_process_iterate(context);
-
-            if (process_done) state(HeaderDone);
-
-            break;
-        }
 
         case HeaderDone:
             if(header_decoder().token_length() > 0)
@@ -88,6 +69,44 @@ iterated::decode_result Decoder::process_iterate(Context& context)
             init_token_decoder();
             break;
 
+        case TokenDone:
+            state(OptionsStart);
+            break;
+
+        case PayloadDone:
+            state(Done);
+            break;
+    }
+}
+
+
+iterated::decode_result Decoder::process_iterate(Context& context)
+{
+    size_t& pos = context.pos;
+    bool last_chunk = context.last_chunk;
+    //typedef pipeline::MemoryChunk::readonly_t ro_chunk_t;
+    typedef Context::chunk_type ro_chunk_t;
+    const ro_chunk_t& chunk = context.chunk;
+
+#ifdef __cpp_initializer_lists
+    iterated::decode_result r{false, false, false, false};
+#else
+    iterated::decode_result r(false, false, false, false);
+#endif
+    // FIX: Broken somehow
+    //iterated::decode_result r(estd::nullptr_t());
+
+    switch (state())
+    {
+        case Header:
+        {
+            bool process_done = decoder_base_t::header_process_iterate(context);
+
+            if (process_done) state(HeaderDone);
+
+            break;
+        }
+
         case Token:
         {
             bool process_done = decoder_base_t::token_process_iterate(context);
@@ -96,10 +115,6 @@ iterated::decode_result Decoder::process_iterate(Context& context)
 
             break;
         }
-
-        case TokenDone:
-            state(OptionsStart);
-            break;
 
         // OptionsStart is always reached.  We determine here if we
         // need to process any options
@@ -204,13 +219,13 @@ iterated::decode_result Decoder::process_iterate(Context& context)
             if(last_chunk)  state(PayloadDone);
             break;
 
-        case PayloadDone:
-            state(Done);
-            break;
-
         case Done:
             r.done = true;
             state(Uninitialized);
+            break;
+
+        default:
+            process_iterate_internal();
             break;
 
     }
