@@ -23,6 +23,18 @@ inline estd::span<const typename TStreambuf::char_type> sgetn(TStreambuf& s, est
 }
 // ---
 
+
+typedef estd::span<const uint8_t> buffer_type;
+
+template <unsigned N>
+static void completion_state(Decoder& decoder, const uint8_t (&data) [N])
+{
+    buffer_type b(data);
+    Decoder::Context context(b, true);
+
+    while(!decoder.process_iterate(context).done);
+}
+
 TEST_CASE("CoAP decoder tests", "[coap-decoder]")
 {
     typedef estd::span<const uint8_t> ro_chunk_t;
@@ -272,6 +284,47 @@ TEST_CASE("CoAP decoder tests", "[coap-decoder]")
         }
         SECTION("wait state")
         {
+        }
+    }
+    SECTION("payload/no_payload completion state")
+    {
+        Decoder decoder;
+
+        SECTION("buffer_16bit_delta")
+        {
+            completion_state(decoder, buffer_16bit_delta);
+
+            REQUIRE(decoder.completion_state().payloadPresent == true);
+        }
+        SECTION("buffer_plausible")
+        {
+            completion_state(decoder, buffer_plausible);
+
+            REQUIRE(decoder.completion_state().payloadPresent == true);
+        }
+        SECTION("buffer_with_token")
+        {
+            completion_state(decoder, buffer_with_token);
+
+            REQUIRE(decoder.completion_state().payloadPresent == true);
+        }
+        SECTION("buffer_oversimplified_observe")
+        {
+            completion_state(decoder, buffer_oversimplified_observe);
+
+            REQUIRE(decoder.completion_state().payloadPresent == false);
+        }
+        SECTION("buffer_simplest_request")
+        {
+            completion_state(decoder, buffer_simplest_request);
+
+            REQUIRE(decoder.completion_state().payloadPresent == false);
+        }
+        SECTION("buffer_ack")
+        {
+            completion_state(decoder, buffer_ack);
+
+            REQUIRE(decoder.completion_state().payloadPresent == false);
         }
     }
 }
