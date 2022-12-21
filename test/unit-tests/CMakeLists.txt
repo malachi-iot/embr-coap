@@ -50,6 +50,7 @@ set(SOURCE_FILES
         coap-token-test.cpp
         coap-observable-test.cpp
         blockwise-test.cpp
+        context-test.cpp
 
         # Disabled as part of mc-mem removal.  Contains almost exclusively obsolete code
         #experimental-test.cpp

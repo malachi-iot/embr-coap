@@ -19,6 +19,14 @@
 // b) utilize c++17 (I think) 'concepts' to enforce context signature
 namespace embr { namespace coap {
 
+namespace tags {
+
+// DEBT: Fake stand in for c++20 concept.  These tags promise presence of certain methods
+// document specifics for each tag
+struct token_context {};
+struct header_context {};
+
+}
 
 template <class TAddr>
 class AddressContext
@@ -43,7 +51,7 @@ class TokenContext;
 
 // inline flavor
 template <>
-class TokenContext<true>
+class TokenContext<true> : tags::token_context
 {
 protected:
     typedef layer1::Token token_t;
@@ -74,7 +82,7 @@ public:
 
 // NOTE: Code has signficantly changed and this is now considered not tested
 template <>
-class TokenContext<false>
+class TokenContext<false> : tags::token_context
 {
 protected:
     const uint8_t* _token;
@@ -106,7 +114,7 @@ public:
 
 
 
-class HeaderContext
+class HeaderContext : tags::header_context
 {
     Header m_header;
 
@@ -370,6 +378,8 @@ public:
         bool dup_mid : 1;
         // payload encountered
         bool payload : 1;
+        // whether response has yet been sent or is queued for send
+        bool response_sent : 1;
 
     }   flags;
 
@@ -377,6 +387,7 @@ public:
     {
         flags.dup_mid = false;
         flags.payload = false;
+        flags.response_sent = false;
     }
 };
 
