@@ -15,6 +15,6 @@ These tests are all for variants of Espressif ESP32
 | 01MAY22 | echo-subject |                      | ESP32S         | v4.4.0   | Pass     | 
 | 19DEC22 | echo-subject | ESP-WROVER-KIT v4.1  | ESP32-WROVER-E | v4.4.3   | Pass     | 
 | 09DEC22 | retry        | ESP-WROVER-KIT v4.1  | ESP32-WROVER-E | v4.4.3   | Compiles | Doesn't do anything of interest yet
-| 19DEC22 | unity        | ESP-WROVER-KIT v4.1  | ESP32-WROVER-E | v4.4.3   | Pass     |
+| 20DEC22 | unity        | ESP-WROVER-KIT v4.1  | ESP32-WROVER-E | v4.4.3   | Pass     |
 
 NOTE: `boilerplate` project is `boilerplate-subject`

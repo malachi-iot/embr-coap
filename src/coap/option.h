@@ -86,7 +86,11 @@ public:
         Block2 = 27,
         ProxyUri = 35,
         ProxyScheme = 39,
-        Size1 = 60
+        Size1 = 60,
+
+        // https://www.rfc-editor.org/rfc/rfc9175.html
+        Echo = 252,
+        RequestTag = 292
     };
 
 

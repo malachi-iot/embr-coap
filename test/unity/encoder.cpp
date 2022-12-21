@@ -75,7 +75,7 @@ static void test_build_reply()
 
     TEST_ASSERT_EQUAL(1, h2.version());
     TEST_ASSERT_EQUAL(0, h2.token_length());
-    TEST_ASSERT_EQUAL(200, h2.code());
+    TEST_ASSERT_EQUAL(code_200, h2.code());
     TEST_ASSERT_EQUAL(0x123, h2.message_id());
 
     // 'Accept' option actually doesn't belong in replies, but we'll allow it for

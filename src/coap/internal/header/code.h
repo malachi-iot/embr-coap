@@ -27,37 +27,47 @@ public:
         ServerError = 5
     };
 
-    // RFC7252 Section 12.1.2 and 12.1.1
+    // RFC7252 Section 12.1.2 and 12.1.1 as well as
+    // [1] "CoAP Response Codes"
     enum Codes
 #if __cplusplus >= 201103L
         : uint8_t
 #endif
     {
-        Empty =             COAP_RESPONSE_CODE(0, 00),
-        Get =               COAP_RESPONSE_CODE(0, 01),
-        Post =              COAP_RESPONSE_CODE(0, 02),
-        Put =               COAP_RESPONSE_CODE(0, 03),
-        Delete =            COAP_RESPONSE_CODE(0, 04),
+        Empty =             00,
+        Get =               01,
+        Post =              02,
+        Put =               03,
+        Delete =            04,
+        Fetch =             05,
+        Patch =             06,
+
         Created =           COAP_RESPONSE_CODE(Success, 01),
         Deleted =           COAP_RESPONSE_CODE(Success, 02),
         Valid =             COAP_RESPONSE_CODE(Success, 03),
         Changed =           COAP_RESPONSE_CODE(Success, 04),
         Content =           COAP_RESPONSE_CODE(Success, 05),
-        BadRequest =        COAP_RESPONSE_CODE(ClientError, 00),
-        Unauthorized =      COAP_RESPONSE_CODE(ClientError, 01),
-        BadOption =         COAP_RESPONSE_CODE(ClientError, 02),
-        Forbidden =         COAP_RESPONSE_CODE(ClientError, 03),
-        NotFound =          COAP_RESPONSE_CODE(ClientError, 04),
-        MethodNotAllowed =  COAP_RESPONSE_CODE(ClientError, 05),
+        Continue =          COAP_RESPONSE_CODE(Success, 31),
+
+        BadRequest =                COAP_RESPONSE_CODE(ClientError, 00),
+        Unauthorized =              COAP_RESPONSE_CODE(ClientError, 01),
+        BadOption =                 COAP_RESPONSE_CODE(ClientError, 02),
+        Forbidden =                 COAP_RESPONSE_CODE(ClientError, 03),
+        NotFound =                  COAP_RESPONSE_CODE(ClientError, 04),
+        MethodNotAllowed =          COAP_RESPONSE_CODE(ClientError, 05),
         NotAcceptable =             COAP_RESPONSE_CODE(ClientError, 06),
+        RequestEntityIncomplete =   COAP_RESPONSE_CODE(ClientError,  8),
+        Conflict =                  COAP_RESPONSE_CODE(ClientError,  9),
         PreConditionFailed =        COAP_RESPONSE_CODE(ClientError, 12),
         RequestEntityTooLarge =     COAP_RESPONSE_CODE(ClientError, 13),
         UnsupportedContentFormat =  COAP_RESPONSE_CODE(ClientError, 15),
-        InternalServerError =   COAP_RESPONSE_CODE(ServerError, 00),
-        NotImplemented =        COAP_RESPONSE_CODE(ServerError, 01),
-        ServiceUnavailable =    COAP_RESPONSE_CODE(ServerError, 03),
-        GatewayTimeout =        COAP_RESPONSE_CODE(ServerError, 04),
-        ProxyingNotSupported =  COAP_RESPONSE_CODE(ServerError, 05)
+        TooManyRequests =           COAP_RESPONSE_CODE(ClientError, 29),
+
+        InternalServerError =       COAP_RESPONSE_CODE(ServerError, 00),
+        NotImplemented =            COAP_RESPONSE_CODE(ServerError, 01),
+        ServiceUnavailable =        COAP_RESPONSE_CODE(ServerError, 03),
+        GatewayTimeout =            COAP_RESPONSE_CODE(ServerError, 04),
+        ProxyingNotSupported =      COAP_RESPONSE_CODE(ServerError, 05)
     };
 
 

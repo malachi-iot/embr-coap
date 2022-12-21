@@ -4,7 +4,7 @@ get_filename_component(SRC_DIR ${SRC_DIR} ABSOLUTE)
 
 include(${SRC_DIR}/source.cmake)
 
-message(STATUS "GOT HERE: ${SRC_DIR}")
+message(DEBUG "mc-coap: SRC_DIR=${SRC_DIR}")
 
 # app_update because we query runtime version in esp-idf/observer.h
 set(COMPONENT_REQUIRES estdlib embr app_update)
