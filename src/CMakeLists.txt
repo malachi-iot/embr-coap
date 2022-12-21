@@ -13,12 +13,13 @@ set(EMBR_DIR ${ROOT_DIR}/ext/embr/src)
 include_directories(${ESTDLIB_DIR})
 include_directories(${EMBR_DIR})
 
-set(SOURCE_FILES
-        coap.cpp coap.h
+include(source.cmake)
+
+set(SOURCE_FILES ${SOURCE_FILES}
+        coap.h
 
         cbor.h
-        cbor/cbor.cpp cbor/features.h
-        cbor/decoder.cpp
+        cbor/features.h
         cbor/decoder.h
         cbor/encoder.h
 
@@ -26,7 +27,6 @@ set(SOURCE_FILES
 
         coap/context.h
 
-        coap/decoder.cpp
         coap/decoder.h
         coap/decoder.hpp
 
@@ -47,13 +47,10 @@ set(SOURCE_FILES
         coap/observable.h coap/observable.hpp
         coap/platform.h
         coap/option.h
-        coap/option-decoder.cpp
 
-        coap/token.cpp
         coap/token.h
 
         coap-encoder.h
-        coap-encoder.cpp
         coap-features.h
         coap-uripath-dispatcher.hpp coap-uripath-dispatcher.h
 

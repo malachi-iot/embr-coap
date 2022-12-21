@@ -1,16 +1,18 @@
 set(ROOT_DIR ${CMAKE_CURRENT_LIST_DIR}/../..)
+set(SRC_DIR ${ROOT_DIR}/src)
+get_filename_component(SRC_DIR ${SRC_DIR} ABSOLUTE)
+
+include(${SRC_DIR}/source.cmake)
+
+message(STATUS "GOT HERE: ${SRC_DIR}")
 
 # app_update because we query runtime version in esp-idf/observer.h
 set(COMPONENT_REQUIRES estdlib embr app_update)
 
-set(COMPONENT_SRCS 
-    ${ROOT_DIR}/src/coap.cpp
-    ${ROOT_DIR}/src/coap/option-decoder.cpp
-    ${ROOT_DIR}/src/coap-encoder.cpp
-    ${ROOT_DIR}/src/coap/decoder.cpp
-    ${ROOT_DIR}/src/coap/decoder/observer/util.cpp
-    ${ROOT_DIR}/src/coap/token.cpp
+list(TRANSFORM SOURCE_FILES PREPEND ${SRC_DIR}/)
 
+set(COMPONENT_SRCS 
+    ${SOURCE_FILES}
     ${ROOT_DIR}/src/coap/platform/esp-idf/observer.cpp
     )
 

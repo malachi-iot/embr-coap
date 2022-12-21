@@ -58,6 +58,7 @@ static void test_build_reply()
     estd::span<char> buf(&buffer[0], 512);
     encoder_type encoder(buf);
     coap::TokenAndHeaderContext<true> context;
+    constexpr auto code_200 = (coap::Header::Code::Codes)COAP_RESPONSE_CODE(2, 00);
 
     // represents synthetic incoming header
     coap::Header h(coap::Header::Confirmable);
@@ -66,7 +67,7 @@ static void test_build_reply()
 
     context.header(h);
 
-    coap::build_reply(context, encoder, 200);
+    coap::build_reply(context, encoder, code_200);
 
     coap::Header h2;
 

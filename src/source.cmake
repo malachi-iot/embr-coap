@@ -1,0 +1,10 @@
+set(SOURCE_FILES
+        coap.cpp
+        coap-encoder.cpp
+        cbor/cbor.cpp
+        cbor/decoder.cpp
+        coap/decoder.cpp
+        coap/decoder/observer/util.cpp
+        coap/option-decoder.cpp
+        coap/token.cpp
+        )
