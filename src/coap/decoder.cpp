@@ -76,6 +76,10 @@ void Decoder::process_iterate_internal()
         case PayloadDone:
             state(Done);
             break;
+
+        default:
+            // TODO: Put in a log/assert here - should not get here
+            break;
     }
 }
 
