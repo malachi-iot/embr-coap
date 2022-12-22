@@ -7,11 +7,11 @@
 #include <pico/cyw43_arch.h>
 #include <pico/stdio_usb.h>
 
+#include <test/support.h>
+
 void udp_coap_init();
 
 using namespace estd;
-
-static pico_ostream clog(stdio_usb);
 
 void main_task(__unused void *params)
 {
@@ -30,25 +30,7 @@ void main_task(__unused void *params)
 
 int main()
 {
-    stdio_init_all();
-
-    if (cyw43_arch_init())
-    {
-        clog << "failed to initialise" << estd::endl;
-        return 1;
-    }
-
-    cyw43_arch_enable_sta_mode();
-
-    clog << "connecting to " << WIFI_SSID << endl;
-
-    if (cyw43_arch_wifi_connect_timeout_ms(WIFI_SSID, WIFI_PASSWORD, CYW43_AUTH_WPA2_AES_PSK, 10000))
-    {
-        clog << "failed to connect: ssid=" << WIFI_SSID;
-        //clog << ", pass=" << WIFI_PASSWORD;
-        clog << endl;
-        return 1;
-    }
+    test::v1::init(WIFI_SSID, WIFI_PASSWORD);
 
     udp_coap_init();
 

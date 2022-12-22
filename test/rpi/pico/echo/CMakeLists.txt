@@ -8,18 +8,9 @@ include(wifi.cmake)
 
 project(echo LANGUAGES C CXX)
 
-set(ROOT_DIR ../../../..)
+add_subdirectory(../support support)
+
 set(SRC_DIR ${ROOT_DIR}/test/rtos/esp32/echo/main)
-set(TEMPLATE_DIR ${ROOT_DIR}/test/template)
-
-# initialize the Raspberry Pi Pico SDK
-pico_sdk_init()
-
-# picks up estd for us also
-add_subdirectory(${ROOT_DIR}/ext/embr/src embr)
-# DEBT: coap lib doesn't truly include embr/estd - perhaps make it an interface
-# library, because it implicitly is already
-add_subdirectory(${ROOT_DIR}/src coap)
 
 add_executable(${PROJECT_NAME}
     main.cpp
@@ -32,14 +23,12 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
         WIFI_PASSWORD=\"${WIFI_PASSWORD}\"
         )
 
-# Gets esp_log.h wrapper - might be better as a tiny interface library instead though. hmm
-target_include_directories(${PROJECT_NAME} PRIVATE ${ROOT_DIR}/ext/estdlib/src/estd/port/esp-idf/fake)
 target_include_directories(${PROJECT_NAME} PRIVATE .)
 
 target_link_libraries(${PROJECT_NAME}
     pico_stdlib
     pico_cyw43_arch_lwip_poll
-    estd embr mc-coap)
+    support estd embr mc-coap)
 
 # enable usb output, disable uart output
 pico_enable_stdio_usb(${PROJECT_NAME} 1)
