@@ -204,13 +204,14 @@ TEST_CASE("CoAP decoder subject tests", "[coap-decoder-subject]")
         SECTION("Auto 404")
         {
             request_context_t ctx;
-            r.on_notify(event::option_completed{}, ctx);
+            r.on_notify(event::completed{false}, ctx);
         }
+        /*
         SECTION("")
         {
             ExtraContext ctx;
-            r.on_notify(event::option_completed{}, ctx);
-        }
+            r.on_notify(event::completed{false}, ctx);
+        } */
     }
     SECTION("MessageKey")
     {

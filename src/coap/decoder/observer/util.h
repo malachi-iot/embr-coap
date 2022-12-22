@@ -19,6 +19,7 @@
 #include "../uri.h"   // brings in UriPathMatcher and friends
 #include "../events.h"
 #include "../../../exp/events.h"
+#include "../../fwd.h"
 
 namespace embr { namespace coap {
 
@@ -158,7 +159,7 @@ struct Auto404Observer : ExperimentalDecoderEventTypedefs
 };
 
 // Generates either 404 or specific response codes, depending on context
-// NOTE: Not functional yet
+// DEBT: Minimally working, but confusing that it depends on 'ExtraContext'
 struct AutoReplyObserver : ExperimentalDecoderEventTypedefs
 {
     static constexpr const char* TAG = "AutoReplyObserver";
@@ -178,30 +179,55 @@ struct AutoReplyObserver : ExperimentalDecoderEventTypedefs
         context.reply(encoder);
     }
 
+
+    template <class TContext, typename estd::enable_if<
+        !estd::is_base_of<internal::ExtraContext, TContext>::value &&
+        //estd::is_base_of<HeaderContext, TContext>::value
+        true
+        , int>::type = 0>
+    static void on_notify(event::option_completed, TContext& context)
+    {
+    }
+
+
+    template <class TContext, typename estd::enable_if<
+        estd::is_base_of<internal::ExtraContext, TContext>::value &&
+        estd::is_base_of<UriParserContext, TContext>::value
+        //true
+        , int>::type = 0>
+    static void on_notify(event::option_completed, TContext& context)
+    {
+        if(context.found_node() == MCCOAP_URIPATH_NONE)
+        {
+            context.response_code = Header::Code::NotFound;
+        }
+    }
+
     template <class TContext, typename estd::enable_if<
             !estd::is_base_of<internal::ExtraContext, TContext>::value &&
             //estd::is_base_of<HeaderContext, TContext>::value
             true
             , int>::type = 0>
-    static void on_notify(option_completed_event, TContext& context)
+    static void on_notify(event::completed, TContext& context)
     {
     }
 
 
     template <class TContext, typename estd::enable_if<
             estd::is_base_of<internal::ExtraContext, TContext>::value &&
-            //estd::is_base_of<HeaderContext, TContext>::value
-            true
+            estd::is_base_of<tags::header_context, TContext>::value
             , int>::type = 0>
-    static void on_notify(option_completed_event, TContext& context)
+    static void on_notify(event::completed, TContext& context)
     {
         const Header header = context.header();
 
-        if(context.response_code.has_value() && header.type() == header::Types::Confirmable)
+        if(context.response_code.has_value() &&
+            context.flags.response_sent == false &&
+            header.type() == header::Types::Confirmable)
         {
-            //auto encoder = make_encoder_reply(context, context.response_code);
+            auto encoder = make_encoder_reply(context, context.response_code.value());
 
-            //context.reply(encoder);
+            context.reply(encoder);
         }
     }
 };

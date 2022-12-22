@@ -81,6 +81,10 @@ inline void build_reply(
     internal::build_reply_encoder(encoder, header, context.token());
 }
 
+// DEBT: Just as below, a true EncoderFactory would be better
+template <class TContext>
+typename TContext::encoder_type make_encoder(TContext&);
+
 // Expects TContext to be/conform to:
 // embr::coap::IncomingContext
 // TODO: better suited to cpp/hpp - be nice to non-inline it
@@ -89,7 +93,7 @@ inline void build_reply(
 // 'encoder_type' expectation is not fully solidified just yet
 template <class TContext>
 inline typename TContext::encoder_type make_encoder_reply(TContext& context,
-    Header::Code::Codes code, header::Types type = Header::Acknowledgement)
+    Header::Code::Codes code, header::Types type)
 {
     // DEBT: make_encoder is a pretty flimsy factory.  We're likely better off with the still experimental
     // fully specialized struct EncoderFactory in retry area
