@@ -1,5 +1,7 @@
 #include <estd/istream.h>
 
+#include <embr/observer.h>
+
 // remember to do this and not regular subject.h, otherwise not all the deductions will work
 #include <coap/decoder/subject.hpp>
 #include <coap/decoder/streambuf.hpp>
@@ -8,8 +10,11 @@ using namespace embr::coap;
 
 #include "context.h"
 
+#ifdef ESP_PLATFORM
 // This gets us 'build_version_response' which is indeed esp-idf specific
 #include <coap/platform/esp-idf/observer.h>
+#else
+#endif
 
 #include <coap/platform/lwip/encoder.h>
 

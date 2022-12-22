@@ -10,11 +10,11 @@ project(echo-subject LANGUAGES C CXX)
 
 add_subdirectory(../support support)
 
-set(SRC_DIR ${ROOT_DIR}/test/rtos/esp32/echo-subject/main)
+set(SRC_DIR ${ROOT_DIR}/test/rtos/esp32/boilerplate-subject/main)
 
 add_executable(${PROJECT_NAME}
     main.cpp
-    ${SRC_DIR}/udp-coap.cpp
+    ${SRC_DIR}/app.cpp
     ${TEMPLATE_DIR}/lwip.cpp
 )
 

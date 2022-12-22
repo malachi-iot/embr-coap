@@ -1,5 +1,7 @@
 #pragma once
 
+#include "esp_log.h"
+
 #include <estd/optional.h>
 
 #include <coap/platform/lwip/context.h>
