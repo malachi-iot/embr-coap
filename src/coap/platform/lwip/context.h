@@ -1,7 +1,9 @@
 #pragma once
 
-// On to use experimental LWIP transport abstraction code
+// Default on to use experimental LwIP transport abstraction code
+#ifndef FEATURE_MCCOAP_LWIP_TRANSPORT
 #define FEATURE_MCCOAP_LWIP_TRANSPORT 1
+#endif
 
 #include <coap/context.h>
 #include <embr/platform/lwip/streambuf.h>
