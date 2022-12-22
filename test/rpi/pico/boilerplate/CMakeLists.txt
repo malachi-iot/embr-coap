@@ -6,7 +6,7 @@ set(PICO_BOARD "pico_w")
 include($ENV{PICO_SDK_PATH}/pico_sdk_init.cmake)
 include(wifi.cmake)
 
-project(echo-subject LANGUAGES C CXX)
+project(boilerplate LANGUAGES C CXX)
 
 add_subdirectory(../support support)
 

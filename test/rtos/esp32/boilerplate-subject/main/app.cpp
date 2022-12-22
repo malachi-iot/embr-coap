@@ -13,6 +13,7 @@ using namespace embr::coap;
 #ifdef ESP_PLATFORM
 // This gets us 'build_version_response' which is indeed esp-idf specific
 #include <coap/platform/esp-idf/observer.h>
+#define FEATURE_APP_GPIO 1
 #else
 #endif
 
@@ -90,9 +91,11 @@ struct Observer
                 context.completed_gpio(encoder);
                 break;
                 
+#ifdef ESP_PLATFORM
             case id_path_v1_api_version:
                 build_version_response(context, encoder);
                 break;
+#endif
 
             default:
                 build_reply(context, encoder, Header::Code::NotFound);
@@ -138,3 +141,13 @@ void udp_coap_recv(void *arg,
     // DEBT: I think I prefer explicitly freeing here, decode_and_notify assistance is too magic
     decode_and_notify(p, app_subject, context);
 }
+
+
+#if FEATURE_APP_GPIO == 0
+void AppContext::select_gpio(const event::option& e) {}
+void AppContext::put_gpio(istreambuf_type& streambuf) {}
+void AppContext::completed_gpio(encoder_type& encoder)
+{
+    build_reply(*this, encoder, Header::Code::NotImplemented);
+}
+#endif

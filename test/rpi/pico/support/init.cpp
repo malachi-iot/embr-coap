@@ -14,25 +14,6 @@ pico_ostream clog(stdio_usb);
 
 }
 
-// +++ WORKAROUND
-// NOTE: I think the fwd of make_encoder with template parameter has caused some inconsistencies
-
-#include <coap/platform/lwip/context.h>
-#include <coap/platform/lwip/encoder.h>
-
-namespace embr::coap {
-
-template <>
-LwipIncomingContext::encoder_type make_encoder(LwipIncomingContext&)
-{
-    return embr::coap::LwipIncomingContext::encoder_type(8);
-}
-
-}
-
-// ---
-
-
 
 namespace test { namespace v1 {
 

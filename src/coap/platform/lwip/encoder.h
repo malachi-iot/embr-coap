@@ -27,9 +27,9 @@ inline LwipContext::encoder_type make_encoder(const LwipContext&)
 namespace impl {
 
 template <typename TChar>
-struct StreambufEncoderImpl<::embr::lwip::upgrading::basic_opbuf_streambuf<TChar> >
+struct StreambufEncoderImpl<::embr::lwip::basic_opbuf_streambuf<TChar> >
 {
-    typedef typename estd::remove_const<::embr::lwip::upgrading::basic_opbuf_streambuf<TChar> >::type streambuf_type;
+    typedef typename estd::remove_const<::embr::lwip::basic_opbuf_streambuf<TChar> >::type streambuf_type;
     typedef typename streambuf_type::size_type size_type;
 
     static void finalize(streambuf_type* streambuf)

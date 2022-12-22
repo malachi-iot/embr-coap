@@ -39,7 +39,7 @@ inline void build_reply_extra(ExtraContext& context, Header::Code::Codes code, i
     context.response_code = code;
 }
 
-inline Header build_reply_header(HeaderContext& context, Header::Code::Codes code, header::Types type)
+inline Header build_reply_header(const HeaderContext& context, Header::Code::Codes code, header::Types type)
 {
     Header header = context.header();
 
@@ -71,7 +71,24 @@ inline void build_reply_encoder(
 template <class TContext, class TStreambuf, class TStreambufEncoderImpl, typename enable =
     typename estd::enable_if<
         estd::is_base_of<tags::token_context, TContext>::value &&
-        estd::is_base_of<tags::header_context, TContext>::value
+        estd::is_base_of<tags::header_context, TContext>::value &&
+        !estd::is_base_of<internal::ExtraContext, TContext>::value
+    >::type>
+inline void build_reply(
+    const TContext& context,
+    StreambufEncoder<TStreambuf, TStreambufEncoderImpl>& encoder,
+    Header::Code::Codes code, header::Types type = Header::Acknowledgement)
+{
+    Header header = internal::build_reply_header(context, code, type);
+    internal::build_reply_encoder(encoder, header, context.token());
+}
+
+
+template <class TContext, class TStreambuf, class TStreambufEncoderImpl, typename enable =
+    typename estd::enable_if<
+        estd::is_base_of<tags::token_context, TContext>::value &&
+        estd::is_base_of<tags::header_context, TContext>::value &&
+        estd::is_base_of<internal::ExtraContext, TContext>::value
     >::type>
 inline void build_reply(
     TContext& context,
@@ -86,7 +103,7 @@ inline void build_reply(
 // DEBT: make_encoder now on the way out.  Keeping around in case we want to specialize
 // directly on that method, but main customization should now occur in TContext::encoder_factory
 template <class TContext>
-inline typename TContext::encoder_type make_encoder(TContext&)
+inline typename TContext::encoder_type make_encoder(const TContext&)
 {
     return TContext::encoder_factory::create();
 }

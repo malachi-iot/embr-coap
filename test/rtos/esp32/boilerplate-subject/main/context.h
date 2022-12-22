@@ -32,12 +32,3 @@ struct AppContext :
     void put_gpio(istreambuf_type& payload);
     void completed_gpio(encoder_type& encoder);
 };
-
-
-// DEBT: non-obvious LwIP specificity
-inline AppContext::encoder_type make_encoder(const AppContext&)
-{
-    ESP_LOGV("TEST", "Got to special encoder");
-
-    return AppContext::encoder_type(32);
-}
