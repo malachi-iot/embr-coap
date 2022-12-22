@@ -26,7 +26,11 @@ struct Observer
     {
         ESP_LOGD(TAG, "on_notify completed");
 
-        AppContext::encoder_type encoder = make_encoder_reply(context, Header::Code::Valid);
+        auto encoder = AppContext::encoder_factory::create();
+
+        //AppContext::encoder_type encoder = make_encoder_reply(context, Header::Code::Valid);
+
+        build_reply(context, encoder, Header::Code::Valid);
 
         context.reply(encoder);
     }

@@ -10,6 +10,8 @@ namespace embr { namespace coap {
 // the particulars of how an encoder+streambuf is initialized changes
 // for the underlying streambuf+application in question
 
+// Keeping around for posterity, now we rely on experimental EncoderFactory
+#if UNUSED
 // TODO: Best if we can decouple from LwipContext somehow.  Perhaps
 // specialize on a TContext::encoder_type?
 inline LwipContext::encoder_type make_encoder(const LwipContext&)
@@ -20,6 +22,7 @@ inline LwipContext::encoder_type make_encoder(const LwipContext&)
     // their context for more specificity
     return LwipContext::encoder_type(256);
 }
+#endif
 
 namespace impl {
 

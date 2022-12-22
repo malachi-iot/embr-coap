@@ -1,3 +1,5 @@
+#pragma once
+
 #include <estd/algorithm.h>
 
 #include "streambuf.h"

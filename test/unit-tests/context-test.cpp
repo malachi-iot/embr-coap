@@ -10,18 +10,12 @@
 
 using namespace embr::coap;
 
-static char buf[128];
+namespace test {
 
-// FIX: We need both of these due to make_encode_reply
-SyntheticIncomingContext::encoder_type make_encoder(SyntheticIncomingContext& context)
-{
-    return SyntheticIncomingContext::encoder_type(buf);
+char synthetic_outbuf[128];
+
 }
 
-ExtraContext::encoder_type make_encoder(ExtraContext& context)
-{
-    return ExtraContext::encoder_type(buf);
-}
 
 namespace uris {
 
@@ -42,7 +36,8 @@ TEST_CASE("context tests", "[context]")
 {
     ExtraContext context(uri_map);
     Decoder decoder;
-    estd::span<const uint8_t> _buf((uint8_t*)buf, sizeof(buf));
+    char* buf = test::synthetic_outbuf;
+    estd::span<const uint8_t> _buf((uint8_t*)buf, sizeof(test::synthetic_outbuf));
     Decoder::Context out_chunk(_buf, true);
 
     SECTION("encoder")

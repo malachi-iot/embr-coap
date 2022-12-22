@@ -9,6 +9,8 @@
 #include <coap/context.h>
 #include <coap/header.h>
 
+#include <exp/retry/factory.h>
+
 namespace embr { namespace coap {
 
 namespace internal {
@@ -81,9 +83,13 @@ inline void build_reply(
     internal::build_reply_encoder(encoder, header, context.token());
 }
 
-// DEBT: Just as below, a true EncoderFactory would be better
+// DEBT: make_encoder now on the way out.  Keeping around in case we want to specialize
+// directly on that method, but main customization should now occur in TContext::encoder_factory
 template <class TContext>
-typename TContext::encoder_type make_encoder(TContext&);
+inline typename TContext::encoder_type make_encoder(TContext&)
+{
+    return TContext::encoder_factory::create();
+}
 
 // Expects TContext to be/conform to:
 // embr::coap::IncomingContext
@@ -95,8 +101,6 @@ template <class TContext>
 inline typename TContext::encoder_type make_encoder_reply(TContext& context,
     Header::Code::Codes code, header::Types type)
 {
-    // DEBT: make_encoder is a pretty flimsy factory.  We're likely better off with the still experimental
-    // fully specialized struct EncoderFactory in retry area
     typename TContext::encoder_type encoder = make_encoder(context);
 
     build_reply(context, encoder, code, type);

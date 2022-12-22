@@ -13,6 +13,8 @@
 
 #include "../ip.h"
 
+#include <exp/retry/factory.h>
+
 // This is all UDP oriented.  No TCP or SSL support
 
 namespace embr { namespace coap {
@@ -47,6 +49,27 @@ static iterated::decode_result decode_and_notify(
 }
 #endif
 
+namespace experimental {
+
+template <>
+struct StreambufProvider<struct pbuf*>
+{
+    typedef embr::lwip::opbuf_streambuf ostreambuf_type;
+    typedef embr::lwip::ipbuf_streambuf istreambuf_type;
+};
+
+
+template <unsigned N>
+struct LwipPbufFactory
+{
+    static inline embr::lwip::Pbuf create()
+    {
+        return embr::lwip::Pbuf(N);
+    }
+};
+
+}
+
 
 // TODO: Either include addr in here and somehow NOT in app context,
 // or go other direction and inherit from embr::coap::IncomingContext
@@ -70,6 +93,22 @@ struct LwipContext
     typedef embr::coap::StreambufDecoder<in_streambuf_type> decoder_type;
 
     typedef embr::lwip::internal::Endpoint<> endpoint_type;
+
+#ifdef __cpp_alias_templates
+    template <unsigned N>
+    using lwip_encoder_factory = embr::coap::experimental::EncoderFactory<
+        pbuf_pointer, embr::coap::experimental::LwipPbufFactory<N> >;
+#endif
+    
+    // stock-standard size is 256, which is generally too large
+    // for many CoAP scenarios but still small enough to throw around
+    // in a memory constrained system.  One can (and should) specialize
+    // their context for more specificity
+    
+    // Default factory, but can be overridden later down hierarchy
+    typedef embr::coap::experimental::EncoderFactory<
+        pbuf_pointer,
+        embr::coap::experimental::LwipPbufFactory<64> > encoder_factory;
 
 #ifdef FEATURE_MCCOAP_LWIP_TRANSPORT
     LwipContext(pcb_pointer pcb) : 

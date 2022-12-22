@@ -9,6 +9,8 @@ struct AppContext :
     embr::coap::IncomingContext<const ip_addr_t*>,
     embr::coap::LwipContext
 {
+    typedef embr::coap::LwipContext::lwip_encoder_factory<8> encoder_factory;
+
     uint16_t port;
 
     AppContext(struct udp_pcb* pcb, 
@@ -35,9 +37,3 @@ struct AppContext :
 };
 #endif
 
-// number of seed bytes is sorta app-specific, so do it here
-// (ping needs only 8 bytes ever)
-inline LwipContext::encoder_type make_encoder(const AppContext&)
-{
-    return LwipContext::encoder_type(8);
-}

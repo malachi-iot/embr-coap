@@ -3,6 +3,7 @@
  */
 #pragma once
 
+#include "../fwd.h"
 #include "../../coap-features.h"
 
 #if FEATURE_MCCOAP_NETBUF_ENCODER
@@ -24,12 +25,6 @@
 namespace embr { namespace coap {
 
 namespace impl {
-
-// DEBT: Pretty sure we don't need an explicit coap finalization like this, but rather
-// a transport-level one.  So, making this default to not implemented and very much moving
-// towards phasing it out completely
-template<class TStreambuf>
-struct StreambufEncoderImpl;
 
 // Somewhat of a reference implementation
 template <typename TChar>
@@ -66,13 +61,11 @@ struct StreambufEncoderImpl<::embr::mem::out_netbuf_streambuf<char, TNetbuf> >
 }
 
 
+// See fwd.h for documentation on impl
 // TODO: Still need to address partial (chunked) writes
 // NOTE: header and token no chunking is not planned, we'd have to employ HeaderEncoder and
 // TokenEncoder.  That use case is an edge case, since maximum size of header + token = 12 bytes
-template <
-        class TStreambuf,
-        class TStreambufEncoderImpl = impl::StreambufEncoderImpl<TStreambuf>
-        >
+template <class TStreambuf, class TStreambufEncoderImpl>
 class StreambufEncoder
 {
 #ifdef FEATURE_CPP_ENUM_CLASS

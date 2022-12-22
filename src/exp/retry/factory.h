@@ -13,7 +13,7 @@ namespace embr { namespace coap { namespace experimental {
 template <class TBuffer>
 struct DecoderFactory;
 
-template <class TBuffer>
+template <class TBuffer, class TBufferFactory = estd::monostate>
 struct EncoderFactory;
 
 template <class TBuffer>
@@ -42,12 +42,13 @@ struct DecoderFactory<estd::span<const uint8_t> >
 }; */
 
 
-template <class TBuffer>
+template <class TBuffer, class TBufferFactory>
 struct EncoderFactory
 {
     typedef TBuffer buffer_type;
     typedef typename StreambufProvider<buffer_type>::ostreambuf_type streambuf_type;
     typedef StreambufEncoder<streambuf_type> encoder_type;
+    typedef TBufferFactory buffer_factory;
 
 #ifdef __cpp_rvalue_references
     inline static encoder_type create(buffer_type&& buffer)
@@ -59,6 +60,16 @@ struct EncoderFactory
     inline static encoder_type create(const buffer_type& buffer)
     {
         return encoder_type(buffer);
+    }
+
+    inline static encoder_type create()
+    {
+        return encoder_type(buffer_factory{}.create());
+    }
+
+    inline static encoder_type create(const buffer_factory& bf)
+    {
+        return encoder_type(bf.create());
     }
 };
 
