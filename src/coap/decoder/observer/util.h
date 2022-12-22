@@ -205,11 +205,11 @@ struct AutoReplyObserver : ExperimentalDecoderEventTypedefs
 
     template <class TContext, typename estd::enable_if<
             !estd::is_base_of<internal::ExtraContext, TContext>::value &&
-            //estd::is_base_of<HeaderContext, TContext>::value
-            true
+            estd::is_base_of<UriParserContext, TContext>::value
             , int>::type = 0>
     static void on_notify(event::completed, TContext& context)
     {
+        do_404(context);
     }
 
 

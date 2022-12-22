@@ -197,22 +197,6 @@ TEST_CASE("CoAP decoder subject tests", "[coap-decoder-subject]")
 
         REQUIRE(ctx.flags.payload);
     }
-    SECTION("AutoReplyObserver")
-    {
-        AutoReplyObserver r;
-
-        SECTION("Auto 404")
-        {
-            request_context_t ctx;
-            r.on_notify(event::completed{false}, ctx);
-        }
-        /*
-        SECTION("")
-        {
-            ExtraContext ctx;
-            r.on_notify(event::completed{false}, ctx);
-        } */
-    }
     SECTION("MessageKey")
     {
         experimental::MessageKey<int> key{0, 0};

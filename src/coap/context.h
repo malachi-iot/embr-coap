@@ -51,7 +51,7 @@ class TokenContext;
 
 // inline flavor
 template <>
-class TokenContext<true> : tags::token_context
+class TokenContext<true> : public tags::token_context
 {
 protected:
     typedef layer1::Token token_t;
@@ -82,7 +82,7 @@ public:
 
 // NOTE: Code has signficantly changed and this is now considered not tested
 template <>
-class TokenContext<false> : tags::token_context
+class TokenContext<false> : public tags::token_context
 {
 protected:
     const uint8_t* _token;
@@ -114,7 +114,7 @@ public:
 
 
 
-class HeaderContext : tags::header_context
+class HeaderContext : public tags::header_context
 {
     Header m_header;
 
