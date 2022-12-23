@@ -235,28 +235,52 @@ struct AutoReplyObserver : ExperimentalDecoderEventTypedefs
 
 namespace experimental {
 
+
+template <class TEndpoint>
+struct EndpointProvider
+{
+    typedef TEndpoint endpoint_type;
+
+    const endpoint_type endpoint;
+
+    ESTD_CPP_CONSTEXPR_RET EndpointProvider(endpoint_type endpoint) :
+        endpoint(endpoint)
+    {
+        
+    }
+};
+
 // Uniquely identifies a message
 // NOTE: TTimePoint may or may not participate in uniquely identifying the message, depending
 // on the task at hand
 // initially for use with dup mid matcher, but could be useful for observable as well
 template <typename TEndpoint, typename TTimePoint = void>
-struct MessageKey
+struct MessageKey : EndpointProvider<TEndpoint>
 {
-    typedef TEndpoint endpoint_type;
     typedef TTimePoint timepoint;
 
     const uint16_t mid;
     const timepoint timestamp;
-    const endpoint_type endpoint;
 };
 
 template <typename TEndpoint>
-struct MessageKey<TEndpoint, void>
+struct MessageKey<TEndpoint, void> : EndpointProvider<TEndpoint>
 {
-    typedef TEndpoint endpoint_type;
+    typedef EndpointProvider<TEndpoint> base_type;
 
     const uint16_t mid;
-    const endpoint_type endpoint;
+
+    ESTD_CPP_CONSTEXPR_RET MessageKey(TEndpoint endpoint, uint16_t mid) :
+        base_type(endpoint),
+        mid(mid)
+    {}
+};
+
+// For use with RFC 7641
+template <typename TEndpoint>
+struct ObserveEndpointKey : EndpointProvider<TEndpoint>
+{
+    const layer1::Token token;
 };
 
 struct ExtraObserver
