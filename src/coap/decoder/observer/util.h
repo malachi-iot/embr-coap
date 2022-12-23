@@ -65,21 +65,22 @@ struct TokenContextObserver : ExperimentalDecoderEventTypedefs
 };
 
 // stateless observer which populates some of the context items
-struct HeaderContextObserver : ExperimentalDecoderEventTypedefs
+struct HeaderContextObserver
 {
-    static void on_notify(const header_event& e, embr::coap::HeaderContext& ctx) 
+    inline static void on_notify(const event::header& e, embr::coap::HeaderContext& ctx)
     {
         ctx.header(e.h);
     }
 };
 
+// Parses and matches incoming URI via UriPathMatcher
 // FIX: Needs better name
 struct UriParserObserver : ExperimentalDecoderEventTypedefs
 {
     static const char* TAG;
 
     // TODO: Put this elsewhere in a reusable component
-    static void on_notify(const option_event& e, UriParserContext& ctx)
+    static void on_notify(const event::option& e, UriParserContext& ctx)
     {
 #ifdef ESTD_IDF_VER
         // Only here to help diagnose event-not-firing stuff
@@ -105,6 +106,8 @@ struct UriParserObserver : ExperimentalDecoderEventTypedefs
 #endif
 };
 
+// Builds a full incoming_uri string.  Usually you'll prefer UriParserObserver
+// DEBT: Not thread safe!
 struct _UriBuilderObserver : ExperimentalDecoderEventTypedefs
 {
     static const char* TAG;
@@ -246,7 +249,7 @@ struct EndpointProvider
     ESTD_CPP_CONSTEXPR_RET EndpointProvider(endpoint_type endpoint) :
         endpoint(endpoint)
     {
-        
+
     }
 };
 
