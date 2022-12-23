@@ -283,7 +283,21 @@ struct MessageKey<TEndpoint, void> : EndpointProvider<TEndpoint>
 template <typename TEndpoint>
 struct ObserveEndpointKey : EndpointProvider<TEndpoint>
 {
-    const layer1::Token token;
+    typedef EndpointProvider<TEndpoint> base_type;
+    typedef typename base_type::endpoint_type endpoint_type;
+    typedef coap::layer2::Token token_type;
+
+    const token_type token;
+
+    ESTD_CPP_CONSTEXPR_RET ObserveEndpointKey(endpoint_type endpoint, const token_type& token) :
+        base_type(endpoint),
+        token(token)
+    {}
+
+    ESTD_CPP_CONSTEXPR_RET ObserveEndpointKey(const ObserveEndpointKey& copy_from) :
+        base_type(copy_from.endpoint),
+        token(copy_from.token)
+    {}
 };
 
 struct ExtraObserver

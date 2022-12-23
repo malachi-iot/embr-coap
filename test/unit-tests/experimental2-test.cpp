@@ -2,9 +2,9 @@
 
 //#include <embr/datapump.hpp>
 #include <embr/observer.h>
-//#include <embr/netbuf-static.h>
 
 #include <exp/retry.h>
+#include <exp/subject.h>
 
 //#include <exp/message-observer.h>
 #include "test-observer.h"
@@ -317,5 +317,13 @@ TEST_CASE("experimental 2 tests")
                 REQUIRE(!v);
             }
         }
+    }
+    SECTION("rfc 7641")
+    {
+        embr::coap::layer2::Token token;
+        observable::Registrar<int> registrar;
+        observable::Registrar<int>::key_type key(0, token);
+
+        registrar.add(key, 1);
     }
 }
