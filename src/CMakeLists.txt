@@ -6,85 +6,18 @@ project(mc-coap)
 # NOTE: Need to make this set externally and well tested somehow
 # set(CMAKE_CXX_STANDARD 98)
 
-set(ROOT_DIR ..)
+include(source.cmake)
+
+# DEBT: Treating these basically as interface libraries.  Formalize that
 set(ESTDLIB_DIR ${ROOT_DIR}/ext/estdlib/src)
 set(EMBR_DIR ${ROOT_DIR}/ext/embr/src)
 
 include_directories(${ESTDLIB_DIR})
 include_directories(${EMBR_DIR})
 
-include(source.cmake)
+set(SOURCE_FILES ${SOURCE_FILES})
 
-set(SOURCE_FILES ${SOURCE_FILES}
-        coap.h
-
-        cbor.h
-        cbor/features.h
-        cbor/decoder.h
-        cbor/encoder.h
-
-        coap/blockwise.h
-
-        coap/context.h
-
-        coap/decoder.h
-        coap/decoder.hpp
-
-        coap/decoder/context.h
-        coap/decoder/decode-and-notify.h
-        coap/decoder/events.h
-        coap/decoder/option.h
-        coap/decoder/simple.h
-
-        coap/decoder/streambuf.h
-        coap/decoder/streambuf.hpp
-
-        coap/decoder/subject.hpp
-        coap/decoder/subject-core.hpp
-
-        coap/encoder/streambuf.h
-
-        coap/observable.h coap/observable.hpp
-        coap/platform.h
-        coap/option.h
-
-        coap/token.h
-
-        coap-encoder.h
-        coap-features.h
-        coap-uripath-dispatcher.hpp coap-uripath-dispatcher.h
-
-        exp/events.h
-        exp/factory.h
-        exp/message-observer.h
-        exp/option-trait.h
-        exp/retry.h
-        exp/diagnostic-decoder-observer.h
-        exp/uripath-repeater.h
-        exp/uripathmap.h
-
-        exp/prototype/observer-idea1.h
-
-        platform/arduino/arduino-eth-datapump.cpp
-
-        platform/generic/datapump-messageobserver.hpp
-
-        platform/lwip/lwip-datapump.h
-
-        platform/mbedtls/dtls-datapump.cpp
-        platform/mbedtls/dtls-datapump.h
-
-        platform/posix/sockets-datapump.h
-        platform/posix/sockets-datapump.cpp
-
-        mc/opts.h
-        mc/opts-internal.h
-        mc/encoder-base.h
-
-        coap-observable.h
-
-        )
-
-add_library(${PROJECT_NAME} ${SOURCE_FILES})
+# DEBT: doc files not showing up in CLion (acting like a noop here)
+add_library(${PROJECT_NAME} ${SOURCE_FILES} ${DOC_FILES})
 
 target_include_directories(${PROJECT_NAME} PUBLIC .)

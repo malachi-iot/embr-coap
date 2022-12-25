@@ -2,7 +2,6 @@
 #include "coap-encoder.h"
 //#include "coap_transmission.h"
 #include "coap/token.h"
-#include "coap-observable.h"
 #include "coap/uint.h"
 #include "test-data.h"
 
