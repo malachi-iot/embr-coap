@@ -9,14 +9,19 @@ const char* get_description(Option::Numbers number)
     switch(number)
     {
         case Option::Zeroed:        return "Zeroed";
+        case Option::UriHost:       return "Uri-Host";
         case Option::ETag:          return "ETag";
         case Option::Observe:       return "Observe";
+        case Option::UriPort:       return "Uri-Port";
         case Option::UriPath:       return "Uri-Path";
         case Option::ContentFormat: return "Content-Format";
         case Option::UriQuery:      return "Uri-Query";
         case Option::Accept:        return "Accept";
         case Option::Block1:        return "Block1";
         case Option::Block2:        return "Block2";
+        case Option::ProxyUri:      return "Proxy-Uri";
+        case Option::Echo:          return "Echo";
+
         default:                    return NULLPTR;
     }
 }
