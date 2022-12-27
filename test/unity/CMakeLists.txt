@@ -17,7 +17,9 @@ add_library(${PROJECT_NAME}
     basic.cpp
     decoder.cpp
     encoder.cpp
+    experimental.cpp
     retry.cpp
+    rfc7641.cpp
     uri.cpp)
 
 target_link_libraries(${PROJECT_NAME} unity embr mc-coap)

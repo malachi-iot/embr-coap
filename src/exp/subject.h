@@ -12,48 +12,68 @@ namespace embr { namespace coap {
 
 namespace experimental { namespace observable {
 
+struct RegistrarKeyBase
+{
+    typedef int handle_type;
+    // this represents the particular resource being observed.
+    // For simple scenarios, there will be just 1
+    const handle_type handle;
+
+    union
+    {
+        void*       ptr;
+        uintptr_t   data;
+    } arg;
+
+    RegistrarKeyBase(handle_type handle) : handle(handle) {}
+};
+
+// DEBT: Keeping this outside of Registrar because we need to specialize
+// on lwip endpoint version to feed in default values for vector to be satisfied.
+// All this culminates in I need to really add copy/move assignable ONLY behavior
+// to vector (std::vector does not use default constructor for T)
+template <class TEndpoint>
+struct RegistrarKey : ObserveEndpointKey<TEndpoint>,
+    RegistrarKeyBase
+{
+    typedef TEndpoint endpoint_type;
+    typedef ObserveEndpointKey<endpoint_type> base_type;
+
+    ESTD_CPP_CONSTEXPR_RET RegistrarKey() :
+        // DEBT: undefined token a nasty idea
+        base_type(endpoint_type(), coap::layer2::Token()),
+        RegistrarKeyBase(-1)
+    {}
+
+    ESTD_CPP_CONSTEXPR_RET RegistrarKey(const base_type& observer, handle_type handle) :
+        base_type(observer),
+        RegistrarKeyBase(handle)
+    {}
+
+    ESTD_CPP_CONSTEXPR_RET RegistrarKey(const RegistrarKey& copy_from) :
+        base_type(copy_from),
+        RegistrarKeyBase(copy_from.handle)
+    {}
+
+    RegistrarKey& operator =(const RegistrarKey& copy_from)
+    {
+        return * new (this) RegistrarKey(copy_from, copy_from.handle);
+    }
+};
+
 template <class TEndpoint>
 struct Registrar
 {
     typedef TEndpoint endpoint_type;
     typedef ObserveEndpointKey<endpoint_type> key_type;
-
-    struct Key : ObserveEndpointKey<endpoint_type>
-    {
-        typedef ObserveEndpointKey<endpoint_type> base_type;
-
-        // this represents the particular resource being observed.
-        // For simple scenarios, there will be just 1
-        const int handle;
-
-        ESTD_CPP_CONSTEXPR_RET Key() :
-            // DEBT: undefined token a nasty idea
-            base_type(endpoint_type(), coap::layer2::Token()),
-            handle(-1)
-        {}
-
-        ESTD_CPP_CONSTEXPR_RET Key(const key_type& observer, int handle) :
-            base_type(observer),
-            handle(handle)
-        {}
-
-        /*
-        Key(const Key& copy_from) :
-            base_type(copy_from),
-            handle(copy_from.handle)
-        {}  */
-
-        Key& operator =(const Key& copy_from)
-        {
-            return * new (this) Key(copy_from, copy_from.handle);
-        }
-    };
+    typedef RegistrarKeyBase::handle_type handle_type;
+    typedef RegistrarKey<endpoint_type> Key;
 
     typedef estd::layer1::vector<Key, 10> container_type;
 
     container_type observers;
 
-    void add(key_type observer, int handle)
+    void add(key_type observer, handle_type handle)
     {
         // DEBT: Check boundary
         Key key(observer, handle);
@@ -61,7 +81,7 @@ struct Registrar
         observers.push_back(key);
     }
 
-    bool remove(const key_type& observer, int handle)
+    bool remove(const key_type& observer, handle_type handle)
     {
         Key key(observer, handle);
 

@@ -49,6 +49,8 @@ static iterated::decode_result decode_and_notify(
 }
 #endif
 
+// DEBT: StreambufProvider and LwipPbufFactory might even comfortably live
+// in embr itself.  In any case, move it out of context.h
 namespace experimental {
 
 template <>
@@ -59,6 +61,10 @@ struct StreambufProvider<struct pbuf*>
 };
 
 
+// DEBT: LwIP has a natural pbuf size, seems to be PBUF_POOL_BUFSIZE.
+// Consider making that the default value here, once we verify if that
+// (or similar) is the minimum size a system/transport allocated pbuf
+// will be anyway
 template <unsigned N>
 struct LwipPbufFactory
 {

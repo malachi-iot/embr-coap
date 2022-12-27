@@ -11,6 +11,8 @@
 
 void test_decoder();
 void test_encoder();
+void test_experimental();
 void test_header();
 void test_retry();
+void test_rfc7641();
 void test_uri();
