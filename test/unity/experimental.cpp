@@ -1,46 +1,82 @@
 #include "unit-test.h"
 
+#include <embr/observer.h>
+// DEBT: A little mysterious how to know to include this particular
+// hpp for decode_and_notify
+#include <coap/decoder/subject-core.hpp>
+
 #include <exp/lwip/subject.hpp>
 
 using namespace embr::coap;
 using namespace embr::coap::experimental;
 using namespace embr::coap::experimental::observable;
 
+
+// Not yet used
+struct NotificationApp
+{
+    static constexpr const char* TAG = "NotificationApp";
+
+    void on_notify(event::header e)
+    {
+
+    }
+
+    void on_notify(event::token e)
+    {
+        
+    }
+};
+
 static void notification_recv(void* arg, struct udp_pcb* _pcb, struct pbuf* p,
     const ip_addr_t* addr, u16_t port)
 {
     static const char* TAG = "notification_recv";
+    const char* name = (const char*) arg;
 
-    ESP_LOGD(TAG, "entry");
+    ESP_LOGD(TAG, "entry: %s", name);
 
     auto decoder = lwip::Notifier::decoder_factory::create(p);
 
-    Header header = decoder.process_iterate();
+    // DEBT: 'false' (non inline) is more appropriate for this test, but looks like
+    // it needs work
+    TokenAndHeaderContext<true> context;
+
+    embr::layer1::subject<
+        HeaderContextObserver,
+        TokenContextObserver,
+        NotificationApp> s;
+
+    decode_and_notify(decoder, s, context);
 }
 
 
 constexpr static int base_port = 10100,
-    client_port = base_port;    // port on which observer client #1 is listening
+    client_port = base_port,    // port on which observer client #1 is listening
+    client2_port = base_port + 1;
 
-#ifdef ESP_IDF_TESTING
-TEST_CASE("experimental tests", "[experimental]")
-#else
-void test_experimental()
-#endif
+typedef embr::lwip::internal::Endpoint<false> endpoint_type;
+typedef Registrar<endpoint_type> registrar_type;
+
+static embr::lwip::udp::Pcb pcb_recv(udp_new()), pcb_send(udp_new());
+
+static void test_notifier()
 {
-    static const char* TAG = "test_experimental";
+    static const char* TAG = "test_notifier";
 
-    typedef embr::lwip::internal::Endpoint<false> endpoint_type;
-    typedef Registrar<endpoint_type> registrar_type;
     lwip::Notifier notifier;
     typedef lwip::Notifier::encoder_type encoder_type;
     typedef embr::coap::layer2::Token token_type;
-    embr::lwip::udp::Pcb pcb_recv(udp_new()), pcb_send(udp_new());
+    embr::lwip::udp::Pcb pcb_client2;
+
+    pcb_client2.alloc();
 
     registrar_type registrar;
 
     pcb_recv.bind(&loopback_addr, client_port);
-    pcb_recv.recv(notification_recv);
+    pcb_recv.recv(notification_recv, (void*)"client 1");
+    pcb_client2.bind(&loopback_addr, client2_port);
+    pcb_client2.recv(notification_recv, (void*)"client 2");
 
     registrar_type::key_type client(
         endpoint_type(&loopback_addr, client_port),
@@ -60,9 +96,20 @@ void test_experimental()
 
             out << "hi2u";
         });
+    
+    // DEBT: May need a semaphore or similar, depending on how lwip handles
+    // loopback
 
-    // DEBT: We may need a semaphore here, not sure how loopback mode handles
-    // that
+    pcb_client2.free();
+}
+
+#ifdef ESP_IDF_TESTING
+TEST_CASE("experimental tests", "[experimental]")
+#else
+void test_experimental()
+#endif
+{
+    RUN_TEST(test_notifier);
 
     pcb_recv.free();
     pcb_send.free();
