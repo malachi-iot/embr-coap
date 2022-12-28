@@ -7,7 +7,8 @@ namespace embr { namespace coap {
 namespace experimental { namespace observable { namespace lwip {
 
 template <typename F>
-void Notifier::notify(registrar_type& registrar, handle_type handle, F&& f)
+void Notifier::notify(registrar_type& registrar, handle_type handle,
+    embr::lwip::udp::Pcb pcb, F&& f)
 {
     registrar_type::container_type::iterator i = registrar.observers.begin();
 
@@ -30,6 +31,14 @@ void Notifier::notify(registrar_type& registrar, handle_type handle, F&& f)
             e.header(header);
             // DEBT: Seems like we could pass a token directly in here
             e.token(key.token.data(), key.token.size());
+
+            f(key, e);
+
+            // DEBT: I'd still prefer a bit more automatic/obvious call
+            // it's easy to forget the finalize
+            e.finalize();
+
+            pcb.send_experimental(e.rdbuf()->pbuf(), key.endpoint);
         }
     }
 }

@@ -18,9 +18,11 @@ public:
     typedef EncoderFactory<
         struct pbuf*, embr::coap::experimental::LwipPbufFactory<64> > encoder_factory;
     typedef DecoderFactory<struct pbuf*> decoder_factory;
+    typedef typename encoder_factory::encoder_type encoder_type;
 
     template <typename F>
-    void notify(registrar_type& registrar, handle_type handle, F&& f);
+    void notify(registrar_type& registrar, handle_type handle,
+        embr::lwip::udp::Pcb pcb, F&& f);
 };
 
 }}}

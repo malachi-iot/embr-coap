@@ -28,22 +28,12 @@ struct RegistrarKeyBase
     RegistrarKeyBase(handle_type handle) : handle(handle) {}
 };
 
-// DEBT: Keeping this outside of Registrar because we need to specialize
-// on lwip endpoint version to feed in default values for vector to be satisfied.
-// All this culminates in I need to really add copy/move assignable ONLY behavior
-// to vector (std::vector does not use default constructor for T)
 template <class TEndpoint>
 struct RegistrarKey : ObserveEndpointKey<TEndpoint>,
     RegistrarKeyBase
 {
     typedef TEndpoint endpoint_type;
     typedef ObserveEndpointKey<endpoint_type> base_type;
-
-    ESTD_CPP_CONSTEXPR_RET RegistrarKey() :
-        // DEBT: undefined token a nasty idea
-        base_type(endpoint_type(), coap::layer2::Token()),
-        RegistrarKeyBase(-1)
-    {}
 
     ESTD_CPP_CONSTEXPR_RET RegistrarKey(const base_type& observer, handle_type handle) :
         base_type(observer),

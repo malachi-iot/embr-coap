@@ -12,12 +12,22 @@ TEST_CASE("experimental tests", "[experimental]")
 void test_experimental()
 #endif
 {
-    /*
     typedef embr::lwip::internal::Endpoint<false> endpoint_type;
     typedef Registrar<endpoint_type> registrar_type;
     lwip::Notifier notifier;
+    typedef lwip::Notifier::encoder_type encoder_type;
+    embr::lwip::udp::Pcb pcb;
 
     registrar_type registrar;
 
-    notifier.notify(registrar, 0, []{}); */
+    // DEBT: Need to loopback on pcb - might even crash, though it's not right now
+    notifier.notify(registrar, 0, pcb,
+        [](const registrar_type::key_type& key, encoder_type& encoder)
+        {
+            encoder.option(Option::ContentFormat, Option::TextPlain);
+            encoder.payload();
+            encoder_type::ostream_type out = encoder.ostream();
+
+            out << "hi2u";
+        });
 }

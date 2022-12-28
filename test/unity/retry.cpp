@@ -15,14 +15,8 @@
 #include <exp/retry.h>
 
 #if __cplusplus >= 201103L
-#ifdef ESP_IDF_TESTING
-// DEBT: Really we want to test against any LwIP capable target - not just from esp-idf
-#define LWIP_PRESENT 1
-#include "esp_log.h"
-#endif
 
 using namespace embr;
-
 
 #if defined(ESTD_OS_FREERTOS)
 typedef estd::chrono::freertos_clock clock_type;
@@ -82,11 +76,6 @@ static void setup_outgoing_packet(embr::coap::StreambufEncoder<TStreambuf>& enco
 #include <coap/platform/lwip/encoder.h>
 
 // If LwIP loopback capability is present, then consider enabling our loopback tests
-#if LWIP_HAVE_LOOPIF && LWIP_LOOPBACK_MAX_PBUFS
-#ifndef FEATURE_COAP_LWIP_LOOPBACK_TESTS
-#define FEATURE_COAP_LWIP_LOOPBACK_TESTS 1
-#endif
-#endif
 
 #if LWIP_TCPIP_CORE_LOCKING != 1
 #error Need LWIP_TCPIP_CORE_LOCKING feature
@@ -422,7 +411,8 @@ static void test_tracker()
 }
 
 
-
+#else   // c++11
+static void setup() {}
 #endif  // c++11
 
 
