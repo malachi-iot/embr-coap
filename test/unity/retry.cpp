@@ -120,7 +120,9 @@ typedef typename transport_type::endpoint_type endpoint_type;
 typedef coap::experimental::retry::Manager<clock_type, transport_type> manager_type;
 typedef coap::experimental::EncoderFactory<embr::lwip::Pbuf> encoder_factory;
 
-static ip_addr_t loopback_addr;
+// DEBT: Move this elsewhere
+ip_addr_t loopback_addr;
+
 constexpr static int base_port = 10000,
     server_port = base_port,    // port to which CON gets sent
     ack_port = base_port + 1;   // port on which to receive ACK
@@ -364,11 +366,21 @@ static void test_retry_1()
 
 #endif // FREERTOS
 
+#if FEATURE_COAP_LWIP_LOOPBACK_TESTS
+// DEBT: Move this elsewhere
+// NOTE: This seems to run once per RUN_TEST
+void setUp()
+{
+    const char* TAG = "setUp";
+
+    ESP_LOGV(TAG, "entry");
+
+    ip_addr_set_loopback(false, &loopback_addr);    // IPv4 loopback
+}
+#endif
+
 static void setup()
 {
-#if FEATURE_COAP_LWIP_LOOPBACK_TESTS
-    ip_addr_set_loopback(false, &loopback_addr);    // IPv4 loopback
-#endif
 }
 
 #else   // LWIP_PRESENT

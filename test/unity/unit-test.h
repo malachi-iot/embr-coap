@@ -25,6 +25,10 @@
 #endif
 #endif
 
+#if FEATURE_COAP_LWIP_LOOPBACK_TESTS
+extern ip_addr_t loopback_addr;
+#endif
+
 #endif
 
 void test_decoder();
