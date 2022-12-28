@@ -12,8 +12,12 @@ include(source.cmake)
 set(ESTDLIB_DIR ${ROOT_DIR}/ext/estdlib/src)
 set(EMBR_DIR ${ROOT_DIR}/ext/embr/src)
 
-include_directories(${ESTDLIB_DIR})
-include_directories(${EMBR_DIR})
+if(NOT TARGET estd)
+    add_subdirectory(${ESTDLIB_DIR} estd)
+endif()
+if(NOT TARGET embr)
+    add_subdirectory(${EMBR_DIR} embr)
+endif()
 
 set(SOURCE_FILES ${SOURCE_FILES})
 
@@ -21,3 +25,5 @@ set(SOURCE_FILES ${SOURCE_FILES})
 add_library(${PROJECT_NAME} ${SOURCE_FILES} ${DOC_FILES})
 
 target_include_directories(${PROJECT_NAME} PUBLIC .)
+
+target_link_libraries(${PROJECT_NAME} estd embr)

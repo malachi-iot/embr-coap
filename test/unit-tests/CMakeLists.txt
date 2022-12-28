@@ -26,8 +26,6 @@ set(EMBR_DIR ${ROOT_DIR}/ext/embr/src)
 
 include_directories(${ROOT_DIR}/ext/Catch/include)
 
-add_subdirectory(${EMBR_DIR} embr)
-
 # using technique from https://coderwall.com/p/y3zzbq/use-cmake-enabled-libraries-in-your-cmake-project
 #include(ExternalProject)
 
