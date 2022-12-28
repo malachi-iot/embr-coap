@@ -30,6 +30,3 @@ target_link_libraries(${PROJECT_NAME}
     embr::support estd embr mc-coap)
 
 include(../pico_enable.cmake)
-
-# create map/bin/hex/uf2 file in addition to ELF.
-pico_add_extra_outputs(${PROJECT_NAME})

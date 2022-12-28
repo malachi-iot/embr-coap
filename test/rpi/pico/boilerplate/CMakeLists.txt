@@ -30,9 +30,6 @@ target_include_directories(${PROJECT_NAME} PRIVATE ${SRC_DIR})
 
 target_link_libraries(${PROJECT_NAME}
     pico_cyw43_arch_lwip_poll
-    support estd embr mc-coap)
+    embr::support estd embr mc-coap)
 
 include(../pico_enable.cmake)
-
-# create map/bin/hex/uf2 file in addition to ELF.
-pico_add_extra_outputs(${PROJECT_NAME})
