@@ -17,3 +17,5 @@ Assists in setting up and polling for LwIP/WiFi
 | 28DEC22 | boilerplate  | Raspberry Pi Pico W  | v1.4.0   |  none    | Pass   | Only returns 404 and 501s, but that counts
 | 28DEC22 | echo         | Raspberry Pi Pico W  | v1.4.0   |  none    | Pass   | 
 | 28DEC22 | echo-subject | Raspberry Pi Pico W  | v1.4.0   |  none    | Pass   | 
+| 28DEC22 | unity        | Raspberry Pi Pico W  | v1.4.0   |  none    | N/A    | Not ready yet
+

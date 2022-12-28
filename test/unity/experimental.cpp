@@ -1,3 +1,5 @@
+#include <esp_log.h>
+
 #include "unit-test.h"
 
 #include <embr/observer.h>
