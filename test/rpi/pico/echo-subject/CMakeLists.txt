@@ -30,7 +30,7 @@ target_include_directories(${PROJECT_NAME} PRIVATE ${SRC_DIR})
 
 target_link_libraries(${PROJECT_NAME}
     pico_cyw43_arch_lwip_poll
-    support estd embr mc-coap)
+    embr::support estd embr mc-coap)
 
 include(../pico_enable.cmake)
 

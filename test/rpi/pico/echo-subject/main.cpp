@@ -11,7 +11,7 @@ int main()
 
     udp_coap_init();
 
-    for(;;) test::v1::poll();
+    for(;;) test::v1::cyw43_poll();
 
     return 0;
 }
