@@ -16,8 +16,6 @@
 
 using namespace embr::coap;
 
-typedef embr::lwip::internal::Endpoint<false> endpoint_type;
-
 using embr::coap::internal::UriPathMap;
 
 namespace paths {
@@ -150,7 +148,7 @@ embr::layer0::subject<
     TokenContextObserver,
     UriParserObserver,
     ObservableObserver,
-    internal::DiagnosticObserver,
+    embr::coap::internal::DiagnosticObserver,
     App
     > app_subject;
 

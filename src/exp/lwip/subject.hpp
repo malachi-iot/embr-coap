@@ -6,16 +6,19 @@ namespace embr { namespace coap {
 
 namespace experimental { namespace observable { namespace lwip {
 
-template <typename F>
-void Notifier::notify(registrar_type& registrar, handle_type handle,
+template <typename TContainer, typename F>
+void Notifier::notify(detail::Registrar<TContainer>& registrar, handle_type handle,
     embr::lwip::udp::Pcb pcb, F&& f)
 {
+    typedef detail::Registrar<TContainer> registrar_type;
+    typedef typename registrar_type::container_type container_type;
+
     // DEBT: Need a proper message id generator, but this will do
     // in the short term.  This generator ideally tracks mids used with a particular
     // endpoint to avoid deduplication
     static unsigned message_id = 0;
 
-    registrar_type::container_type::iterator i = registrar.observers.begin();
+    typename container_type::iterator i = registrar.observers.begin();
 
     for(; i != registrar.observers.end(); ++i)
     {
@@ -23,7 +26,7 @@ void Notifier::notify(registrar_type& registrar, handle_type handle,
         // operator here
         if((*i).handle == handle)
         {
-            const registrar_type::key_type& key = *i;
+            const typename registrar_type::key_type& key = *i;
 
             encoder_factory::encoder_type e = encoder_factory::create();
 

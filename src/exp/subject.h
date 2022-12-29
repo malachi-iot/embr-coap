@@ -51,15 +51,22 @@ struct RegistrarKey : ObserveEndpointKey<TEndpoint>,
     }
 };
 
-template <class TEndpoint>
-struct Registrar
-{
-    typedef TEndpoint endpoint_type;
-    typedef ObserveEndpointKey<endpoint_type> key_type;
-    typedef RegistrarKeyBase::handle_type handle_type;
-    typedef RegistrarKey<endpoint_type> Key;
 
-    typedef estd::layer1::vector<Key, 10> container_type;
+namespace detail {
+
+struct RegistrarBase
+{
+    typedef RegistrarKeyBase::handle_type handle_type;
+};
+
+template <class TContainer>
+struct Registrar : RegistrarBase
+{
+    typedef TContainer container_type;
+    typedef typename container_type::value_type Key;
+    //typedef RegistrarKey<endpoint_type> Key;
+    typedef typename Key::endpoint_type endpoint_type;
+    typedef ObserveEndpointKey<endpoint_type> key_type;
 
     container_type observers;
 
@@ -86,6 +93,20 @@ struct Registrar
     // TODO: Add registrar which takes only observer to remove all instances of that observer,
     // as well as a similar flavor for handle
 };
+
+}
+
+
+
+namespace layer1 {
+
+template <class TEndpoint, unsigned N = 10>
+struct Registrar : detail::Registrar<estd::layer1::vector<RegistrarKey<TEndpoint>, N> >
+{
+};
+
+
+}
 
 }}
 
