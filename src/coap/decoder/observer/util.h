@@ -289,6 +289,12 @@ struct ObserveEndpointKey : EndpointProvider<TEndpoint>
 
     const token_type token;
 
+    ESTD_CPP_CONSTEXPR_RET ObserveEndpointKey(endpoint_type endpoint,
+        const estd::span<const uint8_t>& token) :
+        base_type(endpoint),
+        token(token)
+    {}
+
     ESTD_CPP_CONSTEXPR_RET ObserveEndpointKey(endpoint_type endpoint, const token_type& token) :
         base_type(endpoint),
         token(token)

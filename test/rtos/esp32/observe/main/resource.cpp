@@ -14,7 +14,6 @@
 using namespace embr::coap;
 
 
-registrar_type registrar;
 NotifyHelper* notifier2;
 
 
@@ -39,7 +38,7 @@ void notifier_timer(void*)
     // because initial response has an observe '0'?
     static unsigned sequence = 1;
 
-    int count = registrar.observers.size();
+    int count = notifier2->registrar.observers.size();
 
     ESP_LOGD(TAG, "entry: count=%d, sequence=%u", count, sequence);
 
@@ -82,7 +81,7 @@ void app_init(embr::lwip::udp::Pcb pcb)
     // Tricky, taking advantage of a C++ behavior - seems to work.  app_init
     // is only ever run once.  Calls constructor correctly during app_init phase
     // DEBT: I wonder what would happen if app_init were run twice?
-    static NotifyHelper nh(pcb, registrar);
+    static NotifyHelper nh(pcb);
 
     notifier2 = &nh;
 }

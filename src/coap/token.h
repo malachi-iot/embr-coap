@@ -88,22 +88,28 @@ namespace layer3 {
 // though
 class Token : public estd::layer2::vector<const uint8_t, 8>
 {
-    typedef estd::layer2::vector<const uint8_t, 8> base_t;
+    typedef estd::layer2::vector<const uint8_t, 8> base_type;
 
 public:
     typedef estd::span<const uint8_t> const_buffer;
 
     Token(const uint8_t* data, size_t tkl) :
-            base_t(data, tkl)
+        base_type(data, tkl)
     {
     }
 
-    Token(const layer2::Token& token) : base_t(token.clock())
+    Token(const const_buffer& span) :
+        base_type(span.data(), span.size())
     {
-        base_t::impl().size(token.size());
+    }
+    // DEBT: Remove this or make it more explicit, I don't like taking 
+    // address of a possibly temporary variable in layer2::Token
+    Token(const layer2::Token& token) : base_type(token.clock())
+    {
+        base_type::impl().size(token.size());
     }
 
-    operator const_buffer() const
+    ESTD_CPP_CONSTEXPR_RET operator const_buffer() const
     {
         return const_buffer(data(), size());
     }

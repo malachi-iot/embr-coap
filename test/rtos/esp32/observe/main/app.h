@@ -37,9 +37,14 @@ struct NotifyHelper<embr::lwip::udp::Pcb, TRegistrar>
     embr::lwip::udp::Pcb pcb;
 
     typedef embr::coap::experimental::observable::lwip::Notifier notifier_type;
-    typedef TRegistrar registrar_type;
+    typedef typename estd::remove_reference<TRegistrar>::type registrar_type;
 
-    registrar_type& registrar;
+    TRegistrar registrar;
+
+    NotifyHelper(embr::lwip::udp::Pcb pcb) :
+        pcb(pcb)
+    {
+    }
 
     NotifyHelper(embr::lwip::udp::Pcb pcb, registrar_type& registrar) :
         pcb(pcb),

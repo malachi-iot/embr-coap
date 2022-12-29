@@ -64,7 +64,6 @@ struct ObservableObserver
         if(e.option_number == Option::Observe)
         {
             uint16_t value = UInt::get<uint16_t>(e.chunk);
-            //context.observe_option = (experimental::observable::Options)value;
             context.flags.observable = (experimental::observable::Options)value;
         }
     }
@@ -78,6 +77,11 @@ struct ObservableObserver
         experimental::ObserveEndpointKey<endpoint_type>
             //key(endpoint, token);
             key(context.address(), token);
+
+        /* DEBT: Oddly, this "more optimized" flavor uses nearly 60 extra bytes of stack
+        experimental::ObserveEndpointKey<endpoint_type> key
+            (context.address(), context.token());
+        */
 
         int path_id = context.found_node();
 
