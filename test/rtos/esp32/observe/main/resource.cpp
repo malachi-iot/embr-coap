@@ -25,13 +25,19 @@ registrar_type registrar;
 static notifier_type notifier;
 static embr::lwip::udp::Pcb notifying_pcb;
 
+extern struct udp_pcb* pcb_hack;
+
 void notifier_timer(void*)
 {
     static const char* TAG = "notifier_timer";
 
+    static unsigned sequence = 0;
+
     int count = registrar.observers.size();
 
-    ESP_LOGD(TAG, "entry: count=%d", count);
+    notifying_pcb = pcb_hack;
+
+    ESP_LOGD(TAG, "entry: count=%d, sequence=%u", count, sequence);
 
     if(count > 0)
     {
@@ -40,15 +46,17 @@ void notifier_timer(void*)
             {
                 ESP_LOGD(TAG, "notify");
 
+                encoder.option(Option::Observe, sequence);
                 encoder.option(Option::ContentFormat, Option::TextPlain);
                 encoder.payload();
                 encoder_type::ostream_type out = encoder.ostream();
 
                 out << "hi2u";
             });
+
+        ++sequence;
     }
 }
-
 
 void app_init(void** pcb_recv_arg)
 {
@@ -59,7 +67,8 @@ void app_init(void** pcb_recv_arg)
         true, nullptr,
         notifier_timer);
 
-    notifying_pcb.alloc();
+    //notifying_pcb.alloc();
+    //notifying_pcb.bind(IP4_ADDR_ANY, IP_PORT);
 
     ESP_LOGI(TAG, "entry");
 

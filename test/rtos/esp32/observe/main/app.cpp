@@ -81,9 +81,11 @@ struct App
         if(context.observe_option && context.uri_matcher().last_found())
         {
             embr::coap::layer2::Token token(context.token());
-            endpoint_type endpoint(context.address().address(), IP_PORT);
-            
-            experimental::ObserveEndpointKey<endpoint_type> key(endpoint, token);
+            //endpoint_type endpoint(context.address().address(), IP_PORT);
+
+            experimental::ObserveEndpointKey<endpoint_type>
+                //key(endpoint, token);
+                key(context.address(), token);
 
             Header::Code::Codes code;
             int path_id = context.found_node();
@@ -124,11 +126,14 @@ embr::layer0::subject<
     App
     > app_subject;
 
+struct udp_pcb* pcb_hack;
 
 void udp_coap_recv(void *arg, 
     struct udp_pcb *pcb, struct pbuf *p,
     const ip_addr_t *addr, u16_t port)
 {
+    pcb_hack = pcb;
+    
     AppContext context(pcb, addr, port);
 
     decode_and_notify(p, app_subject, context);
