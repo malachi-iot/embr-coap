@@ -55,6 +55,29 @@ struct NotifyHelperBase
 
         registrar.observers.push_back(key);
     }
+
+    embr::coap::Header::Code::Codes add_or_remove(
+        embr::coap::experimental::observable::option_value_type option_value,
+        const endpoint_type& endpoint,
+        estd::span<const uint8_t> token,
+        handle_type handle)
+    {
+        switch(option_value.value())
+        {
+            case embr::coap::experimental::observable::Register:
+                //notifier->registrar.add(key, path_id);
+                add(endpoint, token, handle);
+                return embr::coap::Header::Code::Valid;
+
+            case embr::coap::experimental::observable::Deregister:
+                // not ready yet
+                //registrar.remove(key, path_id);
+                return embr::coap::Header::Code::NotImplemented;
+
+            default:
+                return embr::coap::Header::Code::InternalServerError;
+        }
+    }
 };
 
 template <class TRegistrar>

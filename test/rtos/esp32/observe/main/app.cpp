@@ -67,46 +67,6 @@ struct ObservableObserver
             context.flags.observable = (experimental::observable::Options)value;
         }
     }
-
-
-    // DEBT: Strongly consider putting this into NotifyHelperBase itself
-    //__attribute__ ((noinline))
-    template <class TContainer>
-    static Header::Code::Codes register_or_deregister(
-        ::internal::NotifyHelperBase<TContainer>& notifier,
-        AppContext& context)
-    {
-        /*
-        embr::coap::layer2::Token token(context.token());
-        //endpoint_type endpoint(context.address().address(), IP_PORT);
-
-        experimental::ObserveEndpointKey<endpoint_type>
-            //key(endpoint, token);
-            key(context.address(), token); */
-
-        /* DEBT: Oddly, this "more optimized" flavor uses nearly 12 extra bytes of stack 
-        experimental::ObserveEndpointKey<endpoint_type> key
-            (context.address(), context.token());
-        */
-
-        int resource_id = context.found_node();
-
-        switch(context.observe_option().value())
-        {
-            case experimental::observable::Register:
-                //notifier->registrar.add(key, path_id);
-                notifier.add(context.address(), context.token(), resource_id);
-                return Header::Code::Valid;
-
-            case experimental::observable::Deregister:
-                // not ready yet
-                //registrar.remove(key, path_id);
-                return Header::Code::NotImplemented;
-
-            default:
-                return Header::Code::InternalServerError;
-        }
-    }
 };
 
 
@@ -124,8 +84,11 @@ struct App
 {
     static void build_stat_with_observe(AppContext& context, AppContext::encoder_type& encoder)
     {
-        Header::Code::Codes code = 
-            ObservableObserver::register_or_deregister(*notifier, context);
+        Header::Code::Codes code = notifier->add_or_remove(
+            context.observe_option().value(),
+            context.address(),
+            context.token(),
+            context.found_node());
 
         if(code == Header::Code::Valid)
             // DEBT: Need to lift actual current sequence number here
