@@ -11,7 +11,8 @@ void Notifier::notify(registrar_type& registrar, handle_type handle,
     embr::lwip::udp::Pcb pcb, F&& f)
 {
     // DEBT: Need a proper message id generator, but this will do
-    // in the short term
+    // in the short term.  This generator ideally tracks mids used with a particular
+    // endpoint to avoid deduplication
     static unsigned message_id = 0;
 
     registrar_type::container_type::iterator i = registrar.observers.begin();
@@ -32,7 +33,7 @@ void Notifier::notify(registrar_type& registrar, handle_type handle,
             // DEBT: Not likely we'll always want a Content here
             header.code(Header::Code::Content);
             header.message_id(++message_id);
-            
+
             // DEBT: Need to put sequence option in here ... possibly
 
             e.header(header);

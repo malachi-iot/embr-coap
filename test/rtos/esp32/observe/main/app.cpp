@@ -72,7 +72,7 @@ struct ObservableObserver
     }
 
 
-    static void helper(AppContext::encoder_type& encoder, AppContext& context)
+    static Header::Code::Codes register_or_deregister(AppContext& context)
     {
         embr::coap::layer2::Token token(context.token());
         //endpoint_type endpoint(context.address().address(), IP_PORT);
@@ -81,28 +81,23 @@ struct ObservableObserver
             //key(endpoint, token);
             key(context.address(), token);
 
-        Header::Code::Codes code;
         int path_id = context.found_node();
 
         switch(context.observe_option().value())
         {
             case experimental::observable::Register:
                 notifier2->registrar.add(key, path_id);
-                code = Header::Code::Valid;
-                break;
+                return Header::Code::Valid;
 
             case experimental::observable::Deregister:
                 // not ready yet
                 //registrar.remove(key, path_id);
-                code = Header::Code::NotImplemented;
-                break;
+                return Header::Code::NotImplemented;
 
             default:
-                code = Header::Code::InternalServerError;
+                return Header::Code::InternalServerError;
                 break;
         }
-
-        build_reply(context, encoder, code);
     }
 };
 
@@ -115,11 +110,22 @@ struct App
 
         if(context.observe_option() && context.uri_matcher().last_found())
         {
-            ObservableObserver::helper(encoder, context);
+            // DEBT: Filter out by GET and particular stat URI
 
-            // TODO: Redo this so that build_stat is called
+            Header::Code::Codes code = 
+                ObservableObserver::register_or_deregister(context);
 
-            encoder.option(Option::Observe);
+            build_reply(context, encoder, code);
+
+            if(code == Header::Code::Valid)
+            {
+                // DEBT: Need to lift actual current sequence number here
+                build_stat(encoder, 0);
+            }
+            else
+            {
+                build_stat(encoder);
+            }
         }
         else
         {
