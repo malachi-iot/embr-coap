@@ -53,7 +53,7 @@ struct chunk_event_base : event_base
 
 struct option : chunk_event_base
 {
-    option_number_t option_number;
+    const option_number_t option_number;
 
     option(uint16_t n) :
             option_number((option_number_t)n) {}
