@@ -45,25 +45,30 @@ namespace layer2 {
 // semi-duplicate of one in coap_transmission
 class Token : public estd::layer1::vector<uint8_t, 8>
 {
-    typedef estd::layer1::vector<uint8_t, 8> base_t;
+    typedef estd::layer1::vector<uint8_t, 8> base_type;
 
 public:
     Token() {}
 
     Token(const layer1::Token& t, size_t tkl)
     {
-        base_t::append(t.data(), tkl);
+        base_type::append(t.data(), tkl);
     }
 
     Token(const uint8_t* data, size_t tkl)
     {
-        base_t::append(data, tkl);
+        base_type::append(data, tkl);
+    }
+
+    Token(const estd::span<const uint8_t>& buffer)
+    {
+        base_type::append(buffer.data(), buffer.size());
     }
 
     template <class TImpl>
     Token& operator =(const estd::internal::allocated_array<TImpl>& assign_from)
     {
-        base_t::assign(assign_from.clock(), assign_from.size());
+        base_type::assign(assign_from.clock(), assign_from.size());
         assign_from.cunlock();
         // can't do this because I think layer1::vector implicitly deleted it
         //base_t::operator =(assign_from);
@@ -98,7 +103,7 @@ public:
         base_t::impl().size(token.size());
     }
 
-    operator const_buffer()
+    operator const_buffer() const
     {
         return const_buffer(data(), size());
     }

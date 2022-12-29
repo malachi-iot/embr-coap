@@ -30,12 +30,19 @@ struct AppContext :
 
 struct App
 {
-    void on_notify(event::option e)
+    void on_notify(const event::option& e, AppContext& context)
     {
+        // FIX: We have to remember we detected observe because URI options come
+        // after this
+
         if(e.option_number == Option::Observe)
         {
-            //endpoint_type endpoint(e.)
-            //experimental::ObserveEndpointKey<endpoint_type> key()
+            embr::coap::layer2::Token token(context.token());
+
+            experimental::ObserveEndpointKey<endpoint_type> key(
+                context.address(), token);
+
+            registrar.add(key, 0);
         }
     }
 
