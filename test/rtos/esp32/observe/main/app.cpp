@@ -100,43 +100,50 @@ struct ObservableObserver
 };
 
 
+// build_stat with header built also
+static void build_stat(AppContext& context, AppContext::encoder_type& encoder,
+    Header::Code::Codes code,
+    sequence_type sequence = sequence_type())
+{
+    build_reply(context, encoder, code);
+    build_stat(encoder, sequence);
+}
+
+
 struct App
 {
-    void on_notify(event::completed, AppContext& context)
+    static void build_stat_with_observe(AppContext& context, AppContext::encoder_type& encoder)
+    {
+        Header::Code::Codes code = 
+            ObservableObserver::register_or_deregister(context);
+
+        if(code == Header::Code::Valid)
+            // DEBT: Need to lift actual current sequence number here
+            build_stat(context, encoder, code, 0);
+        else
+            // if status code for deducing is not successful, build regular non-observed
+            // response
+            build_stat(context, encoder, Header::Code::Valid);
+    }
+
+    static void on_notify(event::completed, AppContext& context)
     {
         AppContext::encoder_type encoder = AppContext::encoder_factory::create();
 
-        if(context.observe_option() && context.uri_matcher().last_found())
+        switch(context.found_node())
         {
-            // DEBT: Filter out by GET and particular stat URI
-
-            Header::Code::Codes code = 
-                ObservableObserver::register_or_deregister(context);
-
-            build_reply(context, encoder, code);
-
-            if(code == Header::Code::Valid)
-            {
-                // DEBT: Need to lift actual current sequence number here
-                build_stat(encoder, 0);
-            }
-            else
-            {
-                build_stat(encoder);
-            }
-        }
-        else
-        {
-            switch(context.found_node())
-            {
-                case paths::v1_api_stats:
-                    build_stat(encoder);
-                    break;
-                
-                default:
-                    build_reply(context, encoder, Header::Code::NotFound);
-                    break;
-            }
+            case paths::v1_api_stats:
+                if(context.header().code() != Header::Code::Get)
+                    build_reply(context, encoder, Header::Code::BadRequest);
+                else if(context.observe_option())
+                    build_stat_with_observe(context, encoder);
+                else
+                    build_stat(context, encoder, Header::Code::Valid);
+                break;
+            
+            default:
+                build_reply(context, encoder, Header::Code::NotFound);
+                break;
         }
 
         context.reply(encoder);

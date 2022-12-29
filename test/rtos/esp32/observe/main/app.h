@@ -64,6 +64,7 @@ typedef internal::NotifyHelper<
 typedef NotifyHelper::notifier_type::encoder_type encoder_type;
 typedef NotifyHelper::registrar_type registrar_type;
 
+// NOTE: Only builds option and payload portion
 void build_stat(encoder_type& encoder, sequence_type sequence = sequence_type());
 
 

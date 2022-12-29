@@ -18,7 +18,6 @@ registrar_type registrar;
 NotifyHelper* notifier2;
 
 
-// NOTE: Only builds option and payload portion
 void build_stat(encoder_type& encoder, sequence_type sequence)
 {
     if(sequence)
