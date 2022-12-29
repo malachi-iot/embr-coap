@@ -84,7 +84,7 @@ struct UriParserObserver : ExperimentalDecoderEventTypedefs
     {
 #ifdef ESTD_IDF_VER
         // Only here to help diagnose event-not-firing stuff
-        ESP_LOGD(TAG, "on_notify(option_event)=%d", e.option_number);
+        ESP_LOGD(TAG, "on_notify(option)=%d", e.option_number);
 #endif
 
         switch(e.option_number)
@@ -101,7 +101,7 @@ struct UriParserObserver : ExperimentalDecoderEventTypedefs
 #ifdef ESTD_IDF_VER
     static void on_notify(option_completed_event, UriParserContext& ctx)
     {
-        ESP_LOGI(TAG, "on_notify(option_completed_event) uri path node=%d", ctx.found_node());
+        ESP_LOGI(TAG, "on_notify(option_completed) uri path node=%d", ctx.found_node());
     }
 #endif
 };

@@ -189,6 +189,30 @@ public:
 #endif
 };
 
+
+// For RFC 7641
+// TODO: Once promoted from experimental, move this elsewhere
+namespace observable {
+
+// Designed to fit into a 2 bit value
+enum Options
+{
+    Register = 0,
+    Deregister = 1,
+
+    Sequence = 2,   // EXPERIMENTAL
+
+    Unspecified = 3,
+};
+
+
+// DEBT: Doesn't fit naming convention, and kinda sloppy in general
+typedef estd::layer1::optional<Options, Unspecified> option_value_type;
+typedef estd::layer1::optional<uint32_t, 0x1000000> sequence_type;
+
+
+}
+
 }
 
 
@@ -381,6 +405,10 @@ public:
         // whether response has yet been sent or is queued for send
         bool response_sent : 1;
 
+        // observe option, if present
+        // NOTE: does not retain sequence number
+        experimental::observable::Options observable : 2;
+
     }   flags;
 
     ExtraContext()
@@ -388,6 +416,12 @@ public:
         flags.dup_mid = false;
         flags.payload = false;
         flags.response_sent = false;
+        flags.observable = experimental::observable::option_value_type::null_value();
+    }
+
+    experimental::observable::option_value_type observe_option() const
+    {
+        return flags.observable;
     }
 };
 

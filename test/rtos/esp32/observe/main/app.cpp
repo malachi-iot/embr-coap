@@ -41,19 +41,12 @@ const UriPathMap map[] =
 }
 
 
-enum ObserveOptions
-{
-    Unspecified = 100,
-    Register = 0,
-    Deregister = 1
-};
-
-
 struct AppContext : 
     embr::coap::LwipIncomingContext,
-    embr::coap::UriParserContext
+    embr::coap::UriParserContext,
+    embr::coap::internal::ExtraContext
 {
-    estd::layer1::optional<ObserveOptions, Unspecified> observe_option;
+    //embr::coap::experimental::observable::option_value_type observe_option;
 
     AppContext(pcb_pointer pcb,
         const ip_addr_t* addr,
@@ -63,57 +56,84 @@ struct AppContext :
     {}
 };
 
-struct App
+
+struct ObservableObserver
 {
-    void on_notify(const event::option& e, AppContext& context)
+    static void on_notify(const event::option& e, embr::coap::internal::ExtraContext& context)
     {
+        // DEBT: Only accounts for request/GET mode - to be framework ready,
+        // need to account also for notification receipt
         if(e.option_number == Option::Observe)
         {
-            context.observe_option = (ObserveOptions)UInt::get<uint16_t>(e.chunk);
+            uint16_t value = UInt::get<uint16_t>(e.chunk);
+            //context.observe_option = (experimental::observable::Options)value;
+            context.flags.observable = (experimental::observable::Options)value;
         }
     }
 
 
+    static void helper(AppContext::encoder_type& encoder, AppContext& context)
+    {
+        embr::coap::layer2::Token token(context.token());
+        //endpoint_type endpoint(context.address().address(), IP_PORT);
+
+        experimental::ObserveEndpointKey<endpoint_type>
+            //key(endpoint, token);
+            key(context.address(), token);
+
+        Header::Code::Codes code;
+        int path_id = context.found_node();
+
+        switch(context.observe_option().value())
+        {
+            case experimental::observable::Register:
+                registrar.add(key, path_id);
+                code = Header::Code::Valid;
+                break;
+
+            case experimental::observable::Deregister:
+                // not ready yet
+                //registrar.remove(key, path_id);
+                code = Header::Code::NotImplemented;
+                break;
+
+            default:
+                code = Header::Code::InternalServerError;
+                break;
+        }
+
+        build_reply(context, encoder, code);
+    }
+};
+
+
+struct App
+{
     void on_notify(event::completed, AppContext& context)
     {
         AppContext::encoder_type encoder = AppContext::encoder_factory::create();
 
-        if(context.observe_option && context.uri_matcher().last_found())
+        if(context.observe_option() && context.uri_matcher().last_found())
         {
-            embr::coap::layer2::Token token(context.token());
-            //endpoint_type endpoint(context.address().address(), IP_PORT);
+            ObservableObserver::helper(encoder, context);
 
-            experimental::ObserveEndpointKey<endpoint_type>
-                //key(endpoint, token);
-                key(context.address(), token);
-
-            Header::Code::Codes code;
-            int path_id = context.found_node();
-
-            switch(context.observe_option.value())
-            {
-                case Register:
-                    registrar.add(key, path_id);
-                    code = Header::Code::Valid;
-                    break;
-
-                case Deregister:
-                    // not ready yet
-                    //registrar.remove(key, path_id);
-                    code = Header::Code::NotImplemented;
-                    break;
-
-                default:
-                    code = Header::Code::InternalServerError;
-                    break;
-            }
-
-            build_reply(context, encoder, code);
+            // TODO: Redo this so that build_stat is called
 
             encoder.option(Option::Observe);
         }
         else
-            build_reply(context, encoder, Header::Code::NotFound);
+        {
+            switch(context.found_node())
+            {
+                case paths::v1_api_stats:
+                    build_stat(encoder);
+                    break;
+                
+                default:
+                    build_reply(context, encoder, Header::Code::NotFound);
+                    break;
+            }
+        }
 
         context.reply(encoder);
     }
@@ -123,6 +143,7 @@ embr::layer0::subject<
     HeaderContextObserver,
     TokenContextObserver,
     UriParserObserver,
+    ObservableObserver,
     App
     > app_subject;
 
@@ -133,7 +154,7 @@ void udp_coap_recv(void *arg,
     const ip_addr_t *addr, u16_t port)
 {
     pcb_hack = pcb;
-    
+
     AppContext context(pcb, addr, port);
 
     decode_and_notify(p, app_subject, context);
