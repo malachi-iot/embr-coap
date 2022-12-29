@@ -14,7 +14,7 @@
 using namespace embr::coap;
 
 
-NotifyHelper* notifier2;
+NotifyHelper* notifier;
 
 
 void build_stat(encoder_type& encoder, sequence_type sequence)
@@ -38,13 +38,13 @@ void notifier_timer(void*)
     // because initial response has an observe '0'?
     static unsigned sequence = 1;
 
-    int count = notifier2->registrar.observers.size();
+    int count = notifier->registrar.observers.size();
 
     ESP_LOGD(TAG, "entry: count=%d, sequence=%u", count, sequence);
 
     if(count > 0)
     {
-        notifier2->notify(paths::v1_api_stats,
+        notifier->notify(paths::v1_api_stats,
             [](const registrar_type::key_type& key, encoder_type& encoder)
             {
                 ESP_LOGD(TAG, "notify");
@@ -83,5 +83,5 @@ void app_init(embr::lwip::udp::Pcb pcb)
     // DEBT: I wonder what would happen if app_init were run twice?
     static NotifyHelper nh(pcb);
 
-    notifier2 = &nh;
+    notifier = &nh;
 }

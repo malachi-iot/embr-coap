@@ -25,11 +25,12 @@ namespace tags {
 // document specifics for each tag
 struct token_context {};
 struct header_context {};
+struct address_context {};
 
 }
 
 template <class TAddr>
-class AddressContext
+class AddressContext : public tags::address_context
 {
 protected:
     TAddr addr;

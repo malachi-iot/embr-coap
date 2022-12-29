@@ -32,14 +32,41 @@ template <class TTransport, class TRegistrar>
 struct NotifyHelper;
 
 template <class TRegistrar>
-struct NotifyHelper<embr::lwip::udp::Pcb, TRegistrar>
+struct NotifyHelperBase
 {
+    typedef typename estd::remove_reference<TRegistrar>::type registrar_type;
+    typedef typename registrar_type::endpoint_type endpoint_type;
+    typedef typename registrar_type::handle_type handle_type;
+
+    TRegistrar registrar;
+
+    NotifyHelperBase(registrar_type& registrar) :
+        registrar(registrar)
+    {}
+
+    ESTD_CPP_DEFAULT_CTOR(NotifyHelperBase)
+
+    void add(const endpoint_type& endpoint,
+        estd::span<const uint8_t> token,
+        handle_type handle)
+    {
+        embr::coap::experimental::observable::RegistrarKey<endpoint_type> key(
+            endpoint, token, handle);
+
+        registrar.observers.push_back(key);
+    }
+};
+
+template <class TRegistrar>
+struct NotifyHelper<embr::lwip::udp::Pcb, TRegistrar> :
+    NotifyHelperBase<TRegistrar>
+{
+    typedef NotifyHelperBase<TRegistrar> base_type;
+    typedef typename base_type::registrar_type registrar_type;
+
     embr::lwip::udp::Pcb pcb;
 
     typedef embr::coap::experimental::observable::lwip::Notifier notifier_type;
-    typedef typename estd::remove_reference<TRegistrar>::type registrar_type;
-
-    TRegistrar registrar;
 
     NotifyHelper(embr::lwip::udp::Pcb pcb) :
         pcb(pcb)
@@ -48,14 +75,14 @@ struct NotifyHelper<embr::lwip::udp::Pcb, TRegistrar>
 
     NotifyHelper(embr::lwip::udp::Pcb pcb, registrar_type& registrar) :
         pcb(pcb),
-        registrar(registrar)
+        base_type(registrar)
     {
     }
 
     template <typename F>
     void notify(typename registrar_type::handle_type handle, F&& f)
     {
-        notifier_type::notify(registrar, handle, pcb, std::move(f));
+        notifier_type::notify(base_type::registrar, handle, pcb, std::move(f));
     }
 };
 
@@ -73,4 +100,4 @@ typedef NotifyHelper::registrar_type registrar_type;
 void build_stat(encoder_type& encoder, sequence_type sequence = sequence_type());
 
 
-extern NotifyHelper* notifier2;
+extern NotifyHelper* notifier;

@@ -69,26 +69,33 @@ struct ObservableObserver
     }
 
 
-    static Header::Code::Codes register_or_deregister(AppContext& context)
+    // DEBT: Strongly consider putting this into NotifyHelperBase itself
+    //__attribute__ ((noinline))
+    template <class TContainer>
+    static Header::Code::Codes register_or_deregister(
+        ::internal::NotifyHelperBase<TContainer>& notifier,
+        AppContext& context)
     {
+        /*
         embr::coap::layer2::Token token(context.token());
         //endpoint_type endpoint(context.address().address(), IP_PORT);
 
         experimental::ObserveEndpointKey<endpoint_type>
             //key(endpoint, token);
-            key(context.address(), token);
+            key(context.address(), token); */
 
-        /* DEBT: Oddly, this "more optimized" flavor uses nearly 60 extra bytes of stack
+        /* DEBT: Oddly, this "more optimized" flavor uses nearly 12 extra bytes of stack 
         experimental::ObserveEndpointKey<endpoint_type> key
             (context.address(), context.token());
         */
 
-        int path_id = context.found_node();
+        int resource_id = context.found_node();
 
         switch(context.observe_option().value())
         {
             case experimental::observable::Register:
-                notifier2->registrar.add(key, path_id);
+                //notifier->registrar.add(key, path_id);
+                notifier.add(context.address(), context.token(), resource_id);
                 return Header::Code::Valid;
 
             case experimental::observable::Deregister:
@@ -98,7 +105,6 @@ struct ObservableObserver
 
             default:
                 return Header::Code::InternalServerError;
-                break;
         }
     }
 };
@@ -119,7 +125,7 @@ struct App
     static void build_stat_with_observe(AppContext& context, AppContext::encoder_type& encoder)
     {
         Header::Code::Codes code = 
-            ObservableObserver::register_or_deregister(context);
+            ObservableObserver::register_or_deregister(*notifier, context);
 
         if(code == Header::Code::Valid)
             // DEBT: Need to lift actual current sequence number here

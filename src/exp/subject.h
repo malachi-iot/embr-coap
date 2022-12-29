@@ -35,6 +35,13 @@ struct RegistrarKey : ObserveEndpointKey<TEndpoint>,
     typedef TEndpoint endpoint_type;
     typedef ObserveEndpointKey<endpoint_type> base_type;
 
+    ESTD_CPP_CONSTEXPR_RET RegistrarKey(const endpoint_type& endpoint,
+        const estd::span<const uint8_t>& token,
+        handle_type handle) :
+        base_type(endpoint, token),
+        RegistrarKeyBase(handle)
+    {}
+
     ESTD_CPP_CONSTEXPR_RET RegistrarKey(const base_type& observer, handle_type handle) :
         base_type(observer),
         RegistrarKeyBase(handle)
@@ -47,7 +54,7 @@ struct RegistrarKey : ObserveEndpointKey<TEndpoint>,
 
     RegistrarKey& operator =(const RegistrarKey& copy_from)
     {
-        return * new (this) RegistrarKey(copy_from, copy_from.handle);
+        return * new (this) RegistrarKey(copy_from);
     }
 };
 
