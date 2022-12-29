@@ -10,6 +10,8 @@
 
 #include <exp/lwip/subject.hpp>
 
+#include <coap/decoder/observer/diagnostic.h>
+
 #include "app.h"
 
 using namespace embr::coap;
@@ -144,6 +146,7 @@ embr::layer0::subject<
     TokenContextObserver,
     UriParserObserver,
     ObservableObserver,
+    internal::DiagnosticObserver,
     App
     > app_subject;
 

@@ -1,18 +1,16 @@
-// 12/8/2019 - Still very useful, still experimental - ideally we'd send this to a specialized
-//             clog which could retain contextual information (loglevel, tag, etc)
+// DEBT: - Ideally we'd send this to a specialized
+// clog which could retain contextual information (loglevel, tag, etc)
 
 #include <estd/span.h>
 #include <estd/string.h>
-#include "../coap/decoder/events.h"
-#include "../coap/uint.h"
+#include "../events.h"
+#include "../../uint.h"
 
 namespace embr { namespace coap {
 
-// NOTE: Not really experimental, but uses events whose location and naming have not yet
-// settled down and they are in 'experimental' namespace, so convenient to put this here
-namespace experimental {
+namespace internal {
 
-struct DiagnosticMessageObserver
+struct DiagnosticObserver
 {
     static void opaque_dump_line(internal::const_buffer b, bool indent = false, int max_size = 0)
     {
@@ -133,7 +131,6 @@ struct DiagnosticMessageObserver
         opaque_dump_line(e.chunk, true, 16);
     }
 
-    // FIX: We only get this when there's a payload
     static void on_notify(event::completed)
     {
         printf("[DEBUG] Completed\n");
