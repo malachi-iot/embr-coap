@@ -2,6 +2,7 @@
 
 #include <embr/observer.h>
 
+#include <coap/platform/lwip/context.h>
 #include <coap/platform/lwip/encoder.h>
 #include <coap/decoder.hpp>
 #include <coap/decoder/events.h>
@@ -15,6 +16,18 @@ typedef embr::lwip::internal::Endpoint<false> endpoint_type;
 
 extern experimental::observable::Registrar<endpoint_type> registrar;
 
+struct AppContext : 
+    embr::coap::LwipIncomingContext
+{
+    typedef embr::coap::LwipContext::lwip_encoder_factory<8> encoder_factory;
+
+    AppContext(pcb_pointer pcb,
+        const ip_addr_t* addr,
+        uint16_t port) :
+        embr::coap::LwipIncomingContext(pcb, addr, port)
+    {}
+};
+
 struct App
 {
     void on_notify(event::option e)
@@ -24,6 +37,11 @@ struct App
             //endpoint_type endpoint(e.)
             //experimental::ObserveEndpointKey<endpoint_type> key()
         }
+    }
+
+
+    void on_notify(event::completed, AppContext& context)
+    {
     }
 };
 
@@ -39,7 +57,7 @@ void udp_coap_recv(void *arg,
     struct udp_pcb *pcb, struct pbuf *p,
     const ip_addr_t *addr, u16_t port)
 {
-    estd::monostate context;
+    AppContext context(pcb, addr, port);
 
     decode_and_notify(p, app_subject, context);
 }
