@@ -21,7 +21,7 @@ public:
     typedef typename encoder_factory::encoder_type encoder_type;
 
     template <typename F>
-    void notify(registrar_type& registrar, handle_type handle,
+    static void notify(registrar_type& registrar, handle_type handle,
         embr::lwip::udp::Pcb pcb, F&& f);
 };
 

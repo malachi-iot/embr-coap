@@ -13,15 +13,9 @@
 
 using namespace embr::coap;
 
-typedef embr::lwip::internal::Endpoint<false> endpoint_type;
-typedef experimental::observable::Registrar<endpoint_type> registrar_type;
 
 registrar_type registrar;
-
-static notifier_type notifier;
-static embr::lwip::udp::Pcb notifying_pcb;
-
-extern struct udp_pcb* pcb_hack;
+NotifyHelper* notifier2;
 
 
 void build_stat(encoder_type& encoder, sequence_type sequence)
@@ -47,13 +41,11 @@ void notifier_timer(void*)
 
     int count = registrar.observers.size();
 
-    notifying_pcb = pcb_hack;
-
     ESP_LOGD(TAG, "entry: count=%d, sequence=%u", count, sequence);
 
     if(count > 0)
     {
-        notifier.notify(registrar, paths::v1_api_stats, notifying_pcb,
+        notifier2->notify(paths::v1_api_stats,
             [](const registrar_type::key_type& key, encoder_type& encoder)
             {
                 ESP_LOGD(TAG, "notify");
@@ -80,4 +72,17 @@ void app_init(void** pcb_recv_arg)
     ESP_LOGI(TAG, "entry");
 
     timer.start(estd::chrono::seconds(5));
+}
+
+
+
+
+void app_init(embr::lwip::udp::Pcb pcb)
+{
+    // Tricky, taking advantage of a C++ behavior - seems to work.  app_init
+    // is only ever run once.  Calls constructor correctly during app_init phase
+    // DEBT: I wonder what would happen if app_init were run twice?
+    static NotifyHelper nh(pcb, registrar);
+
+    notifier2 = &nh;
 }

@@ -16,6 +16,9 @@ __attribute__((weak))
 void app_init(void** pcb_recv_arg) {}
 
 __attribute__((weak))
+void app_init(embr::lwip::udp::Pcb pcb) {}
+
+__attribute__((weak))
 void app_loop() {}
 
 void udp_coap_init(void* pcb_recv_arg)
@@ -37,6 +40,8 @@ void udp_coap_init(void* pcb_recv_arg)
     /* set udp_echo_recv() as callback function
        for received packets */
     pcb.recv(udp_coap_recv, pcb_recv_arg);
+
+    app_init(pcb);
 }
 
 

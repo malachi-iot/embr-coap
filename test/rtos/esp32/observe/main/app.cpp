@@ -18,8 +18,6 @@ using namespace embr::coap;
 
 typedef embr::lwip::internal::Endpoint<false> endpoint_type;
 
-extern experimental::observable::Registrar<endpoint_type> registrar;
-
 using embr::coap::internal::UriPathMap;
 
 namespace paths {
@@ -89,7 +87,7 @@ struct ObservableObserver
         switch(context.observe_option().value())
         {
             case experimental::observable::Register:
-                registrar.add(key, path_id);
+                notifier2->registrar.add(key, path_id);
                 code = Header::Code::Valid;
                 break;
 
@@ -150,14 +148,11 @@ embr::layer0::subject<
     App
     > app_subject;
 
-struct udp_pcb* pcb_hack;
 
 void udp_coap_recv(void *arg, 
     struct udp_pcb *pcb, struct pbuf *p,
     const ip_addr_t *addr, u16_t port)
 {
-    pcb_hack = pcb;
-
     AppContext context(pcb, addr, port);
 
     decode_and_notify(p, app_subject, context);
