@@ -8,7 +8,7 @@
 #include <coap/decoder/subject-core.hpp>
 #include <coap/decoder/observer/util.h>
 
-#include <exp/lwip/subject.hpp>
+#include <coap/platform/lwip/rfc7641/notifier.hpp>
 
 using namespace embr::coap;
 using namespace embr::coap::internal;

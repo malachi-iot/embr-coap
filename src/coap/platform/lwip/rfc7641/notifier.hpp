@@ -1,8 +1,8 @@
 #pragma once
 
-#include "subject.h"
+#include "notifier.h"
 
-#include "../../coap/internal/rfc7641/registrar.h"
+#include "../../../internal/rfc7641/registrar.h"
 
 namespace embr { namespace coap {
 

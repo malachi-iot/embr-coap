@@ -1,5 +1,7 @@
 #pragma once
 
+#include "keys.h"
+
 namespace embr { namespace coap {
 
 namespace internal {

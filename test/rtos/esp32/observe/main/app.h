@@ -2,9 +2,8 @@
 
 #include <estd/optional.h>
 
-#include <exp/lwip/subject.hpp>
-
 #include <coap/internal/rfc7641/notifier.hpp>
+#include <coap/platform/lwip/rfc7641/notifier.hpp>
 
 typedef embr::coap::internal::observable::sequence_type sequence_type;
 

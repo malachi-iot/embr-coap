@@ -1,8 +1,9 @@
 #pragma once
 
-#include "../../coap/internal/rfc7641/keys.h"
-#include "../../coap/platform/lwip/context.h"   // for EncoderFactory and friends
-#include "../../coap/platform/lwip/encoder.h"   // For encoder finalize specialization
+#include "../../../internal/rfc7641/keys.h"
+#include "../context.h"   // for EncoderFactory and friends
+#include "../encoder.h"   // For encoder finalize specialization
+
 #include <embr/platform/lwip/endpoint.h>
 
 namespace embr { namespace coap {

@@ -8,7 +8,7 @@
 #include <coap/decoder/events.h>
 #include <coap/decoder/subject-core.hpp>
 
-#include <exp/lwip/subject.hpp>
+#include <coap/platform/lwip/rfc7641/notifier.hpp>
 
 #include <coap/decoder/observer/util.h>         // For UriPathMap
 #include <coap/decoder/observer/diagnostic.h>
