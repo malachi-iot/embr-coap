@@ -77,7 +77,7 @@ public:
     // topmost 3 bits
     ESTD_CPP_CONSTEXPR_RET Classes get_class() const { return (Classes)(code_ >> 5); }
     // bottommost 5 bits
-    uint8_t detail() const { return code_ & 0x1F; }
+    ESTD_CPP_CONSTEXPR_RET uint8_t detail() const { return code_ & 0x1F; }
 
     bool is(Classes c) const { return get_class() == c; }
 
@@ -87,6 +87,14 @@ public:
     ESTD_CPP_CONSTEXPR_RET operator Codes () const
     { return (Codes) code_; }
 };
+
+
+const char* get_description(Code::Codes c);
+
+ESTD_CPP_CONSTEXPR_RET uint16_t get_http_style(Code c)
+{
+    return c.detail() + (100 * c.get_class());
+}
 
 }}
 

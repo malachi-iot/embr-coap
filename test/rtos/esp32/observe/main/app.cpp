@@ -107,8 +107,12 @@ struct App
 {
     static void build_stat_with_observe(AppContext& context, AppContext::encoder_type& encoder)
     {
+        static const char* TAG = "build_stat_with_observe";
+
         Header::Code added_or_removed = add_or_remove(*notifier, context, 
             context.observe_option(), paths::v1_api_stats);
+
+        ESP_LOGD(TAG, "added_or_removed=%u", get_http_style(added_or_removed));
         
         if(added_or_removed.success())
             // DEBT: Need to lift actual current sequence number here
