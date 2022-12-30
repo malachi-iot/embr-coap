@@ -34,6 +34,18 @@ namespace internal {
 template <class TTransport, class TRegistrar>
 struct NotifyHelper;
 
+namespace codes {
+// General purpose error codes
+// DEBT: Was hoping to avoid something like this, though it's not SO bad
+enum CoapStatus
+{
+    OK = 0,
+    Full                ///<! capacity reached for underlying container
+};
+
+}
+
+
 // DEBT: Consider removing 'Base' and instead specializing on void transport -
 // note for that to be aesthetic (which is the whole point), we'd need to swap
 // TTransport and TRegistrar order
@@ -91,6 +103,8 @@ public:
         }
     }
 
+    // DEBT: Once all this settles down, consider return true/false instead of code, though
+    // it is quite nice to have the detail return value
     embr::coap::Header::Code::Codes add_or_remove(
         embr::coap::experimental::observable::option_value_type option_value,
         const endpoint_type& endpoint,
@@ -100,8 +114,11 @@ public:
         switch(option_value.value())
         {
             case embr::coap::experimental::observable::Register:
+                if(registrar.full())
+                    return embr::coap::Header::Code::ServiceUnavailable;
+
                 add(endpoint, token, handle);
-                return embr::coap::Header::Code::Valid;
+                return embr::coap::Header::Code::Created;
 
             // UNDEFINED behavior, need to research what is expected
             // specifically on a deregister

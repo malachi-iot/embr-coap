@@ -88,13 +88,36 @@ struct AppContext :
     {}
 };
 
+template <class TRegistrar, class TContext, typename enable =
+    typename estd::enable_if<
+        estd::is_base_of<tags::token_context, TContext>::value &&
+        estd::is_base_of<tags::address_context, TContext>::value
+    >::type
+>
+bool add_or_remove(
+    ::internal::NotifyHelperBase<TRegistrar>& notifier,
+    TContext& context,
+    embr::coap::experimental::observable::option_value_type option_value,
+    int resource_id)
+{
+    Header::Code::Codes code = Header::Code::NotImplemented;
+
+    code = notifier.add_or_remove(
+        option_value.value(),
+        context.address(),
+        context.token(),
+        resource_id);
+
+    return code == Header::Code::Created;
+}
+
 
 struct ObservableObserver
 {
     static void on_notify(const event::option& e, embr::coap::internal::ExtraContext& context)
     {
         // DEBT: Only accounts for request/GET mode - to be framework ready,
-        // need to account also for notification receipt
+        // need to account also for notification receipt (i.e. sequence number)
         if(e.option_number == Option::Observe)
         {
             uint16_t value = UInt::get<uint16_t>(e.chunk);
@@ -102,7 +125,8 @@ struct ObservableObserver
         }
     }
 
-
+// Really nifty code, but alas we don't want to observe EVERY request
+#if UNUSED
     template <class TContext, typename enable =
         typename estd::enable_if<
             estd::is_base_of<tags::token_context, TContext>::value &&
@@ -126,6 +150,7 @@ struct ObservableObserver
             context.flags.observable = experimental::observable::Unspecified;
         }
     }
+#endif
 };
 
 
@@ -143,7 +168,10 @@ struct App
 {
     static void build_stat_with_observe(AppContext& context, AppContext::encoder_type& encoder)
     {
-        if(context.flags.observable == experimental::observable::Register)
+        bool added_or_removed = add_or_remove(*notifier, context, 
+            context.observe_option(), paths::v1_api_stats);
+        
+        if(added_or_removed)
             // DEBT: Need to lift actual current sequence number here
             build_stat(context, encoder, Header::Code::Valid, 0);
         else

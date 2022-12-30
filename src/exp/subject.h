@@ -97,6 +97,12 @@ struct Registrar : RegistrarBase
         return true;
     }
 
+    bool full() const
+    {
+        // DEBT: Make a full() in dynamic_array itself who consults impl().is_allocated() as well
+        return observers.size() < observers.capacity();
+    }
+
     // TODO: Add registrar which takes only observer to remove all instances of that observer,
     // as well as a similar flavor for handle
 };
