@@ -10,7 +10,9 @@
 
 #include <coap/platform/lwip/rfc7641/notifier.hpp>
 
-#include <coap/decoder/observer/util.h>         // For UriPathMap
+#include <coap/decoder/observer/uri.h>         // For UriPathMap
+#include <coap/decoder/observer/util.h>
+#include <coap/decoder/observer/core.h>
 #include <coap/decoder/observer/diagnostic.h>
 #include <coap/decoder/observer/observable.h>
 
@@ -136,10 +138,7 @@ struct App
 };
 
 embr::layer0::subject<
-    HeaderContextObserver,
-    TokenContextObserver,
-    UriParserObserver,
-    embr::coap::internal::ObservableObserver,
+    CoreObserver,
     embr::coap::internal::DiagnosticObserver,
     App
     > app_subject;

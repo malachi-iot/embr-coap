@@ -12,7 +12,7 @@
 #include <estd/vector.h>
 
 #include <embr/observer.h>
-#include <coap/decoder/observer/util.h>
+#include <coap/decoder/observer/core.h>
 #include <coap/decoder/observer/observable.h>
 #include "test-context.h"
 
@@ -191,7 +191,7 @@ TEST_CASE("CoAP decoder subject tests", "[coap-decoder-subject]")
     SECTION("ExtraObserver")
     {
         internal::ExtraContext ctx;
-        experimental::ExtraObserver o;
+        internal::ExtraObserver o;
         estd::span<const uint8_t> chunk(buffer_16bit_delta, sizeof(buffer_16bit_delta));
 
         o.on_notify(event::payload(chunk, true), ctx);
@@ -235,7 +235,7 @@ TEST_CASE("CoAP decoder subject tests", "[coap-decoder-subject]")
     }
     SECTION("Core Observer")
     {
-        embr::layer0::subject<embr::coap::experimental::CoreObserver> subject;
+        embr::layer0::subject<CoreObserver> subject;
         internal::ExtraContext context;
 
         typedef estd::experimental::ispanbuf streambuf_type;
