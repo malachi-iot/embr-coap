@@ -68,6 +68,29 @@ public:
 #endif
     }
 
+
+    void remove(const endpoint_type& endpoint,
+        estd::span<const uint8_t> token,
+        handle_type handle)
+    {
+        auto i = registrar.observers.begin();
+        
+        for(;i != registrar.observers.end(); ++i)
+        {
+            const embr::coap::experimental::observable::RegistrarKey<endpoint_type>& key = *i;
+
+            if(key.endpoint == endpoint &&
+                key.handle == handle &&
+                true)
+                // FIX: it's time to typedef token type as a layerX vector or span
+                // directly, though span's lack of == presents a challenge
+                //key.token == token)
+            {
+
+            }
+        }
+    }
+
     embr::coap::Header::Code::Codes add_or_remove(
         embr::coap::experimental::observable::option_value_type option_value,
         const endpoint_type& endpoint,
@@ -77,13 +100,13 @@ public:
         switch(option_value.value())
         {
             case embr::coap::experimental::observable::Register:
-                //notifier->registrar.add(key, path_id);
                 add(endpoint, token, handle);
                 return embr::coap::Header::Code::Valid;
 
+            // UNDEFINED behavior, need to research what is expected
+            // specifically on a deregister
             case embr::coap::experimental::observable::Deregister:
-                // not ready yet
-                //registrar.remove(key, path_id);
+                remove(endpoint, token, handle);
                 return embr::coap::Header::Code::NotImplemented;
 
             default:
