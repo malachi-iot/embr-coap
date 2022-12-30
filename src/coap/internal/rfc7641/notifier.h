@@ -6,6 +6,8 @@ namespace embr { namespace coap {
 
 namespace internal {
 
+// DEBT: In fact, NotifyHelperBsae is truly the registrar
+
 // DEBT: Consider removing 'Base' and instead specializing on void transport -
 // note for that to be aesthetic (which is the whole point), we'd need to swap
 // TTransport and TRegistrar order

@@ -14,7 +14,7 @@
 using namespace embr::coap;
 
 
-NotifyHelper* notifier;
+Notifier* notifier;
 
 
 void build_stat(encoder_type& encoder, sequence_type sequence)
@@ -81,7 +81,7 @@ void app_init(embr::lwip::udp::Pcb pcb)
     // Tricky, taking advantage of a C++ behavior - seems to work.  app_init
     // is only ever run once.  Calls constructor correctly during app_init phase
     // DEBT: I wonder what would happen if app_init were run twice?
-    static NotifyHelper nh(pcb);
+    static Notifier nh(pcb);
 
     notifier = &nh;
 }
