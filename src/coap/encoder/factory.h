@@ -116,7 +116,7 @@ inline typename TContext::encoder_type make_encoder(const TContext&)
 // 'encoder_type' expectation is not fully solidified just yet
 template <class TContext>
 inline typename TContext::encoder_type make_encoder_reply(TContext& context,
-    Header::Code code, header::Types type)
+    internal::header::Code code, header::Types type)
 {
     typename TContext::encoder_type encoder = make_encoder(context);
 

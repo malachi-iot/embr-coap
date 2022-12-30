@@ -321,8 +321,8 @@ TEST_CASE("experimental 2 tests")
     SECTION("rfc 7641")
     {
         embr::coap::layer2::Token token;
-        observable::Registrar<int> registrar;
-        observable::Registrar<int>::key_type key(0, token);
+        observable::layer1::Registrar<int> registrar;
+        observable::layer1::Registrar<int>::key_type key(0, token);
 
         registrar.add(key, 1);
     }

@@ -76,7 +76,7 @@ public:
         Code() {}
     public:
 
-        Code(uint8_t code) : internal::header::Code(code) {}
+        Code(internal::header::Code code) : internal::header::Code(code) {}
     };
 
     union
