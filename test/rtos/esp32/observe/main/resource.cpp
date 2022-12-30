@@ -38,7 +38,7 @@ void notifier_timer(void*)
     // because initial response has an observe '0'?
     static unsigned sequence = 1;
 
-    int count = notifier->registrar.observers.size();
+    int count = notifier->observer_count();
 
     ESP_LOGD(TAG, "entry: count=%d, sequence=%u", count, sequence);
 

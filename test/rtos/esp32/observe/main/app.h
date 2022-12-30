@@ -28,9 +28,15 @@ enum
 
 namespace internal {
 
+// DEBT: Since underlying lwip::Notifier (and similar) are pretty fused with this,
+// change internal::NotifyHelper to regular Notifier and change underyling lwip::Notifier
+// to impl
 template <class TTransport, class TRegistrar>
 struct NotifyHelper;
 
+// DEBT: Consider removing 'Base' and instead specializing on void transport -
+// note for that to be aesthetic (which is the whole point), we'd need to swap
+// TTransport and TRegistrar order
 template <class TRegistrar>
 struct NotifyHelperBase
 {
@@ -38,9 +44,11 @@ struct NotifyHelperBase
     typedef typename registrar_type::endpoint_type endpoint_type;
     typedef typename registrar_type::handle_type handle_type;
 
+protected:
     TRegistrar registrar;
 
-    NotifyHelperBase(registrar_type& registrar) :
+public:
+    ESTD_CPP_CONSTEXPR_RET NotifyHelperBase(const registrar_type& registrar) :
         registrar(registrar)
     {}
 
@@ -50,10 +58,14 @@ struct NotifyHelperBase
         estd::span<const uint8_t> token,
         handle_type handle)
     {
+#if __cpp_variadic_templates
+        registrar.observers.emplace_back(endpoint, token, handle);
+#else
         embr::coap::experimental::observable::RegistrarKey<endpoint_type> key(
             endpoint, token, handle);
 
         registrar.observers.push_back(key);
+#endif
     }
 
     embr::coap::Header::Code::Codes add_or_remove(
@@ -78,6 +90,8 @@ struct NotifyHelperBase
                 return embr::coap::Header::Code::InternalServerError;
         }
     }
+
+    unsigned observer_count() const { return registrar.observers.size(); }
 };
 
 template <class TRegistrar>
@@ -89,6 +103,7 @@ struct NotifyHelper<embr::lwip::udp::Pcb, TRegistrar> :
 
     embr::lwip::udp::Pcb pcb;
 
+    // DEBT: This is shaping up to be an impl
     typedef embr::coap::experimental::observable::lwip::Notifier notifier_type;
 
     NotifyHelper(embr::lwip::udp::Pcb pcb) :
