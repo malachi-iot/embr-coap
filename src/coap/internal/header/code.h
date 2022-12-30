@@ -13,11 +13,16 @@ class Code
     uint8_t _code;
 
 protected:
+    // DEBT: This empty ctor exists to feed code_experimental in legacy header, which itself
+    // uses a technique that got me in trouble with the debouncer code.  Phase this
+    // out completely
+
     // For internal use only
     Code() {}
+
 public:
 
-    Code(uint8_t _code) : _code(_code) {}
+    ESTD_CPP_CONSTEXPR_RET Code(uint8_t _code) : _code(_code) {}
 
     enum Classes
     {

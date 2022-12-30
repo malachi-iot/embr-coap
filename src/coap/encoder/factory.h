@@ -28,18 +28,18 @@ template <class TContext, typename TPrecedent>
 inline void build_reply_extra(TContext, Header::Code::Codes code, TPrecedent = 1);
  */
 
-inline void build_reply_extra(tags::header_context, Header::Code::Codes code, bool)
+inline void build_reply_extra(tags::header_context, Header::Code code, bool)
 {
 
 }
 
 // trailing int guarantees higher precedence, thus disambiguating call
-inline void build_reply_extra(ExtraContext& context, Header::Code::Codes code, int)
+inline void build_reply_extra(ExtraContext& context, Header::Code code, int)
 {
     context.response_code = code;
 }
 
-inline Header build_reply_header(const HeaderContext& context, Header::Code::Codes code, header::Types type)
+inline Header build_reply_header(const HeaderContext& context, Header::Code code, header::Types type)
 {
     Header header = context.header();
 
@@ -77,7 +77,7 @@ template <class TContext, class TStreambuf, class TStreambufEncoderImpl, typenam
 inline void build_reply(
     const TContext& context,
     StreambufEncoder<TStreambuf, TStreambufEncoderImpl>& encoder,
-    Header::Code::Codes code, header::Types type = Header::Acknowledgement)
+    Header::Code code, header::Types type = Header::Acknowledgement)
 {
     Header header = internal::build_reply_header(context, code, type);
     internal::build_reply_encoder(encoder, header, context.token());
@@ -93,7 +93,7 @@ template <class TContext, class TStreambuf, class TStreambufEncoderImpl, typenam
 inline void build_reply(
     TContext& context,
     StreambufEncoder<TStreambuf, TStreambufEncoderImpl>& encoder,
-    Header::Code::Codes code, header::Types type = Header::Acknowledgement)
+    Header::Code code, header::Types type = Header::Acknowledgement)
 {
     Header header = internal::build_reply_header(context, code, type);
     internal::build_reply_extra(context, code, 1);
@@ -116,7 +116,7 @@ inline typename TContext::encoder_type make_encoder(const TContext&)
 // 'encoder_type' expectation is not fully solidified just yet
 template <class TContext>
 inline typename TContext::encoder_type make_encoder_reply(TContext& context,
-    Header::Code::Codes code, header::Types type)
+    Header::Code code, header::Types type)
 {
     typename TContext::encoder_type encoder = make_encoder(context);
 
