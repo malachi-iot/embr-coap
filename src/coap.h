@@ -49,11 +49,16 @@ namespace embr { namespace coap {
 
 namespace internal {
 
-// FIX: Need a better name.  Root class of helpers for message-level
+// DEBT: Need a better name.  Root class of helpers for message-level
 // Encoder/Decoder operations
 class Root
 {
 public:
+    // 30DEC22 MB
+    // this boundary code was used with old pipeline/netbuf approach.  Very obsolete.  Keeping
+    // commented here because RFC 7641 support might ponder this ideology if we do pbuf chaining
+    // in context of breaking out options/payload from header/token
+    /*
     // for IPipelineWriter, mainly
     typedef uint8_t boundary_t;
 
@@ -62,6 +67,7 @@ public:
     static CONSTEXPR boundary_t boundary_segment = 3;
     // the end of the entire message marked with this one
     static CONSTEXPR boundary_t boundary_message = 4;
+    */
 
     enum State
     {
@@ -95,12 +101,12 @@ namespace experimental {
 
 
 //typedef CoAP::OptionExperimentalDeprecated::ValueFormats option_value_format_t;
-typedef Option::ContentFormats option_content_format_t;
+//typedef Option::ContentFormats option_content_format_t;
 
 //typedef Header::TypeEnum header_type_t;
-typedef Header::Code::Codes header_response_code_t;
+//typedef Header::Code::Codes header_response_code_t;
 
-typedef Option::ExtendedMode extended_mode_t;
+//typedef Option::ExtendedMode extended_mode_t;
 typedef Option _extended_mode_t;
 
 const char* get_description(Option::State state);
