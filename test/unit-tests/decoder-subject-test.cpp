@@ -233,4 +233,19 @@ TEST_CASE("CoAP decoder subject tests", "[coap-decoder-subject]")
             decode_and_notify(decoder, subject);
         }
     }
+    SECTION("Core Observer")
+    {
+        embr::layer0::subject<embr::coap::experimental::CoreObserver> subject;
+        internal::ExtraContext context;
+
+        typedef estd::experimental::ispanbuf streambuf_type;
+
+        estd::span<char> chunk((char*)buffer_16bit_delta, sizeof(buffer_16bit_delta));
+
+        StreambufDecoder<streambuf_type> decoder(chunk);
+
+        decode_and_notify(decoder, subject, context);
+
+        REQUIRE(context.flags.payload);
+    }
 }

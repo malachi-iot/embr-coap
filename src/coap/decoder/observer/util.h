@@ -21,6 +21,8 @@
 #include "../../../exp/events.h"
 #include "../../fwd.h"
 
+#include <embr/observer.h>  // DEBT: Just for 'CoreObserver' which will get moved out
+
 namespace embr { namespace coap {
 
 // Candidate for 'Provider' since this mostly just holds on the an instance
@@ -248,20 +250,22 @@ struct ExtraObserver
     }
 };
 
+// NOTE: The notion of a 'CoreContext' is complicated because so far we depend a lot on LwipIncomingContext,
+// which would largely interfere with a 'CoreContext'
 
+// DEBT: Consider a generic aggregated observer which we typedef here
 struct CoreObserver
 {
-    typedef TokenContextObserver token;
-    typedef HeaderContextObserver header;
+    typedef embr::layer0::subject<
+        TokenContextObserver,
+        HeaderContextObserver,
+        UriParserObserver,
+        ExtraObserver> aggregate_type;
 
-    // FIX: Almost definitely not gonna work since different events
-    // don't have fallbacks in underlying types...
-    // But they could
     template <class TEvent, class TContext>
     static void on_notify(const TEvent& e, TContext& c)
     {
-        header::on_notify(e, c);
-        token::on_notify(e, c);
+        aggregate_type().notify(e, c);
     }
 };
 
