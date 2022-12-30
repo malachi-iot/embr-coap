@@ -10,7 +10,9 @@
 
 #include <exp/lwip/subject.hpp>
 
+#include <coap/decoder/observer/util.h>         // For UriPathMap
 #include <coap/decoder/observer/diagnostic.h>
+#include <coap/decoder/observer/observable.h>
 
 #include "app.h"
 
@@ -45,10 +47,11 @@ struct notifier_context {};
 
 }
 
+// NOTE: Probably going to get phased out, but you never know
 template <class TRegistrar>
 struct NotifierContext : tags2::notifier_context
 {
-    typedef ::internal::NotifyHelperBase<TRegistrar> notifier_type;
+    typedef embr::coap::internal::NotifyHelperBase<TRegistrar> notifier_type;
 
     notifier_type& notifier_;
 
@@ -63,7 +66,7 @@ namespace layer0 {
 template <class TRegistrar>
 struct NotifierContext
 {
-    typedef ::internal::NotifyHelperBase<TRegistrar> notifier_type;
+    typedef embr::coap::internal::NotifyHelperBase<TRegistrar> notifier_type;
 
     notifier_type& notifier_;
 };
@@ -88,66 +91,6 @@ struct AppContext :
     {}
 };
 
-template <class TRegistrar, class TContext, typename enable =
-    typename estd::enable_if<
-        estd::is_base_of<tags::token_context, TContext>::value &&
-        estd::is_base_of<tags::address_context, TContext>::value
-    >::type
->
-Header::Code add_or_remove(
-    ::internal::NotifyHelperBase<TRegistrar>& notifier,
-    TContext& context,
-    embr::coap::experimental::observable::option_value_type option_value,
-    int resource_id)
-{
-    return notifier.add_or_remove(
-        option_value.value(),
-        context.address(),
-        context.token(),
-        resource_id);
-}
-
-
-struct ObservableObserver
-{
-    static void on_notify(const event::option& e, embr::coap::internal::ExtraContext& context)
-    {
-        // DEBT: Only accounts for request/GET mode - to be framework ready,
-        // need to account also for notification receipt (i.e. sequence number)
-        if(e.option_number == Option::Observe)
-        {
-            uint16_t value = UInt::get<uint16_t>(e.chunk);
-            context.flags.observable = (experimental::observable::Options)value;
-        }
-    }
-
-// Really nifty code, but alas we don't want to observe EVERY request
-#if UNUSED
-    template <class TContext, typename enable =
-        typename estd::enable_if<
-            estd::is_base_of<tags::token_context, TContext>::value &&
-            estd::is_base_of<tags::address_context, TContext>::value &&
-            estd::is_base_of<embr::coap::internal::ExtraContext, TContext>::value &&
-            estd::is_base_of<tags2::notifier_context, TContext>::value
-        >::type
-    >
-    static void on_notify(event::option_completed, TContext& context)
-    {
-        Header::Code::Codes code = Header::Code::NotImplemented;
-
-        code = context.notifier().add_or_remove(
-            context.observe_option().value(),
-            context.address(),
-            context.token(),
-            context.found_node());
-
-        if(code != Header::Code::Valid)
-        {
-            context.flags.observable = experimental::observable::Unspecified;
-        }
-    }
-#endif
-};
 
 
 // build_stat with header built also
@@ -201,7 +144,7 @@ embr::layer0::subject<
     HeaderContextObserver,
     TokenContextObserver,
     UriParserObserver,
-    ObservableObserver,
+    embr::coap::internal::ObservableObserver,
     embr::coap::internal::DiagnosticObserver,
     App
     > app_subject;

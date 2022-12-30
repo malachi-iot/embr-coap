@@ -2,12 +2,14 @@
 
 #include "subject.h"
 
+#include "../../coap/internal/rfc7641/registrar.h"
+
 namespace embr { namespace coap {
 
-namespace experimental { namespace observable { namespace lwip {
+namespace internal { namespace observable { namespace lwip {
 
 template <typename TContainer, typename F>
-void Notifier::notify(detail::Registrar<TContainer>& registrar, handle_type handle,
+void Notifier::notify(coap::internal::observable::detail::Registrar<TContainer>& registrar, handle_type handle,
     embr::lwip::udp::Pcb pcb, F&& f)
 {
     typedef detail::Registrar<TContainer> registrar_type;

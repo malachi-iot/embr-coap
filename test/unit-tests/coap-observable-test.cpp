@@ -1,6 +1,8 @@
 #include <catch.hpp>
 #include "coap-encoder.h"
-//#include "coap_transmission.h"
+
+#include <coap/internal/rfc7641/registrar.h>
+
 #include "coap/token.h"
 #include "coap/uint.h"
 #include "test-data.h"
@@ -43,5 +45,13 @@ TEST_CASE("CoAP observable (RFC-7641) tests", "[coap-observer]")
 
         // TODO: still working on processing this scenario right
         REQUIRE(option_value == 0);
+    }
+    SECTION("v2")
+    {
+        embr::coap::layer2::Token token;
+        internal::observable::layer1::Registrar<int, 10> registrar;
+        internal::observable::layer1::Registrar<int, 10>::key_type key(0, token);
+
+        registrar.add(key, 1);
     }
 }

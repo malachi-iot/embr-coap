@@ -4,7 +4,6 @@
 #include <embr/observer.h>
 
 #include <exp/retry.h>
-#include <exp/subject.h>
 
 //#include <exp/message-observer.h>
 #include "test-observer.h"
@@ -320,10 +319,5 @@ TEST_CASE("experimental 2 tests")
     }
     SECTION("rfc 7641")
     {
-        embr::coap::layer2::Token token;
-        observable::layer1::Registrar<int> registrar;
-        observable::layer1::Registrar<int>::key_type key(0, token);
-
-        registrar.add(key, 1);
     }
 }

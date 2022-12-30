@@ -13,6 +13,7 @@
 
 #include <embr/observer.h>
 #include <coap/decoder/observer/util.h>
+#include <coap/decoder/observer/observable.h>
 #include "test-context.h"
 
 using namespace embr::coap;
@@ -199,7 +200,7 @@ TEST_CASE("CoAP decoder subject tests", "[coap-decoder-subject]")
     }
     SECTION("MessageKey")
     {
-        experimental::MessageKey<int> key{0, 0};
+        internal::MessageKey<int> key{0, 0};
     }
     SECTION("payload/no payload")
     {

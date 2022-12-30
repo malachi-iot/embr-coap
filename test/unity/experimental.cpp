@@ -6,12 +6,13 @@
 // DEBT: A little mysterious how to know to include this particular
 // hpp for decode_and_notify
 #include <coap/decoder/subject-core.hpp>
+#include <coap/decoder/observer/util.h>
 
 #include <exp/lwip/subject.hpp>
 
 using namespace embr::coap;
-using namespace embr::coap::experimental;
-using namespace embr::coap::experimental::observable;
+using namespace embr::coap::internal;
+using namespace embr::coap::internal::observable;
 
 
 // Not yet used

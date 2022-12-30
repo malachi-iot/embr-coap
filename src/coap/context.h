@@ -13,6 +13,8 @@
 
 #include <estd/span.h>
 
+#include "internal/rfc7641/enum.h"
+
 // TODO:
 // a) add decoder state accessor/decoder* to context itself for convenient query as to
 //    present state of decode
@@ -191,28 +193,6 @@ public:
 };
 
 
-// For RFC 7641
-// TODO: Once promoted from experimental, move this elsewhere
-namespace observable {
-
-// Designed to fit into a 2 bit value
-enum Options
-{
-    Register = 0,
-    Deregister = 1,
-
-    Sequence = 2,   // EXPERIMENTAL
-
-    Unspecified = 3,
-};
-
-
-// DEBT: Doesn't fit naming convention, and kinda sloppy in general
-typedef estd::layer1::optional<Options, Unspecified> option_value_type;
-typedef estd::layer1::optional<uint32_t, 0x1000000> sequence_type;
-
-
-}
 
 }
 
@@ -408,7 +388,7 @@ public:
 
         // observe option, if present
         // NOTE: does not retain sequence number
-        experimental::observable::Options observable : 2;
+        observable::Options observable : 2;
 
     }   flags;
 
@@ -417,10 +397,10 @@ public:
         flags.dup_mid = false;
         flags.payload = false;
         flags.response_sent = false;
-        flags.observable = experimental::observable::option_value_type::null_value();
+        flags.observable = observable::option_value_type::null_value();
     }
 
-    experimental::observable::option_value_type observe_option() const
+    observable::option_value_type observe_option() const
     {
         return flags.observable;
     }
