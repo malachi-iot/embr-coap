@@ -61,18 +61,6 @@ struct NotifierContext : tags2::notifier_context
 };
 
 
-namespace layer0 {
-
-template <class TRegistrar>
-struct NotifierContext
-{
-    typedef embr::coap::internal::NotifyHelperBase<TRegistrar> notifier_type;
-
-    notifier_type& notifier_;
-};
-
-}
-
 
 struct AppContext : 
     embr::coap::LwipIncomingContext,
@@ -84,10 +72,11 @@ struct AppContext :
 
     AppContext(pcb_pointer pcb,
         const ip_addr_t* addr,
-        uint16_t port) :
+        uint16_t port,
+        Notifier& notifier) :
         embr::coap::LwipIncomingContext(pcb, addr, port),
         embr::coap::UriParserContext(paths::map),
-        NotifierContext<registrar_type>(*::notifier)
+        NotifierContext<registrar_type>(notifier)
     {}
 };
 
@@ -109,7 +98,10 @@ struct App
     {
         static const char* TAG = "build_stat_with_observe";
 
-        Header::Code added_or_removed = add_or_remove(*notifier, context, 
+        Header::Code added_or_removed = add_or_remove(
+            // Could use global notifier also, just proving we can use NO globals in this App struct
+            context.notifier(),
+            context, 
             context.observe_option(), paths::v1_api_stats);
 
         ESP_LOGD(TAG, "added_or_removed=%u", get_http_style(added_or_removed));
@@ -158,7 +150,7 @@ void udp_coap_recv(void *arg,
     struct udp_pcb *pcb, struct pbuf *p,
     const ip_addr_t *addr, u16_t port)
 {
-    AppContext context(pcb, addr, port);
+    AppContext context(pcb, addr, port, *notifier);
 
     decode_and_notify(p, app_subject, context);
 }

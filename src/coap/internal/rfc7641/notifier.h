@@ -65,8 +65,6 @@ public:
         }
     }
 
-    // DEBT: Once all this settles down, consider return true/false instead of code, though
-    // it is quite nice to have the detail return value
     Header::Code add_or_remove(
         observable::option_value_type option_value,
         const endpoint_type& endpoint,
@@ -77,19 +75,19 @@ public:
         {
             case observable::Register:
                 if(registrar.full())
-                    return embr::coap::Header::Code::ServiceUnavailable;
+                    return Header::Code::ServiceUnavailable;
 
                 add(endpoint, token, handle);
-                return embr::coap::Header::Code::Created;
+                return Header::Code::Created;
 
             // UNDEFINED behavior, need to research what is expected
             // specifically on a deregister
             case observable::Deregister:
                 remove(endpoint, token, handle);
-                return embr::coap::Header::Code::NotImplemented;
+                return Header::Code::NotImplemented;
 
             default:
-                return embr::coap::Header::Code::InternalServerError;
+                return Header::Code::InternalServerError;
         }
     }
 
