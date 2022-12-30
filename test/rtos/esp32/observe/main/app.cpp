@@ -39,10 +39,43 @@ const UriPathMap map[] =
 }
 
 
+namespace tags2 {
+
+struct notifier_context {};
+
+}
+
+template <class TRegistrar>
+struct NotifierContext : tags2::notifier_context
+{
+    typedef ::internal::NotifyHelperBase<TRegistrar> notifier_type;
+
+    notifier_type& notifier_;
+
+    notifier_type& notifier() const { return notifier_; }
+
+    NotifierContext(notifier_type& n) : notifier_(n) {}
+};
+
+
+namespace layer0 {
+
+template <class TRegistrar>
+struct NotifierContext
+{
+    typedef ::internal::NotifyHelperBase<TRegistrar> notifier_type;
+
+    notifier_type& notifier_;
+};
+
+}
+
+
 struct AppContext : 
     embr::coap::LwipIncomingContext,
     embr::coap::UriParserContext,
-    embr::coap::internal::ExtraContext
+    embr::coap::internal::ExtraContext,
+    NotifierContext<registrar_type>
 {
     //embr::coap::experimental::observable::option_value_type observe_option;
 
@@ -50,7 +83,8 @@ struct AppContext :
         const ip_addr_t* addr,
         uint16_t port) :
         embr::coap::LwipIncomingContext(pcb, addr, port),
-        embr::coap::UriParserContext(paths::map)
+        embr::coap::UriParserContext(paths::map),
+        NotifierContext<registrar_type>(*::notifier)
     {}
 };
 
@@ -65,6 +99,31 @@ struct ObservableObserver
         {
             uint16_t value = UInt::get<uint16_t>(e.chunk);
             context.flags.observable = (experimental::observable::Options)value;
+        }
+    }
+
+
+    template <class TContext, typename enable =
+        typename estd::enable_if<
+            estd::is_base_of<tags::token_context, TContext>::value &&
+            estd::is_base_of<tags::address_context, TContext>::value &&
+            estd::is_base_of<embr::coap::internal::ExtraContext, TContext>::value &&
+            estd::is_base_of<tags2::notifier_context, TContext>::value
+        >::type
+    >
+    static void on_notify(event::option_completed, TContext& context)
+    {
+        Header::Code::Codes code = Header::Code::NotImplemented;
+        /*
+        code = context.notifier().add_or_remove(
+            context.observe_option().value(),
+            context.address(),
+            context.token(),
+            context.found_node()); */
+
+        if(code != Header::Code::Valid)
+        {
+
         }
     }
 };
