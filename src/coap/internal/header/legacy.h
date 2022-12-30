@@ -68,17 +68,7 @@ class Header : public internal::header::EnumBase
 {
     // temporary public while building code
 public:
-    class Code : public internal::header::Code
-    {
-        friend class Header;
-
-        // FIX: for internal use only
-        Code() {}
-    public:
-
-        Code(internal::header::Code code) : internal::header::Code(code) {}
-    };
-
+    typedef internal::header::Code Code;
     union
     {
         uint8_t bytes[4];
@@ -146,12 +136,16 @@ public:
         //mask_or<COAP_HEADER_FIXED_TYPE_POS>(0, type);
     }
 
+/*
+ * this interesting, but tiny optimization, requires a nasty empty constructor.  Furthermore,
+ * this might be achievable without placement new at all and instead a direct cast.  That got
+ * us into trouble once though with the debouncer code
     const Code& code_experimental() const
     {
         void* buffer = (void*)&bytes[1];
         Code* instance = new (buffer) Code;
         return *instance;
-    }
+    } */
 
     void code(uint8_t code)
     {

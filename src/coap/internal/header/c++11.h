@@ -22,19 +22,8 @@ class Header : public internal::header::EnumBase,
 {
     typedef embr::bits::layer1::material<embr::bits::big_endian, 4> base_type;
 
-    // temporary public while building code
 public:
-    class Code : public internal::header::Code
-    {
-        friend class Header;
-
-        // FIX: for internal use only
-        Code() {}
-
-    public:
-
-        Code(uint8_t code) : internal::header::Code(code) {}
-    };
+    typedef internal::header::Code Code;
 
     EMBR_BITS_MATERIAL_PROPERTY(type_native, 0, 4, 2);
 

@@ -23,19 +23,8 @@ class Header : public internal::header::EnumBase,
 {
     typedef embr::bits::internal::word<32> base_type;
 
-    // temporary public while building code
 public:
-    class Code : public internal::header::Code
-    {
-        friend class Header;
-
-        // FIX: for internal use only
-        Code() {}
-
-    public:
-
-        Code(uint8_t code) : internal::header::Code(code) {}
-    };
+    typedef internal::header::Code Code;
 };
 
 }}

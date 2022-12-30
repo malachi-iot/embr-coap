@@ -7,6 +7,8 @@ namespace internal { namespace header {
 struct EnumBase
 {
     // RFC 7252 Section 12.1.1
+    // DEBT: Mild collision with Coap::Codes' version.  We favor that one, so phase out
+    // this one
     enum RequestMethodEnum
     {
         Get = 1,

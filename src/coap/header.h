@@ -56,13 +56,13 @@ inline void process_request(Header input, Header* output)
 
 
 // TODO: Clean this up a bit + document
-inline Header create_response(Header incoming, Header::Code::Codes code)
+inline Header create_response(Header incoming, Header::Code code)
 {
     Header output;
 
     process_request(incoming, &output);
 
-    response_code(output, code);
+    output.code(code);
 
     return output;
 }

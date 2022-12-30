@@ -28,9 +28,10 @@ struct RegistrarKeyBase
     RegistrarKeyBase(handle_type handle) : handle(handle) {}
 };
 
-template <class TEndpoint>
+template <class TEndpoint, class TAppData = estd::monostate>
 struct RegistrarKey : ObserveEndpointKey<TEndpoint>,
-    RegistrarKeyBase
+    RegistrarKeyBase,
+    TAppData
 {
     typedef TEndpoint endpoint_type;
     typedef ObserveEndpointKey<endpoint_type> base_type;

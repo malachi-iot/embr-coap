@@ -10,19 +10,10 @@ namespace internal { namespace header {
 
 class Code
 {
-    uint8_t _code;
-
-protected:
-    // DEBT: This empty ctor exists to feed code_experimental in legacy header, which itself
-    // uses a technique that got me in trouble with the debouncer code.  Phase this
-    // out completely
-
-    // For internal use only
-    Code() {}
+    const uint8_t code_;
 
 public:
-
-    ESTD_CPP_CONSTEXPR_RET Code(uint8_t _code) : _code(_code) {}
+    ESTD_CPP_CONSTEXPR_RET Code(uint8_t code) : code_(code) {}
 
     enum Classes
     {
@@ -83,21 +74,18 @@ public:
         Abort =                     COAP_RESPONSE_CODE(Signaling, 05),
     };
 
-
     // topmost 3 bits
-    Classes get_class() const { return (Classes)(_code >> 5); }
+    ESTD_CPP_CONSTEXPR_RET Classes get_class() const { return (Classes)(code_ >> 5); }
     // bottommost 5 bits
-    uint8_t detail() const { return _code & 0x1F; }
-
-    Codes code() const { return (Codes) _code; }
+    uint8_t detail() const { return code_ & 0x1F; }
 
     bool is(Classes c) const { return get_class() == c; }
 
     bool is_request() const { return get_class() == Request; }
     bool success() const { return is(Success); }
 
-    operator Codes () const { return code(); }
-    //bool operator==(Codes code) const { return code == _code; }
+    ESTD_CPP_CONSTEXPR_RET operator Codes () const
+    { return (Codes) code_; }
 };
 
 }}
