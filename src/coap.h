@@ -97,9 +97,8 @@ namespace experimental {
 //typedef CoAP::OptionExperimentalDeprecated::ValueFormats option_value_format_t;
 typedef Option::ContentFormats option_content_format_t;
 
-typedef Header::TypeEnum header_type_t;
+//typedef Header::TypeEnum header_type_t;
 typedef Header::Code::Codes header_response_code_t;
-typedef Header::RequestMethodEnum header_request_code_t;
 
 typedef Option::ExtendedMode extended_mode_t;
 typedef Option _extended_mode_t;

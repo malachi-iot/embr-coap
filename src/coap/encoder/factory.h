@@ -39,7 +39,7 @@ inline void build_reply_extra(ExtraContext& context, Header::Code code, int)
     context.response_code = code;
 }
 
-inline Header build_reply_header(const HeaderContext& context, Header::Code code, header::Types type)
+inline Header build_reply_header(const HeaderContext& context, Header::Code code, Header::Types type)
 {
     Header header = context.header();
 

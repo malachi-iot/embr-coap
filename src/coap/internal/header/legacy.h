@@ -105,7 +105,7 @@ public:
 
 
 public:
-    TypeEnum type() const
+    Types type() const
     {
         uint8_t retVal = bytes[0];
 
@@ -113,7 +113,7 @@ public:
         retVal >>= COAP_HEADER_FIXED_TYPE_POS;
         //retVal &= 0b11;   // I like this but it only works in c++11/c++17 and higher
 
-        return (TypeEnum) retVal;
+        return (Types) retVal;
         // NOTE: Pretty sure this one is bugged
         //return (TypeEnum) mask_fixed<COAP_HEADER_TYPE_POS, COAP_HEADER_TYPE_MASK>(1);
     }
@@ -127,7 +127,7 @@ protected:
 
 public:
 
-    void type(TypeEnum type)
+    void type(Types type)
     {
         bytes[0] &= ~COAP_HEADER_FIXED_TYPE_MASK;
         bytes[0] |= ((uint8_t)type) << COAP_HEADER_FIXED_TYPE_POS;
@@ -221,7 +221,7 @@ public:
 
 public:
 
-    Header(TypeEnum type)
+    Header(Types type)
     {
         raw = 0;
         mask_or<COAP_HEADER_FIXED_VER_POS>(0, 1);
@@ -229,7 +229,7 @@ public:
     }
 
 
-    Header(TypeEnum type, Code::Codes code)
+    Header(Types type, Code::Codes code)
     {
         raw = 0;
         this->code(code);

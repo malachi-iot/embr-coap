@@ -104,7 +104,7 @@ inline bool process_response(Header input, Header* output)
 }
 
 
-inline const char* to_string(Header::TypeEnum type)
+inline const char* to_string(Header::Types type)
 {
     switch(type)
     {
@@ -118,7 +118,7 @@ inline const char* to_string(Header::TypeEnum type)
 
 
 #ifdef FEATURE_MCCOAP_IOSTREAM_NATIVE
-inline std::ostream& operator <<(std::ostream& out, Header::TypeEnum type)
+inline std::ostream& operator <<(std::ostream& out, Header::Types type)
 {
     out << to_string(type);
     return out;

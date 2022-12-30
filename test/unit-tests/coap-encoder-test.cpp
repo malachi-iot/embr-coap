@@ -62,9 +62,9 @@ TEST_CASE("CoAP encoder tests", "[coap-encoder]")
         };
 
         // Match up header to what we do in buffer_16bit_delta
-        Header header(Header::TypeEnum::Confirmable);
+        Header header(Header::Confirmable);
 
-        header.code(Header::Code::Codes::Get);
+        header.code(Header::Code::Get);
         header.message_id(0x0123);
 
         StreambufEncoder<streambuf_type> encoder(buffer);

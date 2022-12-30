@@ -73,7 +73,7 @@ void udp_coap_recv(void *arg,
         // these two send npm coap into a tizzy, even it seems in nonconfirmable mode
         //header.type(Header::TypeEnum::Reset);
         //header.type(Header::TypeEnum::NonConfirmable);
-        header.type(Header::TypeEnum::Acknowledgement);
+        header.type(Header::Types::Acknowledgement);
         //header.code(Header::Code::Empty);
         header.code(Header::Code::Valid);
 
