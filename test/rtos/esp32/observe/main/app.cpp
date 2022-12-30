@@ -114,16 +114,16 @@ struct ObservableObserver
     static void on_notify(event::option_completed, TContext& context)
     {
         Header::Code::Codes code = Header::Code::NotImplemented;
-        /*
+
         code = context.notifier().add_or_remove(
             context.observe_option().value(),
             context.address(),
             context.token(),
-            context.found_node()); */
+            context.found_node());
 
         if(code != Header::Code::Valid)
         {
-
+            context.flags.observable = experimental::observable::Unspecified;
         }
     }
 };
@@ -143,18 +143,11 @@ struct App
 {
     static void build_stat_with_observe(AppContext& context, AppContext::encoder_type& encoder)
     {
-        Header::Code::Codes code = notifier->add_or_remove(
-            context.observe_option().value(),
-            context.address(),
-            context.token(),
-            context.found_node());
-
-        if(code == Header::Code::Valid)
+        if(context.flags.observable == experimental::observable::Register)
             // DEBT: Need to lift actual current sequence number here
-            build_stat(context, encoder, code, 0);
+            build_stat(context, encoder, Header::Code::Valid, 0);
         else
-            // if status code for deducing is not successful, build regular non-observed
-            // response
+            // build regular non-observed response
             build_stat(context, encoder, Header::Code::Valid);
     }
 
@@ -167,10 +160,8 @@ struct App
             case paths::v1_api_stats:
                 if(context.header().code() != Header::Code::Get)
                     build_reply(context, encoder, Header::Code::BadRequest);
-                else if(context.observe_option())
-                    build_stat_with_observe(context, encoder);
                 else
-                    build_stat(context, encoder, Header::Code::Valid);
+                    build_stat_with_observe(context, encoder);
                 break;
             
             default:
