@@ -24,10 +24,12 @@ public:
         Request = 0,
         Success = 2,
         ClientError = 4,
-        ServerError = 5
+        ServerError = 5,
+        Signaling = 7
     };
 
     // RFC7252 Section 12.1.2 and 12.1.1 as well as
+    // RFC8323 Section 11.1 as well as
     // [1] "CoAP Response Codes"
     enum Codes
 #if __cplusplus >= 201103L
@@ -67,7 +69,13 @@ public:
         NotImplemented =            COAP_RESPONSE_CODE(ServerError, 01),
         ServiceUnavailable =        COAP_RESPONSE_CODE(ServerError, 03),
         GatewayTimeout =            COAP_RESPONSE_CODE(ServerError, 04),
-        ProxyingNotSupported =      COAP_RESPONSE_CODE(ServerError, 05)
+        ProxyingNotSupported =      COAP_RESPONSE_CODE(ServerError, 05),
+
+        CSM =                       COAP_RESPONSE_CODE(Signaling, 01),
+        Ping =                      COAP_RESPONSE_CODE(Signaling, 02),
+        Pong =                      COAP_RESPONSE_CODE(Signaling, 03),
+        Release =                   COAP_RESPONSE_CODE(Signaling, 04),
+        Abort =                     COAP_RESPONSE_CODE(Signaling, 05),
     };
 
 
@@ -78,7 +86,13 @@ public:
 
     Codes code() const { return (Codes) _code; }
 
+    bool is(Classes c) const { return get_class() == c; }
+
     bool is_request() const { return get_class() == Request; }
+    bool success() const { return is(Success); }
+
+    operator Codes () const { return code(); }
+    //bool operator==(Codes code) const { return code == _code; }
 };
 
 }}

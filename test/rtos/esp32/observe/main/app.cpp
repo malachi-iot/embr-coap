@@ -94,21 +94,17 @@ template <class TRegistrar, class TContext, typename enable =
         estd::is_base_of<tags::address_context, TContext>::value
     >::type
 >
-bool add_or_remove(
+Header::Code add_or_remove(
     ::internal::NotifyHelperBase<TRegistrar>& notifier,
     TContext& context,
     embr::coap::experimental::observable::option_value_type option_value,
     int resource_id)
 {
-    Header::Code::Codes code = Header::Code::NotImplemented;
-
-    code = notifier.add_or_remove(
+    return notifier.add_or_remove(
         option_value.value(),
         context.address(),
         context.token(),
         resource_id);
-
-    return code == Header::Code::Created;
 }
 
 
@@ -156,7 +152,7 @@ struct ObservableObserver
 
 // build_stat with header built also
 static void build_stat(AppContext& context, AppContext::encoder_type& encoder,
-    Header::Code::Codes code,
+    Header::Code code,
     sequence_type sequence = sequence_type())
 {
     build_reply(context, encoder, code);
@@ -168,10 +164,10 @@ struct App
 {
     static void build_stat_with_observe(AppContext& context, AppContext::encoder_type& encoder)
     {
-        bool added_or_removed = add_or_remove(*notifier, context, 
+        Header::Code added_or_removed = add_or_remove(*notifier, context, 
             context.observe_option(), paths::v1_api_stats);
         
-        if(added_or_removed)
+        if(added_or_removed.success())
             // DEBT: Need to lift actual current sequence number here
             build_stat(context, encoder, Header::Code::Valid, 0);
         else

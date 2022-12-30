@@ -105,7 +105,7 @@ public:
 
     // DEBT: Once all this settles down, consider return true/false instead of code, though
     // it is quite nice to have the detail return value
-    embr::coap::Header::Code::Codes add_or_remove(
+    embr::coap::Header::Code add_or_remove(
         embr::coap::experimental::observable::option_value_type option_value,
         const endpoint_type& endpoint,
         estd::span<const uint8_t> token,
