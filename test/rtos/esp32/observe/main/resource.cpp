@@ -14,7 +14,7 @@
 using namespace embr::coap;
 
 
-Notifier* notifier;
+static Notifier* notifier;
 
 
 void build_stat(encoder_type& encoder, sequence_type sequence)
@@ -30,7 +30,7 @@ void build_stat(encoder_type& encoder, sequence_type sequence)
 }
 
 
-void notifier_timer(void*)
+static void notifier_timer(void*)
 {
     static const char* TAG = "notifier_timer";
 
@@ -60,13 +60,11 @@ void app_init(void** pcb_recv_arg)
 {
     static const char* TAG = "app_init";
 
+    // DEBT: Assign id to notifier, and we can then wipe out the global entirely!
     static estd::freertos::timer<true> timer("coap notifier",
         estd::chrono::seconds(5),
         true, nullptr,
         notifier_timer);
-
-    //notifying_pcb.alloc();
-    //notifying_pcb.bind(IP4_ADDR_ANY, IP_PORT);
 
     ESP_LOGI(TAG, "entry");
 
@@ -76,12 +74,14 @@ void app_init(void** pcb_recv_arg)
 
 
 
-void app_init(embr::lwip::udp::Pcb pcb)
+void app_init(void** pcb_recv_arg, embr::lwip::udp::Pcb pcb)
 {
+    //static const char* TAG = "app_init";
+    
     // Tricky, taking advantage of a C++ behavior - seems to work.  app_init
     // is only ever run once.  Calls constructor correctly during app_init phase
     // DEBT: I wonder what would happen if app_init were run twice?
     static Notifier nh(pcb);
 
-    notifier = &nh;
+    *pcb_recv_arg = notifier = &nh;
 }

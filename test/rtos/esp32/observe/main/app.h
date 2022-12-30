@@ -36,6 +36,3 @@ typedef Notifier::notifier_type::encoder_type encoder_type;
 
 // NOTE: Only builds option and payload portion
 void build_stat(encoder_type& encoder, sequence_type sequence = sequence_type());
-
-
-extern Notifier* notifier;

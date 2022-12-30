@@ -47,7 +47,7 @@ struct notifier_context {};
 
 }
 
-// NOTE: Probably going to get phased out, but you never know
+
 template <class TRegistrar>
 struct NotifierContext : tags2::notifier_context
 {
@@ -99,7 +99,6 @@ struct App
         static const char* TAG = "build_stat_with_observe";
 
         Header::Code added_or_removed = add_or_remove(
-            // Could use global notifier also, just proving we can use NO globals in this App struct
             context.notifier(),
             context, 
             context.observe_option(), paths::v1_api_stats);
@@ -146,11 +145,11 @@ embr::layer0::subject<
     > app_subject;
 
 
-void udp_coap_recv(void *arg, 
-    struct udp_pcb *pcb, struct pbuf *p,
-    const ip_addr_t *addr, u16_t port)
+void udp_coap_recv(void* notifier, 
+    struct udp_pcb* pcb, struct pbuf* p,
+    const ip_addr_t* addr, u16_t port)
 {
-    AppContext context(pcb, addr, port, *notifier);
+    AppContext context(pcb, addr, port, *(Notifier *)notifier);
 
     decode_and_notify(p, app_subject, context);
 }
