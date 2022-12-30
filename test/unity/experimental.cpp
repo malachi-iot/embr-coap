@@ -58,7 +58,7 @@ constexpr static int base_port = 10100,
     client2_port = base_port + 1;
 
 typedef embr::lwip::internal::Endpoint<false> endpoint_type;
-typedef Registrar<endpoint_type> registrar_type;
+typedef observable::layer1::Registrar<endpoint_type, 10> registrar_type;
 
 static embr::lwip::udp::Pcb pcb_recv(udp_new()), pcb_send(udp_new());
 
