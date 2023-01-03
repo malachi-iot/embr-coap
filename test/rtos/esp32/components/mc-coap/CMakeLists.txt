@@ -1,2 +1,2 @@
-set(COAP_ROOT_DIR ${CMAKE_CURRENT_LIST_DIR}/../../../../..)
-include(${COAP_ROOT_DIR}/tools/esp-idf/component.cmake)
+include(${CMAKE_CURRENT_LIST_DIR}/../setenv.cmake)
+include(${ROOT_DIR}/tools/esp-idf/component.cmake)

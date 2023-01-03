@@ -1,0 +1,2 @@
+# Needed for retry/loopback tests
+CONFIG_LWIP_TCPIP_CORE_LOCKING=y

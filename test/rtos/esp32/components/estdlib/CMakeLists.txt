@@ -1,2 +1,2 @@
-include(${CMAKE_CURRENT_LIST_DIR}/setenv.cmake)
+include(${CMAKE_CURRENT_LIST_DIR}/../setenv.cmake)
 include(${ESTDLIB_ROOT_DIR}/tools/esp-idf/component.cmake)
