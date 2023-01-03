@@ -1,4 +1,4 @@
-get_filename_component(ROOT_DIR ${CMAKE_CURRENT_LIST_DIR}/.. ABSOLUTE)
+include(../tools/cmake/setvars.cmake)
 
 set(SOURCE_FILES
         coap.cpp

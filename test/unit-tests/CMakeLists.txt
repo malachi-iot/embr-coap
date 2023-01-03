@@ -12,9 +12,9 @@ add_definitions(-DUNIT_TESTING)
 #add_definitions(-DFEATURE_EMBR_DATAPUMP_INLINE)
 #add_definitions(-DDEBUG)
 
-set(ROOT_DIR ../..)
+include(../../tools/cmake/setvars.cmake)
+
 set(MC_COAP_DIR ${ROOT_DIR}/src)
-set(EMBR_DIR ${ROOT_DIR}/ext/embr)
 set(CATCH_DIR ${EMBR_DIR}/ext/estdlib/ext/Catch2)
 
 # this must come first so that it picks up proper opts.h file

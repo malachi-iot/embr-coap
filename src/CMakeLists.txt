@@ -9,14 +9,11 @@ project(mc-coap VERSION 0.9.0)
 include(source.cmake)
 
 # DEBT: Treating these basically as interface libraries.  Formalize that
-set(ESTDLIB_DIR ${ROOT_DIR}/ext/embr/ext/estdlib/src)
-set(EMBR_DIR ${ROOT_DIR}/ext/embr/src)
-
 if(NOT TARGET estd)
-    add_subdirectory(${ESTDLIB_DIR} estd)
+    add_subdirectory(${ESTDLIB_DIR}/src estd)
 endif()
 if(NOT TARGET embr)
-    add_subdirectory(${EMBR_DIR} embr)
+    add_subdirectory(${EMBR_DIR}/src embr)
 endif()
 
 set(SOURCE_FILES ${SOURCE_FILES})
