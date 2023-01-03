@@ -1,9 +1,0 @@
-#!/bin/bash
-
-echo  -Wl,-Tetc/eagle.flash.dtls.ld \
-    -DESP_DEBUG -DFEATURE_MC_MEM_LWIP -DUDP_DEBUG=LWIP_DBG_ON \
-    -DFEATURE_MCCOAP_MBEDTLS \
-    -Isrc \
-
-# broken
-#-DMBEDTLS_CONFIG_FILE="<mbedtls/config_esp2.h>" \

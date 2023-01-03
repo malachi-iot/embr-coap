@@ -1,1 +1,0 @@
-../../../../template/simple-uri-responder.hpp

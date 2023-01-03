@@ -1,1 +1,0 @@
-#define FEATURE_MCCOAP_ARDUINO

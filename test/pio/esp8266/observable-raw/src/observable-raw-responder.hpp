@@ -1,1 +1,0 @@
-../../../../template/observable-raw-responder.hpp

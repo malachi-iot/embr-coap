@@ -1,1 +1,0 @@
-../../template/sdkconfig.h
