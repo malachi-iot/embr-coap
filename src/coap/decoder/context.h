@@ -74,7 +74,9 @@ struct decode_result
         eof(eof), waitstate(waitstate), failure(failure), done(done)
     {}
 #else
-    decode_result() = default;
+    // As of c++20 this interferes with initializer list
+    // https://en.cppreference.com/w/cpp/language/aggregate_initialization
+    //decode_result() = default;
 #endif
     /*
      * FIX: Something is broken about this

@@ -109,7 +109,10 @@ public:
         base_type::impl().size(token.size());
     }
 
-    ESTD_CPP_CONSTEXPR_RET operator const_buffer() const
+    // TODO: Had to remove constexpr because c++20 tells us ultimately estd::internal::layer3::buffer
+    // does not have a trivial default constructor or a constexpr constructor, which is true.
+    // we can change that pretty easily when the time comes
+    inline operator const_buffer() const
     {
         return const_buffer(data(), size());
     }
