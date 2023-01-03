@@ -2,7 +2,7 @@
 // Created by malachi on 12/29/17.
 //
 
-#include <catch.hpp>
+#include <catch2/catch.hpp>
 #include "coap/token.h"
 #include "coap/uint.h"
 

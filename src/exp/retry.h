@@ -251,8 +251,6 @@ public:
 private:
     //Using raw linked list pool for now until we get a better sorted
     // solution in place
-    //typedef moducom::mem::LinkedListPool<int, 10> llpool_t;
-    //typedef moducom::mem::LinkedListPoolNodeTraits<int, 10> node_traits_t;
 
     // TODO: make this policy-based also so that we can vary size and implementation of
     // actual data container for retry queue

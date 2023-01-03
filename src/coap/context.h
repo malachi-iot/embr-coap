@@ -307,28 +307,6 @@ public:
     decoder_t& decoder() { return m_decoder; }
 };
 
-/*
- * Disabled during mc-mem removal
-struct ObjStackContext
-{
-    // NOTE: Facing a small cunundrum: objstack doesn't know during a free operation
-    // how many bytes to free, and generic dispatch handlers such as FactoryDispatcherHandler
-    // and AggregateUriPathObserver don't know how many bytes their children are using
-    moducom::dynamic::ObjStack objstack;
-
-    ObjStackContext(const moducom::pipeline::MemoryChunk& chunk) : objstack(chunk) {}
-};
-
-// FIX: Seems more appropriate that ObserverContext and IncomingContext
-// would be one and the same, but for now in a semi-experimental fashion
-// keep them separate
-struct ObserverContext :
-        public IncomingContext<uint8_t[4]>,
-        public ObjStackContext
-{
-    ObserverContext(const moducom::pipeline::MemoryChunk& chunk) : ObjStackContext(chunk) {}
-};
-*/
 
 template <class TContext>
 struct incoming_context_traits

@@ -1,7 +1,3 @@
-[submodule "ext/estdlib"]
-	path = ext/estdlib
-	url = git@github.com:malachi-iot/estdlib.git
-	branch = dev
 [submodule "ext/embr"]
 	path = ext/embr
 	url = git@github.com:malachi-iot/embr.git

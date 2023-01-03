@@ -4,19 +4,13 @@
  */
 #pragma once
 
-#include <catch.hpp>
+#include <catch2/catch.hpp>
 
-//#include <obsolete/coap-dispatcher.h>
 #include <exp/events.h>
-//#include <obsolete/coap/decoder/subject.h> // for event definitions
-//#include <obsolete/coap/experimental-observer.h>
-//#include <coap/decoder/netbuf.h>
-//#include <exp/netbuf.h>
 #include "test-data.h"
 
 using namespace embr::coap;
 using namespace embr::coap::experimental;
-//using namespace moducom::pipeline;
 
 // Made unused as part of mc-mem removal
 #if UNUSED

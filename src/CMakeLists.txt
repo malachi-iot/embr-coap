@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.6)
 
-project(mc-coap)
+project(mc-coap VERSION 0.9.0)
 
 #set(CMAKE_CXX_STANDARD 11)
 # NOTE: Need to make this set externally and well tested somehow
@@ -9,7 +9,7 @@ project(mc-coap)
 include(source.cmake)
 
 # DEBT: Treating these basically as interface libraries.  Formalize that
-set(ESTDLIB_DIR ${ROOT_DIR}/ext/estdlib/src)
+set(ESTDLIB_DIR ${ROOT_DIR}/ext/embr/ext/estdlib/src)
 set(EMBR_DIR ${ROOT_DIR}/ext/embr/src)
 
 if(NOT TARGET estd)

@@ -14,6 +14,8 @@ add_definitions(-DUNIT_TESTING)
 
 set(ROOT_DIR ../..)
 set(MC_COAP_DIR ${ROOT_DIR}/src)
+set(EMBR_DIR ${ROOT_DIR}/ext/embr)
+set(CATCH_DIR ${EMBR_DIR}/ext/estdlib/ext/Catch2)
 
 # this must come first so that it picks up proper opts.h file
 include_directories(${PROJECT_SOURCE_DIR})
@@ -22,9 +24,7 @@ add_subdirectory(${MC_COAP_DIR} coap)
 
 #message(${PROJECT_SOURCE_DIR})
 
-set(EMBR_DIR ${ROOT_DIR}/ext/embr/src)
-
-include_directories(${ROOT_DIR}/ext/Catch/include)
+add_subdirectory(${CATCH_DIR} catch)
 
 # using technique from https://coderwall.com/p/y3zzbq/use-cmake-enabled-libraries-in-your-cmake-project
 #include(ExternalProject)
@@ -69,5 +69,5 @@ set(SOURCE_FILES
 
 add_executable(mc-coap-test ${SOURCE_FILES})
 
-target_link_libraries(mc-coap-test mc-coap embr)
+target_link_libraries(mc-coap-test mc-coap embr Catch2)
 

@@ -5,7 +5,7 @@ project(coap-unity-tests-lib)
 add_compile_definitions(FEATURE_MCCOAP_LEGACY_EVENTS=0)
 
 set(ROOT_DIR ${PROJECT_SOURCE_DIR}/../..)
-set(ESTDLIB_DIR ${ROOT_DIR}/ext/estdlib)
+set(ESTDLIB_DIR ${ROOT_DIR}/ext/embr/ext/estdlib)
 set(EMBR_DIR ${ROOT_DIR}/ext/embr)
 set(UNITY_DIR ${ESTDLIB_DIR}/ext/Unity)
 set(COAP_DIR ${ROOT_DIR}/src)

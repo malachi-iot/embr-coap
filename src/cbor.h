@@ -356,7 +356,6 @@ public:
 
         // TODO: Probably move this out to non-inline
         // TODO: Make this an internal get_string_array or similar to share array acquisition code
-        //moducom::pipeline::MemoryChunk::readonly_t get_string_experimental(const uint8_t** value, size_t maxlen, ParseResult* result = NULLPTR)
         const_buffer get_string_experimental(const uint8_t** value, size_t maxlen, ParseResult* result = NULLPTR)
         {
             *value = process(*value);
@@ -366,7 +365,6 @@ public:
             {
                 if(result != NULLPTR) *result = InvalidType;
                 return const_buffer((const uint8_t*)NULLPTR, 0);
-                //return moducom::pipeline::MemoryChunk::readonly_t((const uint8_t*)NULLPTR, 0);
             }
 
             // FIX: Need to weed this out of bits_none, bits_8, etc.
@@ -383,7 +381,6 @@ public:
             }
 
             const_buffer chunk(*value, len);
-            //moducom::pipeline::MemoryChunk::readonly_t chunk(*value, len);
 
             *value += len;
 

@@ -1,19 +1,8 @@
-// 12/8/2019 - currently the explicitly named netbuf code is netbuf mk. 1
-// we actually want to keep it around and eventually upgrade to netbuf mk. 2 for
-// pre C++11 compatibility
-
-#include <catch.hpp>
+#include <catch2/catch.hpp>
 
 #include <stddef.h>
 
 #include "coap-encoder.h"
-//#include "mc/memory.h"
-#include "coap_transmission.h"
-#include "coap/token.h"
-//#include "mc/experimental.h"
-//#include <obsolete/coap/encoder.hpp>
-
-//#include "exp/netbuf.h"
 
 #include "coap/encoder/streambuf.h"
 #include <estd/string.h>

@@ -1,5 +1,4 @@
-
-#include <catch.hpp>
+#include <catch2/catch.hpp>
 
 #include "coap.h"
 #include "coap_transmission.h"

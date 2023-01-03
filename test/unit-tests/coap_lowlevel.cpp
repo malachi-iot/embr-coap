@@ -1,6 +1,6 @@
 #define CLEANUP
 
-#include <catch.hpp>
+#include <catch2/catch.hpp>
 #include <embr/observer.h>
 
 #include "coap_transmission.h"
