@@ -145,8 +145,6 @@ static void stats(AppContext& ctx, AppContext::encoder_type& encoder)
     json.add(out, "synthetic", 100);
     json.end(out);
     */
-    
-    ctx.reply(encoder);
 }
 
 
