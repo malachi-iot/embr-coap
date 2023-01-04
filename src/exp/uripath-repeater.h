@@ -450,12 +450,13 @@ struct core_evaluator
     // all uripath nodes which actually have CoRE data associated
     // with them
     // TODO: A map would be better instead of a layer3 array
-    estd::layer3::array<CoREData, uint8_t> coredata;
+    typedef estd::legacy::layer3::array<CoREData, uint8_t> coredata_type;
+    coredata_type coredata;
 
     // breadcrumb tracker for hierarchical navigation of nodes
     estd::layer1::stack<const UriPathMap*, 10> parents;
 
-    core_evaluator(estd::layer3::array<CoREData, uint8_t> coredata) :
+    core_evaluator(coredata_type coredata) :
         coredata(coredata) {}
 
     void parent_handler(const known_uri_event& e)
@@ -522,7 +523,7 @@ struct core_evaluator
 template <class TOStream = estd::experimental::ostringstream<256> >
 struct core_observer : core_evaluator
 {
-    core_observer(estd::layer3::array<CoREData, uint8_t> coredata) :
+    core_observer(coredata_type coredata) :
         core_evaluator(coredata) {}
 
     typedef TOStream ostream_type;

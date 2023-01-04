@@ -41,7 +41,7 @@ TEST_CASE("CoAP header tests", "[coap-header]")
             REQUIRE(header.version() == 1);
             REQUIRE(header.token_length() == 0);
 
-            REQUIRE(header.value()[0] == 0x60);
+            REQUIRE(header.data()[0] == 0x60);
         }
     }
 }

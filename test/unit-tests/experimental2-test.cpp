@@ -145,7 +145,7 @@ TEST_CASE("experimental 2 tests")
 
         // layer2 arrays are the size of a pointer, so we don't
         // need to go to lengths to shrink the size for UriPathMatcher2
-        auto _map = estd::layer2::make_array(map);
+        auto _map = estd::legacy::layer2::make_array(map);
 
         REQUIRE(sizeof(_map) == sizeof(void*));
 
@@ -220,7 +220,7 @@ TEST_CASE("experimental 2 tests")
         sax_responder observer;
         // TODO: fixup layer3::array so that it can copy between different size_t
         // variations of itself (especially upcasting to higher precision)
-        core_observer<> observer2(estd::layer3::make_array(coredata));
+        core_observer<> observer2(estd::legacy::layer3::make_array(coredata));
         // this will make a subject with a reference to 'observer'
         auto subject = embr::layer1::make_subject(observer, observer2);
         matcher.notify(subject);

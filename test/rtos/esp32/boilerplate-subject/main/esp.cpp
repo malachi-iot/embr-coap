@@ -47,8 +47,8 @@ static void stats(AppContext& ctx, AppContext::encoder_type& encoder)
     // finally, esp has 64-bit timers to track RTC/uptime.  Pretty
     // sure that's gonna be better than the freertos source
     out <<  "\"uptime\":" << now_in_s.count() << ',';
-    out << "\"rssi\":" << (int)wifidata.rssi;
-    out << "\"versions\": {";
+    out << "\"rssi\":" << wifidata.rssi << ",";
+    out << "\"versions\":{";
     out << "\"app\": '" << app_desc->version << "'";
     out << "}";
     out << '}';

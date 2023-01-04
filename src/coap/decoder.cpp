@@ -29,7 +29,7 @@ Decoder::ro_chunk_t Decoder::option(Context& context, bool* completed)
 
     // if completed, be sure we resize down the remainder to a maximum
     // value_length size rather than the entire remaining buffer
-    if(_completed)   ret.resize(value_length);
+    if(_completed)   return ret.first(value_length);
 
     return ret;
 }
