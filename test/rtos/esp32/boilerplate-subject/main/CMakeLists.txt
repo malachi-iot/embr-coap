@@ -1,4 +1,4 @@
-idf_component_register(SRCS "main.cpp" "app.cpp" "gpio.cpp"
+idf_component_register(SRCS "main.cpp" "app.cpp" "esp.cpp" "gpio.cpp"
                     INCLUDE_DIRS "."
                     REQUIRES estdlib embr esp_helper mc-coap
                     )

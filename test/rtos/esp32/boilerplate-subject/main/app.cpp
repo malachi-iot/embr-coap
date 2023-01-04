@@ -37,6 +37,9 @@ enum
 
 using embr::coap::internal::UriPathMap;
 
+
+
+
 // NOTE: Alphabetization per path segment is important.  id# ordering is not
 // DEBT: Document this behavior in detail
 const UriPathMap uri_map[] =
@@ -46,11 +49,17 @@ const UriPathMap uri_map[] =
     { "gpio",       id_path_v1_api_gpio,        id_path_v1_api },
     { "*",          id_path_v1_api_gpio_value,  id_path_v1_api_gpio },
     { "stats",      id_path_v1_api_stats,       id_path_v1_api },
+    
+    { "sys",        sys_paths::v1::root,        id_path_v1 },
+    { "version",    sys_paths::v1::root_version,        sys_paths::v1::root },
+    
     { "version",    id_path_v1_api_version,     id_path_v1_api },
 
     { ".well-known",    id_path_well_known,         MCCOAP_URIPATH_NONE },
     { "core",           id_path_well_known_core,    id_path_well_known }
 };
+
+
 
 
 struct Observer
@@ -93,12 +102,14 @@ struct Observer
                 
 #ifdef ESP_PLATFORM
             case id_path_v1_api_version:
-                build_version_response(context, encoder);
+                build_app_version_response(context, encoder);
                 break;
 #endif
 
             default:
-                build_reply(context, encoder, Header::Code::NotFound);
+                if(!sys_paths::build_sys_reply(context, encoder))
+                    build_reply(context, encoder, Header::Code::NotFound);
+
                 break;
         }
 

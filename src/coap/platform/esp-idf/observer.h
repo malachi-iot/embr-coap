@@ -25,7 +25,7 @@ struct VersionObserverBase
 
 // TODO: This belongs in a different file really
 template <bool inline_token, class TStreambuf>
-void build_version_response(
+void build_app_version_response(
     const embr::coap::TokenAndHeaderContext<inline_token>& context, 
     embr::coap::StreambufEncoder<TStreambuf>& encoder)
 {
@@ -47,7 +47,11 @@ void build_version_response(
 
     auto out = encoder.ostream();
 
-#if ESTD_IDF_VER >= ESTD_IDF_VER_3_3_0
+#if ESP_IDF_VERSION  >= ESP_IDF_VERSION_VAL(5, 0, 0)
+    const esp_app_desc_t* app_desc = esp_app_get_description();
+
+    out << app_desc->version;
+#elif ESTD_IDF_VER >= ESTD_IDF_VER_3_3_0
     const esp_app_desc_t* app_desc = esp_ota_get_app_description();
 
     out << app_desc->version;

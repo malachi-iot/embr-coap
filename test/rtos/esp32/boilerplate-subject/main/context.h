@@ -32,3 +32,22 @@ struct AppContext :
     void put_gpio(istreambuf_type& payload);
     void completed_gpio(encoder_type& encoder);
 };
+
+
+// DEBT: Put all this into framework level once it works
+namespace sys_paths { namespace v1 {
+
+enum _paths
+{
+    root = 1000,
+    root_version,
+    root_uptime,
+    root_reboot
+};
+
+
+}
+
+bool build_sys_reply(AppContext& context, AppContext::encoder_type& encoder);
+
+}
