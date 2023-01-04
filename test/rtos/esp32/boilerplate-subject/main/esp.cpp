@@ -19,6 +19,85 @@ using namespace embr::coap;
 
 namespace sys_paths {
 
+struct minijson
+{
+    struct
+    {
+        uint32_t has_items_ : 8;
+        uint32_t level_ : 3;
+    };
+
+    minijson() : has_items_(0), level_(0)
+    {
+
+    }
+
+    bool has_items() const { return has_items_ >> level_; }
+    
+    void set_has_items()
+    {
+        has_items_ |= 1 << level_;
+    }
+
+    void clear_has_items()
+    {
+        has_items_ &= ~(1 << level_);
+    }
+
+    template <class TStreambuf, class TBase>
+    void begin(estd::internal::basic_ostream<TStreambuf, TBase>& out)
+    {
+        if(has_items()) out << ',';
+
+        set_has_items();
+
+        out << '{';
+        ++level_;
+    }
+
+    template <class TStreambuf, class TBase>
+    void add_key(estd::internal::basic_ostream<TStreambuf, TBase>& out, const char* key)
+    {
+        if(has_items()) out << ',';
+
+        set_has_items();
+
+        out << '"' << key << "\":";
+    }
+
+    template <class TStreambuf, class TBase>
+    void begin(estd::internal::basic_ostream<TStreambuf, TBase>& out, const char* key)
+    {
+        add_key(out, key);
+        out << '{';
+        ++level_;
+    }
+
+    template <class TStreambuf, class TBase>
+    void end(estd::internal::basic_ostream<TStreambuf, TBase>& out)
+    {
+        clear_has_items();
+
+        out << '}';
+        --level_;
+    }
+
+    template <class TStreambuf, class TBase>
+    void add(estd::internal::basic_ostream<TStreambuf, TBase>& out, const char* key, const char* value)
+    {
+        add_key(out, key);
+        out << '"' << value << '"';
+    }
+
+    template <class TStreambuf, class TBase>
+    void add(estd::internal::basic_ostream<TStreambuf, TBase>& out, const char* key, int value)
+    {
+        add_key(out, key);
+        out << value;
+    }
+};
+
+
 static void stats(AppContext& ctx, AppContext::encoder_type& encoder)
 {
     auto now = estd::chrono::freertos_clock::now();
@@ -52,6 +131,20 @@ static void stats(AppContext& ctx, AppContext::encoder_type& encoder)
     out << "\"app\": '" << app_desc->version << "'";
     out << "}";
     out << '}';
+
+    /* works well so far, just have other crashes to consider
+    minijson json;
+
+    json.begin(out);
+    json.add(out, "uptime", now_in_s.count());
+    json.add(out, "rssi", wifidata.rssi);
+    json.begin(out, "versions");
+    json.add(out, "app", app_desc->version);
+    json.add(out, "synthetic", 7);
+    json.end(out);
+    json.add(out, "synthetic", 100);
+    json.end(out);
+    */
     
     ctx.reply(encoder);
 }
