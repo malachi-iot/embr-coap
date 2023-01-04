@@ -1,4 +1,4 @@
-include(../tools/cmake/setvars.cmake)
+include(${CMAKE_CURRENT_LIST_DIR}/../tools/cmake/setvars.cmake)
 
 set(SOURCE_FILES
         coap.cpp
