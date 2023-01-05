@@ -99,3 +99,8 @@ const static uint8_t flawed_power_request[] =
     0x05, 0x70, 0x6f, 0x77, 0x65, 0x72  // "power"
 };
 
+namespace test {
+
+static const char* json_user = "{'user':{'age':30,'name':'Fred'}}";
+
+}

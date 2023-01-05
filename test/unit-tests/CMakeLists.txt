@@ -9,18 +9,16 @@ set(CMAKE_CXX_STANDARD 20)
 add_definitions(-DUNIT_TESTING)
 # NOTE: Normally this would go into an 'opts' but 'mc/opts.h', while a good idea, is no longer
 # ubiquitous
-#add_definitions(-DFEATURE_EMBR_DATAPUMP_INLINE)
 #add_definitions(-DDEBUG)
 
 include(../../tools/cmake/setvars.cmake)
 
-set(MC_COAP_DIR ${ROOT_DIR}/src)
-set(CATCH_DIR ${EMBR_DIR}/ext/estdlib/ext/Catch2)
+set(CATCH_DIR ${ESTDLIB_DIR}/ext/Catch2)
 
 # this must come first so that it picks up proper opts.h file
 include_directories(${PROJECT_SOURCE_DIR})
 
-add_subdirectory(${MC_COAP_DIR} coap)
+add_subdirectory(${ROOT_DIR}/src coap)
 
 #message(${PROJECT_SOURCE_DIR})
 
@@ -60,6 +58,7 @@ set(SOURCE_FILES
         decoder-subject-test.cpp
         mc/opts.h
 
+        json-test.cpp
         test-observer.h
 
         retry-test.cpp
