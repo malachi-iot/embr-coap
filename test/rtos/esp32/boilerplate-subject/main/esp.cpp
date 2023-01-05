@@ -19,7 +19,15 @@ using namespace embr::coap;
 
 namespace sys_paths {
 
-struct minijson
+struct textfmt
+{
+    bool use_eol()      { return true; }
+    bool use_tabs()     { return true; }
+    bool use_spaces()   { return true; }
+    bool brace_on_newline() { return true; }
+};
+
+struct minijson : textfmt
 {
     struct
     {
@@ -30,6 +38,22 @@ struct minijson
     minijson() : has_items_(0), level_(0)
     {
 
+    }
+
+    template <class TStreambuf, class TBase>
+    inline void do_tabs(estd::internal::basic_ostream<TStreambuf, TBase>& out)
+    {
+        if(use_tabs())
+        {
+            for(unsigned i = level_; i > 0; --i)
+                out << "  ";
+        }
+    }
+
+    template <class TStreambuf, class TBase>
+    inline void do_eol(estd::internal::basic_ostream<TStreambuf, TBase>& out)
+    {
+        if(use_eol()) out << estd::endl;
     }
 
     bool has_items() const { return has_items_ >> level_; }
@@ -44,32 +68,56 @@ struct minijson
         has_items_ &= ~(1 << level_);
     }
 
+    // Prints comma and eol if items preceded this
+    template <class TStreambuf, class TBase>
+    void do_has_items(estd::internal::basic_ostream<TStreambuf, TBase>& out)
+    {
+        if(has_items())
+        {
+            out << ',';
+            do_eol(out);
+        }
+        else
+            set_has_items();
+    }
+
     template <class TStreambuf, class TBase>
     void begin(estd::internal::basic_ostream<TStreambuf, TBase>& out)
     {
-        if(has_items()) out << ',';
-
-        set_has_items();
+        do_tabs(out);
+        do_has_items(out);
 
         out << '{';
+        do_eol(out);
         ++level_;
     }
 
     template <class TStreambuf, class TBase>
     void add_key(estd::internal::basic_ostream<TStreambuf, TBase>& out, const char* key)
     {
-        if(has_items()) out << ',';
+        do_has_items(out);
 
-        set_has_items();
-
+        do_tabs(out);
+        
         out << '"' << key << "\":";
+
+        if(use_spaces()) out << ' ';
     }
 
     template <class TStreambuf, class TBase>
     void begin(estd::internal::basic_ostream<TStreambuf, TBase>& out, const char* key)
     {
         add_key(out, key);
+
+        if(brace_on_newline())
+        {
+            do_eol(out);
+            do_tabs(out);
+        }
+
         out << '{';
+        do_eol(out);
+
         ++level_;
     }
 
@@ -78,8 +126,12 @@ struct minijson
     {
         clear_has_items();
 
-        out << '}';
         --level_;
+
+        do_eol(out);
+        do_tabs(out);
+
+        out << '}';
     }
 
     template <class TStreambuf, class TBase>
@@ -96,6 +148,71 @@ struct minijson
         out << value;
     }
 };
+
+
+template <class TOut>
+struct minijson_fluent;
+
+template <class TStreambuf, class TBase>
+struct minijson_fluent<estd::internal::basic_ostream<TStreambuf, TBase> >
+{
+    typedef estd::internal::basic_ostream<TStreambuf, TBase> out_type;
+
+    out_type& out;
+    minijson& json;
+
+    minijson_fluent(out_type& out, minijson& json) :
+        out(out),
+        json(json)
+    {}
+
+    template <typename T>
+    minijson_fluent& add(const char* key, T value)
+    {
+        json.add(out, key, value);
+        return *this;
+    }
+
+    minijson_fluent& begin()
+    {
+        json.begin(out);
+        return *this;
+    }
+
+    minijson_fluent& begin(const char* key)
+    {
+        json.begin(out, key);
+        return *this;
+    }
+
+    minijson_fluent& end()
+    {
+        json.end(out);
+        return *this;
+    }
+
+    minijson_fluent& operator()(const char* key)
+    {
+        return begin(key);
+    }
+
+    minijson_fluent& operator()()
+    {
+        return end();
+    }
+
+    template <typename T>
+    minijson_fluent& operator()(const char* key, T value)
+    {
+        return add(key, value);
+    }
+};
+
+template <class TStreambuf, class TBase>
+auto make_fluent(estd::internal::basic_ostream<TStreambuf, TBase>& out, minijson& json)
+{
+    return minijson_fluent<estd::internal::basic_ostream<TStreambuf, TBase> >(out, json);
+}
 
 
 static void stats(AppContext& ctx, AppContext::encoder_type& encoder)
@@ -122,6 +239,7 @@ static void stats(AppContext& ctx, AppContext::encoder_type& encoder)
     const esp_app_desc_t* app_desc = esp_ota_get_app_description();
 #endif
 
+    /*
     out << '{';
     // finally, esp has 64-bit timers to track RTC/uptime.  Pretty
     // sure that's gonna be better than the freertos source
@@ -130,21 +248,29 @@ static void stats(AppContext& ctx, AppContext::encoder_type& encoder)
     out << "\"versions\":{";
     out << "\"app\": '" << app_desc->version << "'";
     out << "}";
-    out << '}';
+    out << '}'; */
 
-    /* works well so far, just have other crashes to consider
     minijson json;
+    auto j = make_fluent(out, json);
 
-    json.begin(out);
-    json.add(out, "uptime", now_in_s.count());
-    json.add(out, "rssi", wifidata.rssi);
-    json.begin(out, "versions");
-    json.add(out, "app", app_desc->version);
-    json.add(out, "synthetic", 7);
-    json.end(out);
+    j.begin();
+    j.add("uptime", now_in_s.count());
+    j.add("rssi", wifidata.rssi);
+    j.begin("versions").
+        add("app", app_desc->version)
+        ("nested")
+            ("n1", 123)
+            ("n2", 789)
+        ().
+        add("synthetic", 7).
+    end();
+
+    j.begin("nested2").
+        add("n2", 456).
+    end();
+
     json.add(out, "synthetic", 100);
     json.end(out);
-    */
 }
 
 
