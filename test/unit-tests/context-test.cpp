@@ -34,7 +34,7 @@ internal::UriPathMap uri_map[] =
 
 TEST_CASE("context tests", "[context]")
 {
-    ExtraContext context(uri_map);
+    SyntheticIncomingContext<true> context(uri_map);
     Decoder decoder;
     char* buf = test::synthetic_outbuf;
     estd::span<const uint8_t> _buf((uint8_t*)buf, sizeof(test::synthetic_outbuf));
@@ -81,7 +81,7 @@ TEST_CASE("context tests", "[context]")
         {
             // For this scenario, we emit a 404 if no matching URI was found.  No checks
             // are done to see if emit already happened, since that requires 'Extra' context
-            SyntheticIncomingContext context(uri_map);
+            SyntheticIncomingContext<true> context(uri_map);
 
             s.notify(event::header(Header(Header::Confirmable, Header::Code::Get)), context);
             s.notify(event::option_start{}, context);

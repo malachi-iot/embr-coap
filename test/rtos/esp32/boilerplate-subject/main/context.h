@@ -11,22 +11,13 @@
 
 struct AppContext : 
     embr::coap::LwipIncomingContext,
-    embr::coap::UriParserContext,
-    embr::coap::internal::ExtraContext
+    embr::coap::UriParserContext
 {
     typedef embr::lwip::ipbuf_streambuf istreambuf_type;
 
     AppContext(struct udp_pcb* pcb, 
         const ip_addr_t* addr,
         uint16_t port);
-
-    // DEBT: Massive stumbling block, perhaps we can bake
-    // 'ExtraContext' into 'IncomingContext'?
-    void reply(encoder_type& encoder)
-    {
-        embr::coap::LwipIncomingContext::reply(encoder);
-        flags.response_sent = true;
-    }
 
     union
     {

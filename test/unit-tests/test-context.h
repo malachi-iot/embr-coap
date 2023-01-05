@@ -25,8 +25,9 @@ struct SyntheticBufferFactory
 
 // NOTE: If experimental transport stuff from embr comes together, this and other incoming context
 // will become more organized
+template <bool extra>
 struct SyntheticIncomingContext :
-    embr::coap::IncomingContext<unsigned>,
+    embr::coap::IncomingContext<unsigned, extra>,
     embr::coap::UriParserContext
 {
     typedef embr::coap::IncomingContext<unsigned> base_type;
@@ -41,6 +42,7 @@ struct SyntheticIncomingContext :
     {
         encoder.finalize();
         out = encoder.rdbuf()->value();
+        base_type::on_send();
     }
 
     template <int N>
@@ -48,16 +50,3 @@ struct SyntheticIncomingContext :
         embr::coap::UriParserContext(paths) {}
 };
 
-struct ExtraContext : SyntheticIncomingContext,
-                      embr::coap::internal::ExtraContext
-{
-    void reply(encoder_type& encoder)
-    {
-        SyntheticIncomingContext::reply(encoder);
-        flags.response_sent = true;
-    }
-
-    template <int N>
-    ExtraContext(const UriPathMap (&paths)[N]) :
-        SyntheticIncomingContext(paths) {}
-};

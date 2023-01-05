@@ -13,7 +13,7 @@
 
 #include <estd/span.h>
 
-#include "internal/rfc7641/enum.h"
+#include "internal/context.h"
 
 // TODO:
 // a) add decoder state accessor/decoder* to context itself for convenient query as to
@@ -140,63 +140,6 @@ public:
 
 
 
-namespace experimental {
-
-
-// NOTE: Just an interesting idea at this time
-class DecoderContext
-{
-};
-
-
-// NOTE: Really would like this (avoid the whole global_encoder nastiness) but
-// unclear right now how to incorporate this across different styles of encoder.
-// So it remains fully experimental and unused at this time
-template <class TEncoder>
-class EncoderContext
-{
-    TEncoder* _encoder;
-
-public:
-    TEncoder& encoder() const { return *_encoder; }
-
-    // TODO: signal that encoding is done (probably to datapump, but
-    // not necessarily)
-    void encoding_complete() {}
-};
-
-
-class OutputContext
-{
-public:
-    template <class TNetBuf>
-    void send(TNetBuf& to_send) {}
-};
-
-
-template <class DataPump, DataPump* global_datapump>
-class GlobalDatapumpOutputContext
-{
-    typedef typename DataPump::netbuf_t netbuf_t;
-    typedef typename DataPump::addr_t addr_t;
-
-public:
-#ifdef FEATURE_EMBR_DATAPUMP_INLINE
-    void send(netbuf_t&& out, const addr_t& addr_out)
-    {
-        global_datapump->enqueue_out(std::forward<netbuf_t>(out), addr_out);
-    }
-#else
-    void send(netbuf_t& out, const addr_t& addr_out)
-    {
-        global_datapump->enqueue_out(out, addr_out);
-    }
-#endif
-};
-
-
-
-}
 
 
 // for scenarios when we definitely don't care about chunking
@@ -266,19 +209,39 @@ struct TokenAndHeaderContext<false> :
 };
 
 
-
-// New-generation request context, replacement for premature coap_transmission one
 // Incoming request handlers/dispatchers may extend this context, but this is a good
 // foundational base class
 // Called Incoming context because remember some incoming messages are RESPONSES, even
 // when we are the server (ACKs, etc)
-template <class TAddr, bool inline_ = true>
-class IncomingContext :
+template <class TAddr, bool inline_ = true, bool extra_ = true>
+class IncomingContext;
+
+
+template <class TAddr, bool inline_>
+class IncomingContext<TAddr, inline_, false> :
         public TokenAndHeaderContext<inline_>,
         public AddressContext<TAddr>
 {
 public:
-    IncomingContext() {}
+    ESTD_CPP_DEFAULT_CTOR(IncomingContext)
+
+    IncomingContext(const TAddr& addr) :
+        AddressContext<TAddr>(addr)
+    {}
+
+    // Noop since no ExtraContext is here to track the send
+    void on_send() {}
+};
+
+
+template <class TAddr, bool inline_>
+class IncomingContext<TAddr, inline_, true> :
+    public TokenAndHeaderContext<inline_>,
+    public AddressContext<TAddr>,
+    public internal::ExtraContext
+{
+public:
+    ESTD_CPP_DEFAULT_CTOR(IncomingContext)
 
     IncomingContext(const TAddr& addr) :
         AddressContext<TAddr>(addr)
@@ -286,6 +249,7 @@ public:
 };
 
 
+// DEBT: Obsolete, but early experimental retry code still picks it up
 template <class TNetBuf>
 class NetBufDecoder;
 
@@ -309,85 +273,6 @@ protected:
 public:
     decoder_t& decoder() { return m_decoder; }
 };
-
-
-template <class TContext>
-struct incoming_context_traits
-{
-    typedef typename TContext::addr_t addr_t;
-
-    template <class TAddr>
-    static void set_address(TContext& c, const TAddr& addr)
-    {
-        //c.address(addr);
-    }
-};
-
-// message observer support code
-template <class Context, class TContextTraits >
-class ContextContainer
-{
-protected:
-    Context* m_context;
-
-public:
-    typedef Context context_t;
-    typedef TContextTraits context_traits_t;
-
-    context_t& context() { return *m_context; }
-
-    const context_t& context() const { return *m_context; }
-
-    // FIX: Kludgey way of skipping some steps.  Strongly consider
-    // dumping this if we can
-    void context(context_t& context)
-    {
-        this->m_context = &context;
-    }
-
-};
-
-
-namespace internal {
-
-// DEBT: Poor naming and organization
-// This is where utility bitmask goes + auto reply info
-class ExtraContext
-{
-public:
-    // For auto response
-    estd::layer1::optional<Header::Code::Codes, Header::Code::Empty> response_code;
-    
-    struct
-    {
-        // duplicate MID encountered
-        bool dup_mid : 1;
-        // payload encountered
-        bool payload : 1;
-        // whether response has yet been sent or is queued for send
-        bool response_sent : 1;
-
-        // observe option, if present
-        // NOTE: does not retain sequence number
-        observable::Options observable : 2;
-
-    }   flags;
-
-    ExtraContext()
-    {
-        flags.dup_mid = false;
-        flags.payload = false;
-        flags.response_sent = false;
-        flags.observable = observable::option_value_type::null_value();
-    }
-
-    observable::option_value_type observe_option() const
-    {
-        return flags.observable;
-    }
-};
-
-}
 
 
 }}

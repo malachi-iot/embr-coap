@@ -145,6 +145,7 @@ struct LwipContext
 // We're tracking from-addr and from-port since CoAP likes to respond
 // to that 
 struct LwipIncomingContext :
+    // DEBT: *always* electing to include 'extra' data
     embr::coap::IncomingContext<LwipContext::endpoint_type>,
     LwipContext
 {
@@ -186,6 +187,8 @@ struct LwipIncomingContext :
 #else
         sendto(encoder, addr.addr, addr.port);
 #endif
+
+        base_type::on_send();
     }
 };
 

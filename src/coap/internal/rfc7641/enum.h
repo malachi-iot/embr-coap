@@ -21,7 +21,8 @@ enum Options
     Unspecified = 3,
 };
 
-// DEBT: Doesn't fit naming convention, and kinda sloppy in general
+// DEBT: Doesn't fit naming convention, and kinda sloppy in general, and
+// should be out in fwd
 typedef estd::layer1::optional<Options, Unspecified> option_value_type;
 
 }
