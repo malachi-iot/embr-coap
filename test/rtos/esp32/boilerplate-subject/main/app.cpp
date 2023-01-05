@@ -59,18 +59,6 @@ const UriPathMap uri_map[] =
 };
 
 
-void auto_reply(AppContext& context, AppContext::encoder_type& encoder)
-{
-    if(context.flags.response_sent) return;
-
-    Header::Code code = context.response_code.has_value() ?
-        context.response_code.value() :
-        Header::Code::NotFound;
-
-    build_reply(context, encoder, code);
-    context.reply(encoder);
-}
-
 struct Observer
 {
     static constexpr const char* TAG = "Observer";

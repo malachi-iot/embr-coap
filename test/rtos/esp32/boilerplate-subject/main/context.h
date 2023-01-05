@@ -5,6 +5,8 @@
 #include <estd/optional.h>
 
 #include <coap/platform/lwip/context.h>
+#include <coap/platform/api.h>
+
 // TODO: We mainly include util.h for UriParserContext.  Include more obvious/cleaner include source once
 // the URI code base is cleaned up
 #include <coap/decoder/observer/util.h>
@@ -34,22 +36,11 @@ struct AppContext :
 };
 
 
-// DEBT: Put all this into framework level once it works
-namespace sys_paths { namespace v1 {
+namespace embr { namespace coap { namespace sys_paths {
 
-enum _paths
-{
-    root = 1000,    // general runtime stats
-    root_firmware,  // firmware info
-    root_uptime,    // uptime specifically
-    root_reboot     // reboot command
-};
-
-
-}
 
 bool build_sys_reply(AppContext& context, AppContext::encoder_type& encoder);
 bool send_sys_reply(AppContext& context, AppContext::encoder_type& encoder);
-void auto_reply(AppContext& context, AppContext::encoder_type& encoder);
 
-}
+}}}
+

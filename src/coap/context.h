@@ -28,6 +28,7 @@ namespace tags {
 struct token_context {};
 struct header_context {};
 struct address_context {};
+struct incoming_context {};
 
 }
 
@@ -219,8 +220,9 @@ class IncomingContext;
 
 template <class TAddr, bool inline_>
 class IncomingContext<TAddr, inline_, false> :
-        public TokenAndHeaderContext<inline_>,
-        public AddressContext<TAddr>
+    public TokenAndHeaderContext<inline_>,
+    public AddressContext<TAddr>,
+    public tags::incoming_context
 {
 public:
     ESTD_CPP_DEFAULT_CTOR(IncomingContext)
@@ -238,7 +240,8 @@ template <class TAddr, bool inline_>
 class IncomingContext<TAddr, inline_, true> :
     public TokenAndHeaderContext<inline_>,
     public AddressContext<TAddr>,
-    public internal::ExtraContext
+    public internal::ExtraContext,
+    public tags::incoming_context
 {
 public:
     ESTD_CPP_DEFAULT_CTOR(IncomingContext)

@@ -13,12 +13,11 @@
 
 #include <json/encoder.hpp>
 
-using namespace embr::coap;
-
 #include "context.h"
 
 #include "esp_wifi.h"
 
+namespace embr { namespace coap {
 
 namespace sys_paths {
 
@@ -158,3 +157,5 @@ bool send_sys_reply(AppContext& context, AppContext::encoder_type& encoder)
 }
 
 }
+
+}}

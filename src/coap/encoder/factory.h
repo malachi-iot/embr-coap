@@ -125,4 +125,23 @@ inline typename TContext::encoder_type make_encoder_reply(TContext& context,
     return encoder;
 }
 
+template <class TContext>
+typename estd::enable_if<
+    estd::is_base_of<tags::incoming_context, TContext>::value &&
+    estd::is_base_of<internal::ExtraContext, TContext>::value, void>
+    ::type
+auto_reply(TContext& context, typename TContext::encoder_type& encoder)
+{
+    if(context.flags.response_sent) return;
+
+    Header::Code code = context.response_code.has_value() ?
+        context.response_code.value() :
+        Header::Code::NotFound;
+
+    build_reply(context, encoder, code);
+    context.reply(encoder);
+}
+
+
+
 }}
