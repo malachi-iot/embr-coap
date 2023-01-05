@@ -17,6 +17,8 @@
 
 #include "esp_wifi.h"
 
+#include "verify.hpp"
+
 namespace embr { namespace coap {
 
 namespace sys_paths {
@@ -87,31 +89,6 @@ static void build_firmware_info(AppContext& ctx, AppContext::encoder_type& encod
 }
 
 
-// TODO: bring in participation of 'extra'/response tracker to help us here
-inline bool verify(AppContext& context, bool condition, Header::Code fail_code)
-{
-    if(context.response_code.has_value())
-    {
-        Header::Code code = context.response_code.value();
-
-        // short circuit, if we already have an error code, no need
-        // to further verify condition
-        if(!code.success()) return false;
-    }
-
-    if(condition == true) return true;
-
-    context.response_code = fail_code;
-    return false;
-}
-
-inline bool verify(AppContext& context, Header::Code code,
-    Header::Code fail_code = Header::Code::BadRequest)
-{
-    return verify(context, context.header().code() == code, code);
-}
-
-
 bool build_sys_reply(AppContext& context, AppContext::encoder_type& encoder)
 {
     bool verified;
@@ -120,7 +97,10 @@ bool build_sys_reply(AppContext& context, AppContext::encoder_type& encoder)
     {
         case v1::root:
             //build_reply(context, encoder, Header::Code::NotImplemented);
+            if(!verify(context, Header::Code::Get)) return false;
+            
             build_stats(context, encoder);
+
             break;
 
         //case v1::root_uptime:
@@ -135,6 +115,8 @@ bool build_sys_reply(AppContext& context, AppContext::encoder_type& encoder)
             break;
 
         case v1::root_firmware:
+            if(!verify(context, Header::Code::Get)) return false;
+            
             build_firmware_info(context, encoder);
             break;
 
