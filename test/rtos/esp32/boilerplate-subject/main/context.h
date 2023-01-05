@@ -11,7 +11,8 @@
 
 struct AppContext : 
     embr::coap::LwipIncomingContext,
-    embr::coap::UriParserContext
+    embr::coap::UriParserContext,
+    embr::coap::internal::ExtraContext
 {
     typedef embr::lwip::ipbuf_streambuf istreambuf_type;
 
@@ -39,10 +40,10 @@ namespace sys_paths { namespace v1 {
 
 enum _paths
 {
-    root = 1000,
-    root_version,
-    root_uptime,
-    root_reboot
+    root = 1000,    // general runtime stats
+    root_firmware,  // firmware info
+    root_uptime,    // uptime specifically
+    root_reboot     // reboot command
 };
 
 

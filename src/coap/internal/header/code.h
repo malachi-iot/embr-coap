@@ -79,10 +79,10 @@ public:
     // bottommost 5 bits
     ESTD_CPP_CONSTEXPR_RET uint8_t detail() const { return code_ & 0x1F; }
 
-    bool is(Classes c) const { return get_class() == c; }
+    ESTD_CPP_CONSTEXPR_RET bool is(Classes c) const { return get_class() == c; }
 
-    bool is_request() const { return get_class() == Request; }
-    bool success() const { return is(Success); }
+    ESTD_CPP_CONSTEXPR_RET bool is_request() const { return get_class() == Request; }
+    ESTD_CPP_CONSTEXPR_RET bool success() const { return is(Success); }
 
     ESTD_CPP_CONSTEXPR_RET operator Codes () const
     { return (Codes) code_; }

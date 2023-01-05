@@ -41,6 +41,30 @@ static void build_stats(AppContext& ctx, AppContext::encoder_type& encoder)
 
     auto out = encoder.ostream();
 
+    embr::json::v1::encoder json;
+    auto j = make_fluent(json, out);
+
+    j.begin()
+
+    ("uptime", now_in_s.count())
+    ("rssi", wifidata.rssi);
+
+    j.end();
+}
+
+
+static void build_firmware_info(AppContext& ctx, AppContext::encoder_type& encoder)
+{
+    build_reply(ctx, encoder, Header::Code::Content);
+
+    encoder.option(
+        Option::Numbers::ContentFormat,
+        (int)Option::ContentFormats::ApplicationJson);
+
+    encoder.payload();
+
+    auto out = encoder.ostream();
+
 #if ESP_IDF_VERSION  >= ESP_IDF_VERSION_VAL(5, 0, 0)
     const esp_app_desc_t* app_desc = esp_app_get_description();
 #else
@@ -52,29 +76,41 @@ static void build_stats(AppContext& ctx, AppContext::encoder_type& encoder)
 
     j.begin()
 
-    ("uptime", now_in_s.count())
-    ("rssi", wifidata.rssi)
+    ("name", app_desc->project_name)
+    ("time", app_desc->time)
+    ("date", app_desc->date)
     ("versions")
         ("app", app_desc->version)
+        ("idf", app_desc->idf_ver)
     --;
 
     j.end();
 }
 
+
 // TODO: bring in participation of 'extra'/response tracker to help us here
-inline bool response_assert(AppContext& context, bool condition, Header::Code fail_code)
+inline bool verify(AppContext& context, bool condition, Header::Code fail_code)
 {
-    if(condition == false)
+    if(context.response_code.has_value())
     {
-        return false;
+        Header::Code code = context.response_code.value();
+
+        // short circuit, if we already have an error code, no need
+        // to further verify condition
+        if(!code.success()) return false;
     }
 
-    return true;
+    if(condition == true) return true;
+
+    context.response_code = fail_code;
+    return false;
 }
 
 
 bool build_sys_reply(AppContext& context, AppContext::encoder_type& encoder)
 {
+    bool verified;
+
     switch(context.found_node())
     {
         case v1::root:
@@ -86,14 +122,21 @@ bool build_sys_reply(AppContext& context, AppContext::encoder_type& encoder)
             break;
 
         case v1::root_reboot:
-            response_assert(context,
+            verified = verify(context,
                 context.header().code() == Header::Code::Put,
                 Header::Code::BadRequest);
 
+            if(verified)
+                build_reply(context, encoder, Header::Code::Valid);
+            else
+                // DEBT: Semi-dogfooding just to get progress, really we 
+                // want auto-reply to pick this up
+                build_reply(context, encoder, context.response_code.value());
+
             break;
 
-        case v1::root_version:
-            build_app_version_response(context, encoder);
+        case v1::root_firmware:
+            build_firmware_info(context, encoder);
             break;
 
         default: return false;

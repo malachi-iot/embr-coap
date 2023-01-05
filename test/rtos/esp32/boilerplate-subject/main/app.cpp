@@ -51,7 +51,9 @@ const UriPathMap uri_map[] =
     { "stats",      id_path_v1_api_stats,       id_path_v1_api },
     
     { "sys",        sys_paths::v1::root,        id_path_v1 },
-    { "version",    sys_paths::v1::root_version,        sys_paths::v1::root },
+    { "firmware",   sys_paths::v1::root_firmware,        sys_paths::v1::root },
+    { "reboot",     sys_paths::v1::root_reboot,        sys_paths::v1::root },
+    { "version",    sys_paths::v1::root_firmware,        sys_paths::v1::root },
     
     { "version",    id_path_v1_api_version,     id_path_v1_api },
 
