@@ -62,7 +62,17 @@ const UriPathMap uri_map[] =
 };
 
 
+void auto_reply(AppContext& context, AppContext::encoder_type& encoder)
+{
+    if(context.flags.response_sent) return;
 
+    if(context.response_code.has_value())
+        build_reply(context, encoder, context.response_code.value());
+    else
+        build_reply(context, encoder, Header::Code::NotFound);
+
+    context.reply(encoder);
+}
 
 struct Observer
 {

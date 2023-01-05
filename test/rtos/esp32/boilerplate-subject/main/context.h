@@ -20,6 +20,14 @@ struct AppContext :
         const ip_addr_t* addr,
         uint16_t port);
 
+    // DEBT: Massive stumbling block, perhaps we can bake
+    // 'ExtraContext' into 'IncomingContext'?
+    void reply(encoder_type& encoder)
+    {
+        embr::coap::LwipIncomingContext::reply(encoder);
+        flags.response_sent = true;
+    }
+
     union
     {
         struct
@@ -50,5 +58,6 @@ enum _paths
 }
 
 bool build_sys_reply(AppContext& context, AppContext::encoder_type& encoder);
+void auto_reply(AppContext& context, AppContext::encoder_type& encoder);
 
 }
