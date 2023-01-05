@@ -79,6 +79,7 @@
         "bit": "cpp",
         "set": "cpp",
         "stop_token": "cpp",
-        "condition_variable": "cpp"
+        "condition_variable": "cpp",
+        "memory_resource": "cpp"
     }
 }
