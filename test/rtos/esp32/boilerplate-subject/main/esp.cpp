@@ -17,7 +17,7 @@ using namespace embr::coap;
 
 #include "esp_wifi.h"
 
-namespace sys_paths {
+inline namespace v1 {
 
 struct textfmt
 {
@@ -33,9 +33,10 @@ struct minijson : textfmt
     {
         uint32_t has_items_ : 8;
         uint32_t level_ : 3;
+        uint32_t in_array_ : 1;
     };
 
-    minijson() : has_items_(0), level_(0)
+    minijson() : has_items_(0), level_(0), in_array_(0)
     {
 
     }
@@ -57,12 +58,15 @@ struct minijson : textfmt
     }
 
     bool has_items() const { return has_items_ >> level_; }
+    bool in_array() const { return in_array_; }
     
     void set_has_items()
     {
         has_items_ |= 1 << level_;
     }
 
+    // clear out indicator that this level has items
+    // (do this when moving back up a level)
     void clear_has_items()
     {
         has_items_ &= ~(1 << level_);
@@ -122,9 +126,60 @@ struct minijson : textfmt
     }
 
     template <class TStreambuf, class TBase>
+    void array(estd::internal::basic_ostream<TStreambuf, TBase>& out, const char* key)
+    {
+        in_array_ = 1;
+
+        add_key(out, key);
+
+        out << '[';
+        ++level_;
+    }
+
+    template <class TStreambuf, class TBase>
+    void raw(estd::internal::basic_ostream<TStreambuf, TBase>& out, const char* value)
+    {
+        out << '"' << value << '"';
+    }
+
+    template <class TStreambuf, class TBase>
+    void raw(estd::internal::basic_ostream<TStreambuf, TBase>& out, int value)
+    {
+        out << value;
+    }
+
+    template <class TStreambuf, class TBase, typename T>
+    void array_item(estd::internal::basic_ostream<TStreambuf, TBase>& out, T value)
+    {
+        if(has_items())
+        {
+            out << ',';
+            if(use_spaces()) out << ' ';
+        }
+        else
+            set_has_items();
+
+        raw(out, value);
+    }
+
+    template <class TStreambuf, class TBase>
+    void end_array(estd::internal::basic_ostream<TStreambuf, TBase>& out)
+    {
+        out << ']';
+        --level_;
+        in_array_ = 0;
+    }
+
+    template <class TStreambuf, class TBase>
     void end(estd::internal::basic_ostream<TStreambuf, TBase>& out)
     {
         clear_has_items();
+
+        if(in_array())
+        {
+            end_array(out);
+            return;
+        }
 
         --level_;
 
@@ -134,29 +189,44 @@ struct minijson : textfmt
         out << '}';
     }
 
-    template <class TStreambuf, class TBase>
-    void add(estd::internal::basic_ostream<TStreambuf, TBase>& out, const char* key, const char* value)
+    template <class TStreambuf, class TBase, typename T>
+    void add(estd::internal::basic_ostream<TStreambuf, TBase>& out, const char* key, T value)
     {
         add_key(out, key);
-        out << '"' << value << '"';
-    }
-
-    template <class TStreambuf, class TBase>
-    void add(estd::internal::basic_ostream<TStreambuf, TBase>& out, const char* key, int value)
-    {
-        add_key(out, key);
-        out << value;
+        raw(out, value);
     }
 };
 
 
-template <class TOut>
+namespace minij {
+
+enum modes
+{
+    core = 0,
+    array,
+    normal,
+    begin
+};
+
+}
+
+template <class TOut, int mode = minij::core>
 struct minijson_fluent;
 
-template <class TStreambuf, class TBase>
-struct minijson_fluent<estd::internal::basic_ostream<TStreambuf, TBase> >
+
+
+template <class TStreambuf, class TBase, int mode_>
+struct minijson_fluent<estd::detail::basic_ostream<TStreambuf, TBase>, mode_>
 {
-    typedef estd::internal::basic_ostream<TStreambuf, TBase> out_type;
+    typedef estd::detail::basic_ostream<TStreambuf, TBase> out_type;
+
+    typedef minijson_fluent<out_type> default_type;
+    typedef minijson_fluent<out_type, mode_> this_type;
+    typedef minijson_fluent<out_type, minij::array> array_type;
+    typedef minijson_fluent<out_type, minij::normal> mode2_type;
+    typedef minijson_fluent<out_type, minij::begin> begin_type;
+
+    static ESTD_CPP_CONSTEXPR_RET int mode() { return mode_; }
 
     out_type& out;
     minijson& json;
@@ -185,6 +255,19 @@ struct minijson_fluent<estd::internal::basic_ostream<TStreambuf, TBase> >
         return *this;
     }
 
+    minijson_fluent& array(const char* key)
+    {
+        json.array(out, key);
+        return *this;
+    }
+
+    template <class T>
+    minijson_fluent& array_item(T value)
+    {
+        json.array_item(out, value);
+        return *this;
+    }
+
     minijson_fluent& end()
     {
         json.end(out);
@@ -206,13 +289,117 @@ struct minijson_fluent<estd::internal::basic_ostream<TStreambuf, TBase> >
     {
         return add(key, value);
     }
+
+    array_type& operator[](const char* key)
+    {
+        return (array_type&) array(key);
+    }
+
+    minijson_fluent& operator--(int)
+    {
+        return end();
+    }
+
+/*
+ - fascinating, but deeper overloading of () is better
+    template <typename T>
+    minijson_fluent& operator,(T value)
+    {
+        json.array_item(out, value);
+        return *this;
+    } */
+
+    // almost but not quite
+    /*
+    begin_type& operator++(int)
+    {
+        return (begin_type&) *this;
+    } */
+
+
+/*
+    begin_type* operator->()
+    {
+        return (begin_type*) this;
+    } */
+
+    /*
+    minijson_fluent& operator=(const char* key)
+    {
+        return *this;
+    } */
 };
+
+// TODO: Look into that fnptr-like magic that ostream uses for its endl
+template <class TOut, int mode>
+minijson_fluent<TOut, mode>& end(minijson_fluent<TOut, mode>& j)
+{
+    return j.end();
+}
+
+template <class TStreambuf, class TBase>
+struct minijson_fluent<estd::internal::basic_ostream<TStreambuf, TBase>, minij::array> :
+    minijson_fluent<estd::internal::basic_ostream<TStreambuf, TBase> >
+{
+    typedef minijson_fluent<estd::internal::basic_ostream<TStreambuf, TBase> > base_type;
+    typedef minijson_fluent<estd::internal::basic_ostream<TStreambuf, TBase>, minij::array> this_type;
+
+    template <class T>
+    void array_items(T item)
+    {
+        base_type::array_item(item);
+    }
+
+    template <class T, class ... TArgs>
+    void array_items(T item, TArgs...args)
+    {
+        base_type::array_item(item);
+        array_items(std::forward<TArgs>(args)...);
+    }
+
+    template <class ... TArgs>
+    base_type& operator()(TArgs...args)
+    {
+        array_items(std::forward<TArgs>(args)...);
+        base_type::end();
+        return *this;
+    }
+};
+
+template <class TStreambuf, class TBase>
+struct minijson_fluent<estd::internal::basic_ostream<TStreambuf, TBase>, minij::begin> :
+    minijson_fluent<estd::internal::basic_ostream<TStreambuf, TBase> >
+{
+    minijson_fluent& operator=(const char* key)
+    {
+        return *this;
+    }
+};
+
+
+template <class TOut>
+minijson_fluent<TOut>& operator<(minijson_fluent<TOut>& j, const char* key)
+{
+    return j.begin(key);
+}
+
+// doesn't work
+template <class TOut>
+minijson_fluent<TOut>& operator>(minijson_fluent<TOut>& j, minijson_fluent<TOut>&)
+{
+    return j.end();
+}
+
 
 template <class TStreambuf, class TBase>
 auto make_fluent(estd::internal::basic_ostream<TStreambuf, TBase>& out, minijson& json)
 {
     return minijson_fluent<estd::internal::basic_ostream<TStreambuf, TBase> >(out, json);
 }
+
+}
+
+namespace sys_paths {
 
 
 static void stats(AppContext& ctx, AppContext::encoder_type& encoder)
@@ -250,26 +437,29 @@ static void stats(AppContext& ctx, AppContext::encoder_type& encoder)
     out << "}";
     out << '}'; */
 
-    minijson json;
+    ::v1::minijson json;
     auto j = make_fluent(out, json);
 
     j.begin();
     j.add("uptime", now_in_s.count());
-    j.add("rssi", wifidata.rssi);
+    j("rssi", wifidata.rssi);
     j.begin("versions").
         add("app", app_desc->version)
         ("nested")
             ("n1", 123)
             ("n2", 789)
-        ().
-        add("synthetic", 7).
-    end();
+        --
+        ("synthetic", 7)
+    --;
 
-    j.begin("nested2").
-        add("n2", 456).
-    end();
+    // doesn't quite work
+    //j < "nested2" ("n2", 456) >j;
+    //j = "nested2" ("n2", 456) --;
 
-    json.add(out, "synthetic", 100);
+    j["ar1"] (213, 867, 5309);
+    j["ar2"] (900, 976, 1234);
+
+    j.add("synthetic", 100);
     json.end(out);
 }
 
