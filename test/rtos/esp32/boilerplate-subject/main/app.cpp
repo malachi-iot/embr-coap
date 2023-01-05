@@ -26,7 +26,6 @@ enum
     id_path_v1 = 0,
     id_path_v1_api,
     id_path_v1_api_gpio,
-    id_path_v1_api_version,
     id_path_v1_api_stats,
     id_path_v1_api_gpio_value,
 
@@ -55,8 +54,6 @@ const UriPathMap uri_map[] =
     { "reboot",     sys_paths::v1::root_reboot,        sys_paths::v1::root },
     { "version",    sys_paths::v1::root_firmware,        sys_paths::v1::root },
     
-    { "version",    id_path_v1_api_version,     id_path_v1_api },
-
     { ".well-known",    id_path_well_known,         MCCOAP_URIPATH_NONE },
     { "core",           id_path_well_known_core,    id_path_well_known }
 };
@@ -66,11 +63,11 @@ void auto_reply(AppContext& context, AppContext::encoder_type& encoder)
 {
     if(context.flags.response_sent) return;
 
-    if(context.response_code.has_value())
-        build_reply(context, encoder, context.response_code.value());
-    else
-        build_reply(context, encoder, Header::Code::NotFound);
+    Header::Code code = context.response_code.has_value() ?
+        context.response_code.value() :
+        Header::Code::NotFound;
 
+    build_reply(context, encoder, code);
     context.reply(encoder);
 }
 
@@ -105,7 +102,7 @@ struct Observer
         switch(context.found_node())
         {
             case id_path_v1_api_gpio:
-                build_reply(context, encoder, Header::Code::NotImplemented);
+                context.response_code = Header::Code::NotImplemented;
                 break;
                 
             case id_path_v1_api_gpio_value:
@@ -115,17 +112,16 @@ struct Observer
 #ifdef ESP_PLATFORM
             case id_path_v1_api_version:
                 build_app_version_response(context, encoder);
+                context.reply(encoder);
                 break;
 #endif
 
             default:
-                if(!sys_paths::build_sys_reply(context, encoder))
-                    build_reply(context, encoder, Header::Code::NotFound);
-
+                sys_paths::send_sys_reply(context, encoder);
                 break;
         }
 
-        context.reply(encoder);
+        auto_reply(context, encoder);
     }
 };
 
@@ -172,5 +168,6 @@ void AppContext::put_gpio(istreambuf_type& streambuf) {}
 void AppContext::completed_gpio(encoder_type& encoder)
 {
     build_reply(*this, encoder, Header::Code::NotImplemented);
+    reply(encoder);
 }
 #endif

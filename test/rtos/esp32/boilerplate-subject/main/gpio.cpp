@@ -93,9 +93,12 @@ void AppContext::completed_gpio(encoder_type& encoder)
         auto out = encoder.ostream();
 
         out << val;
+
+        reply(encoder);
     }
-    else if(header().code() == Header::Code::Put && gpio.pin.has_value())
-        build_reply(*this, encoder, Header::Code::Valid);
     else
-        build_reply(*this, encoder, Header::Code::BadRequest);
+    {
+        bool success = header().code() == Header::Code::Put && gpio.pin.has_value();
+        response_code = success ? Header::Code::Valid : Header::Code::BadRequest;
+    }
 }

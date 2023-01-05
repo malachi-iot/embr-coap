@@ -106,6 +106,12 @@ inline bool verify(AppContext& context, bool condition, Header::Code fail_code)
     return false;
 }
 
+inline bool verify(AppContext& context, Header::Code code,
+    Header::Code fail_code = Header::Code::BadRequest)
+{
+    return verify(context, context.header().code() == code, code);
+}
+
 
 bool build_sys_reply(AppContext& context, AppContext::encoder_type& encoder)
 {
@@ -118,20 +124,14 @@ bool build_sys_reply(AppContext& context, AppContext::encoder_type& encoder)
             build_stats(context, encoder);
             break;
 
-        case v1::root_uptime:
-            break;
+        //case v1::root_uptime:
+            //break;
 
         case v1::root_reboot:
-            verified = verify(context,
-                context.header().code() == Header::Code::Put,
-                Header::Code::BadRequest);
+            verified = verify(context, Header::Code::Put);
 
-            if(verified)
-                build_reply(context, encoder, Header::Code::Valid);
-            else
-                // DEBT: Semi-dogfooding just to get progress, really we 
-                // want auto-reply to pick this up
-                build_reply(context, encoder, context.response_code.value());
+            // Abort, but indicate we did technically service the URI
+            if(!verified) return true;
 
             break;
 
@@ -143,6 +143,18 @@ bool build_sys_reply(AppContext& context, AppContext::encoder_type& encoder)
     }
 
     return true;
+}
+
+
+bool send_sys_reply(AppContext& context, AppContext::encoder_type& encoder)
+{
+    if(build_sys_reply(context, encoder))
+    {
+        context.reply(encoder);
+        return true;
+    }
+
+    return false;
 }
 
 }
