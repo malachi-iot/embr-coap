@@ -19,26 +19,28 @@ enum modes
 
 inline namespace v1 {
 
-template <class TOut, int mode = minij::core>
-struct minijson_fluent;
+template <class TOut, class TOptions, int mode = minij::core>
+struct fluent;
 
 
-template <class TStreambuf, class TBase, int mode_>
-struct minijson_fluent<estd::detail::basic_ostream < TStreambuf, TBase>, mode_> {
+template <class TStreambuf, class TBase, class TOptions, int mode_>
+struct fluent<estd::detail::basic_ostream<TStreambuf, TBase>, TOptions, mode_>
+{
     typedef estd::detail::basic_ostream <TStreambuf, TBase> out_type;
+    typedef TOptions options_type;
 
-    typedef minijson_fluent<out_type> default_type;
-    typedef minijson_fluent<out_type, mode_> this_type;
-    typedef minijson_fluent<out_type, minij::array> array_type;
-    typedef minijson_fluent<out_type, minij::normal> mode2_type;
-    typedef minijson_fluent<out_type, minij::begin> begin_type;
+    typedef fluent<out_type, options_type> default_type;
+    typedef fluent<out_type, options_type, mode_> this_type;
+    typedef fluent<out_type, options_type, minij::array> array_type;
+    typedef fluent<out_type, options_type, minij::normal> mode2_type;
+    typedef fluent<out_type, options_type, minij::begin> begin_type;
 
     static ESTD_CPP_CONSTEXPR_RET int mode() { return mode_; }
 
     out_type& out;
-    encoder& json;
+    encoder<TOptions>& json;
 
-    minijson_fluent(out_type& out, encoder& json) :
+    fluent(out_type& out, encoder<TOptions>& json) :
             out(out),
             json(json) {}
 
@@ -109,7 +111,7 @@ struct minijson_fluent<estd::detail::basic_ostream < TStreambuf, TBase>, mode_> 
 /*
  - fascinating, but deeper overloading of () is better
     template <typename T>
-    minijson_fluent& operator,(T value)
+    fluent& operator,(T value)
     {
         json.array_item(out, value);
         return *this;
@@ -130,25 +132,27 @@ begin_type& operator++(int)
     } */
 
 /*
-minijson_fluent& operator=(const char* key)
+fluent& operator=(const char* key)
 {
     return *this;
 } */
 };
 
 // TODO: Look into that fnptr-like magic that ostream uses for its endl
-template <class TOut, int mode>
-minijson_fluent<TOut, mode>& end(minijson_fluent < TOut, mode > &j)
+template <class TOut, class TOptions, int mode>
+fluent<TOut, TOptions, mode>& end(fluent<TOut, TOptions, mode>& j)
 {
     return j.end();
 }
 
-template <class TStreambuf, class TBase>
-struct minijson_fluent<estd::internal::basic_ostream < TStreambuf, TBase>, minij::array> :
-        minijson_fluent<estd::internal::basic_ostream < TStreambuf, TBase> > {
-    typedef minijson_fluent<estd::internal::basic_ostream < TStreambuf, TBase> >
+template <class TStreambuf, class TBase, class TOptions>
+struct fluent<estd::internal::basic_ostream<TStreambuf, TBase>, TOptions, minij::array> :
+    fluent<estd::internal::basic_ostream<TStreambuf, TBase>, TOptions>
+{
+    typedef fluent<estd::internal::basic_ostream<TStreambuf, TBase>, TOptions>
             base_type;
-    typedef minijson_fluent<estd::internal::basic_ostream < TStreambuf, TBase>, minij::array>
+    typedef fluent<estd::internal::basic_ostream<TStreambuf, TBase>, TOptions,
+            minij::array>
             this_type;
 
     template <class T>
@@ -173,34 +177,35 @@ struct minijson_fluent<estd::internal::basic_ostream < TStreambuf, TBase>, minij
     }
 };
 
-template <class TStreambuf, class TBase>
-struct minijson_fluent<estd::internal::basic_ostream < TStreambuf, TBase>, minij::begin> :
-        minijson_fluent<estd::internal::basic_ostream < TStreambuf, TBase> > {
-    minijson_fluent& operator=(const char* key)
+template <class TStreambuf, class TBase, class TOptions>
+struct fluent<estd::internal::basic_ostream<TStreambuf, TBase>, TOptions, minij::begin> :
+    fluent<estd::internal::basic_ostream<TStreambuf, TBase>, TOptions>
+{
+    fluent& operator=(const char* key)
     {
         return *this;
     }
 };
 
-
+/*
 template <class TOut>
-minijson_fluent <TOut>& operator<(minijson_fluent <TOut>& j, const char* key)
+fluent <TOut>& operator<(fluent <TOut>& j, const char* key)
 {
     return j.begin(key);
 }
 
 // doesn't work
 template <class TOut>
-minijson_fluent <TOut>& operator>(minijson_fluent <TOut>& j, minijson_fluent <TOut>&)
+fluent <TOut>& operator>(fluent <TOut>& j, fluent <TOut>&)
 {
     return j.end();
 }
+*/
 
-
-template <class TStreambuf, class TBase>
-auto make_fluent(encoder& json, estd::internal::basic_ostream <TStreambuf, TBase>& out)
+template <class TStreambuf, class TBase, class TOptions>
+auto make_fluent(encoder<TOptions>& json, estd::internal::basic_ostream <TStreambuf, TBase>& out)
 {
-    return minijson_fluent<estd::internal::basic_ostream<TStreambuf, TBase> > (out, json);
+    return fluent<estd::internal::basic_ostream<TStreambuf, TBase>, TOptions> (out, json);
 }
 
 }

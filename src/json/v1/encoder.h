@@ -6,7 +6,9 @@ namespace embr { namespace json {
 
 inline namespace v1 {
 
-struct textfmt
+namespace options {
+
+struct full
 {
     bool use_eol() { return true; }
     bool use_tabs() { return true; }
@@ -15,7 +17,7 @@ struct textfmt
     ESTD_CPP_CONSTEXPR_RET bool use_doublequotes() const { return true; }
 };
 
-struct textfmt2
+struct lean
 {
     bool use_eol() { return false; }
     bool use_tabs() { return false; }
@@ -24,9 +26,15 @@ struct textfmt2
     ESTD_CPP_CONSTEXPR_RET bool use_doublequotes() const { return false; }
 };
 
+}
 
-struct encoder : textfmt2
+
+
+template <class TOptions = options::lean>
+struct encoder : TOptions
 {
+    typedef TOptions options_type;
+
     struct
     {
         uint32_t has_items_: 8;
@@ -42,7 +50,7 @@ struct encoder : textfmt2
     template <class TStreambuf, class TBase>
     inline void do_tabs(estd::internal::basic_ostream <TStreambuf, TBase>& out)
     {
-        if (use_tabs())
+        if (options_type::use_tabs())
         {
             for (unsigned i = level_; i > 0; --i)
                 out << "  ";
@@ -54,7 +62,7 @@ struct encoder : textfmt2
 
     ESTD_CPP_CONSTEXPR_RET char quote(bool key = true) const
     {
-        return use_doublequotes() ? '"' : '\'';
+        return options_type::use_doublequotes() ? '"' : '\'';
     }
 
     bool has_items() const { return has_items_ >> level_; }
@@ -105,7 +113,7 @@ struct encoder : textfmt2
 
         out << quote() << key << quote() << ':';
 
-        if (use_spaces()) out << ' ';
+        if (options_type::use_spaces()) out << ' ';
     }
 
     template <class TStreambuf, class TBase>
@@ -113,7 +121,7 @@ struct encoder : textfmt2
     {
         add_key(out, key);
 
-        if (brace_on_newline())
+        if (options_type::brace_on_newline())
         {
             do_eol(out);
             do_tabs(out);
@@ -154,7 +162,7 @@ struct encoder : textfmt2
         if (has_items())
         {
             out << ',';
-            if (use_spaces()) out << ' ';
+            if (options_type::use_spaces()) out << ' ';
         }
         else
             set_has_items();
