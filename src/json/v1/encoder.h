@@ -144,6 +144,8 @@ struct encoder : TOptions
         ++level_;
     }
 
+    // TODO: deduce what kind of quote would be better by inspecting value, or
+    // at least provide a compile time hint
     template <class TStreambuf, class TBase>
     void raw(estd::internal::basic_ostream <TStreambuf, TBase>& out, const char* value)
     {

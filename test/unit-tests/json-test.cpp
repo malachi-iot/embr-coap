@@ -26,16 +26,29 @@ TEST_CASE("json tests", "[json]")
         {
             auto j = make_fluent(e, out);
 
-            j.begin()
+            SECTION("user")
+            {
+                j.begin()
 
-            ("user")
-                ("age", 30)
-                ("name", "Fred")
-            --;
+                ("user")
+                    ("age", 30)
+                    ("name", "Fred")
+                --;
 
-            j.end();
+                j.end();
 
-            REQUIRE(out.rdbuf()->str() == test::json_user);
+                REQUIRE(out.rdbuf()->str() == test::json_user);
+            }
+            SECTION("array")
+            {
+                j.begin()
+
+                ["prefs"] (1, 2, 3, "hi2u");
+
+                j.end();
+
+                REQUIRE(out.rdbuf()->str() == test::json_prefs);
+            }
         }
     }
 }

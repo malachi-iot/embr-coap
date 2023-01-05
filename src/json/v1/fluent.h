@@ -202,6 +202,8 @@ fluent <TOut>& operator>(fluent <TOut>& j, fluent <TOut>&)
 }
 */
 
+// TODO: Rework this so that encoder can be inline inside the fluent mechanism
+
 template <class TStreambuf, class TBase, class TOptions>
 auto make_fluent(encoder<TOptions>& json, estd::internal::basic_ostream <TStreambuf, TBase>& out)
 {

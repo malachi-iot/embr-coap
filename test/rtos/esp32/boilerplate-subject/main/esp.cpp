@@ -11,7 +11,7 @@
 
 #include <coap/platform/lwip/encoder.h>
 
-#include <json/encoder.h>
+#include <json/encoder.hpp>
 
 using namespace embr::coap;
 
@@ -23,7 +23,7 @@ using namespace embr::coap;
 namespace sys_paths {
 
 
-static void stats(AppContext& ctx, AppContext::encoder_type& encoder)
+static void build_stats(AppContext& ctx, AppContext::encoder_type& encoder)
 {
     auto now = estd::chrono::freertos_clock::now();
     auto now_in_s = estd::chrono::seconds(now.time_since_epoch());
@@ -47,43 +47,30 @@ static void stats(AppContext& ctx, AppContext::encoder_type& encoder)
     const esp_app_desc_t* app_desc = esp_ota_get_app_description();
 #endif
 
-    /*
-    out << '{';
-    // finally, esp has 64-bit timers to track RTC/uptime.  Pretty
-    // sure that's gonna be better than the freertos source
-    out <<  "\"uptime\":" << now_in_s.count() << ',';
-    out << "\"rssi\":" << wifidata.rssi << ",";
-    out << "\"versions\":{";
-    out << "\"app\": '" << app_desc->version << "'";
-    out << "}";
-    out << '}'; */
+    embr::json::v1::encoder json;
+    auto j = make_fluent(json, out);
 
-    ::v1::minijson json;
-    auto j = make_fluent(out, json);
+    j.begin()
 
-    j.begin();
-    j.add("uptime", now_in_s.count());
-    j("rssi", wifidata.rssi);
-    j.begin("versions").
-        add("app", app_desc->version)
-        ("nested")
-            ("n1", 123)
-            ("n2", 789)
-        --
-        ("synthetic", 7)
+    ("uptime", now_in_s.count())
+    ("rssi", wifidata.rssi)
+    ("versions")
+        ("app", app_desc->version)
     --;
 
-    // doesn't quite work
-    //j < "nested2" ("n2", 456) >j;
-    //j = "nested2" ("n2", 456) --;
-
-    j["ar1"] (213, 867, 5309);
-    j["ar2"] (900, 976, 1234);
-
-    j.add("synthetic", 100);
-    json.end(out);
+    j.end();
 }
 
+// TODO: bring in participation of 'extra'/response tracker to help us here
+inline bool response_assert(AppContext& context, bool condition, Header::Code fail_code)
+{
+    if(condition == false)
+    {
+        return false;
+    }
+
+    return true;
+}
 
 
 bool build_sys_reply(AppContext& context, AppContext::encoder_type& encoder)
@@ -92,13 +79,17 @@ bool build_sys_reply(AppContext& context, AppContext::encoder_type& encoder)
     {
         case v1::root:
             //build_reply(context, encoder, Header::Code::NotImplemented);
-            stats(context, encoder);
+            build_stats(context, encoder);
             break;
 
         case v1::root_uptime:
             break;
 
         case v1::root_reboot:
+            response_assert(context,
+                context.header().code() == Header::Code::Put,
+                Header::Code::BadRequest);
+
             break;
 
         case v1::root_version:
