@@ -109,13 +109,6 @@ struct Observer
                 context.completed_gpio(encoder);
                 break;
                 
-#ifdef ESP_PLATFORM
-            case id_path_v1_api_version:
-                build_app_version_response(context, encoder);
-                context.reply(encoder);
-                break;
-#endif
-
             default:
                 sys_paths::send_sys_reply(context, encoder);
                 break;

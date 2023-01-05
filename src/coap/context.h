@@ -84,6 +84,7 @@ public:
 
 
 // NOTE: Code has signficantly changed and this is now considered not tested
+// DEBT: Replace this entirely with SimpleBufferContext
 template <>
 class TokenContext<false> : public tags::token_context
 {
@@ -140,6 +141,7 @@ public:
 
 
 namespace experimental {
+
 
 // NOTE: Just an interesting idea at this time
 class DecoderContext
@@ -225,11 +227,11 @@ public:
 };
 
 // these two really like to go together
-template <bool inline_token, bool simple_buffer = false>
+template <bool inline_>
 struct TokenAndHeaderContext;
 
 template <>
-struct TokenAndHeaderContext<true, false> :
+struct TokenAndHeaderContext<true> :
         public TokenContext<true>,
         public HeaderContext
 {
@@ -246,8 +248,9 @@ struct TokenAndHeaderContext<true, false> :
 };
 
 
+// DEBT: Use SimpleBufferContext approach here instead
 template <>
-struct TokenAndHeaderContext<false, false> :
+struct TokenAndHeaderContext<false> :
         public TokenContext<false>,
         public HeaderContext
 {
@@ -269,9 +272,9 @@ struct TokenAndHeaderContext<false, false> :
 // foundational base class
 // Called Incoming context because remember some incoming messages are RESPONSES, even
 // when we are the server (ACKs, etc)
-template <class TAddr, bool inline_token = true, bool simple_buffer = false>
+template <class TAddr, bool inline_ = true>
 class IncomingContext :
-        public TokenAndHeaderContext<inline_token, simple_buffer>,
+        public TokenAndHeaderContext<inline_>,
         public AddressContext<TAddr>
 {
 public:

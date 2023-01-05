@@ -198,9 +198,8 @@ public:
     }
 
 
-    template <bool inline_token, bool simple_buffer>
-    void header_and_token(const embr::coap::TokenAndHeaderContext<inline_token, simple_buffer>&
-    ctx)
+    template <bool inline_>
+    void header_and_token(const embr::coap::TokenAndHeaderContext<inline_>& ctx)
     {
         header(ctx.header());
         token(ctx.token());
