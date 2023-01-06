@@ -23,8 +23,16 @@ namespace embr { namespace coap {
 
 namespace sys_paths {
 
+template <class TContext>
+struct builder
+{
+    typedef TContext context_type;
+    typedef typename context_type::encoder_type encoder_type;
+};
 
-static void build_stats(AppContext& ctx, AppContext::encoder_type& encoder)
+
+template <class TContext>
+static void build_stats(TContext& ctx, typename TContext::encoder_type& encoder)
 {
     auto now = estd::chrono::freertos_clock::now();
     auto now_in_s = estd::chrono::seconds(now.time_since_epoch());
@@ -53,8 +61,8 @@ static void build_stats(AppContext& ctx, AppContext::encoder_type& encoder)
     j.end();
 }
 
-
-static void build_firmware_info(AppContext& ctx, AppContext::encoder_type& encoder)
+template <class TContext>
+static void build_firmware_info(TContext& ctx, typename TContext::encoder_type& encoder)
 {
     build_reply(ctx, encoder, Header::Code::Content);
 
@@ -89,7 +97,13 @@ static void build_firmware_info(AppContext& ctx, AppContext::encoder_type& encod
 }
 
 
-bool build_sys_reply(AppContext& context, AppContext::encoder_type& encoder)
+template <class TContext>
+typename estd::enable_if<
+    estd::is_base_of<tags::incoming_context, TContext>::value &&
+    estd::is_base_of<UriParserContext, TContext>::value &&
+    estd::is_base_of<internal::ExtraContext, TContext>::value, void>
+    ::type
+build_sys_reply(TContext& context, typename TContext::encoder_type& encoder)
 {
     bool verified;
 
@@ -116,7 +130,7 @@ bool build_sys_reply(AppContext& context, AppContext::encoder_type& encoder)
 
         case v1::root_firmware:
             if(!verify(context, Header::Code::Get)) return false;
-            
+
             build_firmware_info(context, encoder);
             break;
 
@@ -127,7 +141,13 @@ bool build_sys_reply(AppContext& context, AppContext::encoder_type& encoder)
 }
 
 
-bool send_sys_reply(AppContext& context, AppContext::encoder_type& encoder)
+template <class TContext>
+typename estd::enable_if<
+    estd::is_base_of<tags::incoming_context, TContext>::value &&
+    estd::is_base_of<UriParserContext, TContext>::value &&
+    estd::is_base_of<internal::ExtraContext, TContext>::value, void>
+    ::type
+send_sys_reply(TContext& context, typename TContext::encoder_type& encoder)
 {
     if(build_sys_reply(context, encoder))
     {
