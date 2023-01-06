@@ -5,7 +5,6 @@
 #include <estd/optional.h>
 
 #include <coap/platform/lwip/context.h>
-#include <coap/platform/api.h>
 
 // TODO: We mainly include util.h for UriParserContext.  Include more obvious/cleaner include source once
 // the URI code base is cleaned up

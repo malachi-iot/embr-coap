@@ -54,6 +54,7 @@ const UriPathMap uri_map[] =
     
     { "sys",        sys_paths::v1::root,        id_path_v1 },
     { "firmware",   sys_paths::v1::root_firmware,        sys_paths::v1::root },
+    { "mem",        sys_paths::v1::root_memory,        sys_paths::v1::root },
     { "reboot",     sys_paths::v1::root_reboot,        sys_paths::v1::root },
     { "version",    sys_paths::v1::root_firmware,        sys_paths::v1::root },
     

@@ -1,5 +1,6 @@
 #include <estd/chrono.h>
-#include <estd/istream.h>
+#include <estd/thread.h>
+//#include <estd/istream.h>
 
 #include <embr/observer.h>
 
@@ -10,6 +11,7 @@
 #include <coap/platform/esp-idf/observer.h>
 
 #include <coap/platform/lwip/encoder.h>
+#include <coap/platform/api.h>
 
 #include <json/encoder.hpp>
 
@@ -21,11 +23,22 @@
 
 namespace embr { namespace coap {
 
+// NOTE: Use this instead of namespace to avoid ADL - thus the funky
+// formatting too
 namespace sys_paths {
+
+template <class TContext, class enabled = void>
+struct builder;
 
 // EXPERIMENTAL
 template <class TContext>
-struct builder
+struct builder<TContext,
+    typename estd::enable_if<
+        estd::is_base_of<tags::incoming_context, TContext>::value &&
+        estd::is_base_of<UriParserContext, TContext>::value &&
+        estd::is_base_of<internal::ExtraContext, TContext>::value>
+        ::type
+    >
 {
     typedef TContext context_type;
     typedef typename context_type::encoder_type encoder_type;
@@ -33,73 +46,109 @@ struct builder
     context_type& context;
     encoder_type& encoder;
 
+    ESTD_CPP_CONSTEXPR_RET builder(context_type& context, encoder_type& encoder) :
+        context(context), encoder(encoder)
+    {}
+
+    void auto_reply()
+    {
+        embr::coap::auto_reply(context, encoder);
+    }
+
+    void build_reply(Header::Code code)
+    {
+        embr::coap::build_reply(context, encoder, code);
+    }
+
     void stats()
     {
+        auto now = estd::chrono::freertos_clock::now();
+        auto now_in_s = estd::chrono::seconds(now.time_since_epoch());
 
+        wifi_ap_record_t wifidata;  // approximately 80 bytes of stack space
+        esp_wifi_sta_get_ap_info(&wifidata);
+
+        build_reply(Header::Code::Content);
+
+        encoder.option(Option::ContentFormat, Option::ApplicationJson);
+
+        encoder.payload();
+
+        auto out = encoder.ostream();
+
+        embr::json::v1::encoder json;
+        auto j = make_fluent(json, out);
+
+        j.begin()
+
+        ("uptime", now_in_s.count())
+        ("rssi", wifidata.rssi)
+        ("free", esp_get_free_heap_size());
+
+        j.end();
+    }
+
+    void mem()
+    {
+        build_reply(Header::Code::Content);
+
+        encoder.option(Option::ContentFormat, Option::ApplicationJson);
+        encoder.payload();
+
+        auto out = encoder.ostream();
+
+        embr::json::v1::encoder json;
+        auto j = make_fluent(json, out);
+
+        j.begin()
+
+        ("free")
+            ("heap", esp_get_free_heap_size())
+            ("internal", esp_get_free_internal_heap_size())
+        --
+        ("stat")
+            ("heap")
+                ("min", esp_get_minimum_free_heap_size())
+            --
+        --
+
+        .end();
+    }
+
+
+    void firmware_info()
+    {
+        build_reply(Header::Code::Content);
+
+        encoder.option(Option::ContentFormat, Option::ApplicationJson);
+        encoder.payload();
+
+        auto out = encoder.ostream();
+
+    #if ESP_IDF_VERSION  >= ESP_IDF_VERSION_VAL(5, 0, 0)
+        const esp_app_desc_t* app_desc = esp_app_get_description();
+    #else
+        const esp_app_desc_t* app_desc = esp_ota_get_app_description();
+    #endif
+
+        embr::json::v1::encoder json;
+        auto j = make_fluent(json, out);
+
+        j.begin()
+
+        ("name", app_desc->project_name)
+        ("time", app_desc->time)
+        ("date", app_desc->date)
+        ("versions")
+            ("app", app_desc->version)
+            ("idf", app_desc->idf_ver)
+        --;
+
+        j.end();
     }
 };
 
 
-template <class TContext>
-static void build_stats(TContext& ctx, typename TContext::encoder_type& encoder)
-{
-    auto now = estd::chrono::freertos_clock::now();
-    auto now_in_s = estd::chrono::seconds(now.time_since_epoch());
-
-    wifi_ap_record_t wifidata;  // approximately 80 bytes of stack space
-    esp_wifi_sta_get_ap_info(&wifidata);
-
-    build_reply(ctx, encoder, Header::Code::Content);
-
-    encoder.option(Option::ContentFormat, Option::ApplicationJson);
-
-    encoder.payload();
-
-    auto out = encoder.ostream();
-
-    embr::json::v1::encoder json;
-    auto j = make_fluent(json, out);
-
-    j.begin()
-
-    ("uptime", now_in_s.count())
-    ("rssi", wifidata.rssi);
-
-    j.end();
-}
-
-template <class TContext>
-static void build_firmware_info(TContext& ctx, typename TContext::encoder_type& encoder)
-{
-    build_reply(ctx, encoder, Header::Code::Content);
-
-    encoder.option(Option::ContentFormat, Option::ApplicationJson);
-
-    encoder.payload();
-
-    auto out = encoder.ostream();
-
-#if ESP_IDF_VERSION  >= ESP_IDF_VERSION_VAL(5, 0, 0)
-    const esp_app_desc_t* app_desc = esp_app_get_description();
-#else
-    const esp_app_desc_t* app_desc = esp_ota_get_app_description();
-#endif
-
-    embr::json::v1::encoder json;
-    auto j = make_fluent(json, out);
-
-    j.begin()
-
-    ("name", app_desc->project_name)
-    ("time", app_desc->time)
-    ("date", app_desc->date)
-    ("versions")
-        ("app", app_desc->version)
-        ("idf", app_desc->idf_ver)
-    --;
-
-    j.end();
-}
 
 
 template <class TContext>
@@ -110,38 +159,56 @@ typename estd::enable_if<
     ::type
 build_sys_reply(TContext& context, typename TContext::encoder_type& encoder)
 {
+    builder<TContext> build(context, encoder);
     bool verified;
 
     switch(context.found_node())
     {
         case v1::root:
-            //build_reply(context, encoder, Header::Code::NotImplemented);
+        {
             if(!verify(context, Header::Code::Get)) return false;
             
-            build_stats(context, encoder);
+            build.stats();
 
+            break;
+        }
+
+        case v1::root_memory:
+            if(!verify(context, Header::Code::Get)) return false;
+            
+            build.mem();
             break;
 
         //case v1::root_uptime:
             //break;
 
+        /*
+         * almost works, but needs delay/timer to have time to emit ACK
+         * and brute forcing a delay here presumably blocks LwIP from doing so
         case v1::root_reboot:
             verified = verify(context, Header::Code::Put);
 
-            // Abort, but indicate we did technically service the URI
-            if(!verified) return true;
+            auto_reply(context, encoder);
+
+            if(!verified) return false;
+
+            //estd::this_thread::sleep_for(estd::chrono::seconds(2));
+            esp_restart();
 
             break;
+        */
 
         case v1::root_firmware:
             if(!verify(context, Header::Code::Get)) return false;
 
-            build_firmware_info(context, encoder);
+            build.firmware_info();
             break;
 
+        // No send is requested
         default: return false;
     }
 
+    // Indicate we built an encoder and send something
     return true;
 }
 

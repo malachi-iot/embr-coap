@@ -13,7 +13,8 @@ enum _paths
     root = 1000,    // general runtime stats
     root_firmware,  // firmware info
     root_uptime,    // uptime specifically
-    root_reboot     // reboot command
+    root_memory,    // detailed memory info
+    root_reboot,    // reboot command
 };
 
 
