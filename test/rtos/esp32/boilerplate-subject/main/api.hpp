@@ -147,71 +147,59 @@ struct builder<TContext,
 
         .end();
     }
-};
 
-
-
-
-template <class TContext>
-typename estd::enable_if<
-    estd::is_base_of<tags::incoming_context, TContext>::value &&
-    estd::is_base_of<UriParserContext, TContext>::value &&
-    estd::is_base_of<internal::ExtraContext, TContext>::value, bool>
-    ::type
-build_sys_reply(TContext& context, typename TContext::encoder_type& encoder)
-{
-    builder<TContext> build(context, encoder);
-    //bool verified;
-
-    switch(context.found_node())
+    bool build_sys_reply()
     {
-        case v1::root:
+        switch(context.found_node())
         {
-            if(!verify(context, Header::Code::Get)) return false;
-            
-            build.stats();
+            case v1::root:
+            {
+                if(!verify(context, Header::Code::Get)) return false;
+                
+                stats();
+                break;
+            }
 
-            break;
+            case v1::root_memory:
+                if(!verify(context, Header::Code::Get)) return false;
+                
+                mem();
+                break;
+
+            //case v1::root_uptime:
+                //break;
+
+            /*
+            * almost works, but needs delay/timer to have time to emit ACK
+            * and brute forcing a delay here presumably blocks LwIP from doing so
+            case v1::root_reboot:
+                verified = verify(context, Header::Code::Put);
+
+                auto_reply(context, encoder);
+
+                if(!verified) return false;
+
+                //estd::this_thread::sleep_for(estd::chrono::seconds(2));
+                esp_restart();
+
+                break;
+            */
+
+            case v1::root_firmware:
+                if(!verify(context, Header::Code::Get)) return false;
+
+                firmware_info();
+                break;
+
+            // No send is requested
+            default: return false;
         }
 
-        case v1::root_memory:
-            if(!verify(context, Header::Code::Get)) return false;
-            
-            build.mem();
-            break;
-
-        //case v1::root_uptime:
-            //break;
-
-        /*
-         * almost works, but needs delay/timer to have time to emit ACK
-         * and brute forcing a delay here presumably blocks LwIP from doing so
-        case v1::root_reboot:
-            verified = verify(context, Header::Code::Put);
-
-            auto_reply(context, encoder);
-
-            if(!verified) return false;
-
-            //estd::this_thread::sleep_for(estd::chrono::seconds(2));
-            esp_restart();
-
-            break;
-        */
-
-        case v1::root_firmware:
-            if(!verify(context, Header::Code::Get)) return false;
-
-            build.firmware_info();
-            break;
-
-        // No send is requested
-        default: return false;
+        // Indicate we built an encoder and send something
+        return true;
     }
+};
 
-    // Indicate we built an encoder and send something
-    return true;
-}
 
 
 template <class TContext>
@@ -222,7 +210,9 @@ typename estd::enable_if<
     ::type
 send_sys_reply(TContext& context, typename TContext::encoder_type& encoder)
 {
-    if(build_sys_reply(context, encoder))
+    builder<TContext> build(context, encoder);
+
+    if(build.build_sys_reply())
     {
         context.reply(encoder);
         return true;
@@ -233,5 +223,6 @@ send_sys_reply(TContext& context, typename TContext::encoder_type& encoder)
 
 
 }
+
 
 }}
