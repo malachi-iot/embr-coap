@@ -51,9 +51,7 @@ static void build_stats(TContext& ctx, typename TContext::encoder_type& encoder)
 
     build_reply(ctx, encoder, Header::Code::Content);
 
-    encoder.option(
-        Option::Numbers::ContentFormat,
-        (int)Option::ContentFormats::ApplicationJson);
+    encoder.option(Option::ContentFormat, Option::ApplicationJson);
 
     encoder.payload();
 
@@ -75,9 +73,7 @@ static void build_firmware_info(TContext& ctx, typename TContext::encoder_type& 
 {
     build_reply(ctx, encoder, Header::Code::Content);
 
-    encoder.option(
-        Option::Numbers::ContentFormat,
-        (int)Option::ContentFormats::ApplicationJson);
+    encoder.option(Option::ContentFormat, Option::ApplicationJson);
 
     encoder.payload();
 
