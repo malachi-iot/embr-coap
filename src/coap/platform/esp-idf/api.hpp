@@ -12,6 +12,8 @@
 #include <coap/platform/esp-idf/observer.h>
 
 #include <coap/platform/lwip/encoder.h>
+#include <coap/version.h>
+
 #include "../api.h"
 
 #include <json/encoder.hpp>
@@ -26,7 +28,6 @@ namespace sys_paths {
 template <class TContext, class enabled = void>
 struct builder;
 
-// EXPERIMENTAL
 template <class TContext>
 struct builder<TContext,
     typename estd::enable_if<
@@ -135,6 +136,7 @@ struct builder<TContext,
         ("ver")
             ("s", "1.0")                // schema version
             ("app", app_desc->version)
+            ("embr::coap", EMBR_COAP_VER_STR)
             ("idf", app_desc->idf_ver)
         --
         ("name", app_desc->project_name)

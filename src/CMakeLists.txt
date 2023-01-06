@@ -16,6 +16,7 @@ if(NOT TARGET embr)
     add_subdirectory(${EMBR_DIR}/src embr)
 endif()
 
+configure_file(../tools/cmake/version.in.h ${CMAKE_CURRENT_LIST_DIR}/coap/version.h)
 set(SOURCE_FILES ${SOURCE_FILES})
 
 # DEBT: doc files not showing up in CLion (acting like a noop here)
