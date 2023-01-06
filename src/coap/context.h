@@ -14,23 +14,13 @@
 #include <estd/span.h>
 
 #include "internal/context.h"
+#include "internal/verify.hpp"
 
 // TODO:
 // a) add decoder state accessor/decoder* to context itself for convenient query as to
 //    present state of decode
 // b) utilize c++17 (I think) 'concepts' to enforce context signature
 namespace embr { namespace coap {
-
-namespace tags {
-
-// DEBT: Fake stand in for c++20 concept.  These tags promise presence of certain methods
-// document specifics for each tag
-struct token_context {};
-struct header_context {};
-struct address_context {};
-struct incoming_context {};
-
-}
 
 template <class TAddr>
 class AddressContext : public tags::address_context

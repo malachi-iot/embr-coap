@@ -19,7 +19,7 @@ using namespace embr::coap;
 
 #include <coap/platform/lwip/encoder.h>
 
-#include "api.hpp"
+#include <coap/platform/api.hpp>
 
 
 using istreambuf_type = AppContext::istreambuf_type;
@@ -38,8 +38,6 @@ enum
 
 
 using embr::coap::internal::UriPathMap;
-
-
 
 
 // NOTE: Alphabetization per path segment is important.  id# ordering is not

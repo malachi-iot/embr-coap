@@ -1,6 +1,6 @@
 #include <estd/type_traits.h>
 
-#include <coap/context.h>
+#include "context.h"
 
 namespace embr { namespace coap {
 

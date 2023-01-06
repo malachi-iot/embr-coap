@@ -2,7 +2,21 @@
 
 #include "rfc7641/enum.h"
 
-namespace embr { namespace coap { namespace internal {
+namespace embr { namespace coap { 
+
+namespace tags {
+
+// DEBT: Fake stand in for c++20 concept.  These tags promise presence of certain methods
+// document specifics for each tag
+struct token_context {};
+struct header_context {};
+struct address_context {};
+struct incoming_context {};
+
+}
+
+
+namespace internal {
 
 // DEBT: Poor naming and organization
 // This is where utility bitmask goes + auto reply info

@@ -4,6 +4,7 @@
 
 #include <embr/observer.h>
 
+#include <coap/context.h>
 // remember to do this and not regular subject.h, otherwise not all the deductions will work
 #include <coap/decoder/subject.hpp>
 #include <coap/decoder/streambuf.hpp>
@@ -11,20 +12,15 @@
 #include <coap/platform/esp-idf/observer.h>
 
 #include <coap/platform/lwip/encoder.h>
-#include <coap/platform/api.h>
+#include "../api.h"
 
 #include <json/encoder.hpp>
 
-#include "context.h"
 
 #include "esp_wifi.h"
 
-#include "verify.hpp"
-
 namespace embr { namespace coap {
 
-// NOTE: Use this instead of namespace to avoid ADL - thus the funky
-// formatting too
 namespace sys_paths {
 
 template <class TContext, class enabled = void>
