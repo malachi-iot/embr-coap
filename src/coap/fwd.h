@@ -3,6 +3,9 @@
 #include "internal/header/code.h"
 #include "internal/header/enum.h"
 
+// DEBT: Make a fwd of this just for void subject
+#include <embr/observer.h>
+
 namespace embr { namespace coap {
 
 namespace impl {
@@ -15,7 +18,7 @@ struct StreambufEncoderImpl;
 
 }
 
-template <class TStreambuf, class TStreambufEncoderImpl = impl::StreambufEncoderImpl<TStreambuf> >
+template <class TStreambuf, class TStreambufEncoderImpl = impl::StreambufEncoderImpl<TStreambuf>, class TSubject = void_subject >
 class StreambufEncoder;
 
 template <class TContext>

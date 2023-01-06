@@ -5,6 +5,7 @@
 
 #include "../fwd.h"
 #include "../../coap-features.h"
+#include "../decoder/events.h"
 
 #if FEATURE_MCCOAP_NETBUF_ENCODER
 #include <embr/streambuf.h>
@@ -65,8 +66,8 @@ struct StreambufEncoderImpl<::embr::mem::out_netbuf_streambuf<char, TNetbuf> >
 // TODO: Still need to address partial (chunked) writes
 // NOTE: header and token no chunking is not planned, we'd have to employ HeaderEncoder and
 // TokenEncoder.  That use case is an edge case, since maximum size of header + token = 12 bytes
-template <class TStreambuf, class TStreambufEncoderImpl>
-class StreambufEncoder
+template <class TStreambuf, class TStreambufEncoderImpl, class TSubject>
+class StreambufEncoder : TSubject
 {
 #ifdef FEATURE_CPP_ENUM_CLASS
     typedef embr::coap::internal::Root::State state_type;
@@ -91,6 +92,7 @@ class StreambufEncoder
 #endif
 
     typedef StreambufEncoder<TStreambuf> this_type;
+    typedef TSubject subject_type;
 
 public:
     typedef typename estd::remove_reference<TStreambuf>::type streambuf_type;
@@ -221,6 +223,12 @@ public:
     // Does not write out value portion
     bool option_raw(const option_type& option)
     {
+        // FIX: IIRC this may be called before value/length is valid, so we
+        // can only rely on the option number here
+        subject_type::notify(event::option(option.number,
+            internal::const_buffer(option.value_opaque, option.length),
+            true));
+
         option_encoder.next(option);
 
         // TODO: run option encoder up until OptionDeltaAndLengthDone or
