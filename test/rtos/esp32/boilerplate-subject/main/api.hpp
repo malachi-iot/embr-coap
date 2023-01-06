@@ -136,15 +136,16 @@ struct builder<TContext,
 
         j.begin()
 
+        ("ver")
+            ("s", "1.0")                // schema version
+            ("app", app_desc->version)
+            ("idf", app_desc->idf_ver)
+        --
         ("name", app_desc->project_name)
         ("time", app_desc->time)
         ("date", app_desc->date)
-        ("versions")
-            ("app", app_desc->version)
-            ("idf", app_desc->idf_ver)
-        --;
 
-        j.end();
+        .end();
     }
 };
 
@@ -160,7 +161,7 @@ typename estd::enable_if<
 build_sys_reply(TContext& context, typename TContext::encoder_type& encoder)
 {
     builder<TContext> build(context, encoder);
-    bool verified;
+    //bool verified;
 
     switch(context.found_node())
     {
