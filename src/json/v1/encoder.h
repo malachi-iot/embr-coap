@@ -48,7 +48,7 @@ struct encoder : TOptions
     }
 
     template <class TStreambuf, class TBase>
-    inline void do_tabs(estd::internal::basic_ostream <TStreambuf, TBase>& out)
+    inline void do_tabs(estd::detail::basic_ostream <TStreambuf, TBase>& out)
     {
         if (options_type::use_tabs())
         {
@@ -58,7 +58,7 @@ struct encoder : TOptions
     }
 
     template <class TStreambuf, class TBase>
-    inline void do_eol(estd::internal::basic_ostream <TStreambuf, TBase>& out);
+    inline void do_eol(estd::detail::basic_ostream <TStreambuf, TBase>& out);
 
     ESTD_CPP_CONSTEXPR_RET char quote(bool key = true) const
     {
@@ -82,7 +82,7 @@ struct encoder : TOptions
 
     // Prints comma and eol if items preceded this
     template <class TStreambuf, class TBase>
-    void do_has_items(estd::internal::basic_ostream <TStreambuf, TBase>& out)
+    void do_has_items(estd::detail::basic_ostream <TStreambuf, TBase>& out)
     {
         if (has_items())
         {
@@ -94,7 +94,7 @@ struct encoder : TOptions
     }
 
     template <class TStreambuf, class TBase>
-    void begin(estd::internal::basic_ostream <TStreambuf, TBase>& out)
+    void begin(estd::detail::basic_ostream <TStreambuf, TBase>& out)
     {
         do_tabs(out);
         do_has_items(out);
@@ -105,7 +105,7 @@ struct encoder : TOptions
     }
 
     template <class TStreambuf, class TBase>
-    void add_key(estd::internal::basic_ostream <TStreambuf, TBase>& out, const char* key)
+    void add_key(estd::detail::basic_ostream <TStreambuf, TBase>& out, const char* key)
     {
         do_has_items(out);
 
@@ -117,7 +117,7 @@ struct encoder : TOptions
     }
 
     template <class TStreambuf, class TBase>
-    void begin(estd::internal::basic_ostream <TStreambuf, TBase>& out, const char* key)
+    void begin(estd::detail::basic_ostream <TStreambuf, TBase>& out, const char* key)
     {
         add_key(out, key);
 
@@ -134,7 +134,7 @@ struct encoder : TOptions
     }
 
     template <class TStreambuf, class TBase>
-    void array(estd::internal::basic_ostream <TStreambuf, TBase>& out, const char* key)
+    void array(estd::detail::basic_ostream<TStreambuf, TBase>& out, const char* key)
     {
         in_array_ = 1;
 
@@ -147,7 +147,7 @@ struct encoder : TOptions
     // TODO: deduce what kind of quote would be better by inspecting value, or
     // at least provide a compile time hint
     template <class TStreambuf, class TBase>
-    void raw(estd::internal::basic_ostream <TStreambuf, TBase>& out, const char* value)
+    void raw(estd::detail::basic_ostream<TStreambuf, TBase>& out, const char* value)
     {
         out << quote(false) << value << quote(false);
     }
@@ -159,7 +159,7 @@ struct encoder : TOptions
     }
 
     template <class TStreambuf, class TBase, typename T>
-    void array_item(estd::internal::basic_ostream <TStreambuf, TBase>& out, T value)
+    void array_item(estd::detail::basic_ostream <TStreambuf, TBase>& out, T value)
     {
         if (has_items())
         {
@@ -173,7 +173,7 @@ struct encoder : TOptions
     }
 
     template <class TStreambuf, class TBase>
-    void end_array(estd::internal::basic_ostream <TStreambuf, TBase>& out)
+    void end_array(estd::detail::basic_ostream <TStreambuf, TBase>& out)
     {
         out << ']';
         --level_;
@@ -181,7 +181,7 @@ struct encoder : TOptions
     }
 
     template <class TStreambuf, class TBase>
-    void end(estd::internal::basic_ostream <TStreambuf, TBase>& out)
+    void end(estd::detail::basic_ostream<TStreambuf, TBase>& out)
     {
         clear_has_items();
 
@@ -200,7 +200,7 @@ struct encoder : TOptions
     }
 
     template <class TStreambuf, class TBase, typename T>
-    void add(estd::internal::basic_ostream <TStreambuf, TBase>& out, const char* key, T value)
+    void add(estd::detail::basic_ostream<TStreambuf, TBase>& out, const char* key, T value)
     {
         add_key(out, key);
         raw(out, value);

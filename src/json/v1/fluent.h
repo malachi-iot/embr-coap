@@ -4,6 +4,8 @@
 
 namespace embr { namespace json {
 
+inline namespace v1 {
+
 namespace minij {
 
 enum modes
@@ -15,9 +17,6 @@ enum modes
 };
 
 }
-
-
-inline namespace v1 {
 
 template <class TOut, class TOptions, int mode = minij::core>
 struct fluent;
@@ -146,12 +145,12 @@ fluent<TOut, TOptions, mode>& end(fluent<TOut, TOptions, mode>& j)
 }
 
 template <class TStreambuf, class TBase, class TOptions>
-struct fluent<estd::internal::basic_ostream<TStreambuf, TBase>, TOptions, minij::array> :
-    fluent<estd::internal::basic_ostream<TStreambuf, TBase>, TOptions>
+struct fluent<estd::detail::basic_ostream<TStreambuf, TBase>, TOptions, minij::array> :
+    fluent<estd::detail::basic_ostream<TStreambuf, TBase>, TOptions>
 {
-    typedef fluent<estd::internal::basic_ostream<TStreambuf, TBase>, TOptions>
+    typedef fluent<estd::detail::basic_ostream<TStreambuf, TBase>, TOptions>
             base_type;
-    typedef fluent<estd::internal::basic_ostream<TStreambuf, TBase>, TOptions,
+    typedef fluent<estd::detail::basic_ostream<TStreambuf, TBase>, TOptions,
             minij::array>
             this_type;
 
@@ -178,8 +177,8 @@ struct fluent<estd::internal::basic_ostream<TStreambuf, TBase>, TOptions, minij:
 };
 
 template <class TStreambuf, class TBase, class TOptions>
-struct fluent<estd::internal::basic_ostream<TStreambuf, TBase>, TOptions, minij::begin> :
-    fluent<estd::internal::basic_ostream<TStreambuf, TBase>, TOptions>
+struct fluent<estd::detail::basic_ostream<TStreambuf, TBase>, TOptions, minij::begin> :
+    fluent<estd::detail::basic_ostream<TStreambuf, TBase>, TOptions>
 {
     fluent& operator=(const char* key)
     {
@@ -205,9 +204,9 @@ fluent <TOut>& operator>(fluent <TOut>& j, fluent <TOut>&)
 // TODO: Rework this so that encoder can be inline inside the fluent mechanism
 
 template <class TStreambuf, class TBase, class TOptions>
-auto make_fluent(encoder<TOptions>& json, estd::internal::basic_ostream <TStreambuf, TBase>& out)
+auto make_fluent(encoder<TOptions>& json, estd::detail::basic_ostream<TStreambuf, TBase>& out)
 {
-    return fluent<estd::internal::basic_ostream<TStreambuf, TBase>, TOptions> (out, json);
+    return fluent<estd::detail::basic_ostream<TStreambuf, TBase>, TOptions> (out, json);
 }
 
 }
