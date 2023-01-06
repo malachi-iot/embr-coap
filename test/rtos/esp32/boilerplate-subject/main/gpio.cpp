@@ -31,11 +31,7 @@ void AppContext::put_gpio(istreambuf_type& streambuf)
 
     if(header().code() == Header::Code::Put)
     {
-        //auto& s = e.streambuf;
-        // DEBT: I think this can be promoted out of internal, I believe I put
-        // this in there way back when because the signature doesn't match std - but
-        // by this point, that's a feature not a bug
-        estd::internal::basic_istream<istreambuf_type&> in(streambuf);
+        estd::detail::basic_istream<istreambuf_type&> in(streambuf);
 
         int val;
 
