@@ -57,6 +57,14 @@ struct builder<TContext,
         embr::coap::build_reply(context, encoder, code);
     }
 
+    void prep_payload(Header::Code code = Header::Code::Content)
+    {
+        build_reply(code);
+
+        encoder.option(Option::ContentFormat, Option::ApplicationJson);
+        encoder.payload();
+    }
+
     void stats()
     {
         auto now = estd::chrono::freertos_clock::now();
@@ -112,14 +120,34 @@ struct builder<TContext,
         .end();
     }
 
+    void firmware_version_info()
+    {
+        prep_payload();
+
+        auto out = encoder.ostream();
+
+        embr::json::v1::encoder json;
+        auto j = make_fluent(json, out);
+
+    #if ESP_IDF_VERSION  >= ESP_IDF_VERSION_VAL(5, 0, 0)
+        const esp_app_desc_t* app_desc = esp_app_get_description();
+    #else
+        const esp_app_desc_t* app_desc = esp_ota_get_app_description();
+    #endif
+
+        j.begin()
+
+        ("s", "1.0.0")                // schema version
+        ("app", app_desc->version)
+        ("embr::coap", EMBR_COAP_VER_STR)
+        ("idf", app_desc->idf_ver)
+
+        .end();
+    }
 
     void firmware_info()
     {
-        build_reply(Header::Code::Content);
-
-        encoder.option(Option::ContentFormat, Option::ApplicationJson);
-        encoder.payload();
-
+        prep_payload();
         auto out = encoder.ostream();
 
     #if ESP_IDF_VERSION  >= ESP_IDF_VERSION_VAL(5, 0, 0)
@@ -133,15 +161,10 @@ struct builder<TContext,
 
         j.begin()
 
-        ("ver")
-            ("s", "1.0")                // schema version
-            ("app", app_desc->version)
-            ("embr::coap", EMBR_COAP_VER_STR)
-            ("idf", app_desc->idf_ver)
-        --
         ("name", app_desc->project_name)
         ("time", app_desc->time)
         ("date", app_desc->date)
+        ("ver", app_desc->version)
 
         .end();
     }
@@ -187,6 +210,12 @@ struct builder<TContext,
                 if(!verify(context, Header::Code::Get)) return false;
 
                 firmware_info();
+                break;
+
+            case v1::root_firmware_version:
+                if(!verify(context, Header::Code::Get)) return false;
+
+                firmware_version_info();
                 break;
 
             // No send is requested
