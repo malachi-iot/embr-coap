@@ -19,6 +19,9 @@ using namespace embr::coap;
 
 #include <coap/platform/lwip/encoder.h>
 
+#include "api.hpp"
+
+
 using istreambuf_type = AppContext::istreambuf_type;
 
 enum

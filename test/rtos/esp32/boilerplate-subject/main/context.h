@@ -36,11 +36,4 @@ struct AppContext :
 };
 
 
-namespace embr { namespace coap { namespace sys_paths {
-
-
-bool build_sys_reply(AppContext& context, AppContext::encoder_type& encoder);
-bool send_sys_reply(AppContext& context, AppContext::encoder_type& encoder);
-
-}}}
 
