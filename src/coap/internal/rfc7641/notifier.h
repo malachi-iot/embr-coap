@@ -1,5 +1,6 @@
 #pragma once
 
+#include "enum.h"
 #include "keys.h"
 
 namespace embr { namespace coap {
@@ -55,12 +56,11 @@ public:
 
             if(key.endpoint == endpoint &&
                 key.handle == handle &&
-                true)
+                equal(key.token, token))
                 // FIX: it's time to typedef token type as a layerX vector or span
                 // directly, though span's lack of == presents a challenge
                 //key.token == token)
             {
-
             }
         }
     }

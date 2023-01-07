@@ -1,6 +1,7 @@
 #include <catch2/catch.hpp>
 #include "coap-encoder.h"
 
+#include <coap/internal/rfc7641/notifier.h>
 #include <coap/internal/rfc7641/registrar.h>
 
 #include "coap/token.h"
