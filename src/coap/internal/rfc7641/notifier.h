@@ -19,7 +19,9 @@ struct NotifyHelperBase
     typedef typename registrar_type::endpoint_type endpoint_type;
     typedef typename registrar_type::handle_type handle_type;
 
-protected:
+    // DEBT: exposing this so that nvs/serialization can get to it
+public:
+//protected:
     TRegistrar registrar;
 
 public:

@@ -1,5 +1,8 @@
 #include "esp_log.h"
 
+#include "nvs_flash.h"
+#include "nvs.h"
+
 #include <embr/observer.h>
 
 #include <coap/platform/lwip/encoder.h>
@@ -10,11 +13,58 @@
 #include <estd/port/freertos/timer.h>
 
 #include "app.h"
+#include "fancy.hpp"
 
 using namespace embr::coap;
 
 
 static Notifier* notifier;
+
+static const char* nvs_reg_key = "coap::reg";
+static const char* nvs_seq_key = "coap::seq";   // DEBT: Not yet implemented
+
+#define STORAGE_NAMESPACE "storage"
+
+
+// FIX: Works for a little while, but then crash/restart occurs
+Header::Code nvs_load_registrar()
+{
+    static const char* TAG = "nvs_load_registrar";
+
+    embr::internal::scoped_guard<embr::esp_idf::nvs::Handle>
+        h(STORAGE_NAMESPACE, NVS_READWRITE);
+
+    std::size_t sz;
+
+    ESP_ERROR_CHECK(h->get_blob(nvs_reg_key, &notifier->registrar, &sz));
+
+    ESP_LOGI(TAG, "loaded: sz=%u / sizeof=%u", sz, sizeof(registrar_type));
+
+    if(sz != sizeof(registrar_type))
+    {
+        ESP_LOGE(TAG, "uh oh!  load had a problem, sizes don't match");
+        return Header::Code::InternalServerError;
+    }
+
+    return Header::Code::Valid;
+}
+
+void nvs_save_registrar()
+{
+    static const char* TAG = "nvs_save_registrar";
+
+    nvs_handle_t my_handle;
+    //esp_err_t err;
+    
+    ESP_ERROR_CHECK(nvs_open(STORAGE_NAMESPACE, NVS_READWRITE, &my_handle));
+
+    ESP_ERROR_CHECK(nvs_set_blob(my_handle, nvs_reg_key,
+        &notifier->registrar, sizeof(registrar_type)));
+
+    ESP_LOGI(TAG, "saved");
+
+    nvs_close(my_handle);
+}
 
 
 void build_stat_suffix(encoder_type& encoder, sequence_type sequence)

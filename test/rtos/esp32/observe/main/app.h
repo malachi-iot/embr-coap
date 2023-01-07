@@ -10,6 +10,8 @@ enum
 {
     v1 = 0,
     v1_stats,
+    v1_load,
+    v1_save
 };
 
 }
@@ -30,3 +32,5 @@ typedef Notifier::notifier_type::encoder_type encoder_type;
 // NOTE: 'suffix' only builds option and payload portion
 void build_stat_suffix(encoder_type& encoder, sequence_type sequence = sequence_type());
 
+embr::coap::Header::Code nvs_load_registrar();
+void nvs_save_registrar();

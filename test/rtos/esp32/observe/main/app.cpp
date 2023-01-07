@@ -30,7 +30,9 @@ namespace paths {
 const UriPathMap map[] =
 {
     { "v1",         v1,                 MCCOAP_URIPATH_NONE },
-    { "stats",      v1_stats,           v1 }
+    { "stats",      v1_stats,           v1 },
+    { "load",       v1_load,            v1 },
+    { "save",       v1_save,            v1 }
 };
 
 
@@ -93,6 +95,15 @@ struct App
                 if(verify(context, Header::Code::Get))
                     build_stat_with_observe(context, encoder);
 
+                break;
+
+            case paths::v1_load:
+                context.response_code = nvs_load_registrar();
+                break;
+
+            case paths::v1_save:
+                nvs_save_registrar();
+                context.response_code = Header::Code::Changed;
                 break;
             
             default:
