@@ -17,7 +17,7 @@ using namespace embr::coap;
 static Notifier* notifier;
 
 
-void build_stat(encoder_type& encoder, sequence_type sequence)
+void build_stat_suffix(encoder_type& encoder, sequence_type sequence)
 {
     if(sequence)
         encoder.option(Option::Observe, sequence.value());
@@ -44,12 +44,12 @@ static void notifier_timer(TimerHandle_t)
 
     if(count > 0)
     {
-        notifier->notify(paths::v1_api_stats,
+        notifier->notify(paths::v1_stats,
             [](const registrar_type::key_type& key, encoder_type& encoder)
             {
                 ESP_LOGD(TAG, "notify");
 
-                build_stat(encoder, sequence);
+                build_stat_suffix(encoder, sequence);
             });
 
         ++sequence;

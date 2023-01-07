@@ -17,6 +17,7 @@
 #include <coap/decoder/observer/observable.h>
 
 #include "app.h"
+#include "notifier.h"                       // For semi-experimental NotifierContext
 
 using namespace embr::coap;
 
@@ -29,38 +30,11 @@ namespace paths {
 const UriPathMap map[] =
 {
     { "v1",         v1,                 MCCOAP_URIPATH_NONE },
-    { "api",        v1_api,             v1 },
-    { "gpio",       v1_api_gpio,        v1_api },
-    { "*",          v1_api_gpio_value,  v1_api_gpio },
-    { "stats",      v1_api_stats,       v1_api },
-    { "version",    v1_api_version,     v1_api },
-
-    { ".well-known",    well_known,         MCCOAP_URIPATH_NONE },
-    { "core",           well_known_core,    well_known }
+    { "stats",      v1_stats,           v1 }
 };
 
 
 }
-
-
-namespace tags2 {
-
-struct notifier_context {};
-
-}
-
-
-template <class TRegistrar>
-struct NotifierContext : tags2::notifier_context
-{
-    typedef embr::coap::internal::NotifyHelperBase<TRegistrar> notifier_type;
-
-    notifier_type& notifier_;
-
-    notifier_type& notifier() const { return notifier_; }
-
-    NotifierContext(notifier_type& n) : notifier_(n) {}
-};
 
 
 
@@ -83,16 +57,6 @@ struct AppContext :
 
 
 
-// build_stat with header built also
-static void build_stat(AppContext& context, AppContext::encoder_type& encoder,
-    Header::Code code,
-    sequence_type sequence = sequence_type())
-{
-    build_reply(context, encoder, code);
-    build_stat(encoder, sequence);
-}
-
-
 struct App
 {
     static void build_stat_with_observe(AppContext& context, AppContext::encoder_type& encoder)
@@ -102,16 +66,21 @@ struct App
         Header::Code added_or_removed = add_or_remove(
             context.notifier(),
             context, 
-            context.observe_option(), paths::v1_api_stats);
+            context.observe_option(), paths::v1_stats);
 
         ESP_LOGD(TAG, "added_or_removed=%u", get_http_style(added_or_removed));
-        
+
+        build_reply(context, encoder, Header::Code::Valid);
+
         if(added_or_removed.success())
-            // DEBT: Need to lift actual current sequence number here
-            build_stat(context, encoder, Header::Code::Valid, 0);
+            // Will be '0' or '1', indicating a successful register or deregister
+            build_stat_suffix(encoder, context.observe_option());
         else
             // build regular non-observed response
-            build_stat(context, encoder, Header::Code::Valid);
+            // DEBT: Need to lift actual current sequence number here
+            build_stat_suffix(encoder);
+
+        context.reply(encoder);
     }
 
     static void on_notify(event::completed, AppContext& context)
@@ -120,19 +89,17 @@ struct App
 
         switch(context.found_node())
         {
-            case paths::v1_api_stats:
-                if(context.header().code() != Header::Code::Get)
-                    build_reply(context, encoder, Header::Code::BadRequest);
-                else
+            case paths::v1_stats:
+                if(verify(context, Header::Code::Get))
                     build_stat_with_observe(context, encoder);
+
                 break;
             
             default:
-                build_reply(context, encoder, Header::Code::NotFound);
                 break;
         }
 
-        context.reply(encoder);
+        auto_reply(context, encoder);
     }
 };
 
