@@ -189,12 +189,16 @@ public:
         state(state_type::TokenDone);
     }
 
-
     void token(const uint8_t* token, int tkl)
     {
         _assert(state_type::HeaderDone);
         write(token, tkl);
         state(state_type::TokenDone);
+    }
+
+    void token(const layer3::Token& t)
+    {
+        token(t.data(), t.size());
     }
 
 

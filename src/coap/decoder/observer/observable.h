@@ -21,7 +21,7 @@ Header::Code add_or_remove(
     return notifier.add_or_remove(
         option_value.value(),
         context.address(),
-        context.token(),
+        context.token().span(),     // DEBT: Token needs rework
         resource_id);
 }
 

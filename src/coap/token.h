@@ -74,6 +74,14 @@ public:
         //base_t::operator =(assign_from);
         return *this;
     }
+
+    // DEBT: this smells a little, can't say why.  Will let it go
+    // until we do the bigger Token rework
+    typedef coap::internal::const_buffer const_buffer;
+    inline const_buffer span() const
+    {
+        return const_buffer(data(), size());
+    }
 };
 
 
@@ -91,7 +99,7 @@ class Token : public estd::layer2::vector<const uint8_t, 8>
     typedef estd::layer2::vector<const uint8_t, 8> base_type;
 
 public:
-    typedef estd::span<const uint8_t> const_buffer;
+    typedef coap::internal::const_buffer const_buffer;
 
     Token(const uint8_t* data, size_t tkl) :
         base_type(data, tkl)
@@ -112,7 +120,7 @@ public:
     // TODO: Had to remove constexpr because c++20 tells us ultimately estd::internal::layer3::buffer
     // does not have a trivial default constructor or a constexpr constructor, which is true.
     // we can change that pretty easily when the time comes
-    inline operator const_buffer() const
+    inline const_buffer span() const
     {
         return const_buffer(data(), size());
     }

@@ -67,7 +67,6 @@ struct NotifierContext : tags2::notifier_context
 struct AppContext : 
     embr::coap::LwipIncomingContext,
     embr::coap::UriParserContext,
-    embr::coap::internal::ExtraContext,
     NotifierContext<registrar_type>
 {
     //embr::coap::experimental::observable::option_value_type observe_option;

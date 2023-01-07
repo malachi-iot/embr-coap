@@ -56,7 +56,7 @@ public:
 
             if(key.endpoint == endpoint &&
                 key.handle == handle &&
-                equal(key.token, token))
+                equal(key.token.span(), token))
                 // FIX: it's time to typedef token type as a layerX vector or span
                 // directly, though span's lack of == presents a challenge
                 //key.token == token)

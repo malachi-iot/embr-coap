@@ -30,7 +30,7 @@ void build_stat(encoder_type& encoder, sequence_type sequence)
 }
 
 
-static void notifier_timer(void*)
+static void notifier_timer(TimerHandle_t)
 {
     static const char* TAG = "notifier_timer";
 
