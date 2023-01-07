@@ -51,7 +51,7 @@ struct Registrar : RegistrarBase
         return observers.size() >= observers.capacity();
     }
 
-    // TODO: Add registrar which takes only observer to remove all instances of that observer,
+    // TODO: Add 'remove' which takes only observer to remove all instances of that observer,
     // as well as a similar flavor for handle
 };
 

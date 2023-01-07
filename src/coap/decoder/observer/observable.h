@@ -30,7 +30,7 @@ struct ObservableObserver
 {
     static void on_notify(const event::option& e, embr::coap::internal::ExtraContext& context)
     {
-        // DEBT: Only accounts for request/GET mode - to be framework ready,
+        // DEBT: Only accounts for request/GET mode
         // need to account also for notification receipt (i.e. sequence number)
         if(e.option_number == Option::Observe)
         {
