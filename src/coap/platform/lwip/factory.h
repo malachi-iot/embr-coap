@@ -1,6 +1,6 @@
 #pragma once
 
-#include <exp/retry/factory.h>
+#include "../../internal/factory.h"
 
 #include <embr/platform/lwip/streambuf.h>
 #include <embr/platform/lwip/transport.h>

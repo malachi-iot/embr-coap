@@ -3,13 +3,9 @@
 #include <estd/variant.h>
 
 #include "context.h"
+#include "../fwd.h"
 
 namespace embr { namespace coap {
-
-class Decoder;
-
-template <class TStreambuf>
-class StreambufDecoder;
 
 // Used to call this 'internal' but ADL causes calls to flow here
 // unexpectedly

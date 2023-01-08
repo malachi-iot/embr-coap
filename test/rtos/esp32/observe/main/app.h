@@ -2,7 +2,6 @@
 
 #include <coap/platform/lwip/rfc7641/notifier.hpp>
 
-
 namespace paths {
 
 enum

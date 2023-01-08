@@ -15,8 +15,13 @@ struct StreambufEncoderImpl;
 
 }
 
+class Decoder;
+
 template <class TStreambuf, class TStreambufEncoderImpl = impl::StreambufEncoderImpl<TStreambuf> >
 class StreambufEncoder;
+
+template <class TStreambuf>
+class StreambufDecoder;
 
 template <class TContext>
 inline typename TContext::encoder_type make_encoder_reply(TContext& context,

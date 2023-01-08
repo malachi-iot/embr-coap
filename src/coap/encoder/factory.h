@@ -9,7 +9,7 @@
 #include <coap/context.h>
 #include <coap/header.h>
 
-#include <exp/retry/factory.h>
+#include "../internal/factory.h"
 
 namespace embr { namespace coap {
 

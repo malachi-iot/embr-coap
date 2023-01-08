@@ -3,9 +3,11 @@
 
 #include <estd/cstdint.h>
 
-#include "factory.h"
-
+#include "../../coap/internal/factory.h"
 #include "../../coap/internal/constants.h"
+
+#include "../../coap/decoder/streambuf.hpp"
+#include "../get_header.h"
 
 namespace embr { namespace coap { namespace experimental { namespace retry {
 

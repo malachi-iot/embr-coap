@@ -2,10 +2,12 @@
 #pragma once
 
 #include <estd/span.h>
-#include "../../coap/decoder/streambuf.hpp"
-#include "../../coap/encoder/streambuf.h"
+#include <estd/variant.h>
+#include <estd/streambuf.h>
 
-// Different than parent factory.h, this one focuses on specializations
+#include "../fwd.h"
+
+// Different than encoder factory.h, this one focuses on specializations
 // to create encoders and decoders depending on the buffers at play
 
 namespace embr { namespace coap { namespace experimental {
@@ -16,9 +18,11 @@ struct DecoderFactory;
 template <class TBuffer, class TBufferFactory = estd::monostate>
 struct EncoderFactory;
 
+// DEBT: This particular one wants to live in embr
 template <class TBuffer>
 struct StreambufProvider;
 
+// DEBT: This is more of a diagnostic one, likely doesn't belong in production headers
 template <typename TChar>
 struct StreambufProvider<estd::span<TChar> >
 {
@@ -93,25 +97,5 @@ struct DecoderFactory
         return decoder_type(buffer);
     }
 };
-
-// DEBT: Helper function - somewhat problematic.  It free-floating
-// out here with ADL making it consume all buffers is a little concerning.
-// However, DecoderFactory specializations will only take on certain TBuffers
-template <class TBuffer>
-inline Header get_header(TBuffer buffer)
-{
-    auto decoder = DecoderFactory<TBuffer>::create(buffer);
-
-    iterated::decode_result r;
-
-    do
-    {
-        r = decoder.process_iterate_streambuf();
-    }
-    while(!(r.eof || decoder.state() == Decoder::HeaderDone));
-
-    return decoder.header_decoder();
-}
-
 
 }}}

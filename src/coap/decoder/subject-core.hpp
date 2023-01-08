@@ -1,6 +1,6 @@
 #pragma once
 
-#include "streambuf.h"
+#include "streambuf.hpp"
 #include "events.h"
 
 // DEBT: Move this and subject.hpp contents into decode-and-notify.hpp
