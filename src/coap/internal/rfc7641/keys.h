@@ -50,7 +50,8 @@ struct MessageKey<TEndpoint, void> : EndpointProvider<TEndpoint>
 };
 
 // For use with RFC 7641
-template <typename TEndpoint>
+template <typename TEndpoint,
+    embr::coap::internal::observable::detail::SequenceTracking = observable::detail::SequenceTracking::PerObserver>
 struct ObserveEndpointKey : EndpointProvider<TEndpoint>
 {
     typedef EndpointProvider<TEndpoint> base_type;
@@ -58,6 +59,11 @@ struct ObserveEndpointKey : EndpointProvider<TEndpoint>
     typedef coap::layer2::Token token_type;
 
     const token_type token;
+
+    // NOTE: Not used at this time
+    // DEBT: Filter this out by with_sequence to optimize storage
+    // DEBT: Use uint of only 3 bytes as per RFC 7641 Section 3.4
+    observable::sequence_type sequence;
 
     ESTD_CPP_CONSTEXPR_RET ObserveEndpointKey(endpoint_type endpoint,
         const estd::span<const uint8_t>& token) :

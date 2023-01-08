@@ -15,7 +15,7 @@ struct RegistrarBase
 };
 
 template <class TContainer>
-struct Registrar : RegistrarBase
+struct Registrar<TContainer, SequenceTracking::Singleton> : RegistrarBase
 {
     typedef TContainer container_type;
     typedef typename container_type::value_type Key;
@@ -25,6 +25,13 @@ struct Registrar : RegistrarBase
 
     // DEBT: Make this private/protected
     container_type observers;
+
+    // Singleton style sequence number tracking
+    // DEBT: Filter this by specialization
+    // DEBT: Track this as a uint for only 3 bytes instead of 4
+    // DEBT: Get to the bottom of whether 0 and 1 are permissible sequence numbers, or whether
+    // they interfere with coap observe signaling behavior
+    uint32_t sequence = 1;
 
     void add(key_type observer, handle_type handle)
     {

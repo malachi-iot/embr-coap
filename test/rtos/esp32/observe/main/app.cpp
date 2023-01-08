@@ -65,8 +65,10 @@ struct App
     {
         static const char* TAG = "build_stat_with_observe";
 
+        registrar_type& registrar = context.notifier().registrar();
+
         Header::Code added_or_removed = add_or_remove(
-            context.notifier().registrar(),
+            registrar,
             context, 
             context.observe_option(), paths::v1_stats);
 
@@ -79,8 +81,8 @@ struct App
             build_stat_suffix(encoder, context.observe_option());
         else
             // build regular non-observed response
-            // DEBT: Need to lift actual current sequence number here
-            build_stat_suffix(encoder);
+            // DEBT: Way too invasive scooping out sequence like this
+            build_stat_suffix(encoder, registrar.sequence);
 
         context.reply(encoder);
     }

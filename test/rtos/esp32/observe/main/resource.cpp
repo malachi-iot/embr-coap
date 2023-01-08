@@ -84,18 +84,18 @@ static void notifier_timer(TimerHandle_t)
 {
     static const char* TAG = "notifier_timer";
 
-    // DEBT: Emitting a observe sequence of 0 seems to agitate aiocoap - perhaps it tosses it out
-    // because initial response has an observe '0'?
-    static unsigned sequence = 1;
+    registrar_type& r = notifier->registrar();
+    int count = r.observer_count();
 
-    int count = notifier->registrar().observer_count();
+    // DEBT: Way too invasive
+    uint32_t& sequence = r.sequence;
 
-    ESP_LOGD(TAG, "entry: count=%d, sequence=%u", count, sequence);
+    ESP_LOGD(TAG, "entry: count=%d, sequence=%" PRIu32, count, sequence);
 
     if(count > 0)
     {
         notifier->notify(paths::v1_stats,
-            [](const registrar_type::key_type& key, encoder_type& encoder)
+            [=](const registrar_type::key_type& key, encoder_type& encoder)
             {
                 ESP_LOGD(TAG, "notify");
 

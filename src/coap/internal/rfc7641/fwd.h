@@ -19,7 +19,14 @@ typedef estd::layer1::optional<uint32_t, 0x1000000> sequence_type;
 
 namespace detail {
 
-template <class TContainer>
+enum class SequenceTracking
+{
+    None = 0,
+    Singleton = 1,
+    PerObserver = 2
+};
+
+template <class TContainer, SequenceTracking = SequenceTracking::Singleton>
 struct Registrar;
 
 }
