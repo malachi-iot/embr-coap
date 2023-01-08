@@ -100,7 +100,8 @@ static void notifier_timer(TimerHandle_t)
         notifier->notify(paths::v1_stats,
             [=](const registrar_type::key_type& key, encoder_type& encoder)
             {
-                ESP_LOGD(TAG, "notify");
+                ESP_LOGD(TAG, "notify: %s", ipaddr_ntoa(key.endpoint.address()));
+                ESP_LOG_BUFFER_HEXDUMP(TAG, key.token.data(), key.token.size(), ESP_LOG_DEBUG);
 
                 build_stat_suffix(encoder, sequence);
             });
