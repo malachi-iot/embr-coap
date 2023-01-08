@@ -7,7 +7,8 @@ namespace embr { namespace coap {
 
 namespace internal {
 
-// DEBT: In fact, NotifyHelperBsae is truly the registrar
+// DEBT: Serves as a provider for Registrar as well as a few convenience
+// typedefs
 
 // DEBT: Consider removing 'Base' and instead specializing on void transport -
 // note for that to be aesthetic (which is the whole point), we'd need to swap
@@ -19,9 +20,7 @@ struct NotifyHelperBase
     typedef typename registrar_type::endpoint_type endpoint_type;
     typedef typename registrar_type::handle_type handle_type;
 
-    // DEBT: exposing this so that nvs/serialization can get to it
-public:
-//protected:
+protected:
     TRegistrar registrar_;
 
 public:

@@ -1,6 +1,5 @@
 #pragma once
 
-#include <coap/internal/rfc7641/notifier.hpp>
 #include <coap/platform/lwip/rfc7641/notifier.hpp>
 
 
@@ -27,7 +26,7 @@ typedef embr::coap::internal::observable::Notifier<
     registrar_type>
     Notifier;
 
-typedef Notifier::notifier_type::encoder_type encoder_type;
+typedef Notifier::encoder_type encoder_type;
 
 // NOTE: 'suffix' only builds option and payload portion
 void build_stat_suffix(encoder_type& encoder, sequence_type sequence = sequence_type());

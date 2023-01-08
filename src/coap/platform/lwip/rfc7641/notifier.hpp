@@ -3,13 +3,14 @@
 #include "notifier.h"
 
 #include "../../../internal/rfc7641/registrar.h"
+#include "../../../internal/rfc7641/notifier.hpp"
 
 namespace embr { namespace coap {
 
 namespace internal { namespace observable { namespace lwip {
 
 template <typename TContainer, observable::detail::SequenceTracking st, typename F>
-void Notifier::notify(coap::internal::observable::detail::Registrar<TContainer, st>& registrar, handle_type handle,
+void Notifier2::notify(coap::internal::observable::detail::Registrar<TContainer, st>& registrar, handle_type handle,
     embr::lwip::udp::Pcb pcb, F&& f)
 {
     typedef detail::Registrar<TContainer, st> registrar_type;
@@ -42,8 +43,7 @@ void Notifier::notify(coap::internal::observable::detail::Registrar<TContainer, 
             // DEBT: Need to put sequence option in here ... possibly
 
             e.header(header);
-            // DEBT: Seems like we could pass a token directly in here
-            e.token(key.token.data(), key.token.size());
+            e.token(key.token);
 
             f(key, e);
 

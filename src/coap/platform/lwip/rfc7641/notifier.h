@@ -1,8 +1,10 @@
 #pragma once
 
 #include "../../../internal/rfc7641/keys.h"
+#include "../../../internal/rfc7641/notifier.h"
 #include "../context.h"   // for EncoderFactory and friends
 #include "../encoder.h"   // For encoder finalize specialization
+
 
 #include <embr/platform/lwip/endpoint.h>
 
@@ -10,7 +12,7 @@ namespace embr { namespace coap {
 
 namespace internal { namespace observable { namespace lwip {
 
-class Notifier
+class Notifier2
 {
 public:
     //typedef embr::lwip::internal::Endpoint<false> endpoint_type;
@@ -37,7 +39,11 @@ struct Notifier<embr::lwip::udp::Pcb, TRegistrar> :
     embr::lwip::udp::Pcb pcb;
 
     // DEBT: This is shaping up to be an impl
-    typedef embr::coap::internal::observable::lwip::Notifier notifier_type;
+private:
+    typedef embr::coap::internal::observable::lwip::Notifier2 notifier_type;
+
+public:
+    typedef typename notifier_type::encoder_type encoder_type;
 
     Notifier(embr::lwip::udp::Pcb pcb) :
         pcb(pcb)
