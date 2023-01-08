@@ -9,7 +9,7 @@
 
 namespace embr { namespace coap {
 
-namespace experimental {
+namespace internal {
 
 template <>
 struct StreambufProvider<struct pbuf*>
@@ -39,6 +39,10 @@ struct LwipPbufFactory
         return embr::lwip::Pbuf(N);
     }
 };
+
+template <unsigned N>
+struct LwipEncoderFactory :
+    EncoderFactory<embr::lwip::Pbuf, LwipPbufFactory<N> > {};
 
 }
 

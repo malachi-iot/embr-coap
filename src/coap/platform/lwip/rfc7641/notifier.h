@@ -17,8 +17,8 @@ class Notifier2
 public:
     //typedef embr::lwip::internal::Endpoint<false> endpoint_type;
     typedef RegistrarKeyBase::handle_type handle_type;
-    typedef coap::experimental::EncoderFactory<
-        struct pbuf*, embr::coap::experimental::LwipPbufFactory<64> > encoder_factory;
+    typedef coap::internal::EncoderFactory<
+        struct pbuf*, embr::coap::internal::LwipPbufFactory<64> > encoder_factory;
     //typedef coap::experimental::DecoderFactory<struct pbuf*> decoder_factory;
     typedef typename encoder_factory::encoder_type encoder_type;
 

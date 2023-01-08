@@ -123,7 +123,7 @@ public:
     // get MID from sent netbuf, for incoming ACK comparison
     inline uint16_t mid() const
     {
-        auto decoder = DecoderFactory<buffer_type>::create(buffer_);
+        auto decoder = internal::DecoderFactory<buffer_type>::create(buffer_);
 
         // FIX: Although this works, it's too sloppy even to be debt.
         // this uses foreknowledge of decoder state machine behavior to
@@ -141,7 +141,7 @@ public:
     coap::layer2::Token token() const
     {
         // TODO: optimize and use header & token decoder only and directly
-        auto decoder = DecoderFactory<buffer_type>::create(buffer_);
+        auto decoder = internal::DecoderFactory<buffer_type>::create(buffer_);
         coap::layer2::Token token;
 
         // FIX: Still need to iterate

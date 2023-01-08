@@ -32,7 +32,7 @@ struct SyntheticIncomingContext :
 {
     typedef embr::coap::IncomingContext<unsigned> base_type;
     typedef span_encoder_type encoder_type;
-    typedef embr::coap::experimental::EncoderFactory<
+    typedef embr::coap::internal::EncoderFactory<
         estd::span<char>,
         SyntheticBufferFactory> encoder_factory;
 

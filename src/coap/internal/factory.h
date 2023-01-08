@@ -10,7 +10,7 @@
 // Different than encoder factory.h, this one focuses on specializations
 // to create encoders and decoders depending on the buffers at play
 
-namespace embr { namespace coap { namespace experimental {
+namespace embr { namespace coap { namespace internal {
 
 template <class TBuffer>
 struct DecoderFactory;

@@ -12,7 +12,7 @@ namespace embr { namespace coap { namespace experimental {
 template <class TBuffer>
 inline Header get_header(TBuffer buffer)
 {
-    auto decoder = DecoderFactory<TBuffer>::create(buffer);
+    auto decoder = internal::DecoderFactory<TBuffer>::create(buffer);
 
     iterated::decode_result r;
 

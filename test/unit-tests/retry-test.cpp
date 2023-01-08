@@ -82,7 +82,7 @@ TEST_CASE("retry tests", "[retry]")
 
         SECTION("factory")
         {
-            typedef DecoderFactory<buffer_type> factory;
+            typedef internal::DecoderFactory<buffer_type> factory;
 
             SECTION("core")
             {

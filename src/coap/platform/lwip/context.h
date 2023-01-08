@@ -62,19 +62,20 @@ struct LwipContext
     typedef embr::lwip::experimental::TransportUdp<> base_type;
     typedef struct udp_pcb* pcb_pointer;
     typedef struct pbuf* pbuf_pointer;
-    typedef typename base_type::ostreambuf_type out_streambuf_type;
+    //typedef typename base_type::ostreambuf_type out_streambuf_type;
     typedef typename base_type::istreambuf_type in_streambuf_type;
-    typedef out_streambuf_type::size_type size_type;
+    //typedef out_streambuf_type::size_type size_type;
 
-    typedef embr::coap::StreambufEncoder<out_streambuf_type> encoder_type;
+    //typedef embr::coap::StreambufEncoder<out_streambuf_type> encoder_type;
     typedef embr::coap::StreambufDecoder<in_streambuf_type> decoder_type;
 
     typedef embr::lwip::internal::Endpoint<> endpoint_type;
 
+    // DEBT: In this case, we might prefer the new internal::LwipEncoderFactory
 #ifdef __cpp_alias_templates
     template <unsigned N>
-    using lwip_encoder_factory = embr::coap::experimental::EncoderFactory<
-        pbuf_pointer, embr::coap::experimental::LwipPbufFactory<N> >;
+    using lwip_encoder_factory = embr::coap::internal::EncoderFactory<
+        pbuf_pointer, embr::coap::internal::LwipPbufFactory<N> >;
 #endif
     
     // stock-standard size is 256, which is generally too large
@@ -83,9 +84,12 @@ struct LwipContext
     // their context for more specificity
     
     // Default factory, but can be overridden later down hierarchy
-    typedef embr::coap::experimental::EncoderFactory<
+    typedef embr::coap::internal::EncoderFactory<
         pbuf_pointer,
-        embr::coap::experimental::LwipPbufFactory<64> > encoder_factory;
+        embr::coap::internal::LwipPbufFactory<64> > encoder_factory;
+
+    typedef encoder_factory::encoder_type encoder_type;
+    typedef typename encoder_factory::streambuf_type::size_type size_type;
 
 #ifdef FEATURE_MCCOAP_LWIP_TRANSPORT
     LwipContext(pcb_pointer pcb) : 
