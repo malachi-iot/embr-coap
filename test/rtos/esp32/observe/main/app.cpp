@@ -5,16 +5,12 @@
 #include <coap/platform/lwip/context.h>
 #include <coap/platform/lwip/encoder.h>
 #include <coap/decoder.hpp>
-#include <coap/decoder/events.h>
 #include <coap/decoder/subject-core.hpp>
 
 #include <coap/platform/lwip/rfc7641/notifier.hpp>
 
-#include <coap/decoder/observer/uri.h>         // For UriPathMap
-#include <coap/decoder/observer/util.h>
 #include <coap/decoder/observer/core.h>
 #include <coap/decoder/observer/diagnostic.h>
-#include <coap/decoder/observer/observable.h>
 
 #include "app.h"
 #include "notifier.h"                       // For semi-experimental NotifierContext
@@ -42,18 +38,19 @@ const UriPathMap map[] =
 
 struct AppContext : 
     embr::coap::LwipIncomingContext,
-    embr::coap::UriParserContext,
-    NotifierContext<registrar_type>
+    embr::coap::UriParserContext
 {
     //embr::coap::experimental::observable::option_value_type observe_option;
+
+    registrar_type& registrar;
 
     AppContext(pcb_pointer pcb,
         const ip_addr_t* addr,
         uint16_t port,
-        Notifier& notifier) :
+        Notifier* notifier) :
         embr::coap::LwipIncomingContext(pcb, addr, port),
         embr::coap::UriParserContext(paths::map),
-        NotifierContext<registrar_type>(notifier)
+        registrar(notifier->registrar())
     {}
 };
 
@@ -65,10 +62,8 @@ struct App
     {
         static const char* TAG = "build_stat_with_observe";
 
-        registrar_type& registrar = context.notifier().registrar();
-
         Header::Code added_or_removed = add_or_remove(
-            registrar,
+            context.registrar,
             context, 
             context.observe_option(), paths::v1_stats);
 
@@ -82,7 +77,7 @@ struct App
         else
             // build regular non-observed response
             // DEBT: Way too invasive scooping out sequence like this
-            build_stat_suffix(encoder, registrar.sequence);
+            build_stat_suffix(encoder, context.registrar.sequence);
 
         context.reply(encoder);
     }
@@ -100,11 +95,12 @@ struct App
                 break;
 
             case paths::v1_load:
-                context.response_code = nvs_load_registrar();
+                context.response_code = nvs_load_registrar(
+                    &context.registrar);
                 break;
 
             case paths::v1_save:
-                nvs_save_registrar();
+                nvs_save_registrar(&context.registrar);
                 context.response_code = Header::Code::Changed;
                 break;
             
@@ -127,7 +123,7 @@ void udp_coap_recv(void* notifier,
     struct udp_pcb* pcb, struct pbuf* p,
     const ip_addr_t* addr, u16_t port)
 {
-    AppContext context(pcb, addr, port, *(Notifier *)notifier);
+    AppContext context(pcb, addr, port, (Notifier *)notifier);
 
     decode_and_notify(p, app_subject, context);
 }

@@ -2,6 +2,7 @@
 
 #include "util.h"
 #include "observable.h"
+#include "uri.h"
 
 #include <embr/observer.h>
 

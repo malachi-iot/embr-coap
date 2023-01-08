@@ -5,9 +5,11 @@
 
 #include <embr/observer.h>
 
+
+// DEBT: tricky to know this is necessary for finalize()
 #include <coap/platform/lwip/encoder.h>
+
 #include <coap/decoder.hpp>
-#include <coap/decoder/events.h>
 #include <coap/decoder/subject-core.hpp>
 
 #include <estd/port/freertos/timer.h>
@@ -27,7 +29,7 @@ static const char* nvs_seq_key = "coap::seq";   // DEBT: Not yet implemented
 
 
 // FIX: Works for a little while, but then crash/restart occurs
-Header::Code nvs_load_registrar()
+Header::Code nvs_load_registrar(registrar_type* r)
 {
     static const char* TAG = "nvs_load_registrar";
 
@@ -36,7 +38,7 @@ Header::Code nvs_load_registrar()
 
     std::size_t sz;
 
-    ESP_ERROR_CHECK(h->get_blob(nvs_reg_key, &notifier->registrar(), &sz));
+    ESP_ERROR_CHECK(h->get_blob(nvs_reg_key, r, &sz));
 
     ESP_LOGI(TAG, "loaded: sz=%u / sizeof=%u", sz, sizeof(registrar_type));
 
@@ -49,7 +51,7 @@ Header::Code nvs_load_registrar()
     return Header::Code::Valid;
 }
 
-void nvs_save_registrar()
+void nvs_save_registrar(registrar_type* r)
 {
     static const char* TAG = "nvs_save_registrar";
 
@@ -59,7 +61,7 @@ void nvs_save_registrar()
     ESP_ERROR_CHECK(nvs_open(STORAGE_NAMESPACE, NVS_READWRITE, &my_handle));
 
     ESP_ERROR_CHECK(nvs_set_blob(my_handle, nvs_reg_key,
-        &notifier->registrar(), sizeof(registrar_type)));
+        r, sizeof(registrar_type)));
 
     ESP_LOGI(TAG, "saved");
 

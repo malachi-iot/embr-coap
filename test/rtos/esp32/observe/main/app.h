@@ -30,5 +30,5 @@ typedef Notifier::encoder_type encoder_type;
 // NOTE: 'suffix' only builds option and payload portion
 void build_stat_suffix(encoder_type& encoder, sequence_type sequence = sequence_type());
 
-embr::coap::Header::Code nvs_load_registrar();
-void nvs_save_registrar();
+embr::coap::Header::Code nvs_load_registrar(registrar_type* r);
+void nvs_save_registrar(registrar_type* r);
