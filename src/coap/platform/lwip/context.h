@@ -12,8 +12,7 @@
 #include <coap/encoder/streambuf.h>
 
 #include "../ip.h"
-
-#include <exp/retry/factory.h>
+#include "factory.h"
 
 // This is all UDP oriented.  No TCP or SSL support
 
@@ -48,34 +47,6 @@ static iterated::decode_result decode_and_notify(
     return decode_and_notify(decoder, std::move(subject), context);
 }
 #endif
-
-// DEBT: StreambufProvider and LwipPbufFactory might even comfortably live
-// in embr itself.  In any case, move it out of context.h
-namespace experimental {
-
-template <>
-struct StreambufProvider<struct pbuf*>
-{
-    typedef embr::lwip::opbuf_streambuf ostreambuf_type;
-    typedef embr::lwip::ipbuf_streambuf istreambuf_type;
-};
-
-
-// DEBT: LwIP has a natural pbuf size, seems to be PBUF_POOL_BUFSIZE.
-// Consider making that the default value here, once we verify if that
-// (or similar) is the minimum size a system/transport allocated pbuf
-// will be anyway
-template <unsigned N>
-struct LwipPbufFactory
-{
-    static inline embr::lwip::Pbuf create()
-    {
-        return embr::lwip::Pbuf(N);
-    }
-};
-
-}
-
 
 // TODO: Either include addr in here and somehow NOT in app context,
 // or go other direction and inherit from embr::coap::IncomingContext

@@ -2,28 +2,18 @@
 
 #include <esp-helper.h>
 
+
 #include <embr/platform/lwip/pbuf.h>
 #include <embr/platform/lwip/streambuf.h>
 #include <embr/platform/lwip/udp.h>
 
+// DEBT: At the moment, this is where StreambufProvider specialization lives
+#include <coap/platform/lwip/factory.h>
 #include <coap/platform/ip.h>
 
 #include <coap/header.h>
 
 #include "app.h"
-
-// DEBT: Need to consolidate this into coap/platform/lwip area once
-// experimentation settles down
-namespace embr { namespace coap { namespace experimental {
-
-template <>
-struct StreambufProvider<embr::lwip::Pbuf>
-{
-    typedef embr::lwip::opbuf_streambuf ostreambuf_type;
-    typedef embr::lwip::ipbuf_streambuf istreambuf_type;
-};
-
-}}}
 
 
 void udp_coap_recv(void *arg, 
