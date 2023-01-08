@@ -36,7 +36,7 @@ Header::Code nvs_load_registrar()
 
     std::size_t sz;
 
-    ESP_ERROR_CHECK(h->get_blob(nvs_reg_key, &notifier->registrar, &sz));
+    ESP_ERROR_CHECK(h->get_blob(nvs_reg_key, &notifier->registrar(), &sz));
 
     ESP_LOGI(TAG, "loaded: sz=%u / sizeof=%u", sz, sizeof(registrar_type));
 
@@ -59,7 +59,7 @@ void nvs_save_registrar()
     ESP_ERROR_CHECK(nvs_open(STORAGE_NAMESPACE, NVS_READWRITE, &my_handle));
 
     ESP_ERROR_CHECK(nvs_set_blob(my_handle, nvs_reg_key,
-        &notifier->registrar, sizeof(registrar_type)));
+        &notifier->registrar(), sizeof(registrar_type)));
 
     ESP_LOGI(TAG, "saved");
 
@@ -88,7 +88,7 @@ static void notifier_timer(TimerHandle_t)
     // because initial response has an observe '0'?
     static unsigned sequence = 1;
 
-    int count = notifier->observer_count();
+    int count = notifier->registrar().observer_count();
 
     ESP_LOGD(TAG, "entry: count=%d, sequence=%u", count, sequence);
 

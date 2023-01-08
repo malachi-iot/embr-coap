@@ -6,19 +6,19 @@ namespace embr { namespace coap {
 
 namespace internal {
 
-template <class TRegistrar, class TContext, typename enable =
+template <class TContainer, class TContext, typename enable =
     typename estd::enable_if<
         estd::is_base_of<tags::token_context, TContext>::value &&
         estd::is_base_of<tags::address_context, TContext>::value
     >::type
 >
 Header::Code add_or_remove(
-    NotifyHelperBase<TRegistrar>& notifier,
+    observable::detail::Registrar<TContainer>& registrar,
     TContext& context,
     observable::option_value_type option_value,
     int resource_id)
 {
-    return notifier.add_or_remove(
+    return registrar.add_or_remove(
         option_value.value(),
         context.address(),
         context.token().span(),     // DEBT: Token needs rework

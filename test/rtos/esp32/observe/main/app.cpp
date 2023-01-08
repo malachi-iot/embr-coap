@@ -66,7 +66,7 @@ struct App
         static const char* TAG = "build_stat_with_observe";
 
         Header::Code added_or_removed = add_or_remove(
-            context.notifier(),
+            context.notifier().registrar(),
             context, 
             context.observe_option(), paths::v1_stats);
 

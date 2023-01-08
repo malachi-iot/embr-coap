@@ -13,11 +13,11 @@ namespace internal { namespace observable { namespace lwip {
 class Notifier
 {
 public:
-    typedef embr::lwip::internal::Endpoint<false> endpoint_type;
+    //typedef embr::lwip::internal::Endpoint<false> endpoint_type;
     typedef RegistrarKeyBase::handle_type handle_type;
     typedef coap::experimental::EncoderFactory<
         struct pbuf*, embr::coap::experimental::LwipPbufFactory<64> > encoder_factory;
-    typedef coap::experimental::DecoderFactory<struct pbuf*> decoder_factory;
+    //typedef coap::experimental::DecoderFactory<struct pbuf*> decoder_factory;
     typedef typename encoder_factory::encoder_type encoder_type;
 
     template <typename TContainer, typename F>
@@ -53,7 +53,7 @@ struct Notifier<embr::lwip::udp::Pcb, TRegistrar> :
     template <typename F>
     void notify(typename registrar_type::handle_type handle, F&& f)
     {
-        notifier_type::notify(base_type::registrar, handle, pcb, std::move(f));
+        notifier_type::notify(base_type::registrar(), handle, pcb, std::move(f));
     }
 };
 
