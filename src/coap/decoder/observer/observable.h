@@ -6,14 +6,14 @@ namespace embr { namespace coap {
 
 namespace internal {
 
-template <class TContainer, class TContext, typename enable =
+template <class TContainer, observable::detail::SequenceTracking st, class TContext, typename enable =
     typename estd::enable_if<
         estd::is_base_of<tags::token_context, TContext>::value &&
         estd::is_base_of<tags::address_context, TContext>::value
     >::type
 >
 Header::Code add_or_remove(
-    observable::detail::Registrar<TContainer>& registrar,
+    observable::detail::Registrar<TContainer, st>& registrar,
     TContext& context,
     observable::option_value_type option_value,
     int resource_id)

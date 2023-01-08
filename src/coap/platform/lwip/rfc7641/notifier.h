@@ -20,8 +20,8 @@ public:
     //typedef coap::experimental::DecoderFactory<struct pbuf*> decoder_factory;
     typedef typename encoder_factory::encoder_type encoder_type;
 
-    template <typename TContainer, typename F>
-    static void notify(detail::Registrar<TContainer>& registrar, handle_type handle,
+    template <typename TContainer, observable::detail::SequenceTracking st, typename F>
+    static void notify(detail::Registrar<TContainer, st>& registrar, handle_type handle,
         embr::lwip::udp::Pcb pcb, F&& f);
 };
 

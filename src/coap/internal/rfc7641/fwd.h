@@ -26,7 +26,7 @@ enum class SequenceTracking
     PerObserver = 2
 };
 
-template <class TContainer, SequenceTracking = SequenceTracking::Singleton>
+template <class TContainer, SequenceTracking>
 struct Registrar;
 
 }

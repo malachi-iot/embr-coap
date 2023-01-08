@@ -8,11 +8,11 @@ namespace embr { namespace coap {
 
 namespace internal { namespace observable { namespace lwip {
 
-template <typename TContainer, typename F>
-void Notifier::notify(coap::internal::observable::detail::Registrar<TContainer>& registrar, handle_type handle,
+template <typename TContainer, observable::detail::SequenceTracking st, typename F>
+void Notifier::notify(coap::internal::observable::detail::Registrar<TContainer, st>& registrar, handle_type handle,
     embr::lwip::udp::Pcb pcb, F&& f)
 {
-    typedef detail::Registrar<TContainer> registrar_type;
+    typedef detail::Registrar<TContainer, st> registrar_type;
     typedef typename registrar_type::container_type container_type;
 
     // DEBT: Need a proper message id generator, but this will do

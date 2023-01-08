@@ -19,9 +19,15 @@ struct Registrar<TContainer, SequenceTracking::Singleton> : RegistrarBase
 {
     typedef TContainer container_type;
     typedef typename container_type::value_type Key;
+
+    // DEBT: I think vector needs this
+    //typedef typename container_type::const_referece const_reference;
+    typedef typename container_type::value_type value_type;
+    typedef const value_type& const_reference;
+
     //typedef RegistrarKey<endpoint_type> Key;
-    typedef typename Key::endpoint_type endpoint_type;
-    typedef ObserveEndpointKey<endpoint_type> key_type;
+    typedef typename value_type::endpoint_type endpoint_type;
+    typedef ObserveEndpointKey<endpoint_type, SequenceTracking::Singleton> key_type;
 
     // DEBT: Make this private/protected
     container_type observers;
@@ -36,14 +42,14 @@ struct Registrar<TContainer, SequenceTracking::Singleton> : RegistrarBase
     void add(key_type observer, handle_type handle)
     {
         // DEBT: Check boundary
-        Key key(observer, handle);
+        value_type key(observer, handle);
 
         observers.push_back(key);
     }
 
     bool remove(const key_type& observer, handle_type handle)
     {
-        Key key(observer, handle);
+        value_type key(observer, handle);
 
         typename container_type::iterator i = std::find(observers.begin(), observers.end(), key);
 
@@ -82,7 +88,7 @@ struct Registrar<TContainer, SequenceTracking::Singleton> : RegistrarBase
 
         for(;i != observers.end(); ++i)
         {
-            const observable::RegistrarKey<endpoint_type>& key = *i;
+            const const_reference key = *i;
 
             if(key.endpoint == endpoint &&
                key.handle == handle &&
@@ -133,8 +139,8 @@ struct Registrar<TContainer, SequenceTracking::Singleton> : RegistrarBase
 
 namespace layer1 {
 
-template <class TEndpoint, unsigned N>
-struct Registrar : detail::Registrar<estd::layer1::vector<RegistrarKey<TEndpoint>, N> >
+template <class TEndpoint, unsigned N, detail::SequenceTracking sequence_tracking = detail::SequenceTracking::Singleton>
+struct Registrar : detail::Registrar<estd::layer1::vector<RegistrarKey<TEndpoint, sequence_tracking>, N>, sequence_tracking>
 {
 };
 

@@ -49,21 +49,31 @@ struct MessageKey<TEndpoint, void> : EndpointProvider<TEndpoint>
     {}
 };
 
+
+// Not using evaporator because we don't even want an accessor if not present
+template <observable::detail::SequenceTracking>
+struct SequenceTrackingKey {};
+
+template <>
+struct SequenceTrackingKey<observable::detail::SequenceTracking::PerObserver>
+{
+    // NOTE: Not used at this time
+    // DEBT: Use uint of only 3 bytes as per RFC 7641 Section 3.4
+    observable::sequence_type sequence;
+};
+
 // For use with RFC 7641
+// Contains the minimal information needed to issue a notification back to observer
 template <typename TEndpoint,
-    embr::coap::internal::observable::detail::SequenceTracking = observable::detail::SequenceTracking::PerObserver>
-struct ObserveEndpointKey : EndpointProvider<TEndpoint>
+    embr::coap::internal::observable::detail::SequenceTracking sequence_tracking>
+struct ObserveEndpointKey : EndpointProvider<TEndpoint>,
+    SequenceTrackingKey<sequence_tracking>
 {
     typedef EndpointProvider<TEndpoint> base_type;
     typedef typename base_type::endpoint_type endpoint_type;
     typedef coap::layer2::Token token_type;
 
     const token_type token;
-
-    // NOTE: Not used at this time
-    // DEBT: Filter this out by with_sequence to optimize storage
-    // DEBT: Use uint of only 3 bytes as per RFC 7641 Section 3.4
-    observable::sequence_type sequence;
 
     ESTD_CPP_CONSTEXPR_RET ObserveEndpointKey(endpoint_type endpoint,
         const estd::span<const uint8_t>& token) :
@@ -100,13 +110,13 @@ struct RegistrarKeyBase
     RegistrarKeyBase(handle_type handle) : handle(handle) {}
 };
 
-template <class TEndpoint, class TAppData = estd::monostate>
-struct RegistrarKey : ObserveEndpointKey<TEndpoint>,
+template <class TEndpoint, detail::SequenceTracking sequence_tracking, class TAppData = estd::monostate>
+struct RegistrarKey : ObserveEndpointKey<TEndpoint, sequence_tracking>,
     RegistrarKeyBase,
     TAppData
 {
     typedef TEndpoint endpoint_type;
-    typedef ObserveEndpointKey<endpoint_type> base_type;
+    typedef ObserveEndpointKey<endpoint_type, sequence_tracking> base_type;
 
     ESTD_CPP_CONSTEXPR_RET RegistrarKey(const endpoint_type& endpoint,
         const estd::span<const uint8_t>& token,
