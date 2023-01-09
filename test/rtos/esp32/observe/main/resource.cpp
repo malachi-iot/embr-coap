@@ -82,7 +82,9 @@ void build_stat_suffix(encoder_type& encoder, sequence_type sequence)
 }
 
 
-// FIX: Getting a stack overflow here
+#if CONFIG_FREERTOS_TIMER_TASK_STACK_DEPTH < 3000
+#warning "Likely you will experience stack overflows here"
+#endif
 static void notifier_timer(TimerHandle_t)
 {
     static const char* TAG = "notifier_timer";
