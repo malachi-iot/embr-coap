@@ -34,38 +34,31 @@ Header::Code nvs_load_registrar(registrar_type* r)
     static const char* TAG = "nvs_load_registrar";
 
     embr::internal::scoped_guard<embr::esp_idf::nvs::Handle>
-        h(STORAGE_NAMESPACE, NVS_READWRITE);
+        h(STORAGE_NAMESPACE, NVS_READONLY);
 
-    std::size_t sz;
-
-    ESP_ERROR_CHECK(h->get_blob(nvs_reg_key, r, &sz));
-
-    ESP_LOGI(TAG, "loaded: sz=%u / sizeof=%u", sz, sizeof(registrar_type));
-
-    if(sz != sizeof(registrar_type))
-    {
-        ESP_LOGE(TAG, "uh oh!  load had a problem, sizes don't match");
+    if(get(*h, nvs_reg_key, r) != ESP_OK)
         return Header::Code::InternalServerError;
+    else
+    {
+        ESP_LOGI(TAG, "loaded: sizeof=%u", sizeof(registrar_type));
+        return Header::Code::Valid;
     }
-
-    return Header::Code::Valid;
 }
 
 void nvs_save_registrar(registrar_type* r)
 {
     static const char* TAG = "nvs_save_registrar";
 
-    nvs_handle_t my_handle;
+    embr::esp_idf::nvs::Handle my_handle;
     //esp_err_t err;
     
-    ESP_ERROR_CHECK(nvs_open(STORAGE_NAMESPACE, NVS_READWRITE, &my_handle));
+    ESP_ERROR_CHECK(my_handle.open(STORAGE_NAMESPACE, NVS_READWRITE));
 
-    ESP_ERROR_CHECK(nvs_set_blob(my_handle, nvs_reg_key,
-        r, sizeof(registrar_type)));
+    ESP_ERROR_CHECK(set(my_handle, nvs_reg_key, r));
 
     ESP_LOGI(TAG, "saved");
 
-    nvs_close(my_handle);
+    my_handle.close();
 }
 
 
