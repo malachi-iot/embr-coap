@@ -47,7 +47,7 @@ struct Registrar : RegistrarBase,
     typedef typename value_type::endpoint_type endpoint_type;
 
     // underlying key portion only containing observer identification (endpoint, token, etc)
-    typedef ObserveEndpointKey<endpoint_type, SequenceTracking::Singleton> key_type;
+    typedef ObserveEndpointKey<endpoint_type, sequence_tracking> key_type;
 
     // DEBT: Make this private/protected
     container_type observers;

@@ -50,9 +50,25 @@ TEST_CASE("CoAP observable (RFC-7641) tests", "[coap-observer]")
     SECTION("v2")
     {
         embr::coap::layer2::Token token;
-        internal::observable::layer1::Registrar<int, 10> registrar;
-        internal::observable::layer1::Registrar<int, 10>::key_type key(0, token);
 
-        registrar.add(key, 1);
+        SECTION("basic")
+        {
+            typedef internal::observable::layer1::Registrar<int, 10> registrar_type;
+            registrar_type registrar;
+            registrar_type::key_type key(0, token);
+
+            registrar.add(key, 1);
+        }
+        SECTION("no sequence #")
+        {
+            typedef internal::observable::layer1::Registrar<
+                int, 10, internal::observable::detail::SequenceTracking::None>
+                registrar_type;
+
+            registrar_type registrar;
+            registrar_type::key_type key(0, token);
+
+            registrar.add(key, 1);
+        }
     }
 }
