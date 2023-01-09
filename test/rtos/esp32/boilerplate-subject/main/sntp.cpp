@@ -11,7 +11,8 @@
 
 using namespace embr::coap;
 
-
+// NOTE: By default it seems RTC and high res timer are both used
+// to feed gettimeofday (which I presume feeds localtime_r)
 void initialize_sntp()
 {
     sntp_setoperatingmode(SNTP_OPMODE_POLL);
