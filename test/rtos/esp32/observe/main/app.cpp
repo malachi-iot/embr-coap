@@ -76,6 +76,7 @@ struct App
         uint32_t sequence = added_or_removed.success() ?
             // Will be '0' or '1', indicating a successful register or deregister
             context.observe_option() :
+            // 'failure' just means we fall back to a regular non-observe way
             // DEBT: Depends on singleton API.  Not so bad, just be aware
             traits::sequence(context.registrar);
 

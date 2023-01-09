@@ -10,8 +10,22 @@ namespace embr { namespace coap {
 namespace internal { namespace observable { namespace lwip {
 
 template <typename TContainer, observable::detail::SequenceTracking st, typename F>
-void Notifier2::notify(coap::internal::observable::detail::Registrar<TContainer, st>& registrar, handle_type handle,
+inline void Notifier2::notify(coap::internal::observable::detail::Registrar<TContainer, st>& registrar, handle_type handle,
     embr::lwip::udp::Pcb pcb, F&& f)
+{
+    typedef detail::Registrar<TContainer, st> registrar_type;
+    typedef typename registrar_type::const_reference ref;
+
+    return notify(registrar, pcb, [=](ref key)
+    {
+        return key.handle == handle;
+    }, std::move(f));
+}
+
+
+template <typename TContainer, observable::detail::SequenceTracking st, typename P, typename F>
+void Notifier2::notify(coap::internal::observable::detail::Registrar<TContainer, st>& registrar, 
+    embr::lwip::udp::Pcb pcb, P&& predicate, F&& f)
 {
     typedef detail::Registrar<TContainer, st> registrar_type;
     typedef typename registrar_type::container_type container_type;
@@ -25,9 +39,7 @@ void Notifier2::notify(coap::internal::observable::detail::Registrar<TContainer,
 
     for(; i != registrar.observers.end(); ++i)
     {
-        // DEBT: Pretty sure this is std preferred way, but look into arrow
-        // operator here
-        if((*i).handle == handle)
+        if(predicate(*i))
         {
             const typename registrar_type::key_type& key = *i;
 

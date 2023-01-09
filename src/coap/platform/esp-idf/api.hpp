@@ -25,11 +25,12 @@ namespace embr { namespace coap {
 
 namespace sys_paths {
 
-template <class TContext, class enabled = void>
+// TRegistrar refers to rfc7641 registration, not yet used
+template <class TContext, class TRegistrar = estd::monostate, class enabled = void>
 struct builder;
 
 template <class TContext>
-struct builder<TContext,
+struct builder<TContext, estd::monostate,
     typename estd::enable_if<
         estd::is_base_of<tags::incoming_context, TContext>::value &&
         estd::is_base_of<UriParserContext, TContext>::value &&

@@ -25,6 +25,10 @@ public:
     template <typename TContainer, observable::detail::SequenceTracking st, typename F>
     static void notify(detail::Registrar<TContainer, st>& registrar, handle_type handle,
         embr::lwip::udp::Pcb pcb, F&& f);
+
+    template <typename TContainer, observable::detail::SequenceTracking st, typename P, typename F>
+    static void notify(detail::Registrar<TContainer, st>& registrar, 
+        embr::lwip::udp::Pcb pcb, P&& predicate, F&& f);
 };
 
 }
