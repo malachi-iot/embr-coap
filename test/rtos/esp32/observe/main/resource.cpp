@@ -28,15 +28,11 @@ static const char* nvs_seq_key = "coap::seq";   // DEBT: Not yet implemented
 #define STORAGE_NAMESPACE "storage"
 
 
-// FIX: Works for a little while, but then crash/restart occurs
 Header::Code nvs_load_registrar(registrar_type* r)
 {
     static const char* TAG = "nvs_load_registrar";
 
-    embr::internal::scoped_guard<embr::esp_idf::nvs::Handle>
-        h(STORAGE_NAMESPACE, NVS_READONLY);
-
-    if(get(*h, nvs_reg_key, r) != ESP_OK)
+    if(embr::esp_idf::nvs::get(STORAGE_NAMESPACE, nvs_reg_key, r) != ESP_OK)
         return Header::Code::InternalServerError;
     else
     {
@@ -49,16 +45,9 @@ void nvs_save_registrar(registrar_type* r)
 {
     static const char* TAG = "nvs_save_registrar";
 
-    embr::esp_idf::nvs::Handle my_handle;
-    //esp_err_t err;
-    
-    ESP_ERROR_CHECK(my_handle.open(STORAGE_NAMESPACE, NVS_READWRITE));
-
-    ESP_ERROR_CHECK(set(my_handle, nvs_reg_key, r));
+    ESP_ERROR_CHECK(embr::esp_idf::nvs::set(STORAGE_NAMESPACE, nvs_reg_key, r));
 
     ESP_LOGI(TAG, "saved");
-
-    my_handle.close();
 }
 
 

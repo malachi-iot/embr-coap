@@ -47,34 +47,6 @@ public:
     operator nvs_handle_t() const { return h; }
 };
 
-template <class T>
-esp_err_t get(Handle h, const char* key, T* blob)
-{
-    static const char* TAG = "nvs::get<TBlob>";
-
-    std::size_t sz = sizeof(T);
-    esp_err_t e;
-
-    if((e = h.get_blob(key, blob, &sz)) != ESP_OK)
-        return e;
-
-    if(sz != sizeof(T)) 
-    {
-        e = ESP_ERR_INVALID_SIZE;
-        ESP_LOGW(TAG, "uh oh!  load had a problem, sizes don't match");
-    }
-
-    return e;
-}
-
-
-template <class T>
-esp_err_t set(Handle h, const char* key, T* blob)
-{
-    constexpr std::size_t sz = sizeof(T);
-
-    return h.set_blob(key, blob, sz);
-}
 
 }}}
 
@@ -126,4 +98,61 @@ public:
     esp_idf::nvs::Handle& operator*() { return base_type::value(); }
 };
 
+
+}
+
+namespace esp_idf { namespace nvs {
+
+
+template <class T>
+esp_err_t get(Handle h, const char* key, T* blob)
+{
+    static const char* TAG = "nvs::get<TBlob>";
+
+    std::size_t sz = sizeof(T);
+    esp_err_t e;
+
+    if((e = h.get_blob(key, blob, &sz)) != ESP_OK)
+        return e;
+
+    if(sz != sizeof(T)) 
+    {
+        e = ESP_ERR_INVALID_SIZE;
+        ESP_LOGW(TAG, "uh oh!  load had a problem, sizes don't match");
+    }
+
+    return e;
+}
+
+
+template <class T>
+esp_err_t set(Handle h, const char* key, T* blob)
+{
+    constexpr std::size_t sz = sizeof(T);
+
+    return h.set_blob(key, blob, sz);
+}
+
+
+template <class T>
+esp_err_t get(const char* ns, const char* key, T* blob)
+{
+    embr::internal::scoped_guard<Handle> h(ns, NVS_READONLY);
+
+    return get(*h, key, blob);
+}
+
+
+template <class T>
+esp_err_t set(const char* ns, const char* key, T* blob)
+{
+    embr::internal::scoped_guard<Handle> h(ns, NVS_READWRITE);
+
+    return set(*h, key, blob);
+}
+
+
+
 }}
+
+}
