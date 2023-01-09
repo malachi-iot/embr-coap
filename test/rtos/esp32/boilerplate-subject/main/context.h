@@ -35,4 +35,6 @@ struct AppContext :
 };
 
 
-
+void initialize_sntp();
+void initialize_mdns();
+void send_time_response(AppContext& context, AppContext::encoder_type& encoder);

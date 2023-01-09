@@ -29,7 +29,7 @@ enum
     id_path_v1 = 0,
     id_path_v1_api,
     id_path_v1_api_gpio,
-    id_path_v1_api_stats,
+    id_path_v1_api_time,
     id_path_v1_api_gpio_value,
 
     id_path_well_known,
@@ -48,7 +48,7 @@ const UriPathMap uri_map[] =
     { "api",        id_path_v1_api,             id_path_v1 },
     { "gpio",       id_path_v1_api_gpio,        id_path_v1_api },
     { "*",          id_path_v1_api_gpio_value,  id_path_v1_api_gpio },
-    { "stats",      id_path_v1_api_stats,       id_path_v1_api },
+    { "time",       id_path_v1_api_time,        id_path_v1_api },
 
     EMBR_COAP_V1_SYS_PATHS(id_path_v1),
 
@@ -94,6 +94,10 @@ struct Observer
             case id_path_v1_api_gpio_value:
                 context.completed_gpio(encoder);
                 break;
+
+            case id_path_v1_api_time:
+                send_time_response(context, encoder);
+                break;
                 
             default:
                 sys_paths::send_sys_reply(context, encoder);
@@ -138,6 +142,12 @@ void udp_coap_recv(void *arg,
     // _recv plumbing depends on us to free p, and decode_and_notify here helps us with that
     // DEBT: I think I prefer explicitly freeing here, decode_and_notify assistance is too magic
     decode_and_notify(p, app_subject, context);
+}
+
+void app_init(void** arg)
+{
+    initialize_sntp();
+    initialize_mdns();
 }
 
 
