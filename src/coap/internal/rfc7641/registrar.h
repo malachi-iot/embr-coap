@@ -7,6 +7,9 @@ namespace embr { namespace coap {
 
 namespace internal { namespace observable {
 
+template <class TRegistrar>
+struct RegistrarTraits;
+
 namespace detail {
 
 struct RegistrarBase
@@ -14,30 +17,40 @@ struct RegistrarBase
     typedef RegistrarKeyBase::handle_type handle_type;
 };
 
-template <class TContainer>
-struct Registrar<TContainer, SequenceTracking::Singleton> : RegistrarBase
+template <SequenceTracking>
+struct RegistrarSequenceBase {};
+
+template <>
+struct RegistrarSequenceBase<SequenceTracking::Singleton>
 {
-    typedef TContainer container_type;
-    typedef typename container_type::value_type Key;
-
-    // DEBT: I think vector needs this
-    //typedef typename container_type::const_referece const_reference;
-    typedef typename container_type::value_type value_type;
-    typedef const value_type& const_reference;
-
-    //typedef RegistrarKey<endpoint_type> Key;
-    typedef typename value_type::endpoint_type endpoint_type;
-    typedef ObserveEndpointKey<endpoint_type, SequenceTracking::Singleton> key_type;
-
-    // DEBT: Make this private/protected
-    container_type observers;
-
     // Singleton style sequence number tracking
-    // DEBT: Filter this by specialization
     // DEBT: Track this as a uint for only 3 bytes instead of 4
     // DEBT: Get to the bottom of whether 0 and 1 are permissible sequence numbers, or whether
     // they interfere with coap observe signaling behavior
     uint32_t sequence = 1;
+};
+
+template <class TContainer, SequenceTracking sequence_tracking>
+struct Registrar : RegistrarBase,
+    protected RegistrarSequenceBase<sequence_tracking>
+{
+    typedef TContainer container_type;
+
+    friend class RegistrarTraits<Registrar<TContainer, sequence_tracking> >;
+
+    // DEBT: I think vector needs this
+    //typedef typename container_type::const_referece const_reference;
+    typedef typename container_type::value_type value_type;
+    typedef typename container_type::iterator iterator;
+    typedef const value_type& const_reference;
+
+    typedef typename value_type::endpoint_type endpoint_type;
+
+    // underlying key portion only containing observer identification (endpoint, token, etc)
+    typedef ObserveEndpointKey<endpoint_type, SequenceTracking::Singleton> key_type;
+
+    // DEBT: Make this private/protected
+    container_type observers;
 
     void add(key_type observer, handle_type handle)
     {
@@ -135,8 +148,6 @@ struct Registrar<TContainer, SequenceTracking::Singleton> : RegistrarBase
 
 }
 
-
-
 namespace layer1 {
 
 template <class TEndpoint, unsigned N, detail::SequenceTracking sequence_tracking = detail::SequenceTracking::Singleton>
@@ -146,6 +157,58 @@ struct Registrar : detail::Registrar<estd::layer1::vector<RegistrarKey<TEndpoint
 
 
 }
+
+
+template <class TContainer>
+struct RegistrarTraits<detail::Registrar<TContainer, detail::SequenceTracking::Singleton> >
+{
+    typedef detail::Registrar<TContainer, detail::SequenceTracking::Singleton> registrar_type;
+    typedef registrar_type::key_type key_type;
+    // DEBT: A mild confusion when used alongside sequence_type - when retrieving sequence numbers,
+    // we never expect a "null", so we use an intrinsic here
+    typedef uint32_t sq_type;
+
+    typedef estd::integral_constant<detail::SequenceTracking, detail::SequenceTracking::Singleton>
+        sequence_tracking_type;
+
+    static ESTD_CPP_CONSTEXPR_RET detail::SequenceTracking sequence_tracking()
+    {
+        return detail::SequenceTracking::Singleton;
+    }
+
+    static sq_type sequence(const registrar_type& r, const key_type&)
+    {
+        return r.sequence;
+    }
+
+    static sq_type increment_sequence(registrar_type& r, key_type&)
+    {
+        return ++r.sequence;
+    }
+
+    // NOTE: The following API is only available for Singleton style, so use with care
+    static sq_type sequence(const registrar_type& r)
+    {
+        return r.sequence;
+    }
+
+    static sq_type increment_sequence(registrar_type& r)
+    {
+        return ++r.sequence;
+    }
+};
+
+
+template <class TEndpoint, unsigned N, detail::SequenceTracking st>
+struct RegistrarTraits<layer1::Registrar<TEndpoint, N, st> > :
+    RegistrarTraits<
+        detail::Registrar<typename layer1::Registrar<TEndpoint, N, st>::container_type, st>
+    >
+{
+
+};
+
+
 
 }}
 

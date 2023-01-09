@@ -62,6 +62,8 @@ struct App
     {
         static const char* TAG = "build_stat_with_observe";
 
+        typedef internal::observable::RegistrarTraits<registrar_type> traits;
+
         Header::Code added_or_removed = add_or_remove(
             context.registrar,
             context, 
@@ -71,14 +73,13 @@ struct App
 
         build_reply(context, encoder, Header::Code::Valid);
 
-        if(added_or_removed.success())
+        uint32_t sequence = added_or_removed.success() ?
             // Will be '0' or '1', indicating a successful register or deregister
-            build_stat_suffix(encoder, context.observe_option());
-        else
-            // build regular non-observed response
-            // DEBT: Way too invasive scooping out sequence like this
-            build_stat_suffix(encoder, context.registrar.sequence);
+            context.observe_option() :
+            // DEBT: Depends on singleton API.  Not so bad, just be aware
+            traits::sequence(context.registrar);
 
+        build_stat_suffix(encoder, sequence);
         context.reply(encoder);
     }
 

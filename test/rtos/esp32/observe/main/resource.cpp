@@ -89,26 +89,30 @@ static void notifier_timer(TimerHandle_t)
 {
     static const char* TAG = "notifier_timer";
 
+    typedef internal::observable::RegistrarTraits<registrar_type> traits;
+
     registrar_type& r = notifier->registrar();
     int count = r.observer_count();
 
-    // DEBT: Way too invasive
-    uint32_t& sequence = r.sequence;
-
-    ESP_LOGD(TAG, "entry: count=%d, sequence=%" PRIu32, count, sequence);
+    ESP_LOGD(TAG, "entry: count=%d", count);
 
     if(count > 0)
     {
         notifier->notify(paths::v1_stats,
-            [=](const registrar_type::key_type& key, encoder_type& encoder)
+            [&](const registrar_type::key_type& key, encoder_type& encoder)
             {
-                ESP_LOGD(TAG, "notify: %s", ipaddr_ntoa(key.endpoint.address()));
+                uint32_t sequence = traits::sequence(r, key);
+
+                ESP_LOGD(TAG, "notify: %s, sequence=%" PRIu32,
+                    ipaddr_ntoa(key.endpoint.address()), sequence);
                 ESP_LOG_BUFFER_HEXDUMP(TAG, key.token.data(), key.token.size(), ESP_LOG_DEBUG);
 
                 build_stat_suffix(encoder, sequence);
             });
 
-        ++sequence;
+        // NOTE: Mixing and matching sequence tracking approaches just for
+        // demonstration.  It's recommended to use the (r, key) signature
+        traits::increment_sequence(r);
     }
 }
 
