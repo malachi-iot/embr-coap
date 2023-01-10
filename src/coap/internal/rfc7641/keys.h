@@ -3,6 +3,8 @@
 #include <estd/internal/platform.h>
 #include <estd/variant.h>
 
+#include "../../token.h"
+
 #include "fwd.h"
 
 namespace embr { namespace coap {

@@ -1,6 +1,9 @@
 #pragma once
 
 #include "keys.h"
+#include "enum.h"
+
+#include "../../header.h"
 
 namespace embr { namespace coap {
 
