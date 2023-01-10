@@ -14,6 +14,7 @@
 #include <coap/platform/lwip/encoder.h>
 #include <coap/version.h>
 
+#include "../../decoder/observer/core.h"
 #include "../api.h"
 
 #include <json/encoder.hpp>

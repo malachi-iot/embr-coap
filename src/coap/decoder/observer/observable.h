@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../../internal/rfc7641/keys.h"
+#include "../../uint.h"
 
 namespace embr { namespace coap {
 
