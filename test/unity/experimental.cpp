@@ -31,6 +31,8 @@ struct NotificationApp
     }
 };
 
+typedef lwip::Notifier2 notifier2_type;
+
 static void notification_recv(void* arg, struct udp_pcb* _pcb, struct pbuf* p,
     const ip_addr_t* addr, u16_t port)
 {
@@ -39,7 +41,7 @@ static void notification_recv(void* arg, struct udp_pcb* _pcb, struct pbuf* p,
 
     ESP_LOGD(TAG, "entry: %s", name);
 
-    auto decoder = lwip::Notifier::decoder_factory::create(p);
+    auto decoder = notifier2_type::decoder_factory::create(p);
 
     // DEBT: 'false' (non inline) is more appropriate for this test, but looks like
     // it needs work
@@ -67,8 +69,8 @@ static void test_notifier()
 {
     static const char* TAG = "test_notifier";
 
-    lwip::Notifier notifier;
-    typedef lwip::Notifier::encoder_type encoder_type;
+    notifier2_type notifier;
+    typedef notifier2_type::encoder_type encoder_type;
     typedef embr::coap::layer2::Token token_type;
     embr::lwip::udp::Pcb pcb_client2;
 

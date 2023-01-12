@@ -2,6 +2,9 @@
 
 #include <stdint.h>
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-variable"
+
 static uint8_t buffer_16bit_delta[] = {
         0x40, 0x01, 0x01, 0x23, // 4: mid = 123, tkl = 0, GET
         0xE1, // 5: option with 16-bit delta 1 length 1
@@ -105,3 +108,6 @@ static const char* json_user = "{'user':{'age':30,'name':'Fred'}}";
 static const char* json_prefs = "{'prefs':[1,2,3,'hi2u']}";
 
 }
+
+#pragma GCC diagnostic pop
+

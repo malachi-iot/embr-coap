@@ -10,7 +10,7 @@
 #include <estd/chrono.h>
 #include <estd/semaphore.h>
 
-#include <exp/retry/factory.h>
+#include <coap/internal/factory.h>
 #include <exp/retry/manager.hpp>
 #include <exp/retry.h>
 
@@ -82,7 +82,8 @@ static void setup_outgoing_packet(embr::coap::StreambufEncoder<TStreambuf>& enco
 #endif
 
 
-namespace embr { namespace coap { namespace experimental {
+/*
+namespace embr { namespace coap { namespace internal {
 
 template <>
 struct StreambufProvider<embr::lwip::Pbuf>
@@ -94,6 +95,7 @@ struct StreambufProvider<embr::lwip::Pbuf>
 };
 
 }}}
+*/
 
 #include <embr/platform/lwip/transport.hpp>
 
@@ -118,7 +120,7 @@ struct transport_type : lwip::experimental::TransportUdp<>
 typedef typename transport_type::endpoint_type endpoint_type;
 
 typedef coap::experimental::retry::Manager<clock_type, transport_type> manager_type;
-typedef coap::experimental::EncoderFactory<embr::lwip::Pbuf> encoder_factory;
+typedef coap::internal::EncoderFactory<embr::lwip::Pbuf> encoder_factory;
 
 // DEBT: Move this elsewhere
 ip_addr_t loopback_addr;

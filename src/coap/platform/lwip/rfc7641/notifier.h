@@ -19,7 +19,10 @@ public:
     typedef RegistrarKeyBase::handle_type handle_type;
     typedef coap::internal::EncoderFactory<
         struct pbuf*, embr::coap::internal::LwipPbufFactory<64> > encoder_factory;
-    //typedef coap::experimental::DecoderFactory<struct pbuf*> decoder_factory;
+    
+    // NOTE: Used in experimental.cpp unity code
+    typedef coap::internal::DecoderFactory<struct pbuf*> decoder_factory;
+    
     typedef typename encoder_factory::encoder_type encoder_type;
 
     template <typename TContainer, observable::detail::SequenceTracking st, typename F>

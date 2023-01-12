@@ -166,7 +166,7 @@ template <class TContainer>
 struct RegistrarTraits<detail::Registrar<TContainer, detail::SequenceTracking::Singleton> >
 {
     typedef detail::Registrar<TContainer, detail::SequenceTracking::Singleton> registrar_type;
-    typedef registrar_type::key_type key_type;
+    typedef typename registrar_type::key_type key_type;
     // DEBT: A mild confusion when used alongside sequence_type - when retrieving sequence numbers,
     // we never expect a "null", so we use an intrinsic here
     typedef uint32_t sq_type;
