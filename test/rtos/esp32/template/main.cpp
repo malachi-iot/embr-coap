@@ -12,6 +12,11 @@ void udp_coap_recv(void *arg,
     struct udp_pcb *pcb, struct pbuf *p,
     const ip_addr_t *addr, u16_t port);
 
+// Very early app init, even before nvs initialization
+__attribute__((weak))
+void app_init() {}
+
+// Obsolete, use above or below version
 __attribute__((weak))
 void app_init(void** pcb_recv_arg) {}
 
@@ -48,6 +53,8 @@ void udp_coap_init(void* pcb_recv_arg)
 
 extern "C" void app_main()
 {
+    app_init();
+
     init_flash();
     
 #ifdef FEATURE_IDF_DEFAULT_EVENT_LOOP
