@@ -3,6 +3,7 @@
 //#include <estd/istream.h>
 
 #include <embr/observer.h>
+#include <embr/version.h>
 
 #include <coap/context.h>
 // remember to do this and not regular subject.h, otherwise not all the deductions will work
@@ -141,6 +142,7 @@ struct builder<TContext, estd::monostate,
 
         ("s", "1.0.0")                // schema version
         ("app", app_desc->version)
+        ("embr", EMBR_VERSION_STR)
         ("embr::coap", EMBR_COAP_VER_STR)
         ("idf", app_desc->idf_ver)
 

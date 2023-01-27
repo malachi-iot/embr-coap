@@ -61,4 +61,6 @@ void udp_coap_recv(void *arg,
 
         decode_and_notify(p, subject, context);
     }
+    else
+        ESP_LOGW(TAG, "No pbuf");
 }
