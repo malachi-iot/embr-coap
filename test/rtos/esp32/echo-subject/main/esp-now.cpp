@@ -88,7 +88,7 @@ static void example_espnow_data_prepare(example_espnow_send_param_t *send_param)
  * necessary data to a queue and handle it from a lower priority task. */
 static void send_cb(const uint8_t *mac_addr, esp_now_send_status_t status)
 {
-    ESP_LOGI(TAG, "send_cb: %u", status);
+    ESP_LOGD(TAG, "send_cb: %u", status);
 }
 
 static void recv_cb(
@@ -135,6 +135,9 @@ void init_esp_now()
     // This particular tidbit is from master branch, seems to crash things
     // with esp-idf v5.0
     //ESP_ERROR_CHECK(esp_wifi_set_channel(CONFIG_ESPNOW_CHANNEL, WIFI_SECOND_CHAN_NONE));
+    uint8_t primary_channel;
+    wifi_second_chan_t second;
+    ESP_ERROR_CHECK(esp_wifi_get_channel(&primary_channel, &second));
     
     // For v5.0 we need to do it while NOT scanning
     //ESP_ERROR_CHECK(esp_event_handler_register(WIFI_EVENT, ESP_EVENT_ANY_ID, &event_handler, NULL));
@@ -146,7 +149,8 @@ void init_esp_now()
 
     esp_now_peer_info_t broadcast_peer = {};
 
-    broadcast_peer.channel = CONFIG_ESPNOW_CHANNEL;
+    //broadcast_peer.channel = CONFIG_ESPNOW_CHANNEL;
+    broadcast_peer.channel = primary_channel;
     broadcast_peer.ifidx = (wifi_interface_t)ESPNOW_WIFI_IF;
     broadcast_peer.encrypt = false;
 
@@ -188,7 +192,7 @@ void init_esp_now()
     memcpy(send_param->dest_mac, s_broadcast_mac, ESP_NOW_ETH_ALEN);
     example_espnow_data_prepare(send_param);
 
-    //outbound_ping.start(200ms);
+    outbound_ping.start(200ms);
 
     ESP_LOGI(TAG, "init_esp_now: exit");
 }
@@ -207,5 +211,5 @@ static void outbound_ping_fn(TimerHandle_t t)
         //nullptr,
         &s_broadcast_mac[0],
         (const uint8_t*)s, sizeof(s) - 1));
-    ESP_LOGD(TAG, "outbound_ping_fn: send queued");
+    ESP_LOGV(TAG, "outbound_ping_fn: send queued");
 }
