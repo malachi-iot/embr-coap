@@ -97,8 +97,10 @@ static void recv_cb(
     // v5.0 flavor:
     const uint8_t *mac_addr, const uint8_t *data, int data_len)
 {
-    ESP_LOGI(TAG, "recv_cb");
-    ESP_LOG_BUFFER_HEX(TAG, data, data_len);
+    ESP_LOGI(TAG, "recv_cb: %02x:%02x:%02x:%02x:%02x:%02x",
+        mac_addr[0], mac_addr[1], mac_addr[2], mac_addr[3],
+        mac_addr[4], mac_addr[5]);
+    ESP_LOG_BUFFER_HEXDUMP(TAG, data, data_len, ESP_LOG_DEBUG);
 }
 
 
@@ -130,15 +132,17 @@ void init_esp_now()
 {
     ESP_LOGI(TAG, "init_esp_now: entry");
 
-    //return;
-
     // This particular tidbit is from master branch, seems to crash things
     // with esp-idf v5.0
     //ESP_ERROR_CHECK(esp_wifi_set_channel(CONFIG_ESPNOW_CHANNEL, WIFI_SECOND_CHAN_NONE));
     uint8_t primary_channel;
     wifi_second_chan_t second;
     ESP_ERROR_CHECK(esp_wifi_get_channel(&primary_channel, &second));
-    
+
+#if CONFIG_ESPNOW_ENABLE_LONG_RANGE
+    ESP_ERROR_CHECK(esp_wifi_set_protocol((wifi_interface_t)ESPNOW_WIFI_IF, WIFI_PROTOCOL_11B|WIFI_PROTOCOL_11G|WIFI_PROTOCOL_11N|WIFI_PROTOCOL_LR));
+#endif
+
     // For v5.0 we need to do it while NOT scanning
     //ESP_ERROR_CHECK(esp_event_handler_register(WIFI_EVENT, ESP_EVENT_ANY_ID, &event_handler, NULL));
 
