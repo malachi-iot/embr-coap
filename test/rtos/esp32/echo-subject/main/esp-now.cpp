@@ -140,6 +140,7 @@ void init_esp_now()
     ESP_ERROR_CHECK(esp_wifi_get_channel(&primary_channel, &second));
 
 #if CONFIG_ESPNOW_ENABLE_LONG_RANGE
+    ESP_LOGW(TAG, "init_esp_now: long range mode");
     ESP_ERROR_CHECK(esp_wifi_set_protocol((wifi_interface_t)ESPNOW_WIFI_IF, WIFI_PROTOCOL_11B|WIFI_PROTOCOL_11G|WIFI_PROTOCOL_11N|WIFI_PROTOCOL_LR));
 #endif
 
