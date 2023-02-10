@@ -8,14 +8,26 @@
 #include <esp_random.h>
 #include <esp_wifi.h>
 
+#include <estd/port/freertos/timer.h>
+//#include <estd/platform/freertos/timer.h>
+
+using namespace estd::chrono_literals;
+
+static void outbound_ping_fn(TimerHandle_t t);
+
+static estd::freertos::timer<true> outbound_ping
+    ("outbound esp-now ping", 5s, true, nullptr,
+    outbound_ping_fn);
+
 static const char* TAG = "echo: esp-now";
 
 // Guidance from
 // https://github.com/espressif/esp-idf/tree/v5.0/examples/wifi/espnow
 
 
+
 #define ESPNOW_WIFI_IF   ESP_IF_WIFI_STA
-#define IS_BROADCAST_ADDR(addr) (memcmp(addr, s_example_broadcast_mac, ESP_NOW_ETH_ALEN) == 0)
+#define IS_BROADCAST_ADDR(addr) (memcmp(addr, s_broadcast_mac, ESP_NOW_ETH_ALEN) == 0)
 
 enum
 {
@@ -50,7 +62,7 @@ typedef struct
 } example_espnow_send_param_t;
 
 
-static uint8_t s_example_broadcast_mac[ESP_NOW_ETH_ALEN] = { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF };
+static uint8_t s_broadcast_mac[ESP_NOW_ETH_ALEN] = { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF };
 static uint16_t s_example_espnow_seq[EXAMPLE_ESPNOW_DATA_MAX] = { 0, 0 };
 
 
@@ -71,6 +83,49 @@ static void example_espnow_data_prepare(example_espnow_send_param_t *send_param)
     buf->crc = esp_crc16_le(UINT16_MAX, (uint8_t const *)buf, send_param->len);
 }
 
+/* ESPNOW sending or receiving callback function is called in WiFi task.
+ * Users should not do lengthy operations from this task. Instead, post
+ * necessary data to a queue and handle it from a lower priority task. */
+static void send_cb(const uint8_t *mac_addr, esp_now_send_status_t status)
+{
+    ESP_LOGI(TAG, "send_cb: %u", status);
+}
+
+static void recv_cb(
+    // Differs from 'master' example, this line doesn't compile
+    //const esp_now_peer_info_t *recv_info, const uint8_t *data, int len)
+    // v5.0 flavor:
+    const uint8_t *mac_addr, const uint8_t *data, int data_len)
+{
+    ESP_LOGI(TAG, "recv_cb");
+    ESP_LOG_BUFFER_HEX(TAG, data, data_len);
+}
+
+
+/* Must run before wifi start is called
+// TODO: Go fixup esp_helper's event handler to be static
+static void event_handler(void* arg, esp_event_base_t event_base,
+    int32_t event_id, void* event_data)
+{
+    ESP_LOGD(TAG, "event_handler: reached");
+    
+    if(event_base == WIFI_EVENT)
+    {
+        switch(event_id)
+        {
+            case WIFI_EVENT_STA_CONNECTED:
+            case WIFI_EVENT_SCAN_DONE:
+                ESP_LOGI(TAG, "Scan done, now we can align peer channel");
+                ESP_ERROR_CHECK(esp_wifi_set_channel(
+                    CONFIG_ESPNOW_CHANNEL, WIFI_SECOND_CHAN_NONE));
+
+                break;
+
+            default: break;
+        }
+    }
+} */
+
 void init_esp_now()
 {
     ESP_LOGI(TAG, "init_esp_now: entry");
@@ -80,9 +135,13 @@ void init_esp_now()
     // This particular tidbit is from master branch, seems to crash things
     // with esp-idf v5.0
     //ESP_ERROR_CHECK(esp_wifi_set_channel(CONFIG_ESPNOW_CHANNEL, WIFI_SECOND_CHAN_NONE));
+    
+    // For v5.0 we need to do it while NOT scanning
+    //ESP_ERROR_CHECK(esp_event_handler_register(WIFI_EVENT, ESP_EVENT_ANY_ID, &event_handler, NULL));
 
     ESP_ERROR_CHECK(esp_now_init());
-
+    ESP_ERROR_CHECK(esp_now_register_send_cb(send_cb));
+    ESP_ERROR_CHECK(esp_now_register_recv_cb(recv_cb));
     ESP_ERROR_CHECK(esp_now_set_pmk((uint8_t *)CONFIG_ESPNOW_PMK));
 
     esp_now_peer_info_t broadcast_peer = {};
@@ -91,7 +150,7 @@ void init_esp_now()
     broadcast_peer.ifidx = (wifi_interface_t)ESPNOW_WIFI_IF;
     broadcast_peer.encrypt = false;
 
-    std::copy_n(s_example_broadcast_mac, 6, broadcast_peer.peer_addr);
+    std::copy_n(s_broadcast_mac, 6, broadcast_peer.peer_addr);
 
     ESP_ERROR_CHECK(esp_now_add_peer(&broadcast_peer));
 
@@ -126,8 +185,27 @@ void init_esp_now()
         return;
     }
     
-    memcpy(send_param->dest_mac, s_example_broadcast_mac, ESP_NOW_ETH_ALEN);
+    memcpy(send_param->dest_mac, s_broadcast_mac, ESP_NOW_ETH_ALEN);
     example_espnow_data_prepare(send_param);
 
+    //outbound_ping.start(200ms);
+
     ESP_LOGI(TAG, "init_esp_now: exit");
+}
+
+
+static void outbound_ping_fn(TimerHandle_t t)
+{
+    static const char s[] = "Hello World!";
+
+    // No matter what we do, we get
+    // "Peer channel is not equal to the home channel, send fail!"
+    // even after trying 3 or 4 different placements of
+    // ESP_ERROR_CHECK(esp_wifi_set_channel(CONFIG_ESPNOW_CHANNEL, WIFI_SECOND_CHAN_NONE));
+    // (most of which just crash)
+    ESP_ERROR_CHECK_WITHOUT_ABORT(esp_now_send(
+        //nullptr,
+        &s_broadcast_mac[0],
+        (const uint8_t*)s, sizeof(s) - 1));
+    ESP_LOGD(TAG, "outbound_ping_fn: send queued");
 }

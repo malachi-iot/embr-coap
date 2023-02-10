@@ -34,8 +34,11 @@ void udp_coap_init(void)
 }
 
 
-__attribute__((weak))
-void init_esp_now() {}
+// FIX: still doesn't work right, just ends up going to empty call
+//__attribute__((weak))
+//void init_esp_now() {}
+
+void init_esp_now();
 
 
 extern "C" void app_main()
