@@ -34,6 +34,8 @@ void udp_coap_init(void)
 }
 
 
+//void __attribute__((weak)) init_esp_now();
+
 
 extern "C" void app_main()
 {
@@ -44,6 +46,8 @@ extern "C" void app_main()
 #else
     wifi_init_sta(event_handler);
 #endif
+
+    //init_esp_now();
 
     udp_coap_init();
 }
