@@ -75,10 +75,11 @@ void init_esp_now()
 {
     ESP_LOGI(TAG, "init_esp_now: entry");
 
-    return;
+    //return;
 
-    // This particular tidbit is from master branch
-    ESP_ERROR_CHECK(esp_wifi_set_channel(CONFIG_ESPNOW_CHANNEL, WIFI_SECOND_CHAN_NONE));
+    // This particular tidbit is from master branch, seems to crash things
+    // with esp-idf v5.0
+    //ESP_ERROR_CHECK(esp_wifi_set_channel(CONFIG_ESPNOW_CHANNEL, WIFI_SECOND_CHAN_NONE));
 
     ESP_ERROR_CHECK(esp_now_init());
 
