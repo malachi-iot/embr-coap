@@ -69,7 +69,7 @@ struct App
             context, 
             context.observe_option(), paths::v1_stats);
 
-        ESP_LOGD(TAG, "added_or_removed=%u", get_http_style(added_or_removed));
+        ESP_LOGI(TAG, "added_or_removed=%u", get_http_style(added_or_removed));
 
         build_reply(context, encoder, Header::Code::Valid);
 

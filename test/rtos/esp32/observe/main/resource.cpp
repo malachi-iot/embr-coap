@@ -84,24 +84,34 @@ static void notifier_timer(TimerHandle_t)
 
     if(count > 0)
     {
-        notifier->notify(paths::v1_stats,
-            [&](const registrar_type::key_type& key, encoder_type& encoder)
-            {
-                uint32_t sequence = traits::sequence(r, key);
+        static int toggle = 0;
 
-                ESP_LOGD(TAG, "notify: %s, sequence=%" PRIu32,
-                    ipaddr_ntoa(key.endpoint.address()), sequence);
-                ESP_LOG_BUFFER_HEXDUMP(TAG, key.token.data(), key.token.size(), ESP_LOG_DEBUG);
+        if(++toggle % 2 == 0)
+        {
+            // Notify via layer1 style
+            notifier->notify(paths::v1_stats,
+                [&](const registrar_type::key_type& key, encoder_type& encoder)
+                {
+                    uint32_t sequence = traits::sequence(r, key);
 
-                build_stat_suffix(encoder, sequence);
-            });
+                    ESP_LOGI(TAG, "notify: %s, sequence=%" PRIu32,
+                        ipaddr_ntoa(key.endpoint.address()), sequence);
+                    ESP_LOG_BUFFER_HEXDUMP(TAG, key.token.data(), key.token.size(), ESP_LOG_DEBUG);
 
+                    build_stat_suffix(encoder, sequence);
+                });
+        }
+        else
+            // Notify via layer2/layer3 style
+            rn.notify(paths::v1_stats,
+                [&](const registrar_type::key_type& key, encoder_type& encoder)
+                {
+                    uint32_t sequence = traits::sequence(r, key);
 
-        rn.notify(paths::v1_stats,
-            [&](const registrar_type::key_type& key, encoder_type& encoder)
-            {
-                ESP_LOGD(TAG, "rn.notify: %s", ipaddr_ntoa(key.endpoint.address()));
-            });
+                    ESP_LOGI(TAG, "rn.notify: %s", ipaddr_ntoa(key.endpoint.address()));
+
+                    build_stat_suffix(encoder, sequence);
+                });
 
         // NOTE: Mixing and matching sequence tracking approaches just for
         // demonstration.  It's recommended to use the (r, key) signature

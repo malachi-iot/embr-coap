@@ -16,7 +16,7 @@ These tests are all for variants of Espressif ESP32
 | 30DEC22 | echo-subject | ESP-WROVER-KIT v4.1  | ESP32-WROVER-E | v4.4.3   | Pass     | 
 | 26JAN23 | echo-subject | Wemos D1             | ESP32-WROOM-32 | v5.0.0   | Pass     | 
 | 30DEC22 | observe      | ESP-WROVER-KIT v4.1  | ESP32-WROVER-E | v4.4.3   | Pass     | 
-| 06JAN23 | observe      | ESP-WROVER-KIT v4.1  | ESP32-WROVER-E | v5.0.0   | Pass     | 
+| 13MAR23 | observe      | ESP-WROVER-KIT v4.1  | ESP32-WROVER-E | v5.0.1   | Pass     | 
 | 09DEC22 | retry        | ESP-WROVER-KIT v4.1  | ESP32-WROVER-E | v4.4.3   | Compiles | Doesn't do anything of interest yet
 | 11JAN23 | unity        | ESP-WROVER-KIT v4.1  | ESP32-WROVER-E | v4.4.3   | Pass     |
 | 02JAN23 | unity        | ESP32-C3-DevKitM-1   | ESP32C3        | v4.4.3   | Pass     |
