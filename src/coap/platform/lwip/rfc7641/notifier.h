@@ -58,8 +58,8 @@ public:
     }
 
     Notifier(embr::lwip::udp::Pcb pcb, registrar_type& registrar) :
-        pcb(pcb),
-        base_type(registrar)
+        base_type(registrar),
+        pcb(pcb)
     {
     }
 

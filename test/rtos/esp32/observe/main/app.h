@@ -25,6 +25,11 @@ typedef embr::coap::internal::observable::Notifier<
     registrar_type>
     Notifier;
 
+typedef embr::coap::internal::observable::Notifier<
+    embr::lwip::udp::Pcb,
+    registrar_type&>
+    RefNotifier;
+
 typedef Notifier::encoder_type encoder_type;
 
 // NOTE: 'suffix' only builds option and payload portion

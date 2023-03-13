@@ -76,6 +76,10 @@ static void notifier_timer(TimerHandle_t)
     registrar_type& r = notifier->registrar();
     int count = r.observer_count();
 
+    // NOTE: Only really checking compile time behavior of RefNotifier.
+    // Leaning non non-ref version for runtime test
+    RefNotifier rn(notifier->pcb, r);
+
     ESP_LOGD(TAG, "entry: count=%d", count);
 
     if(count > 0)
@@ -90,6 +94,13 @@ static void notifier_timer(TimerHandle_t)
                 ESP_LOG_BUFFER_HEXDUMP(TAG, key.token.data(), key.token.size(), ESP_LOG_DEBUG);
 
                 build_stat_suffix(encoder, sequence);
+            });
+
+
+        rn.notify(paths::v1_stats,
+            [&](const registrar_type::key_type& key, encoder_type& encoder)
+            {
+                ESP_LOGD(TAG, "rn.notify: %s", ipaddr_ntoa(key.endpoint.address()));
             });
 
         // NOTE: Mixing and matching sequence tracking approaches just for
@@ -124,6 +135,7 @@ void app_init(void** pcb_recv_arg, embr::lwip::udp::Pcb pcb)
     // is only ever run once.  Calls constructor correctly during app_init phase
     // DEBT: I wonder what would happen if app_init were run twice?
     static Notifier nh(pcb);
+    static RefNotifier rn(pcb, nh.registrar());
 
     *pcb_recv_arg = notifier = &nh;
 }

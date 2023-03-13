@@ -24,6 +24,10 @@ protected:
     TRegistrar registrar_;
 
 public:
+    ESTD_CPP_CONSTEXPR_RET NotifyHelperBase(registrar_type& registrar) :
+        registrar_(registrar)
+    {}
+
     ESTD_CPP_CONSTEXPR_RET NotifyHelperBase(const registrar_type& registrar) :
         registrar_(registrar)
     {}
