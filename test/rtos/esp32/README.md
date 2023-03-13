@@ -21,5 +21,6 @@ These tests are all for variants of Espressif ESP32
 | 11JAN23 | unity        | ESP-WROVER-KIT v4.1  | ESP32-WROVER-E | v4.4.3   | Pass     |
 | 02JAN23 | unity        | ESP32-C3-DevKitM-1   | ESP32C3        | v4.4.3   | Pass     |
 | 02JAN23 | unity        | ESP32-C3-DevKitM-1   | ESP32C3        | v5.0.0   | Fail     | Compiler requires LWIP_NETCONN_SEM_PER_THREAD configuration
+| 13MAR23 | unity        | Wemos D1             | ESP32-WROOM-32 | v5.0.1   | Pass     | 
 
 NOTE: `boilerplate` project is `boilerplate-subject`

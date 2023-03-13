@@ -77,8 +77,10 @@ static void setup_outgoing_packet(embr::coap::StreambufEncoder<TStreambuf>& enco
 
 // If LwIP loopback capability is present, then consider enabling our loopback tests
 
+#if ESP_IDF_VERSION < ESP_IDF_VERSION_VAL(5, 0, 0)
 #if LWIP_TCPIP_CORE_LOCKING != 1
-#error Need LWIP_TCPIP_CORE_LOCKING feature
+#warn May need LWIP_TCPIP_CORE_LOCKING feature - still experimental
+#endif
 #endif
 
 
