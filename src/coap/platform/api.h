@@ -25,13 +25,12 @@ enum _paths
 
 }}
 
-// DEBT: Should fully qualify these namespaces
 #define EMBR_COAP_V1_SYS_PATHS(id_parent) \
-    { "sys",        sys_paths::v1::root,            id_parent },\
-    { "firmware",   sys_paths::v1::root_firmware,   sys_paths::v1::root },\
-    { "version",    sys_paths::v1::root_firmware_version,   sys_paths::v1::root_firmware },  \
-    { "mem",        sys_paths::v1::root_memory,     sys_paths::v1::root },\
-    { "reboot",     sys_paths::v1::root_reboot,     sys_paths::v1::root }
+    { "sys",        embr::coap::sys_paths::v1::root,            id_parent },\
+    { "firmware",   embr::coap::sys_paths::v1::root_firmware,   embr::coap::sys_paths::v1::root },\
+    { "version",    embr::coap::sys_paths::v1::root_firmware_version,   embr::coap::sys_paths::v1::root_firmware },  \
+    { "mem",        embr::coap::sys_paths::v1::root_memory,     embr::coap::sys_paths::v1::root },\
+    { "reboot",     embr::coap::sys_paths::v1::root_reboot,     embr::coap::sys_paths::v1::root }
 
 // Not ready yet
 #define EMBR_COAP_CoRE_PATHS()  \
