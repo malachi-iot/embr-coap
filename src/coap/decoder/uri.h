@@ -51,7 +51,7 @@ struct UriPathMatcher
             // evaluated node has to match parent_id
             // NOTE: very slight abuse, .value() used even when 'no value'
             // of -1
-            if(_current->third == parent_id.value())
+            if(_current->third == *parent_id)
             {
                 // wildcard, for use with parameterized URIs
                 // DEBT: Further parameters on URI options are undefined i.e.
@@ -84,7 +84,7 @@ struct UriPathMatcher
         return NULLPTR;
     }
 
-    const optional_int_type& last_found() const
+    ESTD_CPP_CONSTEXPR_RET const optional_int_type& last_found() const
     {
         return parent_id;
     }

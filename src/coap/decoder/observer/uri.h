@@ -37,7 +37,7 @@ public:
 
         optional_int_type _found_node = _uri_matcher.last_found();
 
-        return _found_node.value();
+        return *_found_node;
     }
 };
 
