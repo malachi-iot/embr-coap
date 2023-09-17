@@ -6,6 +6,8 @@
 #include <coap/decoder/subject.hpp>
 #include <coap/decoder/streambuf.hpp>
 
+#include <embr/platform/esp-idf/board.h>
+
 using namespace embr::coap;
 
 #include "context.h"

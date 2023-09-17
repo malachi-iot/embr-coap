@@ -10,7 +10,7 @@ These tests are all for variants of Espressif ESP32
 | ------- | ------------ | -------------------- | -------------- | -------  | -------- | -----
 | 18DEC22 | boilerplate  | ESP-WROVER-KIT v4.1  | ESP32-WROVER-E | v4.4.3   | Pass     | 
 | 26JAN23 | boilerplate  | Wemos D1             | ESP32-WROOM-32 | v5.0.0   | Pass     | 
-| 26JAN23 | boilerplate  |                      | ESP32S3        | v5.1.1   | Fail     | Compilation fails: no matching call to `write_int_buffer`
+| 17SEP23 | boilerplate  | RejsaCAN v3.1        | ESP32S3        | v5.1.1   | Pass     |
 | 22APR22 | echo         |                      | ESP32S         | v4.4.0   | Pass     | 
 | 09DEC22 | echo         | ESP-WROVER-KIT v4.1  | ESP32-WROVER-E | v4.4.3   | Pass     | 
 | 02JAN23 | echo         | ESP32-C3-DevKitM-1   | ESP32C3        | v5.0.0   | Pass     |
