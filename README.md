@@ -23,8 +23,3 @@ A state machine which shepherds 3 sub-state machines: HeaderDecoder, OptionDecod
 
 Being memory efficient, only one mode is active at a time and only the last-decoded item is available at any given time.  What you do with that is up to you.  
 
-#### constituent parts
-
-HeaderDecoder and TokenDecoder are rather basic, while OptionDecoder takes on a little more responsibility.
-
-https://github.com/moducom/mc-coap/wiki/Option-Decoder
