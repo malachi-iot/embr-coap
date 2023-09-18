@@ -15,8 +15,6 @@ using namespace embr::coap;
 #ifdef ESP_PLATFORM
 // This gets us 'build_version_response' which is indeed esp-idf specific
 #include <coap/platform/esp-idf/observer.h>
-#define FEATURE_APP_GPIO 1
-#else
 #endif
 
 #include <coap/platform/lwip/encoder.h>
@@ -30,6 +28,7 @@ enum
 {
     id_path_v1 = 0,
     id_path_v1_api,
+    id_path_v1_api_analog,
     id_path_v1_api_gpio,
     id_path_v1_api_time,
     id_path_v1_api_gpio_value,
@@ -48,6 +47,7 @@ const UriPathMap uri_map[] =
 {
     { "v1",         id_path_v1,                 MCCOAP_URIPATH_NONE },
     { "api",        id_path_v1_api,             id_path_v1 },
+    { "analog",     id_path_v1_api_analog,      id_path_v1_api },
     { "gpio",       id_path_v1_api_gpio,        id_path_v1_api },
     { "*",          id_path_v1_api_gpio_value,  id_path_v1_api_gpio },
     { "time",       id_path_v1_api_time,        id_path_v1_api },
@@ -91,6 +91,10 @@ struct Observer
         {
             case id_path_v1_api_gpio:
                 context.response_code = Header::Code::NotImplemented;
+                break;
+
+            case id_path_v1_api_analog:
+                context.completed_analog(encoder);
                 break;
                 
             case id_path_v1_api_gpio_value:
@@ -146,8 +150,12 @@ void udp_coap_recv(void *arg,
     decode_and_notify(p, app_subject, context);
 }
 
+
+void initialize_adc();
+
 void app_init(void** arg)
 {
+    initialize_adc();
     initialize_sntp();
     initialize_mdns();
 }

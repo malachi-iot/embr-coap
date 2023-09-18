@@ -10,6 +10,8 @@
 // the URI code base is cleaned up
 #include <coap/decoder/observer/util.h>
 
+#include "features.h"
+
 struct AppContext : 
     embr::coap::LwipIncomingContext,
     embr::coap::UriParserContext
@@ -31,7 +33,9 @@ struct AppContext :
 
     void select_gpio(const embr::coap::event::option& e);
     void put_gpio(istreambuf_type& payload);
-    void completed_gpio(encoder_type& encoder);
+    void completed_gpio(encoder_type&);
+
+    void completed_analog(encoder_type&);
 };
 
 
