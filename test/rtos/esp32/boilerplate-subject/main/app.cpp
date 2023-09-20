@@ -158,7 +158,32 @@ void initialize_adc();
 void app_init(void** arg)
 {
 #ifdef CONFIG_EMBR_COAP_RTC_RESTART_COUNTER
-    ++esp_idf::reboot_counter;
+    const char* TAG = "app_init";
+
+    const esp_reset_reason_t reset_reason = esp_reset_reason();
+
+    ESP_LOGD(TAG, "reset_reason=%d", reset_reason);
+
+    // As per
+    // https://stackoverflow.com/questions/69880289/c-int-undefined-behaviour-when-stored-as-rtc-noinit-attr-esp32
+    switch(reset_reason)
+    {
+        case ESP_RST_UNKNOWN:       // ESP32C3 starts after flash with this reason
+        case ESP_RST_EXT:
+        case ESP_RST_POWERON:
+            esp_idf::reboot_counter = 0;
+            esp_idf::panic_reboot_counter = 0;
+            ESP_LOGI(TAG, "Poweron");
+            break;
+
+        case ESP_RST_PANIC:
+            ++esp_idf::panic_reboot_counter;
+            [[fallthrough]];
+
+        default:
+            ++esp_idf::reboot_counter;
+            break;
+    }
 #endif
 
     initialize_adc();
