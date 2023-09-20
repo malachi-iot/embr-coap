@@ -1,3 +1,5 @@
+#include <estd/port/freertos/timer.h>
+
 #include <estd/chrono.h>
 #include <estd/thread.h>
 //#include <estd/istream.h>
@@ -24,6 +26,19 @@
 #include "esp_wifi.h"
 
 namespace embr { namespace coap {
+
+namespace internal {
+
+inline void pended_restart(TimerHandle_t)
+{
+    static constexpr const char* TAG = "pended_restart";
+
+    ESP_LOGI(TAG, "Restarting by request");
+
+    esp_restart();
+}
+
+}
 
 namespace sys_paths {
 
@@ -194,21 +209,44 @@ struct builder<TContext, estd::monostate,
             //case v1::root_uptime:
                 //break;
 
-            /*
-            * almost works, but needs delay/timer to have time to emit ACK
-            * and brute forcing a delay here presumably blocks LwIP from doing so
             case v1::root_reboot:
-                verified = verify(context, Header::Code::Put);
+            {
+                //verified = verify(context, Header::Code::Put);
 
-                auto_reply(context, encoder);
+                //auto_reply(context, encoder);
 
-                if(!verified) return false;
+                //if(!verified) return false;
+
+                const Header::Code code = context.header().code();
+
+                if(!verify(context, Header::Code::Put)) return false;
 
                 //estd::this_thread::sleep_for(estd::chrono::seconds(2));
-                esp_restart();
+                //esp_restart();
+
+                {
+                    TimerHandle_t h = xTimerCreate("restart delay",
+                        pdMS_TO_TICKS(2000),
+                        false,      // auto reload
+                        nullptr,    // id
+                        internal::pended_restart);
+
+                    if(h != nullptr)
+                    {
+                        BaseType_t r = xTimerStart(h, pdMS_TO_TICKS(2000));
+
+                        if(r == pdPASS)
+                        {
+                            build_reply(Header::Code::Changed);
+                            return true;
+                        }
+                    }
+
+                    build_reply(Header::Code::InternalServerError);
+                }
 
                 break;
-            */
+            }
 
             case v1::root_firmware:
                 if(!verify(context, Header::Code::Get)) return false;
