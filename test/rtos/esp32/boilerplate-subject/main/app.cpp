@@ -2,11 +2,13 @@
 
 #include <embr/observer.h>
 
+#include <embr/platform/esp-idf/board.h>
+
 // remember to do this and not regular subject.h, otherwise not all the deductions will work
 #include <coap/decoder/subject.hpp>
 #include <coap/decoder/streambuf.hpp>
 
-#include <embr/platform/esp-idf/board.h>
+#include <coap/platform/esp-idf/rtc.h>
 
 using namespace embr::coap;
 
@@ -155,6 +157,10 @@ void initialize_adc();
 
 void app_init(void** arg)
 {
+#ifdef CONFIG_EMBR_COAP_RTC_RESTART_COUNTER
+    ++esp_idf::reboot_counter;
+#endif
+
     initialize_adc();
     initialize_sntp();
     initialize_mdns();

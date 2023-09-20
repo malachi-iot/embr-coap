@@ -13,7 +13,7 @@ list(TRANSFORM SOURCE_FILES PREPEND ${SRC_DIR}/)
 
 set(COMPONENT_SRCS 
     ${SOURCE_FILES}
-    ${ROOT_DIR}/src/coap/platform/esp-idf/observer.cpp
+    ${SRC_DIR}/coap/platform/esp-idf/observer.cpp
     )
 
 set(COMPONENT_ADD_INCLUDEDIRS 

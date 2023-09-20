@@ -1,3 +1,5 @@
+#include <esp_wifi.h>
+
 #include <estd/port/freertos/timer.h>
 
 #include <estd/chrono.h>
@@ -19,11 +21,11 @@
 
 #include "../../decoder/observer/core.h"
 #include "../api.h"
+#include "rtc.h"
 
 #include <json/encoder.hpp>
 
-
-#include "esp_wifi.h"
+// DEBT: Really this all belongs under esp_idf namespace
 
 namespace embr { namespace coap {
 
@@ -219,11 +221,22 @@ struct builder<TContext, estd::monostate,
 
                 const Header::Code code = context.header().code();
 
-                if(!verify(context, Header::Code::Put)) return false;
+                if(code == Header::Code::Get)
+                {
+#ifdef CONFIG_EMBR_COAP_RTC_RESTART_COUNTER
+                    build_reply(Header::Code::Content);
 
-                //estd::this_thread::sleep_for(estd::chrono::seconds(2));
-                //esp_restart();
+                    encoder.option(Option::ContentFormat, Option::TextPlain);
+                    encoder.payload();
 
+                    auto out = encoder.ostream();
+
+                    out << embr::coap::esp_idf::reboot_counter;
+#else
+                    build_reply(Header::Code::ServiceUnavailable);
+#endif
+                }
+                else if(verify(context, Header::Code::Put))
                 {
                     TimerHandle_t h = xTimerCreate("restart delay",
                         pdMS_TO_TICKS(2000),

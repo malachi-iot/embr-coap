@@ -1,0 +1,9 @@
+# DEBT: Only exists within test area
+
+menu "EMBR: CoAP"
+
+    config EMBR_COAP_RTC_RESTART_COUNTER
+        default y
+        bool "RTC system restart counter"
+
+endmenu
