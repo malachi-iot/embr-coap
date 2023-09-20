@@ -19,6 +19,12 @@ using namespace embr::coap;
 #if FEATURE_APP_ANALOG_IN
 static adc_oneshot_unit_handle_t adc1_handle;
 
+#ifdef CONFIG_IDF_TARGET_ESP32C3
+#define ADC_CHANNEL ADC_CHANNEL_0
+#else
+#define ADC_CHANNEL ADC_CHANNEL_8
+#endif
+
 void initialize_adc()
 {
     ESP_LOGD(TAG, "initialize_adc: entry");
@@ -26,6 +32,7 @@ void initialize_adc()
     constexpr adc_oneshot_unit_init_cfg_t init_config1 =
     {
         .unit_id = ADC_UNIT_1,
+        .clk_src = ADC_DIGI_CLK_SRC_DEFAULT,
         .ulp_mode = ADC_ULP_MODE_DISABLE,
     };
 
@@ -39,7 +46,7 @@ void initialize_adc()
 
     // DEBT: Make this channel configurable, and possibly many of them
     // For now, we specifically are interested in IO9 analog in since RejsaCAN 12V divider is there
-    ESP_ERROR_CHECK(adc_oneshot_config_channel(adc1_handle, ADC_CHANNEL_8, &config));
+    ESP_ERROR_CHECK(adc_oneshot_config_channel(adc1_handle, ADC_CHANNEL, &config));
 
     // DEBT: Need calibration.  For example a curve fit scheme is availbale which seems fitting
     // being that ESP32 ADCs like to squish at the edges
@@ -51,7 +58,7 @@ void AppContext::completed_analog(encoder_type& encoder)
     {
         int raw;
 
-        ESP_ERROR_CHECK(adc_oneshot_read(adc1_handle, ADC_CHANNEL_8, &raw));
+        ESP_ERROR_CHECK(adc_oneshot_read(adc1_handle, ADC_CHANNEL, &raw));
 
         build_reply(*this, encoder, Header::Code::Content);
 

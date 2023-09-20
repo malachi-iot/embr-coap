@@ -50,3 +50,6 @@ test/**/packages/
 
 # macOS misc
 .DS_Store
+
+# esp-idf
+dependencies.lock
