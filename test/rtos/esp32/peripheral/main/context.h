@@ -29,6 +29,12 @@ struct AppContext :
             estd::layer1::optional<int16_t, -1> pin;
 
         }   gpio;
+
+        struct
+        {
+            estd::layer1::optional<int16_t, -1> pin;
+
+        }   pwm;
     };
 
     void select_gpio(const embr::coap::event::option& e);
@@ -36,6 +42,7 @@ struct AppContext :
     void completed_gpio(encoder_type&);
 
     void completed_analog(encoder_type&);
+    void completed_pwm(encoder_type&);
 };
 
 

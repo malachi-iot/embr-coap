@@ -34,6 +34,8 @@ enum
     id_path_v1_api_gpio,
     id_path_v1_api_time,
     id_path_v1_api_gpio_value,
+    id_path_v1_api_pwm,
+    id_path_v1_api_pwm_value,
 
     id_path_well_known,
     id_path_well_known_core
@@ -52,6 +54,8 @@ const UriPathMap uri_map[] =
     { "analog",     id_path_v1_api_analog,      id_path_v1_api },
     { "gpio",       id_path_v1_api_gpio,        id_path_v1_api },
     { "*",          id_path_v1_api_gpio_value,  id_path_v1_api_gpio },
+    { "pwm",        id_path_v1_api_pwm,         id_path_v1_api },
+    { "*",          id_path_v1_api_pwm_value,   id_path_v1_api_pwm },
     { "time",       id_path_v1_api_time,        id_path_v1_api },
 
     EMBR_COAP_V1_SYS_PATHS(id_path_v1),
@@ -101,6 +105,10 @@ struct Observer
                 
             case id_path_v1_api_gpio_value:
                 context.completed_gpio(encoder);
+                break;
+
+            case id_path_v1_api_pwm_value:
+                context.completed_pwm(encoder);
                 break;
 
             case id_path_v1_api_time:
