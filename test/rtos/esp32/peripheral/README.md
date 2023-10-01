@@ -1,6 +1,8 @@
-# observer-subject + streambuf boilerplate app
+# Peripheral
 
-A good starting point for a full CoAP app
+This app started as a boilerplate for observer-subject + streambuf boilerplate, but has grown out of that scope
+
+Still, it's a good starting point for a full CoAP app
 
 ## Test Results
 

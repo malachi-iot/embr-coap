@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.5)
 
 include (../setenv.cmake)
 
-project(coap-boilerplate-app)
+project(coap-peripheral)
 
 # 02MAY22 MB - No .su files getting generated that I can find
 idf_build_set_property(COMPILE_OPTIONS "-fstack-usage" APPEND)
