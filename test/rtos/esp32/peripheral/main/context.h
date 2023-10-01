@@ -16,12 +16,15 @@ struct AppContext :
     embr::coap::LwipIncomingContext,
     embr::coap::UriParserContext
 {
+    static constexpr const char* TAG = "AppContext";
+
     typedef embr::lwip::ipbuf_streambuf istreambuf_type;
 
     AppContext(struct udp_pcb* pcb, 
         const ip_addr_t* addr,
         uint16_t port);
 
+    // Gathered from option URI
     union
     {
         struct
@@ -32,13 +35,15 @@ struct AppContext :
 
         struct
         {
-            estd::layer1::optional<int16_t, -1> pin;
+            estd::layer1::optional<int16_t, -1> value;
 
-        }   pwm;
+        }   pin;
     };
 
     void select_gpio(const embr::coap::event::option& e);
+    void select_pwm(const embr::coap::event::option&);
     void put_gpio(istreambuf_type& payload);
+    void put_pwm(istreambuf_type& payload);
     void completed_gpio(encoder_type&);
 
     void completed_analog(encoder_type&);

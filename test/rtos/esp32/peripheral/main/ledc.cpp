@@ -57,10 +57,45 @@ void initialize_ledc_channel(ledc_channel_t channel)
 }
 
 
+void AppContext::select_pwm(const event::option& e)
+{
+    // DEBT: As is the case all over, 'chunk' is assumed to be complete
+    // data here
+    auto option = (const char*) e.chunk.data();
+    
+    if(estd::from_chars(option, option + e.chunk.size(), *pin.value).ec == 0)
+        ESP_LOGD(TAG, "Selecting pwm gpio # %d", *pin.value);
+}
+
+
+void AppContext::put_pwm(istreambuf_type& streambuf)
+{
+    if(!pin.value.has_value()) return;
+
+    if(header().code() == Header::Code::Put)
+    {
+        estd::detail::basic_istream<istreambuf_type&> in(streambuf);
+
+        int val;
+
+        if(in >> val)
+        {
+            auto channel = (ledc_channel_t) *pin.value;
+
+            initialize_ledc_channel(channel);
+        }
+    }
+}
+
+
+
 void AppContext::completed_pwm(encoder_type& encoder)
 {
     if(header().code() == Header::Code::Put)
     {
+        ESP_LOGD(TAG, "TODO: do something pwm ish on pin %d", *pin.value);
 
+        bool success = header().code() == Header::Code::Put && pin.value.has_value();
+        response_code = success ? Header::Code::Valid : Header::Code::BadRequest;
     }
 }

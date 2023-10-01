@@ -10,7 +10,7 @@
 
 using namespace embr::coap;
 
-static const char* TAG = "AppContext::gpio";
+//static const char* TAG = "AppContext::gpio";
 
 // NOTE: Expects to run at 'option' event.  Not 'option_completed' because we need
 // to extract the particular GPIO value when it appears
@@ -23,6 +23,7 @@ void AppContext::select_gpio(const event::option& e)
     if(estd::from_chars(option, option + e.chunk.size(), gpio.pin.value()).ec == 0)
         ESP_LOGD(TAG, "Selecting gpio # %d", gpio.pin.value());
 }
+
 
 // NOTE: Expects to run at 'streambuf_payload' event
 void AppContext::put_gpio(istreambuf_type& streambuf)

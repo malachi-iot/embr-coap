@@ -71,8 +71,14 @@ struct Observer
 
     static void on_notify(const event::option& e, AppContext& context)
     {
+        // DEBT: Should filter by URI option
+
+        context.pin.value.reset();
+
         if(context.found_node() == id_path_v1_api_gpio_value)
             context.select_gpio(e);
+        else if(context.found_node() == id_path_v1_api_pwm_value)
+            context.select_pwm(e);
     }
 
     static void on_notify(event::streambuf_payload<istreambuf_type> e, AppContext& context)
@@ -81,6 +87,10 @@ struct Observer
         {
             case id_path_v1_api_gpio_value:
                 context.put_gpio(e.streambuf);
+                break;
+
+            case id_path_v1_api_pwm_value:
+                context.put_pwm(e.streambuf);
                 break;
         }
     }
