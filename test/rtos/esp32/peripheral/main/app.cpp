@@ -154,6 +154,7 @@ void udp_coap_recv(void *arg,
 
 
 void initialize_adc();
+void initialize_ledc();
 
 void app_init(void** arg)
 {
@@ -187,6 +188,7 @@ void app_init(void** arg)
 #endif
 
     initialize_adc();
+    initialize_ledc();
     initialize_sntp();
     initialize_mdns();
 }
