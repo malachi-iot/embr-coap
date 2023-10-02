@@ -69,16 +69,43 @@ struct Observer
 {
     static constexpr const char* TAG = "Observer";
 
+    static void on_notify(event::option_start, AppContext& context)
+    {
+        context.uri_int.reset();
+    }
+
+
     static void on_notify(const event::option& e, AppContext& context)
     {
-        if(e.option_number != Option::UriPath) return;
+        if(e.option_number == Option::UriQuery)
+        {
+            // DEBT: Copying out just to get null termination
+            estd::layer1::string<32> s = e.string();
+            estd::string_view sv = s;
 
-        context.pin.value.reset();
+            ESP_LOGD(TAG, "on_notify(option): uri query=%s", s.data());
+
+            if(sv.starts_with("pin="))
+            {
+                unsigned pin;
+
+                sv.remove_prefix(4);
+
+                //if(estd::from_chars(sv.data(), sv.data() + sv.size(), pin).ec == 0)
+                //{
+
+                //}
+            }
+
+            return;
+        }
+
+        if(e.option_number != Option::UriPath) return;
 
         if(context.found_node() == id_path_v1_api_gpio_value)
             context.select_gpio(e);
         else if(context.found_node() == id_path_v1_api_pwm_value)
-            context.select_pin(e);
+            context.select_pwm_channel(e);
     }
 
     static void on_notify(event::streambuf_payload<istreambuf_type> e, AppContext& context)

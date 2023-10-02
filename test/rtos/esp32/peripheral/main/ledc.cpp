@@ -40,12 +40,12 @@ void initialize_ledc()
 }
 
 
-void initialize_ledc_channel(int gpio)
+void initialize_ledc_channel(ledc_channel_t channel, int gpio)
 {
     ledc_channel_config_t ledc_channel = {
         .gpio_num       = gpio,
         .speed_mode     = LEDC_LS_MODE,
-        .channel        = LEDC_CHANNEL_0,
+        .channel        = channel,
         .intr_type      = LEDC_INTR_DISABLE,
         .timer_sel      = LEDC_LS_TIMER,
         .duty           = 0, // Set duty to 0%
@@ -58,26 +58,27 @@ void initialize_ledc_channel(int gpio)
     // NOTE: Be advised, gpio gathers up on a channel and I haven't found a way to clear it out.
     // So expect more and more gpios to participate in channel 0 PWM as runtime continues.  
     // This ledc_stop doesn't really help that it seems.
-    ledc_stop(LEDC_LS_MODE, LEDC_CHANNEL_0, 0);
+    ledc_stop(LEDC_LS_MODE, channel, 0);
 
     ESP_ERROR_CHECK(ledc_channel_config(&ledc_channel));
 }
 
 
-void AppContext::select_pin(const event::option& e)
+// FIX: Actually selecting pin at the moment on channel 0
+void AppContext::select_pwm_channel(const event::option& e)
 {
     // DEBT: As is the case all over, 'chunk' is assumed to be complete
     // data here
-    auto option = (const char*) e.chunk.data();
+    auto option = (const char*)e.chunk.data();
     
-    if(estd::from_chars(option, option + e.chunk.size(), *pin.value).ec == 0)
-        ESP_LOGD(TAG, "Selecting pwm gpio # %d", *pin.value);
+    if(estd::from_chars(option, option + e.chunk.size(), *uri_int).ec == 0)
+        ESP_LOGD(TAG, "Selecting pwm gpio # %d", *uri_int);
 }
 
 
 void AppContext::put_pwm(istreambuf_type& streambuf)
 {
-    if(!pin.value.has_value()) return;
+    if(!uri_int.has_value()) return;
 
     if(header().code() == Header::Code::Put)
     {
@@ -89,7 +90,7 @@ void AppContext::put_pwm(istreambuf_type& streambuf)
         {
             pwm_value = val;
 
-            initialize_ledc_channel(*pin.value);
+            initialize_ledc_channel(LEDC_CHANNEL_0, *uri_int);
         }
     }
 }
@@ -100,7 +101,7 @@ void AppContext::completed_pwm(encoder_type& encoder)
 {
     if(header().code() == Header::Code::Put)
     {
-        bool success = header().code() == Header::Code::Put && pin.value.has_value();
+        bool success = header().code() == Header::Code::Put && uri_int.has_value();
 
         success &= pwm_value.has_value();
 
@@ -108,7 +109,7 @@ void AppContext::completed_pwm(encoder_type& encoder)
         {
             uint32_t duty = *pwm_value;
 
-            ESP_LOGD(TAG, "completed_pwm: pin %d, duty=%" PRIu32, *pin.value, duty);
+            ESP_LOGD(TAG, "completed_pwm: pin %d, duty=%" PRIu32, *uri_int, duty);
 
             ledc_set_duty_and_update(LEDC_LS_MODE, LEDC_CHANNEL_0, duty, 0);
         }

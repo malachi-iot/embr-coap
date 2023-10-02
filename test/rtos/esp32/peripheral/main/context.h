@@ -33,17 +33,14 @@ struct AppContext :
 
         }   gpio;
 
-        struct
-        {
-            estd::layer1::optional<int16_t, -1> value;
-
-        }   pin;
+        // (last) integer which appears on URI list
+        estd::layer1::optional<int16_t, -1> uri_int;
     };
 
     estd::layer1::optional<uint16_t, 0xFFFF> pwm_value;
 
     void select_gpio(const embr::coap::event::option& e);
-    void select_pin(const embr::coap::event::option&);
+    void select_pwm_channel(const embr::coap::event::option&);
     void put_gpio(istreambuf_type& payload);
     void put_pwm(istreambuf_type& payload);
     void completed_gpio(encoder_type&);
