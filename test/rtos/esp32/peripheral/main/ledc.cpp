@@ -55,6 +55,11 @@ void initialize_ledc_channel(int gpio)
         }
     };
 
+    // NOTE: Be advised, gpio gathers up on a channel and I haven't found a way to clear it out.
+    // So expect more and more gpios to participate in channel 0 PWM as runtime continues.  
+    // This ledc_stop doesn't really help that it seems.
+    ledc_stop(LEDC_LS_MODE, LEDC_CHANNEL_0, 0);
+
     ESP_ERROR_CHECK(ledc_channel_config(&ledc_channel));
 }
 
@@ -101,8 +106,6 @@ void AppContext::completed_pwm(encoder_type& encoder)
 
         if(success)
         {
-            auto channel = (ledc_channel_t) *pin.value;
-
             uint32_t duty = *pwm_value;
 
             ESP_LOGD(TAG, "completed_pwm: pin %d, duty=%" PRIu32, *pin.value, duty);
