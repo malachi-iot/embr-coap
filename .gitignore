@@ -39,6 +39,7 @@ cmake-build-debug/
 # Qt specific
 src/build/
 test/**/build/
+test/**/build-*/
 *.user
 
 # Visual Studio specific

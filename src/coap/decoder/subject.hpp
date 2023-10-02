@@ -31,7 +31,6 @@ decode_result decode_and_notify(Decoder& decoder, TSubject& subject, Decoder::Co
     // and importantly, means that we can consistently respond to 'done' state
     iterated::decode_result r = decoder.process_iterate(context);
 
-    typedef event::option option_event;
     typedef event::payload payload_event;
 
     switch (decoder.state())
@@ -52,10 +51,10 @@ decode_result decode_and_notify(Decoder& decoder, TSubject& subject, Decoder::Co
                         // will take more work than commented code, and not as fast,
                         // but this way it's code reuse & dogfooding
                         buffer_t b = decoder.option(context, &completed);
-                        subject.notify(option_event(option_number, b, completed),
+                        subject.notify(event::option(option_number, b, completed),
                                        app_context);
                     } else
-                        subject.notify(option_event(option_number), app_context);
+                        subject.notify(event::option(option_number), app_context);
                 }
 
                 default:
