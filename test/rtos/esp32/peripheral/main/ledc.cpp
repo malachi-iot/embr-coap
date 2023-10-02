@@ -15,6 +15,8 @@ using namespace embr::coap;
 #define LEDC_LS_TIMER           LEDC_TIMER_1
 #define LEDC_LS_MODE            LEDC_LOW_SPEED_MODE
 #define LEDC_OUTPUT_IO          5
+#define LEDC_DUTY_RESOLUTION    LEDC_TIMER_13_BIT
+#define LEDC_FREQ_HZ            5000
 
 
 void initialize_ledc()
@@ -25,9 +27,9 @@ void initialize_ledc()
      */
     ledc_timer_config_t ledc_timer = {
         .speed_mode = LEDC_LS_MODE,           // timer mode
-        .duty_resolution = LEDC_TIMER_13_BIT, // resolution of PWM duty
+        .duty_resolution = LEDC_DUTY_RESOLUTION, // resolution of PWM duty
         .timer_num = LEDC_LS_TIMER,            // timer index
-        .freq_hz = 5000,                      // frequency of PWM signal
+        .freq_hz = LEDC_FREQ_HZ,                      // frequency of PWM signal
         .clk_cfg = LEDC_AUTO_CLK,              // Auto select the source clock
     };
     
@@ -38,12 +40,12 @@ void initialize_ledc()
 }
 
 
-void initialize_ledc_channel(ledc_channel_t channel)
+void initialize_ledc_channel(int gpio)
 {
     ledc_channel_config_t ledc_channel = {
-        .gpio_num       = LEDC_OUTPUT_IO,
+        .gpio_num       = gpio,
         .speed_mode     = LEDC_LS_MODE,
-        .channel        = channel,
+        .channel        = LEDC_CHANNEL_0,
         .intr_type      = LEDC_INTR_DISABLE,
         .timer_sel      = LEDC_LS_TIMER,
         .duty           = 0, // Set duty to 0%
@@ -80,9 +82,9 @@ void AppContext::put_pwm(istreambuf_type& streambuf)
 
         if(in >> val)
         {
-            auto channel = (ledc_channel_t) *pin.value;
+            pwm_value = val;
 
-            initialize_ledc_channel(channel);
+            initialize_ledc_channel(*pin.value);
         }
     }
 }
@@ -95,9 +97,17 @@ void AppContext::completed_pwm(encoder_type& encoder)
     {
         bool success = header().code() == Header::Code::Put && pin.value.has_value();
 
+        success &= pwm_value.has_value();
+
         if(success)
         {
-            ESP_LOGD(TAG, "TODO: do something pwm ish on pin %d", *pin.value);
+            auto channel = (ledc_channel_t) *pin.value;
+
+            uint32_t duty = *pwm_value;
+
+            ESP_LOGD(TAG, "completed_pwm: pin %d, duty=%" PRIu32, *pin.value, duty);
+
+            ledc_set_duty_and_update(LEDC_LS_MODE, LEDC_CHANNEL_0, duty, 0);
         }
 
         response_code = success ? Header::Code::Valid : Header::Code::BadRequest;

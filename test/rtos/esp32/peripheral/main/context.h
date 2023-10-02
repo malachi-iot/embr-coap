@@ -40,6 +40,8 @@ struct AppContext :
         }   pin;
     };
 
+    estd::layer1::optional<uint16_t, 0xFFFF> pwm_value;
+
     void select_gpio(const embr::coap::event::option& e);
     void select_pin(const embr::coap::event::option&);
     void put_gpio(istreambuf_type& payload);

@@ -20,8 +20,8 @@ void AppContext::select_gpio(const event::option& e)
     // data here
     auto option = (const char*) e.chunk.data();
     
-    if(estd::from_chars(option, option + e.chunk.size(), gpio.pin.value()).ec == 0)
-        ESP_LOGD(TAG, "Selecting gpio # %d", gpio.pin.value());
+    if(estd::from_chars(option, option + e.chunk.size(), *gpio.pin).ec == 0)
+        ESP_LOGD(TAG, "Selecting gpio # %d", *gpio.pin);
 }
 
 
@@ -71,6 +71,12 @@ void AppContext::completed_gpio(encoder_type& encoder)
 
     if(header().code() == Header::Code::Get)
     {
+        if(!gpio.pin.has_value())
+        {
+            response_code = Header::Code::BadRequest;
+            return;
+        }
+
         auto pin = (gpio_num_t)gpio.pin.value();
 
         ESP_LOGI(TAG, "gpio: get %d", pin);
