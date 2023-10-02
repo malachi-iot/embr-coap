@@ -71,14 +71,14 @@ struct Observer
 
     static void on_notify(const event::option& e, AppContext& context)
     {
-        // DEBT: Should filter by URI option
+        if(e.option_number != Option::UriPath) return;
 
         context.pin.value.reset();
 
         if(context.found_node() == id_path_v1_api_gpio_value)
             context.select_gpio(e);
         else if(context.found_node() == id_path_v1_api_pwm_value)
-            context.select_pwm(e);
+            context.select_pin(e);
     }
 
     static void on_notify(event::streambuf_payload<istreambuf_type> e, AppContext& context)

@@ -57,7 +57,7 @@ void initialize_ledc_channel(ledc_channel_t channel)
 }
 
 
-void AppContext::select_pwm(const event::option& e)
+void AppContext::select_pin(const event::option& e)
 {
     // DEBT: As is the case all over, 'chunk' is assumed to be complete
     // data here
@@ -93,9 +93,13 @@ void AppContext::completed_pwm(encoder_type& encoder)
 {
     if(header().code() == Header::Code::Put)
     {
-        ESP_LOGD(TAG, "TODO: do something pwm ish on pin %d", *pin.value);
-
         bool success = header().code() == Header::Code::Put && pin.value.has_value();
+
+        if(success)
+        {
+            ESP_LOGD(TAG, "TODO: do something pwm ish on pin %d", *pin.value);
+        }
+
         response_code = success ? Header::Code::Valid : Header::Code::BadRequest;
     }
 }

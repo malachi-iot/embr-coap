@@ -41,7 +41,7 @@ struct AppContext :
     };
 
     void select_gpio(const embr::coap::event::option& e);
-    void select_pwm(const embr::coap::event::option&);
+    void select_pin(const embr::coap::event::option&);
     void put_gpio(istreambuf_type& payload);
     void put_pwm(istreambuf_type& payload);
     void completed_gpio(encoder_type&);
