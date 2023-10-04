@@ -43,23 +43,33 @@ struct AppContext :
     {
         struct undefined
         {
-
+            static bool constexpr completed(encoder_type&) { return {}; }
         };
 
-        struct gpio
+        struct base : undefined
         {
+            AppContext& context;
 
+            constexpr base(AppContext& c) : context{c} {}
         };
 
-        struct ledc_timer
+        using gpio = base;
+
+        struct ledc_timer : base
         {
+            static constexpr const char* TAG = "states::ledc_timer";
+
             ledc_timer_config_t config;
 
-            ledc_timer();
+            ledc_timer(AppContext&);
+
+            bool completed(encoder_type&) const;
         };
 
-        struct ledc_channel
+        struct ledc_channel : base
         {
+            static constexpr const char* TAG = "states::ledc_channel";
+
             // DEBT: Use embr::esp_idf::ledc here
 
             ledc_channel_config_t config;
@@ -68,7 +78,12 @@ struct AppContext :
 
             estd::layer1::optional<uint16_t, 0xFFFF> duty;
 
-            ledc_channel();
+            ledc_channel(AppContext&);
+
+            // DEBT: variant visit_index seems to require const, which at the moment
+            // doesn't hurt us but is incorrect behavior.  So a FIX, but softer since
+            // we're sidestepping it so far
+            bool completed(encoder_type&) const;
         };
     
     };
@@ -99,7 +114,9 @@ struct AppContext :
     void completed_gpio(encoder_type&);
 
     void completed_analog(encoder_type&);
-    void completed_pwm(encoder_type&);
+    void completed_ledc_channel(encoder_type&);
+
+    bool on_notify(embr::coap::event::completed, encoder_type&);
 };
 
 

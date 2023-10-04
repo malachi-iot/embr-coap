@@ -223,16 +223,16 @@ struct Observer
         switch(context.found_node())
         {
             case id_path_v1_api_gpio_value:
-                context.state.emplace<AppContext::states::gpio>();
+                context.state.emplace<AppContext::states::gpio>(context);
                 context.select_gpio(e);
                 break;
 
             case id_path_v1_api_pwm:
-                context.state.emplace<AppContext::states::ledc_timer>();
+                context.state.emplace<AppContext::states::ledc_timer>(context);
                 break;
 
             case id_path_v1_api_pwm_value:
-                context.state.emplace<AppContext::states::ledc_channel>();
+                context.state.emplace<AppContext::states::ledc_channel>(context);
                 context.select_pwm_channel(e);
                 break;
         }
@@ -258,7 +258,7 @@ struct Observer
 
     
     __attribute__ ((noinline))  // Not necessary, just useful for stack usage analysis
-    static void on_notify(event::completed, AppContext& context)
+    static void on_notify(event::completed e, AppContext& context)
     {
         ESP_LOGI(TAG, "on_notify completed");
 
@@ -270,34 +270,52 @@ struct Observer
                 context.response_code = Header::Code::NotImplemented;
                 break;
 
-            case id_path_v1_api_analog:
-                context.completed_analog(encoder);
-                break;
-                
-            case id_path_v1_api_gpio_value:
-                context.completed_gpio(encoder);
-                break;
-
-            case id_path_v1_api_pwm:
-                context.response_code = Header::Code::NotImplemented;
-                break;
-
-            case id_path_v1_api_pwm_value:
-                context.completed_pwm(encoder);
-                break;
-
             case id_path_v1_api_time:
                 send_time_response(context, encoder);
                 break;
                 
             default:
-                sys_paths::send_sys_reply(context, encoder);
+                if(!context.on_notify(e, encoder))
+                    sys_paths::send_sys_reply(context, encoder);
+
                 break;
         }
 
         auto_reply(context, encoder);
     }
 };
+
+
+bool AppContext::on_notify(event::completed, encoder_type& encoder)
+{
+    state.visit_index([&](auto i)
+    {
+        return i->completed(encoder);
+    });
+
+    switch(found_node())
+    {
+        case id_path_v1_api_analog:
+            completed_analog(encoder);
+            break;
+            
+        case id_path_v1_api_gpio_value:
+            completed_gpio(encoder);
+            break;
+
+        case id_path_v1_api_pwm:
+            response_code = Header::Code::NotImplemented;
+            break;
+
+        case id_path_v1_api_pwm_value:
+            completed_ledc_channel(encoder);
+            break;
+
+        default:    return false;
+    }
+
+    return true;
+}
 
 
 embr::layer0::subject<

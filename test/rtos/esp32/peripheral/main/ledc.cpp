@@ -86,16 +86,32 @@ void initialize_ledc_channel(ledc_channel_t channel, int gpio)
 }
 
 
-AppContext::states::ledc_timer::ledc_timer()
+AppContext::states::ledc_timer::ledc_timer(AppContext& context) : base{context}
 {
     config = timer_config_default;
 }
 
-AppContext::states::ledc_channel::ledc_channel()
+
+bool AppContext::states::ledc_timer::completed(encoder_type& encoder) const
+{
+    ESP_LOGI(TAG, "completed: got here");
+
+    return {};
+}
+
+
+AppContext::states::ledc_channel::ledc_channel(AppContext& context) : base{context}
 {
     //config.channel.channel = (ledc_channel_t) channel;
     config.channel = LEDC_CHANNEL_0;
     config.timer_sel = LEDC_LS_TIMER;
+}
+
+bool AppContext::states::ledc_channel::completed(encoder_type& encoder) const
+{
+    ESP_LOGI(TAG, "completed: got here");
+
+    return {};
 }
 
 
@@ -133,7 +149,7 @@ void AppContext::put_pwm(istreambuf_type& streambuf)
 
 
 
-void AppContext::completed_pwm(encoder_type& encoder)
+void AppContext::completed_ledc_channel(encoder_type& encoder)
 {
     if(header().code() == Header::Code::Put)
     {
@@ -145,7 +161,7 @@ void AppContext::completed_pwm(encoder_type& encoder)
         {
             uint32_t duty = *pwm_value;
 
-            ESP_LOGD(TAG, "completed_pwm: pin %d, duty=%" PRIu32, *uri_int, duty);
+            ESP_LOGD(TAG, "completed_ledc_channel: pin %d, duty=%" PRIu32, *uri_int, duty);
 
             ledc_set_duty_and_update(LEDC_LS_MODE, LEDC_CHANNEL_0, duty, 0);
         }
