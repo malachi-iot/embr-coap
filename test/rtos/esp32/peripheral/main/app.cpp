@@ -116,16 +116,19 @@ struct Observer
 
         if(estd::get<0>(q).compare(key) == 0)
         {
+            // DEBT: from_string treats invalid trailing characters as
+            // termination, but in our case we probaably want to indicate an error
             const estd::from_chars_result r = from_string(value, v);
 
             if(r.ec != 0)
             {
-                ESP_LOGW(TAG, "from_query: key=%s cannot parse value");
+                ESP_LOGI(TAG, "from_query: key=%s cannot parse value=%.*s",
+                    key, value.size(), value.data());
             }
             else
             {
                 long long debug_v = v;
-                ESP_LOGD(TAG, "from_query: key=%s value=%ll", debug_v);
+                ESP_LOGD(TAG, "from_query: key=%s value=%lld", key, debug_v);
             }
 
             return r;
@@ -142,6 +145,15 @@ struct Observer
         const query q = split(e);
         const estd::string_view key = estd::get<0>(q);
         const estd::string_view value = estd::get<1>(q);
+        
+        if(key.data() == nullptr)
+        {
+            // NOTE: In our case we require key=value format.  But I believe URIs
+            // in general are more free form.  So, this IS a malformed query, but
+            // only in the context of this application - not a CoAP URI
+            ESP_LOGI(TAG, "malformed query: %.*s", e.chunk.size(), e.string().data());
+            return q;
+        }
 
         unsigned v;
 
@@ -151,24 +163,12 @@ struct Observer
             {
                 auto& s = estd::get<AppContext::states::ledc_timer>(context.state);
 
-                // Bring out freq_hz & duty_resolution
                 // Later consider bringing out timer_num
-                if(key.compare("freq_hz") == 0)
+                if(from_query(q, "freq_hz", s.config.freq_hz).ec == 0)
                 {
-                    // DEBT: Pay attention to return value
-                    from_string(value, v);
-
-                    ESP_LOGD(TAG, "on_uri_query: freq_hz=%u", v);
-
-                    s.config.freq_hz = v;
                 }
-                else if(key.compare("duty_resolution"))
+                else if(from_query(q, "duty_resolution", v).ec == 0)
                 {
-                    // DEBT: Pay attention to return value
-                    from_string(value, v);
-
-                    ESP_LOGD(TAG, "on_uri_query: duty_resolution=%u", v);
-
                     // DEBT: esp-idf the enum matches up, but I don't think
                     // that's promised anywhere
                     s.config.duty_resolution = (ledc_timer_bit_t)v;
@@ -180,24 +180,12 @@ struct Observer
             {
                 auto& s = estd::get<AppContext::states::ledc_channel>(context.state);
 
-                // Bring out duty, channel, gpio
                 // If only duty, don't do channel init
-                if(key.compare("duty") == 0)
+                if(from_query(q, "duty", s.config.duty).ec == 0)
                 {
-                    // DEBT: Pay attention to return value
-                    from_string(value, v);
-
-                    ESP_LOGD(TAG, "on_uri_query: duty=%u", v);
-
-                    s.config.duty = v;
                 }
-                else if(key.compare("channel") == 0)
+                else if(from_query(q, "channel", v).ec == 0)
                 {
-                    // DEBT: Pay attention to return value
-                    from_string(value, v);
-
-                    ESP_LOGD(TAG, "on_uri_query: channel=%u", v);
-
                     s.has_config = true;
                     s.config.channel = (ledc_channel_t) v;
                 }
@@ -235,6 +223,7 @@ struct Observer
         switch(context.found_node())
         {
             case id_path_v1_api_gpio_value:
+                context.state.emplace<AppContext::states::gpio>();
                 context.select_gpio(e);
                 break;
 
