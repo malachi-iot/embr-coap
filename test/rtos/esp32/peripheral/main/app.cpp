@@ -75,50 +75,93 @@ struct Observer
     }
 
 
+    using query = estd::pair<estd::string_view, estd::string_view>;
+
+    static query split(const event::option& e)
+    {
+        const estd::string_view sv = e.string();
+        const estd::size_t split_pos = sv.find('=');
+
+        if(split_pos == estd::string_view::npos)
+            return { };
+
+        const estd::string_view key(sv.substr(0, split_pos)),
+            value(sv.substr(split_pos + 1));
+
+        return { key, value };
+    }
+
+
+    // DEBT: This can work, but we'll need the internal from_chars which
+    // takes iterators.  That likely comes with some kind of performance
+    // penalty.  Related DEBT from string_view and friends itself which
+    // duplicate data(), etc. 
+    //template <class Impl, class Int>
+    //static estd::from_chars_result from_string(
+    //    const estd::detail::basic_string<Impl>& s, Int& v)
+    // DEBT: Consider placing this directly into estd, seems useful
+    // DEBT: Filter Int by numeric/int
+    template <class Int>
+    static estd::from_chars_result from_string(
+        const estd::string_view& s, Int& v)
+    {
+        return estd::from_chars(s.begin(), s.end(), v);
+    }
+
+    static query on_uri_query(const event::option& e, AppContext& context)
+    {
+        const query q = split(e);
+        const estd::string_view key = estd::get<0>(q);
+        const estd::string_view value = estd::get<1>(q);
+
+        unsigned v;
+
+        switch(context.state.index())
+        {
+            case AppContext::STATE_LEDC_TIMER:
+                // Bring out freq_hz & duty_resolution
+                // Later consider bringing out timer_num
+                if(key.compare("freq_hz") == 0)
+                {
+                    // DEBT: Pay attention to return value
+                    from_string(value, v);
+
+                    ESP_LOGD(TAG, "on_uri_query: freq_hz=%u", v);
+                }
+                else if(key.compare("duty_resolution"))
+                {
+                    // DEBT: Pay attention to return value
+                    from_string(value, v);
+
+                    ESP_LOGD(TAG, "on_uri_query: duty_resolution=%u", v);
+                }
+                break;
+
+            case AppContext::STATE_PWM:
+                // Bring out duty, channel, gpio
+                // If only duty, don't do channel init
+                if(key.compare("duty") == 0)
+                {
+                    // DEBT: Pay attention to return value
+                    from_string(value, v);
+
+                    ESP_LOGD(TAG, "on_uri_query: duty=%u", v);
+                }
+                break;
+
+            default:
+                break;
+        }
+
+        return q;
+    } 
+
+
     static void on_notify(const event::option& e, AppContext& context)
     {
         if(e.option_number == Option::UriQuery)
         {
-            switch(context.state.index())
-            {
-                case AppContext::STATE_LEDC_TIMER:
-                    // Bring out freq_hz & duty_resolution
-                    // Later consider bringing out timer_num
-                    break;
-
-                case AppContext::STATE_PWM:
-                    // Bring out duty, channel, gpio
-                    // If only duty, don't do channel init
-                    break;
-
-                default:
-                    break;
-            }
-
-            // DEBT: Copying out just to get null termination
-            estd::layer1::string<32> s = e.string();
-            estd::string_view sv = s;
-
-            ESP_LOGD(TAG, "on_notify(option): uri query=%s", s.data());
-
-            estd::size_t split_pos = sv.find('=');
-
-            if(split_pos != estd::string_view::npos)
-            {
-                // DEBT: Not quite sure what happens if split_pos + 1 = end
-                estd::string_view key(sv.substr(0, split_pos)),
-                    value(sv.substr(split_pos + 1));
-
-                if(sv == "pin")
-                {
-
-                }
-                else if(sv == "freq_hz")
-                {
-
-                }
-            }
-
+            on_uri_query(e, context);
             return;
         }
 
@@ -131,10 +174,11 @@ struct Observer
                 break;
 
             case id_path_v1_api_pwm:
-                //context.state.emplace<AppContext::states::pwm>();
+                context.state.emplace<AppContext::states::ledc_timer>();
                 break;
 
             case id_path_v1_api_pwm_value:
+                context.state.emplace<AppContext::states::ledc_channel>();
                 context.select_pwm_channel(e);
                 break;
         }
@@ -174,6 +218,10 @@ struct Observer
                 
             case id_path_v1_api_gpio_value:
                 context.completed_gpio(encoder);
+                break;
+
+            case id_path_v1_api_pwm:
+                context.response_code = Header::Code::NotImplemented;
                 break;
 
             case id_path_v1_api_pwm_value:

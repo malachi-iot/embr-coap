@@ -56,7 +56,7 @@ struct AppContext :
 
         };
 
-        struct pwm
+        struct ledc_channel
         {
             // DEBT: Use embr::esp_idf::ledc here
 
@@ -68,7 +68,7 @@ struct AppContext :
 
             estd::layer1::optional<uint16_t, 0xFFFF> duty;
 
-            pwm(int channel);
+            ledc_channel();
         };
     
     };
@@ -80,7 +80,7 @@ struct AppContext :
         states::undefined,
         states::ledc_timer,
         states::gpio,
-        states::pwm> state;
+        states::ledc_channel> state;
 
     enum states_enum
     {

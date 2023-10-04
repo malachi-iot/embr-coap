@@ -63,9 +63,10 @@ void initialize_ledc_channel(ledc_channel_t channel, int gpio)
     ESP_ERROR_CHECK(ledc_channel_config(&ledc_channel));
 }
 
-AppContext::states::pwm::pwm(int channel)
+AppContext::states::ledc_channel::ledc_channel()
 {
-    config.channel.channel = (ledc_channel_t) channel;
+    //config.channel.channel = (ledc_channel_t) channel;
+    config.channel.channel = LEDC_CHANNEL_0;
 }
 
 
