@@ -53,18 +53,16 @@ struct AppContext :
 
         struct ledc_timer
         {
-
+            ledc_timer_config_t config;
         };
 
         struct ledc_channel
         {
             // DEBT: Use embr::esp_idf::ledc here
 
-            struct
-            {
-                ledc_channel_config_t channel;
+            ledc_channel_config_t config;
 
-            }   config;
+            bool has_config = false;
 
             estd::layer1::optional<uint16_t, 0xFFFF> duty;
 
@@ -87,7 +85,7 @@ struct AppContext :
         STATE_UNDEFINED,
         STATE_LEDC_TIMER,
         STATE_GPIO,
-        STATE_PWM
+        STATE_LEDC_CHANNEL
     };
 
     estd::layer1::optional<uint16_t, 0xFFFF> pwm_value;

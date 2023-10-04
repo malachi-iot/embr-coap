@@ -66,7 +66,7 @@ void initialize_ledc_channel(ledc_channel_t channel, int gpio)
 AppContext::states::ledc_channel::ledc_channel()
 {
     //config.channel.channel = (ledc_channel_t) channel;
-    config.channel.channel = LEDC_CHANNEL_0;
+    config.channel = LEDC_CHANNEL_0;
 }
 
 

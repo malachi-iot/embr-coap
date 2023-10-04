@@ -54,7 +54,7 @@ const UriPathMap uri_map[] =
     { "analog",     id_path_v1_api_analog,      id_path_v1_api },
     { "gpio",       id_path_v1_api_gpio,        id_path_v1_api },
     { "*",          id_path_v1_api_gpio_value,  id_path_v1_api_gpio },
-    { "pwm",        id_path_v1_api_pwm,         id_path_v1_api },
+    { "ledc",       id_path_v1_api_pwm,         id_path_v1_api },
     { "*",          id_path_v1_api_pwm_value,   id_path_v1_api_pwm },
     { "time",       id_path_v1_api_time,        id_path_v1_api },
 
@@ -108,6 +108,35 @@ struct Observer
         return estd::from_chars(s.begin(), s.end(), v);
     }
 
+    template <class Int>
+    static estd::from_chars_result from_query(
+        const query& q, const char* key, Int& v)
+    {
+        const estd::string_view value = estd::get<1>(q);
+
+        if(estd::get<0>(q).compare(key) == 0)
+        {
+            const estd::from_chars_result r = from_string(value, v);
+
+            if(r.ec != 0)
+            {
+                ESP_LOGW(TAG, "from_query: key=%s cannot parse value");
+            }
+            else
+            {
+                long long debug_v = v;
+                ESP_LOGD(TAG, "from_query: key=%s value=%ll", debug_v);
+            }
+
+            return r;
+        }
+
+        // DEBT: Use argument_out_of_domain instead, since
+        // result_out_of_range is a from_string-generated error
+        return { nullptr, estd::errc::result_out_of_range };
+        //return { nullptr, estd::errc::argument_out_of_domain };
+    }
+
     static query on_uri_query(const event::option& e, AppContext& context)
     {
         const query q = split(e);
@@ -119,6 +148,9 @@ struct Observer
         switch(context.state.index())
         {
             case AppContext::STATE_LEDC_TIMER:
+            {
+                auto& s = estd::get<AppContext::states::ledc_timer>(context.state);
+
                 // Bring out freq_hz & duty_resolution
                 // Later consider bringing out timer_num
                 if(key.compare("freq_hz") == 0)
@@ -127,6 +159,8 @@ struct Observer
                     from_string(value, v);
 
                     ESP_LOGD(TAG, "on_uri_query: freq_hz=%u", v);
+
+                    s.config.freq_hz = v;
                 }
                 else if(key.compare("duty_resolution"))
                 {
@@ -134,10 +168,18 @@ struct Observer
                     from_string(value, v);
 
                     ESP_LOGD(TAG, "on_uri_query: duty_resolution=%u", v);
+
+                    // DEBT: esp-idf the enum matches up, but I don't think
+                    // that's promised anywhere
+                    s.config.duty_resolution = (ledc_timer_bit_t)v;
                 }
                 break;
+            }
 
-            case AppContext::STATE_PWM:
+            case AppContext::STATE_LEDC_CHANNEL:
+            {
+                auto& s = estd::get<AppContext::states::ledc_channel>(context.state);
+
                 // Bring out duty, channel, gpio
                 // If only duty, don't do channel init
                 if(key.compare("duty") == 0)
@@ -146,8 +188,31 @@ struct Observer
                     from_string(value, v);
 
                     ESP_LOGD(TAG, "on_uri_query: duty=%u", v);
+
+                    s.config.duty = v;
+                }
+                else if(key.compare("channel") == 0)
+                {
+                    // DEBT: Pay attention to return value
+                    from_string(value, v);
+
+                    ESP_LOGD(TAG, "on_uri_query: channel=%u", v);
+
+                    s.has_config = true;
+                    s.config.channel = (ledc_channel_t) v;
+                }
+                else if(key.compare("pin") == 0)
+                {
+                    // DEBT: Pay attention to return value
+                    from_string(value, v);
+
+                    ESP_LOGD(TAG, "on_uri_query: pin=%u", v);
+
+                    s.has_config = true;
+                    s.config.gpio_num = v;
                 }
                 break;
+            }
 
             default:
                 break;
@@ -190,6 +255,10 @@ struct Observer
         {
             case id_path_v1_api_gpio_value:
                 context.put_gpio(e.streambuf);
+                break;
+
+            case id_path_v1_api_pwm:
+                // DEBT: Eventually gather timer # here
                 break;
 
             case id_path_v1_api_pwm_value:
