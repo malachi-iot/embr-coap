@@ -54,6 +54,8 @@ struct AppContext :
         struct ledc_timer
         {
             ledc_timer_config_t config;
+
+            ledc_timer();
         };
 
         struct ledc_channel
