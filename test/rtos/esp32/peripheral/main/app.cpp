@@ -79,22 +79,44 @@ struct Observer
     {
         if(e.option_number == Option::UriQuery)
         {
+            switch(context.state.index())
+            {
+                case AppContext::STATE_LEDC_TIMER:
+                    // Bring out freq_hz & duty_resolution
+                    // Later consider bringing out timer_num
+                    break;
+
+                case AppContext::STATE_PWM:
+                    // Bring out duty, channel, gpio
+                    // If only duty, don't do channel init
+                    break;
+
+                default:
+                    break;
+            }
+
             // DEBT: Copying out just to get null termination
             estd::layer1::string<32> s = e.string();
             estd::string_view sv = s;
 
             ESP_LOGD(TAG, "on_notify(option): uri query=%s", s.data());
 
-            if(sv.starts_with("pin="))
+            estd::size_t split_pos = sv.find('=');
+
+            if(split_pos != estd::string_view::npos)
             {
-                unsigned pin;
+                // DEBT: Not quite sure what happens if split_pos + 1 = end
+                estd::string_view key(sv.substr(0, split_pos)),
+                    value(sv.substr(split_pos + 1));
 
-                sv.remove_prefix(4);
+                if(sv == "pin")
+                {
 
-                //if(estd::from_chars(sv.begin(), sv.end(), pin).ec == 0)
-                //{
+                }
+                else if(sv == "freq_hz")
+                {
 
-                //}
+                }
             }
 
             return;
@@ -102,10 +124,20 @@ struct Observer
 
         if(e.option_number != Option::UriPath) return;
 
-        if(context.found_node() == id_path_v1_api_gpio_value)
-            context.select_gpio(e);
-        else if(context.found_node() == id_path_v1_api_pwm_value)
-            context.select_pwm_channel(e);
+        switch(context.found_node())
+        {
+            case id_path_v1_api_gpio_value:
+                context.select_gpio(e);
+                break;
+
+            case id_path_v1_api_pwm:
+                //context.state.emplace<AppContext::states::pwm>();
+                break;
+
+            case id_path_v1_api_pwm_value:
+                context.select_pwm_channel(e);
+                break;
+        }
     }
 
     static void on_notify(event::streambuf_payload<istreambuf_type> e, AppContext& context)

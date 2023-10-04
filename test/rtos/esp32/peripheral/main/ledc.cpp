@@ -63,6 +63,12 @@ void initialize_ledc_channel(ledc_channel_t channel, int gpio)
     ESP_ERROR_CHECK(ledc_channel_config(&ledc_channel));
 }
 
+AppContext::states::pwm::pwm(int channel)
+{
+    config.channel.channel = (ledc_channel_t) channel;
+}
+
+
 
 // FIX: Actually selecting pin at the moment on channel 0
 void AppContext::select_pwm_channel(const event::option& e)

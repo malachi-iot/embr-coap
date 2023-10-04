@@ -1,8 +1,10 @@
 #pragma once
 
-#include "esp_log.h"
+#include <esp_log.h>
 
 #include <estd/optional.h>
+
+#include <embr/platform/esp-idf/ledc.h>
 
 #include <coap/platform/lwip/context.h>
 
@@ -35,6 +37,57 @@ struct AppContext :
 
         // (last) integer which appears on URI list
         estd::layer1::optional<int16_t, -1> uri_int;
+    };
+
+    struct states
+    {
+        struct undefined
+        {
+
+        };
+
+        struct gpio
+        {
+
+        };
+
+        struct ledc_timer
+        {
+
+        };
+
+        struct pwm
+        {
+            // DEBT: Use embr::esp_idf::ledc here
+
+            struct
+            {
+                ledc_channel_config_t channel;
+
+            }   config;
+
+            estd::layer1::optional<uint16_t, 0xFFFF> duty;
+
+            pwm(int channel);
+        };
+    
+    };
+
+    // NOTE: This is likely a better job for variant_storage, since we know based on URI which particular
+    // state we're interested in and additionally we'd prefer not to initialize *any* - so in other words
+    // somewhere between a union and a variant, which is what variant_storage really is
+    estd::variant<
+        states::undefined,
+        states::ledc_timer,
+        states::gpio,
+        states::pwm> state;
+
+    enum states_enum
+    {
+        STATE_UNDEFINED,
+        STATE_LEDC_TIMER,
+        STATE_GPIO,
+        STATE_PWM
     };
 
     estd::layer1::optional<uint16_t, 0xFFFF> pwm_value;
