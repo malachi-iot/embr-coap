@@ -1,4 +1,6 @@
-idf_component_register(SRCS "adc.cpp" "main.cpp" "app.cpp" "gpio.cpp" "ledc.cpp" "mdns.cpp" "sntp.cpp"
+idf_component_register(SRCS
+                    "adc.cpp" "main.cpp" "app.cpp" "context.cpp"
+                    "gpio.cpp" "ledc.cpp" "mdns.cpp" "sntp.cpp"
                     INCLUDE_DIRS "."
                     REQUIRES estdlib embr esp_adc esp_helper mc-coap
                     )

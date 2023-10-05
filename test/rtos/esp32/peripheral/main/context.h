@@ -3,6 +3,7 @@
 #include <esp_log.h>
 
 #include <estd/optional.h>
+#include <estd/string_view.h>
 
 #include <embr/platform/esp-idf/ledc.h>
 
@@ -21,6 +22,7 @@ struct AppContext :
     static constexpr const char* TAG = "AppContext";
 
     typedef embr::lwip::ipbuf_streambuf istreambuf_type;
+    using query = estd::pair<estd::string_view, estd::string_view>;
 
     AppContext(struct udp_pcb* pcb, 
         const ip_addr_t* addr,
@@ -43,6 +45,8 @@ struct AppContext :
     {
         struct undefined
         {
+            static bool constexpr on_option(const query&) { return {}; }
+            static bool constexpr on_payload(istreambuf_type&) { return {}; }
             static bool constexpr completed(encoder_type&) { return {}; }
         };
 
@@ -63,7 +67,7 @@ struct AppContext :
 
             ledc_timer(AppContext&);
 
-            bool completed(encoder_type&) const;
+            bool completed(encoder_type&);
         };
 
         struct ledc_channel : base
@@ -83,9 +87,8 @@ struct AppContext :
             // DEBT: variant visit_index seems to require const, which at the moment
             // doesn't hurt us but is incorrect behavior.  So a FIX, but softer since
             // we're sidestepping it so far
-            bool completed(encoder_type&) const;
+            bool completed(encoder_type&);
         };
-    
     };
 
     // NOTE: This is likely a better job for variant_storage, since we know based on URI which particular
@@ -116,6 +119,7 @@ struct AppContext :
     void completed_analog(encoder_type&);
     void completed_ledc_channel(encoder_type&);
 
+    bool on_notify(const embr::coap::event::option&);
     bool on_notify(embr::coap::event::completed, encoder_type&);
 };
 
@@ -123,3 +127,21 @@ struct AppContext :
 void initialize_sntp();
 void initialize_mdns();
 void send_time_response(AppContext& context, AppContext::encoder_type& encoder);
+AppContext::query split(const embr::coap::event::option& e);
+
+enum
+{
+    id_path_v1 = 0,
+    id_path_v1_api,
+    id_path_v1_api_analog,
+    id_path_v1_api_gpio,
+    id_path_v1_api_time,
+    id_path_v1_api_gpio_value,
+    id_path_v1_api_pwm,
+    id_path_v1_api_pwm_value,
+
+    id_path_well_known,
+    id_path_well_known_core
+};
+
+

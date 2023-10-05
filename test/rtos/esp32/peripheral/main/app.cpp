@@ -26,22 +26,6 @@ using namespace embr::coap;
 
 using istreambuf_type = AppContext::istreambuf_type;
 
-enum
-{
-    id_path_v1 = 0,
-    id_path_v1_api,
-    id_path_v1_api_analog,
-    id_path_v1_api_gpio,
-    id_path_v1_api_time,
-    id_path_v1_api_gpio_value,
-    id_path_v1_api_pwm,
-    id_path_v1_api_pwm_value,
-
-    id_path_well_known,
-    id_path_well_known_core
-};
-
-
 using embr::coap::internal::UriPathMap;
 
 
@@ -65,6 +49,22 @@ const UriPathMap uri_map[] =
 };
 
 
+AppContext::query split(const event::option& e)
+{
+    const estd::string_view sv = e.string();
+    const estd::size_t split_pos = sv.find('=');
+
+    if(split_pos == estd::string_view::npos)
+        return { };
+
+    const estd::string_view key(sv.substr(0, split_pos)),
+        value(sv.substr(split_pos + 1));
+
+    return { key, value };
+}
+
+
+
 struct Observer
 {
     static constexpr const char* TAG = "Observer";
@@ -75,22 +75,7 @@ struct Observer
     }
 
 
-    using query = estd::pair<estd::string_view, estd::string_view>;
-
-    static query split(const event::option& e)
-    {
-        const estd::string_view sv = e.string();
-        const estd::size_t split_pos = sv.find('=');
-
-        if(split_pos == estd::string_view::npos)
-            return { };
-
-        const estd::string_view key(sv.substr(0, split_pos)),
-            value(sv.substr(split_pos + 1));
-
-        return { key, value };
-    }
-
+    using query = AppContext::query;
 
     // DEBT: This can work, but we'll need the internal from_chars which
     // takes iterators.  That likely comes with some kind of performance
@@ -212,6 +197,8 @@ struct Observer
 
     static void on_notify(const event::option& e, AppContext& context)
     {
+        context.on_notify(e);
+
         if(e.option_number == Option::UriQuery)
         {
             on_uri_query(e, context);
@@ -286,36 +273,6 @@ struct Observer
 };
 
 
-bool AppContext::on_notify(event::completed, encoder_type& encoder)
-{
-    state.visit_index([&](auto i)
-    {
-        return i->completed(encoder);
-    });
-
-    switch(found_node())
-    {
-        case id_path_v1_api_analog:
-            completed_analog(encoder);
-            break;
-            
-        case id_path_v1_api_gpio_value:
-            completed_gpio(encoder);
-            break;
-
-        case id_path_v1_api_pwm:
-            response_code = Header::Code::NotImplemented;
-            break;
-
-        case id_path_v1_api_pwm_value:
-            completed_ledc_channel(encoder);
-            break;
-
-        default:    return false;
-    }
-
-    return true;
-}
 
 
 embr::layer0::subject<
@@ -346,7 +303,7 @@ void udp_coap_recv(void *arg,
     // This code is, in theory, reentrant.  That has not been tested well, however
     AppContext context(pcb, addr, port);
 
-    ESP_LOGD(TAG, "p->len=%d, sizeof context=%u", p->len, sizeof(context));
+    ESP_LOGV(TAG, "p->len=%d, sizeof context=%u", p->len, sizeof(context));
 
     // _recv plumbing depends on us to free p, and decode_and_notify here helps us with that
     // DEBT: I think I prefer explicitly freeing here, decode_and_notify assistance is too magic

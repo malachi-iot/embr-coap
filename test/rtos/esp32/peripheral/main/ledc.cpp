@@ -92,7 +92,7 @@ AppContext::states::ledc_timer::ledc_timer(AppContext& context) : base{context}
 }
 
 
-bool AppContext::states::ledc_timer::completed(encoder_type& encoder) const
+bool AppContext::states::ledc_timer::completed(encoder_type& encoder)
 {
     ESP_LOGI(TAG, "completed: got here");
 
@@ -107,7 +107,7 @@ AppContext::states::ledc_channel::ledc_channel(AppContext& context) : base{conte
     config.timer_sel = LEDC_LS_TIMER;
 }
 
-bool AppContext::states::ledc_channel::completed(encoder_type& encoder) const
+bool AppContext::states::ledc_channel::completed(encoder_type& encoder)
 {
     ESP_LOGI(TAG, "completed: got here");
 
@@ -146,7 +146,6 @@ void AppContext::put_pwm(istreambuf_type& streambuf)
         }
     }
 }
-
 
 
 void AppContext::completed_ledc_channel(encoder_type& encoder)
