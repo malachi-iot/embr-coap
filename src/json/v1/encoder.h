@@ -8,22 +8,30 @@ inline namespace v1 {
 
 namespace options {
 
-struct full
+// NOTE: For valid JSON, use_doublequotes() *must* be true
+// NOTE: For valid JSON, no actual tab character can be in tab()
+
+// use_spaces() describes whitespace between key/value elements,
+// and does not relate to tab()
+
+struct base
 {
-    bool use_eol() { return true; }
-    bool use_tabs() { return true; }
-    bool use_spaces() { return true; }
-    bool brace_on_newline() { return true; }
-    ESTD_CPP_CONSTEXPR_RET bool use_doublequotes() const { return true; }
+    static ESTD_CPP_CONSTEXPR_RET const char* tab() { return "  "; }
+    static ESTD_CPP_CONSTEXPR_RET bool use_doublequotes() { return true; }
 };
 
-struct lean
+struct full : base
+{
+    bool use_eol() { return true; }
+    bool use_spaces() { return true; }
+    bool brace_on_newline() { return true; }
+};
+
+struct lean : base
 {
     bool use_eol() { return false; }
-    bool use_tabs() { return false; }
     bool use_spaces() { return false; }
     bool brace_on_newline() { return false; }
-    ESTD_CPP_CONSTEXPR_RET bool use_doublequotes() const { return false; }
 };
 
 }
@@ -50,10 +58,10 @@ struct encoder : TOptions
     template <class TStreambuf, class TBase>
     inline void do_tabs(estd::detail::basic_ostream <TStreambuf, TBase>& out)
     {
-        if (options_type::use_tabs())
+        if (options_type::tab() != NULLPTR)
         {
             for (unsigned i = level_; i > 0; --i)
-                out << "  ";
+                out << options_type::tab();
         }
     }
 

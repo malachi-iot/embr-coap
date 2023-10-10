@@ -1,3 +1,11 @@
 menu "CoAP Peripheral"
 
+    config MDNS_INSTANCE_NAME
+        string "mDNS full human readable name of app instance"
+        default "CoAP peripheral application"
+
+    config MDNS_COAP_SERVICE_NAME
+        string "mDNS name of CoAP service"
+        default "CoAP peripheral control"
+
 endmenu

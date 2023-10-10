@@ -23,6 +23,6 @@ void initialize_mdns()
     // However, that appears to not be the case.  mdns_hostname_set must be called, otherwise
     // nothing appears in avahi-browse
     mdns_hostname_set(CONFIG_LWIP_LOCAL_HOSTNAME);
-    mdns_instance_name_set("CoAP boilerplate application");
-    mdns_service_add("CoAP Boilerplate App", "_coap", "_udp", embr::coap::IP_PORT, NULL, 0);
+    mdns_instance_name_set(CONFIG_MDNS_INSTANCE_NAME);
+    mdns_service_add(CONFIG_MDNS_COAP_SERVICE_NAME, "_coap", "_udp", embr::coap::IP_PORT, NULL, 0);
 }
