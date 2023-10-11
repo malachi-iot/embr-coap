@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 3.6)
 
 project(mc-coap-test)
 
+# DEBT: Only set this if not already set, so that external configs
+# can override it
 #set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD 20)
 #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
@@ -13,32 +15,27 @@ add_definitions(-DUNIT_TESTING)
 
 include(../../tools/cmake/setvars.cmake)
 
-set(CATCH_DIR ${ESTDLIB_DIR}/ext/Catch2)
+Set(FETCHCONTENT_QUIET FALSE)
+
+FetchContent_Declare(
+    Catch2
+    GIT_REPOSITORY  https://github.com/catchorg/Catch2.git
+    GIT_TAG         v2.13.10
+    GIT_PROGRESS    TRUE
+    GIT_SHALLOW     TRUE
+)
+
+FetchContent_MakeAvailable(Catch2)
 
 # this must come first so that it picks up proper opts.h file
 include_directories(${PROJECT_SOURCE_DIR})
 
 add_subdirectory(${ROOT_DIR}/src coap)
 
-#message(${PROJECT_SOURCE_DIR})
-
-add_subdirectory(${CATCH_DIR} catch)
-
-# using technique from https://coderwall.com/p/y3zzbq/use-cmake-enabled-libraries-in-your-cmake-project
-#include(ExternalProject)
-
-#ExternalProject_Add(moducom_memory SOURCE_DIR "../../ext/moducom-memory/src")
-
-#find_package ( moducom_memory )
-
 set(SOURCE_FILES
         main_test.cpp coap.cpp
         coap_lowlevel.cpp
         cbor-test.cpp
-
-        # Disabled as part of mc-mem removal.  DataPump is crusty but usable -
-        # its netbuf naming is a misnomer, really it can be just about any buffer - IIRC
-        #coap-datapump-test.cpp
 
         coap-decoder-test.cpp
         coap-header-test.cpp
@@ -47,9 +44,6 @@ set(SOURCE_FILES
         coap-observable-test.cpp
         blockwise-test.cpp
         context-test.cpp
-
-        # Disabled as part of mc-mem removal.  Contains almost exclusively obsolete code
-        #experimental-test.cpp
 
         # Disabled as part of mc-mem removal.  Contains DataPump which is crusty but usable -
         # its netbuf naming is a misnomer, really it can be just about any buffer - IIRC
