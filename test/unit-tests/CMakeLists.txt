@@ -58,7 +58,6 @@ set(SOURCE_FILES
         decoder-subject-test.cpp
         mc/opts.h
 
-        json-test.cpp
         test-observer.h
 
         retry-test.cpp

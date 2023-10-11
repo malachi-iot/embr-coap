@@ -104,9 +104,6 @@ const static uint8_t flawed_power_request[] =
 
 namespace test {
 
-static const char* json_user = "{'user':{'age':30,'name':'Fred'}}";
-static const char* json_prefs = "{'prefs':[1,2,3,'hi2u']}";
-
 }
 
 #pragma GCC diagnostic pop

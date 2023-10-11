@@ -23,7 +23,7 @@
 #include "../api.h"
 #include "rtc.h"
 
-#include <json/encoder.hpp>
+#include <embr/json/encoder.hpp>
 
 // DEBT: Really this all belongs under esp_idf namespace
 
