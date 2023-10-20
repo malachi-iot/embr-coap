@@ -217,7 +217,7 @@ TEST_CASE("CoAP decoder subject tests", "[coap-decoder-subject]")
             estd::span<char> chunk((char*)buffer_16bit_delta, sizeof(buffer_16bit_delta));
             StreambufDecoder<streambuf_type> decoder(chunk);
 
-            get<0>(subject).expecting_payload = true;
+            estd::get<0>(subject).expecting_payload = true;
 
             decode_and_notify(decoder, subject);
         }
@@ -226,7 +226,7 @@ TEST_CASE("CoAP decoder subject tests", "[coap-decoder-subject]")
             estd::span<char> chunk((char*)flawed_power_request, sizeof(flawed_power_request));
             StreambufDecoder<streambuf_type> decoder(chunk);
 
-            get<0>(subject).expecting_payload = false;
+            estd::get<0>(subject).expecting_payload = false;
 
             decode_and_notify(decoder, subject);
         }

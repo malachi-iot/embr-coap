@@ -2,11 +2,10 @@ cmake_minimum_required(VERSION 3.6)
 
 project(mc-coap-test)
 
-# DEBT: Only set this if not already set, so that external configs
-# can override it
-#set(CMAKE_CXX_STANDARD 11)
-set(CMAKE_CXX_STANDARD 20)
-#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
+if(NOT DEFINED CMAKE_CXX_STANDARD)
+    set(CMAKE_CXX_STANDARD 11)
+    message(STATUS "${PROJECT_NAME}: Defaulting c++=11")
+endif()
 
 add_definitions(-DUNIT_TESTING)
 # NOTE: Normally this would go into an 'opts' but 'mc/opts.h', while a good idea, is no longer

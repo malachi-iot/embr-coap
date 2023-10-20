@@ -32,7 +32,7 @@
 *.app
 
 # CLion specific
-cmake-build-debug/
+cmake-build-*/
 **/.idea/workspace.xml
 **/.idea/vcs.xml
 
