@@ -184,6 +184,7 @@ struct Observer
     {
         context.on_payload(e.streambuf);
 
+        /*
         switch(context.found_node())
         {
             case id_path_v1_api_gpio_value:
@@ -197,7 +198,7 @@ struct Observer
             case id_path_v1_api_pwm_value:
                 //context.put_pwm(e.streambuf);
                 break;
-        }
+        } */
     }
 
     

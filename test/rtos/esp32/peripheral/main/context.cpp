@@ -22,8 +22,16 @@ bool AppContext::on_notify(const event::option& e)
     switch(e.option_number)
     {
         case Option::UriPath:
+            // DEBT: Not too bad but a little sloppy
+            if(e.string().front() == '*')
+                populate_uri_int(e);
+
             switch(found_node())
             {
+                case id_path_v1_api_analog:
+                    state.emplace<states::analog>(*this);
+                    break;
+
                 case id_path_v1_api_gpio_value:
                     state.emplace<states::gpio>(*this);
                     break;
@@ -33,7 +41,6 @@ bool AppContext::on_notify(const event::option& e)
                     break;
 
                 case id_path_v1_api_pwm_value:
-                    populate_uri_int(e);
                     state.emplace<states::ledc_channel>(*this);
                     break;
             }
@@ -100,8 +107,13 @@ bool AppContext::on_completed(encoder_type& encoder)
             break;
             
         case id_path_v1_api_gpio_value:
-            completed_gpio(encoder);
+        {
+            //completed_gpio(encoder);
+            const Header::Code c = estd::get<states::gpio>(state).completed(encoder);
+            // DEBT: Slightly clumsy this handling of response code
+            if(c != Header::Code::Empty)    response_code = c;
             break;
+        }
 
         case id_path_v1_api_pwm:
             response_code = estd::get<states::ledc_timer>(state).completed(encoder);
@@ -121,10 +133,16 @@ bool AppContext::on_completed(encoder_type& encoder)
 
 bool AppContext::on_payload(istreambuf_type& payload)
 {
+    istream_type in(payload);
+
     switch(found_node())
     {
+        case id_path_v1_api_gpio_value:
+            estd::get<states::gpio>(state).on_payload(in);
+            break;
+
         case id_path_v1_api_pwm_value:
-            estd::get<states::ledc_channel>(state).on_payload(payload);
+            estd::get<states::ledc_channel>(state).on_payload(in);
             break;
 
         default:    return false;

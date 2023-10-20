@@ -15,6 +15,21 @@
 
 #include "features.h"
 
+template <class T>
+concept Subtate = requires(T s)
+{
+    //using query = estd::pair<estd::string_view, estd::string_view>;
+    s.on_option(estd::pair<estd::string_view, estd::string_view>{});
+};
+
+// Looking into https://stackoverflow.com/questions/64694218/how-to-express-concepts-over-variadic-template
+// But this isn't quite there
+//template <class ...Args>
+//concept Substates = (Substate(Args) && ...)
+
+template <class ...Substates>
+using substates = estd::variant<Substates...>;
+
 struct AppContext : 
     embr::coap::LwipIncomingContext,
     embr::coap::UriParserContext
@@ -22,6 +37,7 @@ struct AppContext :
     static constexpr const char* TAG = "AppContext";
 
     typedef embr::lwip::ipbuf_streambuf istreambuf_type;
+    using istream_type = estd::detail::basic_istream<istreambuf_type&>;
     using query = estd::pair<estd::string_view, estd::string_view>;
 
     AppContext(struct udp_pcb* pcb, 
@@ -50,7 +66,7 @@ struct AppContext :
         struct undefined
         {
             static bool constexpr on_option(const query&) { return {}; }
-            static bool constexpr on_payload(istreambuf_type&) { return {}; }
+            static bool constexpr on_payload(istream_type&) { return {}; }
             static constexpr code_type completed(encoder_type&)
             {
                 return code_type::NotImplemented;
@@ -64,7 +80,19 @@ struct AppContext :
             constexpr base(AppContext& c) : context{c} {}
         };
 
-        using gpio = base;
+        using analog = base;
+
+        struct gpio : base
+        {
+            static constexpr const char* TAG = "states::gpio";
+
+            constexpr gpio(AppContext& c) : base(c) {}
+
+            estd::layer1::optional<bool> level;
+
+            void on_payload(istream_type&);
+            code_type completed(encoder_type&);
+        };
 
         struct ledc_timer : base
         {
@@ -95,7 +123,7 @@ struct AppContext :
             ledc_channel(AppContext&);
 
             void on_option(const query&);
-            void on_payload(istreambuf_type&);
+            void on_payload(istream_type&);
             // DEBT: variant visit_index seems to require const, which at the moment
             // doesn't hurt us but is incorrect behavior.  So a FIX, but softer since
             // we're sidestepping it so far
@@ -106,19 +134,21 @@ struct AppContext :
     // NOTE: This is likely a better job for variant_storage, since we know based on URI which particular
     // state we're interested in and additionally we'd prefer not to initialize *any* - so in other words
     // somewhere between a union and a variant, which is what variant_storage really is
-    estd::variant<
+    substates<
         states::undefined,
+        states::analog,
         states::ledc_timer,
         states::gpio,
         states::ledc_channel> state;
 
+    /*
     enum states_enum
     {
         STATE_UNDEFINED,
         STATE_LEDC_TIMER,
         STATE_GPIO,
         STATE_LEDC_CHANNEL
-    };
+    };  */
 
     estd::layer1::optional<uint16_t, 0xFFFF> pwm_value;
 

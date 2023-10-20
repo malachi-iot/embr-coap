@@ -152,10 +152,8 @@ void AppContext::states::ledc_channel::on_option(const query& q)
 }
 
 
-void AppContext::states::ledc_channel::on_payload(istreambuf_type& payload)
+void AppContext::states::ledc_channel::on_payload(istream_type& in)
 {
-    estd::detail::basic_istream<istreambuf_type&> in(payload);
-
     in >> *duty;
 }
 
