@@ -7,6 +7,16 @@
 
 using namespace embr::coap;
 
+void AppContext::populate_uri_int(const event::option& e)
+{
+    // DEBT: As is the case all over, 'chunk' is assumed to be complete
+    // data here
+    auto option = (const char*) e.chunk.data();
+    
+    if(estd::from_chars(option, option + e.chunk.size(), *uri_int).ec == 0)
+        ESP_LOGD(TAG, "Selecting gpio # %d", *uri_int);
+}
+
 bool AppContext::on_notify(const event::option& e)
 {
     switch(e.option_number)
@@ -23,6 +33,7 @@ bool AppContext::on_notify(const event::option& e)
                     break;
 
                 case id_path_v1_api_pwm_value:
+                    populate_uri_int(e);
                     state.emplace<states::ledc_channel>(*this);
                     break;
             }
@@ -41,6 +52,13 @@ bool AppContext::on_notify(const event::option& e)
                 ESP_LOGI(TAG, "malformed query: %.*s", e.chunk.size(), e.string().data());
                 return false;
             }
+
+            /* from_query already does this, but I think I might prefer it here
+            const estd::string_view value = estd::get<1>(q);
+
+            ESP_LOGV(TAG, "on_notify: uri-query key=%.*s value=%.*s",
+                key.size(), key.data(),
+                value.size(), value.data());    */
 
             switch(found_node())
             {

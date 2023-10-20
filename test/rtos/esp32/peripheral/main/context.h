@@ -41,6 +41,8 @@ struct AppContext :
         estd::layer1::optional<int16_t, -1> uri_int;
     };
 
+    void populate_uri_int(const embr::coap::event::option&);
+
     struct states
     {
         struct undefined
@@ -67,6 +69,7 @@ struct AppContext :
 
             ledc_timer(AppContext&);
 
+            void on_option(const query&);
             bool completed(encoder_type&);
         };
 
@@ -84,6 +87,7 @@ struct AppContext :
 
             ledc_channel(AppContext&);
 
+            void on_option(const query&);
             // DEBT: variant visit_index seems to require const, which at the moment
             // doesn't hurt us but is incorrect behavior.  So a FIX, but softer since
             // we're sidestepping it so far

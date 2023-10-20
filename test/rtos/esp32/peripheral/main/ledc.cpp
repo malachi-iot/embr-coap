@@ -7,6 +7,7 @@
 #include <coap/platform/lwip/encoder.h>
 
 #include "context.h"
+#include "from_query.h"
 
 using namespace embr::coap;
 
@@ -91,10 +92,32 @@ AppContext::states::ledc_timer::ledc_timer(AppContext& context) : base{context}
     config = timer_config_default;
 }
 
+void AppContext::states::ledc_timer::on_option(const query& q)
+{
+    int v;
+
+    if(from_query(q, "freq_hz", v).ec == 0)
+    {
+        config.freq_hz = v;
+    }
+    else if(from_query(q, "duty_res", v).ec == 0)
+    {
+        // DEBT: esp-idf the enum matches up, but I don't think
+        // that's promised anywhere
+        config.duty_resolution = (ledc_timer_bit_t)v;
+    }
+}
+
 
 bool AppContext::states::ledc_timer::completed(encoder_type& encoder)
 {
-    ESP_LOGI(TAG, "completed: got here");
+    esp_err_t ret = ledc_timer_config(&config);
+
+    ESP_LOGI(TAG, "completed: got here = ret=%d", ret);
+
+    // TODO: Do BadRequest if we get INVALID_ARG
+
+    context.response_code = ret == ESP_OK ? Header::Code::Valid : Header::Code::InternalServerError;
 
     return {};
 }
@@ -107,9 +130,39 @@ AppContext::states::ledc_channel::ledc_channel(AppContext& context) : base{conte
     config.timer_sel = LEDC_LS_TIMER;
 }
 
+void AppContext::states::ledc_channel::on_option(const query& q)
+{
+    int v;
+
+    if(from_query(q, "pin", v).ec == 0)
+    {
+        config.gpio_num = v;
+        has_config = true;
+    }
+    else if(from_query(q, "timer_num", v).ec == 0)
+    {
+        config.timer_sel = (ledc_timer_t)v;
+        has_config = true;
+    }
+}
+
+
 bool AppContext::states::ledc_channel::completed(encoder_type& encoder)
 {
-    ESP_LOGI(TAG, "completed: got here");
+    if(!context.uri_int.has_value())
+    {
+        return {};
+    }
+
+    Header::Code code = context.header().code();
+
+    if(code == Header::Code::Put)
+    {
+        //bool success = code == Header::Code::Put && uri_int.has_value();
+    }
+
+    config.channel = (ledc_channel_t) *context.uri_int;
+    ESP_LOGI(TAG, "completed: got here: channel=%d", config.channel);
 
     return {};
 }
