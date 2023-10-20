@@ -84,7 +84,7 @@ bool AppContext::on_notify(const event::option& e)
 }
 
 
-bool AppContext::on_notify(event::completed, encoder_type& encoder)
+bool AppContext::on_completed(encoder_type& encoder)
 {
     state.visit_index([&](auto i)
     {
@@ -104,12 +104,27 @@ bool AppContext::on_notify(event::completed, encoder_type& encoder)
             break;
 
         case id_path_v1_api_pwm:
-            estd::get<states::ledc_timer>(state).completed(encoder);
+            response_code = estd::get<states::ledc_timer>(state).completed(encoder);
             break;
 
         case id_path_v1_api_pwm_value:
-            completed_ledc_channel(encoder);
-            estd::get<states::ledc_channel>(state).completed(encoder);
+            //completed_ledc_channel(encoder);
+            response_code = estd::get<states::ledc_channel>(state).completed(encoder);
+            break;
+
+        default:    return false;
+    }
+
+    return true;
+}
+
+
+bool AppContext::on_payload(istreambuf_type& payload)
+{
+    switch(found_node())
+    {
+        case id_path_v1_api_pwm_value:
+            estd::get<states::ledc_channel>(state).on_payload(payload);
             break;
 
         default:    return false;

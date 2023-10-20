@@ -182,6 +182,8 @@ struct Observer
 
     static void on_notify(event::streambuf_payload<istreambuf_type> e, AppContext& context)
     {
+        context.on_payload(e.streambuf);
+
         switch(context.found_node())
         {
             case id_path_v1_api_gpio_value:
@@ -193,7 +195,7 @@ struct Observer
                 break;
 
             case id_path_v1_api_pwm_value:
-                context.put_pwm(e.streambuf);
+                //context.put_pwm(e.streambuf);
                 break;
         }
     }
@@ -217,7 +219,7 @@ struct Observer
                 break;
                 
             default:
-                if(!context.on_notify(e, encoder))
+                if(!context.on_completed(encoder))
                     sys_paths::send_sys_reply(context, encoder);
 
                 break;

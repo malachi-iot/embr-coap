@@ -45,11 +45,16 @@ struct AppContext :
 
     struct states
     {
+        using code_type = embr::coap::Header::Code;
+
         struct undefined
         {
             static bool constexpr on_option(const query&) { return {}; }
             static bool constexpr on_payload(istreambuf_type&) { return {}; }
-            static bool constexpr completed(encoder_type&) { return {}; }
+            static constexpr code_type completed(encoder_type&)
+            {
+                return code_type::NotImplemented;
+            }
         };
 
         struct base : undefined
@@ -70,7 +75,7 @@ struct AppContext :
             ledc_timer(AppContext&);
 
             void on_option(const query&);
-            bool completed(encoder_type&);
+            code_type completed(encoder_type&);
         };
 
         struct ledc_channel : base
@@ -81,6 +86,8 @@ struct AppContext :
 
             ledc_channel_config_t config;
 
+            // We always use above config, but if this is true it signals a call
+            // to channel configure itself vs a mere duty update
             bool has_config = false;
 
             estd::layer1::optional<uint16_t, 0xFFFF> duty;
@@ -88,10 +95,11 @@ struct AppContext :
             ledc_channel(AppContext&);
 
             void on_option(const query&);
+            void on_payload(istreambuf_type&);
             // DEBT: variant visit_index seems to require const, which at the moment
             // doesn't hurt us but is incorrect behavior.  So a FIX, but softer since
             // we're sidestepping it so far
-            bool completed(encoder_type&);
+            code_type completed(encoder_type&);
         };
     };
 
@@ -117,14 +125,18 @@ struct AppContext :
     void select_gpio(const embr::coap::event::option& e);
     void select_pwm_channel(const embr::coap::event::option&);
     void put_gpio(istreambuf_type& payload);
-    void put_pwm(istreambuf_type& payload);
+
+    //void put_pwm(istreambuf_type& payload);
     void completed_gpio(encoder_type&);
 
     void completed_analog(encoder_type&);
-    void completed_ledc_channel(encoder_type&);
+    //void completed_ledc_channel(encoder_type&);
 
+    // NOTE: These only coincidentally conform to subject/observer name convention
+
+    bool on_payload(istreambuf_type&);
     bool on_notify(const embr::coap::event::option&);
-    bool on_notify(embr::coap::event::completed, encoder_type&);
+    bool on_completed(encoder_type&);
 };
 
 

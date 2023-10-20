@@ -109,7 +109,7 @@ void AppContext::states::ledc_timer::on_option(const query& q)
 }
 
 
-bool AppContext::states::ledc_timer::completed(encoder_type& encoder)
+Header::Code AppContext::states::ledc_timer::completed(encoder_type& encoder)
 {
     esp_err_t ret = ledc_timer_config(&config);
 
@@ -117,17 +117,21 @@ bool AppContext::states::ledc_timer::completed(encoder_type& encoder)
 
     // TODO: Do BadRequest if we get INVALID_ARG
 
-    context.response_code = ret == ESP_OK ? Header::Code::Valid : Header::Code::InternalServerError;
-
-    return {};
+    return ret == ESP_OK ? Header::Code::Valid : Header::Code::InternalServerError;
 }
 
 
 AppContext::states::ledc_channel::ledc_channel(AppContext& context) : base{context}
 {
+    // TODO: Consider passing in channel # right away, which would be a greater commitment to
+    // channel-on-uri vs channel-on-query
+
     //config.channel.channel = (ledc_channel_t) channel;
-    config.channel = LEDC_CHANNEL_0;
-    config.timer_sel = LEDC_LS_TIMER;
+    //config.channel = LEDC_CHANNEL_0;
+    //config.timer_sel = LEDC_LS_TIMER;
+
+    config = ledc_channel_default;
+    config.gpio_num = -1;
 }
 
 void AppContext::states::ledc_channel::on_option(const query& q)
@@ -141,30 +145,54 @@ void AppContext::states::ledc_channel::on_option(const query& q)
     }
     else if(from_query(q, "timer_num", v).ec == 0)
     {
+        // DEBT: has_config mode we have to validate that 'pin' was specified
         config.timer_sel = (ledc_timer_t)v;
         has_config = true;
     }
 }
 
 
-bool AppContext::states::ledc_channel::completed(encoder_type& encoder)
+void AppContext::states::ledc_channel::on_payload(istreambuf_type& payload)
+{
+    estd::detail::basic_istream<istreambuf_type&> in(payload);
+
+    in >> *duty;
+}
+
+
+Header::Code AppContext::states::ledc_channel::completed(encoder_type& encoder)
 {
     if(!context.uri_int.has_value())
     {
-        return {};
+        return Header::Code::BadRequest;
     }
 
     Header::Code code = context.header().code();
+    esp_err_t ret;
+
+    config.channel = (ledc_channel_t) *context.uri_int;
+    
+    ESP_LOGI(TAG, "completed: got here: channel=%d duty=%d",
+        config.channel,
+        *duty);
+
+    if(has_config)
+    {
+        ret = ledc_channel_config(&config);
+
+        if(ret != ESP_OK) return Header::Code::InternalServerError;
+    }
 
     if(code == Header::Code::Put)
     {
-        //bool success = code == Header::Code::Put && uri_int.has_value();
+        if(!duty.has_value())   return Header::Code::BadRequest;
+
+        ret = ledc_set_duty_and_update(config.speed_mode, config.channel, *duty, 0);
+
+        if(ret != ESP_OK) return Header::Code::InternalServerError;
     }
 
-    config.channel = (ledc_channel_t) *context.uri_int;
-    ESP_LOGI(TAG, "completed: got here: channel=%d", config.channel);
-
-    return {};
+    return Header::Code::Valid;
 }
 
 
@@ -180,7 +208,7 @@ void AppContext::select_pwm_channel(const event::option& e)
         ESP_LOGD(TAG, "Selecting pwm gpio # %d", *uri_int);
 }
 
-
+/*
 void AppContext::put_pwm(istreambuf_type& streambuf)
 {
     if(!uri_int.has_value()) return;
@@ -220,4 +248,4 @@ void AppContext::completed_ledc_channel(encoder_type& encoder)
 
         response_code = success ? Header::Code::Valid : Header::Code::BadRequest;
     }
-}
+}*/
