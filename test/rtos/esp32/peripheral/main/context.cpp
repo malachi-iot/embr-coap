@@ -38,6 +38,9 @@ bool AppContext::on_notify(const event::option& e)
                     populate_uri_int(e);
             }
 
+            state.create(node, *this);
+
+            /*
             // DEBT: Not available, think we'd like to expose ::types - though
             // really we do want visitor
             //using state_types = decltype(state)::types;
@@ -54,11 +57,13 @@ bool AppContext::on_notify(const event::option& e)
                 state.emplace<T>(*this);
                 return true;
             });
+            */
             break;
         }
 
         case Option::UriQuery:
         {
+#if UNUSED
             const query q = split(e);
             const estd::string_view key = estd::get<0>(q);
             
@@ -83,6 +88,9 @@ bool AppContext::on_notify(const event::option& e)
                 i->on_option(q);
                 return true;
             });
+#else
+            state.on_uri_query(e, *this);
+#endif
 
             break;
         }
@@ -96,7 +104,7 @@ bool AppContext::on_notify(const event::option& e)
 
 bool AppContext::on_completed(encoder_type& encoder)
 {
-    return state.visit_index([&](auto i)
+    return state.state().visit_index([&](auto i)
     {
         Header::Code code = i->response();
 
@@ -145,11 +153,13 @@ bool AppContext::on_completed(encoder_type& encoder)
 
 void AppContext::on_payload(istreambuf_type& payload)
 {
+    state.on_payload(payload);
+    /*
     istream_type in(payload);
 
     state.visit_index([&]<estd::size_t I, Subtate T>(estd::variadic::v2::instance<I, T> i)
     {
         i->on_payload(in);
         return true;
-    });
+    }); */
 }

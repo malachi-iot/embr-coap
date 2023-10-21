@@ -23,7 +23,7 @@ void AppContext::states::gpio::on_payload(istream_type& in)
 
 Header::Code AppContext::states::gpio::response() const
 {
-    return (context.uri_int.has_value() && level.has_value()) ?
+    return context.uri_int.has_value() ?
         Header::Code::Empty :
         Header::Code::BadRequest;
 }
@@ -61,13 +61,22 @@ bool AppContext::states::gpio::completed(encoder_type& encoder)
         {
             // We could do most of this in 'payload' area, but that
             // makes it hard to handle response codes
-            gpio.set_direction(GPIO_MODE_OUTPUT);
-            esp_err_t ret = gpio.level(*level);
-            ESP_LOGI(TAG, "write pin=%d: level=%d", pin, *level);
-            int code = (ret == ESP_OK) ?
-                Header::Code::Changed :
-                Header::Code::InternalServerError;
+            int code;
+
+            if(level.has_value())
+            {
+                gpio.set_direction(GPIO_MODE_OUTPUT);
+                esp_err_t ret = gpio.level(*level);
+                ESP_LOGI(TAG, "write pin=%d: level=%d", pin, *level);
+                code = (ret == ESP_OK) ?
+                    Header::Code::Changed :
+                    Header::Code::InternalServerError;
+            }
+            else
+                code = Header::Code::BadRequest;
+
             build_reply(context, encoder, code);
+            context.reply(encoder);
             break;
         }
 

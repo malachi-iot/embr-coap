@@ -149,13 +149,10 @@ struct AppContext :
         };
     };
 
-    template <Subtate ...Substates>
-    using substates = estd::variant<Substates...>;
-
     // NOTE: This is likely a better job for variant_storage, since we know based on URI which particular
     // state we're interested in and additionally we'd prefer not to initialize *any* - so in other words
     // somewhere between a union and a variant, which is what variant_storage really is
-    substates<
+    CoapSubcontext<
         states::unknown,
         states::analog,
         states::ledc_timer,
