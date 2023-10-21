@@ -17,25 +17,11 @@
 
 #include "features.h"
 #include "paths.h"
+#include "subcontext.h"
 
 extern const embr::coap::internal::UriPathMap uri_map[];
 
 
-template <class T>
-concept Subtate = requires(T s)
-{
-    //using query = estd::pair<estd::string_view, estd::string_view>;
-    s.on_option(estd::pair<estd::string_view, estd::string_view>{});
-    []<class Payload>(Payload& p) { std::declval<T>().on_payload(p); };
-    []<class Encoder>(Encoder& e) { std::declval<T>().completed(e); };
-    //s.id_path;
-    { T::id_path } -> std::convertible_to<int>;
-};
-
-// Looking into https://stackoverflow.com/questions/64694218/how-to-express-concepts-over-variadic-template
-// But this isn't quite there
-//template <class ...Args>
-//concept Substates = (Substate(Args) && ...)
 
 struct AppContext : 
     embr::coap::LwipIncomingContext,
@@ -187,6 +173,5 @@ struct AppContext :
 void initialize_sntp();
 void initialize_mdns();
 void send_time_response(AppContext& context, AppContext::encoder_type& encoder);
-AppContext::query split(const embr::coap::event::option& e);
 embr::coap::Header::Code get_coap_code(esp_err_t);
 
