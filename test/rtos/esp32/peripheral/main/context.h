@@ -51,18 +51,6 @@ struct AppContext :
         const ip_addr_t* addr,
         uint16_t port);
 
-    // Gathered from option URI
-    union
-    {
-        /*
-        struct
-        {
-            estd::layer1::optional<int16_t, -1> pin;
-
-        }   gpio;
-        */
-    };
-
     // (last) integer which appears on URI list
     estd::layer1::optional<int16_t, -1> uri_int;
 
@@ -85,6 +73,9 @@ struct AppContext :
         struct unknown : undefined
         {
             static constexpr int id_path = -1;
+
+            unknown() = default;
+            constexpr unknown(AppContext&) {}   // dummy, just for factory to be satisfied
         };
 
         struct base : undefined
@@ -169,26 +160,7 @@ struct AppContext :
         states::gpio,
         states::ledc_channel> state;
 
-    /*
-    enum states_enum
-    {
-        STATE_UNDEFINED,
-        STATE_LEDC_TIMER,
-        STATE_GPIO,
-        STATE_LEDC_CHANNEL
-    };  */
-
-    estd::layer1::optional<uint16_t, 0xFFFF> pwm_value;
-
-    //void select_gpio(const embr::coap::event::option& e);
-    void select_pwm_channel(const embr::coap::event::option&);
-    //void put_gpio(istreambuf_type& payload);
-
-    //void put_pwm(istreambuf_type& payload);
-    //void completed_gpio(encoder_type&);
-
     void completed_analog(encoder_type&);
-    //void completed_ledc_channel(encoder_type&);
 
     // NOTE: These only coincidentally conform to subject/observer name convention
 

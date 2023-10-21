@@ -76,129 +76,14 @@ struct Observer
     }
 
 
-    using query = AppContext::query;
-
-/*
-    static query on_uri_query(const event::option& e, AppContext& context)
-    {
-        const query q = split(e);
-        const estd::string_view key = estd::get<0>(q);
-        const estd::string_view value = estd::get<1>(q);
-        
-        if(key.data() == nullptr)
-        {
-            // NOTE: In our case we require key=value format.  But I believe URIs
-            // in general are more free form.  So, this IS a malformed query, but
-            // only in the context of this application - not a CoAP URI
-            ESP_LOGI(TAG, "malformed query: %.*s", e.chunk.size(), e.string().data());
-            return q;
-        }
-
-        unsigned v;
-
-        switch(context.state.index())
-        {
-            case AppContext::STATE_LEDC_TIMER:
-            {
-                auto& s = estd::get<AppContext::states::ledc_timer>(context.state);
-
-                // Later consider bringing out timer_num
-                if(from_query(q, "freq_hz", s.config.freq_hz).ec == 0)
-                {
-                }
-                else if(from_query(q, "duty_resolution", v).ec == 0)
-                {
-                    // DEBT: esp-idf the enum matches up, but I don't think
-                    // that's promised anywhere
-                    s.config.duty_resolution = (ledc_timer_bit_t)v;
-                }
-                break;
-            }
-
-            case AppContext::STATE_LEDC_CHANNEL:
-            {
-                auto& s = estd::get<AppContext::states::ledc_channel>(context.state);
-
-                // If only duty, don't do channel init
-                if(from_query(q, "duty", s.config.duty).ec == 0)
-                {
-                }
-                else if(from_query(q, "channel", v).ec == 0)
-                {
-                    s.has_config = true;
-                    s.config.channel = (ledc_channel_t) v;
-                }
-                else if(key.compare("pin") == 0)
-                {
-                    // DEBT: Pay attention to return value
-                    from_string(value, v);
-
-                    ESP_LOGD(TAG, "on_uri_query: pin=%u", v);
-
-                    s.has_config = true;
-                    s.config.gpio_num = v;
-                }
-                break;
-            }
-
-            default:
-                break;
-        }
-
-        return q;
-    } */
-
-
     static void on_notify(const event::option& e, AppContext& context)
     {
         context.on_notify(e);
-
-        /*
-        if(e.option_number == Option::UriQuery)
-        {
-            on_uri_query(e, context);
-            return;
-        }
-
-        if(e.option_number != Option::UriPath) return;
-
-        switch(context.found_node())
-        {
-            case id_path_v1_api_gpio_value:
-                context.state.emplace<AppContext::states::gpio>(context);
-                context.select_gpio(e);
-                break;
-
-            case id_path_v1_api_pwm:
-                context.state.emplace<AppContext::states::ledc_timer>(context);
-                break;
-
-            case id_path_v1_api_pwm_value:
-                context.state.emplace<AppContext::states::ledc_channel>(context);
-                context.select_pwm_channel(e);
-                break;
-        }   */
     }
 
     static void on_notify(event::streambuf_payload<istreambuf_type> e, AppContext& context)
     {
         context.on_payload(e.streambuf);
-
-        /*
-        switch(context.found_node())
-        {
-            case id_path_v1_api_gpio_value:
-                context.put_gpio(e.streambuf);
-                break;
-
-            case id_path_v1_api_pwm:
-                // DEBT: Eventually gather timer # here
-                break;
-
-            case id_path_v1_api_pwm_value:
-                //context.put_pwm(e.streambuf);
-                break;
-        } */
     }
 
     
