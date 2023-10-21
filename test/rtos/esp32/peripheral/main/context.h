@@ -161,7 +161,6 @@ struct AppContext :
 
     // NOTE: These only coincidentally conform to subject/observer name convention
 
-    void on_payload(istreambuf_type&);
     bool on_notify(const embr::coap::event::option&);
     bool on_completed(encoder_type&);
 };

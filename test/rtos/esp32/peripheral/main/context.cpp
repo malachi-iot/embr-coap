@@ -62,38 +62,8 @@ bool AppContext::on_notify(const event::option& e)
         }
 
         case Option::UriQuery:
-        {
-#if UNUSED
-            const query q = split(e);
-            const estd::string_view key = estd::get<0>(q);
-            
-            if(key.data() == nullptr)
-            {
-                // NOTE: In our case we require key=value format.  But I believe URIs
-                // in general are more free form.  So, this IS a malformed query, but
-                // only in the context of this application - not a CoAP URI
-                ESP_LOGI(TAG, "malformed query: %.*s", e.chunk.size(), e.string().data());
-                return false;
-            }
-
-            /* from_query already does this, but I think I might prefer it here
-            const estd::string_view value = estd::get<1>(q);
-
-            ESP_LOGV(TAG, "on_notify: uri-query key=%.*s value=%.*s",
-                key.size(), key.data(),
-                value.size(), value.data());    */
-
-            state.visit_index([&]<estd::size_t I, Subtate T>(estd::variadic::v2::instance<I, T> i)
-            {
-                i->on_option(q);
-                return true;
-            });
-#else
             state.on_uri_query(e, *this);
-#endif
-
             break;
-        }
 
         default: return false;
     }
@@ -104,6 +74,9 @@ bool AppContext::on_notify(const event::option& e)
 
 bool AppContext::on_completed(encoder_type& encoder)
 {
+    return state.on_completed(encoder, *this);
+
+    /*
     return state.state().visit_index([&](auto i)
     {
         Header::Code code = i->response();
@@ -113,53 +86,6 @@ bool AppContext::on_completed(encoder_type& encoder)
         else
             response_code = code;
 
-        return true;
-    });
-
-    /*
-    switch(found_node())
-    {
-        case id_path_v1_api_analog:
-        {
-            const Header::Code c = estd::get<states::analog>(state).completed(encoder);
-            // DEBT: Slightly clumsy this handling of response code
-            if(c != Header::Code::Empty)    response_code = c;
-            break;
-        }
-            
-        case id_path_v1_api_gpio_value:
-        {
-            const Header::Code c = estd::get<states::gpio>(state).completed(encoder);
-            // DEBT: Slightly clumsy this handling of response code
-            if(c != Header::Code::Empty)    response_code = c;
-            break;
-        }
-
-        case id_path_v1_api_pwm:
-            response_code = estd::get<states::ledc_timer>(state).completed(encoder);
-            break;
-
-        case id_path_v1_api_pwm_value:
-            //completed_ledc_channel(encoder);
-            response_code = estd::get<states::ledc_channel>(state).completed(encoder);
-            break;
-
-        default:    return false;
-    }
-
-    return true; */
-}
-
-
-void AppContext::on_payload(istreambuf_type& payload)
-{
-    state.on_payload(payload);
-    /*
-    istream_type in(payload);
-
-    state.visit_index([&]<estd::size_t I, Subtate T>(estd::variadic::v2::instance<I, T> i)
-    {
-        i->on_payload(in);
         return true;
     }); */
 }

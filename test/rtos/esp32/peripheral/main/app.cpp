@@ -83,7 +83,7 @@ struct Observer
 
     static void on_notify(event::streambuf_payload<istreambuf_type> e, AppContext& context)
     {
-        context.on_payload(e.streambuf);
+        context.state.on_payload(e.streambuf);
     }
 
     

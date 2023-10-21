@@ -53,8 +53,8 @@ public:
     template <class Streambuf>
     void on_payload(Streambuf&);
 
-    template <class Encoder>
-    bool on_completed(Encoder&);
+    template <class Encoder, class Context>
+    bool on_completed(Encoder&, Context&);
 };
 
 
@@ -118,4 +118,26 @@ void CoapSubcontext<Substates...>::on_payload(Streambuf& s)
     estd::detail::basic_istream<Streambuf&> in(s);
 
     visit([&]<Subtate S>(S &s) { s.on_payload(in); });
+}
+
+
+/// Returns whether or not subcontext picked up and processed request
+/// Note that populating auto response_code does count as a pickup
+template <Subtate ...Substates>
+template <class Encoder, class Context>
+bool CoapSubcontext<Substates...>::on_completed(Encoder& encoder, Context& context)
+{
+    using C = embr::coap::Header::Code;
+
+    return state_.visit_index([&]<unsigned I, Subtate T>(estd::variadic::instance<I, T> i)
+    {
+        C code = i->response();
+
+        if(code == C::Empty)
+            return i->completed(encoder);
+        else
+            context.response_code = code;
+
+        return true;
+    }) != -1;
 }

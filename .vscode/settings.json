@@ -80,6 +80,16 @@
         "set": "cpp",
         "stop_token": "cpp",
         "condition_variable": "cpp",
-        "memory_resource": "cpp"
+        "memory_resource": "cpp",
+        "atomic": "cpp",
+        "compare": "cpp",
+        "concepts": "cpp",
+        "algorithm": "cpp",
+        "iterator": "cpp",
+        "numeric": "cpp",
+        "optional": "cpp",
+        "numbers": "cpp",
+        "ranges": "cpp",
+        "span": "cpp"
     }
 }
