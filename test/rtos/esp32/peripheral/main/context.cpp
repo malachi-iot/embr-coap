@@ -42,12 +42,11 @@ bool AppContext::on_notify(const event::option& e)
             // really we do want visitor
             //using state_types = decltype(state)::types;
             //using state_visitor = decltype(state)::visitor;
-            // DEBT: Would really like to use 'Substate' here for T but it's not playin gnice
             // DEBT: 'visit' naming here a little dubious, because we usually have no business visiting
             // all the instances in a variant.  This is an exceptional case.  Perhaps we should rename
             // it to 'visit_instance' to reflect that? - just as variant_storage does
             // We aren't actually using the instance here anyway
-            state.visit([this, node]<unsigned I, class T>(estd::variadic::v2::instance<I, T> vi)
+            state.visit([this, node]<unsigned I, Subtate T>(estd::variadic::v2::instance<I, T> vi)
             {
                 // All that above DEBT aside, we have a badass emplace factory!
                 if(node != T::id_path) return false;
@@ -79,7 +78,7 @@ bool AppContext::on_notify(const event::option& e)
                 key.size(), key.data(),
                 value.size(), value.data());    */
 
-            state.visit_index([&]<estd::size_t I, class T>(estd::variadic::v2::instance<I, T> i)
+            state.visit_index([&]<estd::size_t I, Subtate T>(estd::variadic::v2::instance<I, T> i)
             {
                 i->on_option(q);
                 return true;
@@ -108,12 +107,15 @@ bool AppContext::on_completed(encoder_type& encoder)
     switch(found_node())
     {
         case id_path_v1_api_analog:
-            completed_analog(encoder);
+        {
+            const Header::Code c = estd::get<states::analog>(state).completed(encoder);
+            // DEBT: Slightly clumsy this handling of response code
+            if(c != Header::Code::Empty)    response_code = c;
             break;
+        }
             
         case id_path_v1_api_gpio_value:
         {
-            //completed_gpio(encoder);
             const Header::Code c = estd::get<states::gpio>(state).completed(encoder);
             // DEBT: Slightly clumsy this handling of response code
             if(c != Header::Code::Empty)    response_code = c;
@@ -140,7 +142,7 @@ void AppContext::on_payload(istreambuf_type& payload)
 {
     istream_type in(payload);
 
-    state.visit_index([&]<estd::size_t I, class T>(estd::variadic::v2::instance<I, T> i)
+    state.visit_index([&]<estd::size_t I, Subtate T>(estd::variadic::v2::instance<I, T> i)
     {
         i->on_payload(in);
         return true;

@@ -119,7 +119,7 @@ struct AppContext :
             ledc_timer(AppContext&);
 
             void on_option(const query&);
-            code_type completed(encoder_type&);
+            code_type completed(encoder_type&) const;
         };
 
         struct ledc_channel : base
@@ -142,9 +142,6 @@ struct AppContext :
 
             void on_option(const query&);
             void on_payload(istream_type&);
-            // DEBT: variant visit_index seems to require const, which at the moment
-            // doesn't hurt us but is incorrect behavior.  So a FIX, but softer since
-            // we're sidestepping it so far
             code_type completed(encoder_type&);
         };
     };
@@ -162,8 +159,6 @@ struct AppContext :
         states::gpio,
         states::ledc_channel> state;
 
-    void completed_analog(encoder_type&);
-
     // NOTE: These only coincidentally conform to subject/observer name convention
 
     void on_payload(istreambuf_type&);
@@ -176,4 +171,5 @@ void initialize_sntp();
 void initialize_mdns();
 void send_time_response(AppContext& context, AppContext::encoder_type& encoder);
 AppContext::query split(const embr::coap::event::option& e);
+embr::coap::Header::Code get_coap_code(esp_err_t);
 

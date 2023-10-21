@@ -109,7 +109,7 @@ void AppContext::states::ledc_timer::on_option(const query& q)
 }
 
 
-Header::Code AppContext::states::ledc_timer::completed(encoder_type& encoder)
+Header::Code AppContext::states::ledc_timer::completed(encoder_type& encoder) const
 {
     esp_err_t ret = ledc_timer_config(&config);
 
