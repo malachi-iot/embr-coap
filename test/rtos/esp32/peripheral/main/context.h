@@ -46,45 +46,7 @@ struct AppContext :
     {
         using code_type = embr::coap::Header::Code;
 
-        struct undefined
-        {
-            static bool constexpr on_option(const query&) { return {}; }
-            static bool constexpr on_payload(istream_type&) { return {}; }
-            static constexpr code_type response()
-            {
-                return code_type::Empty;
-            }
-            static constexpr bool completed(encoder_type&)
-            {
-                return {};
-            }
-        };
-
-        struct unknown : undefined
-        {
-            static constexpr int id_path = -1;
-
-            unknown() = default;
-            constexpr unknown(AppContext&) {}   // dummy, just for factory to be satisfied
-        };
-
-        struct base : undefined
-        {
-            AppContext& context;
-
-            const embr::coap::Header& header() const
-            {
-                return context.header();
-            }
-
-            /*
-            void build_reply(encoder_type& e, code_type c)
-            {
-                embr::coap::build_reply(context, encoder, code);
-            }   */
-
-            constexpr base(AppContext& c) : context{c} {}
-        };
+        using base = CoapSubcontextBase::base<AppContext>;
 
         struct analog : base
         {
@@ -153,7 +115,6 @@ struct AppContext :
     // state we're interested in and additionally we'd prefer not to initialize *any* - so in other words
     // somewhere between a union and a variant, which is what variant_storage really is
     CoapSubcontext<
-        states::unknown,
         states::analog,
         states::ledc_timer,
         states::gpio,
