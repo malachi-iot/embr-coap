@@ -160,12 +160,10 @@ void AppContext::states::ledc_channel::on_payload(istream_type& in)
 
 Header::Code AppContext::states::ledc_channel::response()
 {
-    if(!context.uri_int.has_value())
-    {
-        return Header::Code::BadRequest;
-    }
+    using C = Header::Code;
 
-    Header::Code code = header().code();
+    if(!context.uri_int.has_value())    return C::BadRequest;
+
     esp_err_t ret;
 
     config.channel = (ledc_channel_t) *context.uri_int;
@@ -176,21 +174,23 @@ Header::Code AppContext::states::ledc_channel::response()
 
     if(has_config)
     {
+        if(duty.has_value())
+            config.duty = *duty;
+
         ret = ledc_channel_config(&config);
 
-        if(ret != ESP_OK) return Header::Code::InternalServerError;
+        if(ret != ESP_OK) return C::InternalServerError;
     }
-
-    if(code == Header::Code::Put)
+    else if(header().code() == C::Put)
     {
-        if(!duty.has_value())   return Header::Code::BadRequest;
+        if(!duty.has_value())   return C::BadRequest;
 
         ret = ledc_set_duty_and_update(config.speed_mode, config.channel, *duty, 0);
 
-        if(ret != ESP_OK) return Header::Code::InternalServerError;
+        if(ret != ESP_OK) return C::InternalServerError;
     }
 
-    return Header::Code::Valid;
+    return C::Valid;
 }
 
 

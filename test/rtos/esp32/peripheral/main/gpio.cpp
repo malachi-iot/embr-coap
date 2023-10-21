@@ -23,7 +23,7 @@ void AppContext::states::gpio::on_payload(istream_type& in)
 
 Header::Code AppContext::states::gpio::response() const
 {
-    return context.uri_int.has_value() ?
+    return (context.uri_int.has_value() && level.has_value()) ?
         Header::Code::Empty :
         Header::Code::BadRequest;
 }
