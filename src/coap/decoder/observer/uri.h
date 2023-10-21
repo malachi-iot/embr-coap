@@ -51,18 +51,21 @@ struct UriParserObserver
     // TODO: Put this elsewhere in a reusable component
     static void on_notify(const event::option& e, UriParserContext& ctx)
     {
-#ifdef ESTD_IDF_VER
-        // Only here to help diagnose event-not-firing stuff
-        ESP_LOGD(TAG, "on_notify(option)=%d", e.option_number);
-#endif
-
         switch(e.option_number)
         {
             case embr::coap::Option::UriPath:
                 ctx.uri_matcher().find(e.string());
+#ifdef ESTD_IDF_VER
+                ESP_LOGD(TAG, "on_notify(option)=uri-path \"%.*s\"",
+                    e.string().size(), e.string().data());
+#endif
                 break;
 
             default:
+#ifdef ESTD_IDF_VER
+                // Only here to help diagnose event-not-firing stuff
+                ESP_LOGD(TAG, "on_notify(option)=%d", e.option_number);
+#endif
                 break;
         }
     }

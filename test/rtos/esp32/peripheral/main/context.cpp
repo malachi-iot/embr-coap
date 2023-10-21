@@ -1,4 +1,5 @@
 #include "context.h"
+#include "from_query.h"
 
 // DEBT: Needed for encoder/streambuf.h finalize to compile -
 // fix this because we aren't even calling finalize here
@@ -7,14 +8,15 @@
 
 using namespace embr::coap;
 
+
 void AppContext::populate_uri_int(const event::option& e)
 {
-    // DEBT: As is the case all over, 'chunk' is assumed to be complete
+    // DEBT: As is the case all over, 'string' is assumed to be complete
     // data here
-    auto option = (const char*) e.chunk.data();
-    
-    if(estd::from_chars(option, option + e.chunk.size(), *uri_int).ec == 0)
-        ESP_LOGD(TAG, "Selecting gpio # %d", *uri_int);
+    if(from_string(e.string(), *uri_int).ec == 0)
+        ESP_LOGV(TAG, "Found uri int=%d", *uri_int);
+    else
+        ESP_LOGD(TAG, "Was expecting uri int, but found none");
 }
 
 bool AppContext::on_notify(const event::option& e)
@@ -22,11 +24,23 @@ bool AppContext::on_notify(const event::option& e)
     switch(e.option_number)
     {
         case Option::UriPath:
-            // DEBT: Not too bad but a little sloppy
-            if(e.string().front() == '*')
-                populate_uri_int(e);
+        {
+            const int node = found_node();
 
-            switch(found_node())
+            if(node >= 0)
+            {
+                const embr::coap::internal::UriPathMap* current = uri_matcher().current();
+
+                ESP_LOGV(TAG, "on_notify(option)=uri-path matched=%s",
+                    current->first.data());
+
+                if(current->first[0] == '*')
+                {
+                    populate_uri_int(e);
+                }
+            }
+
+            switch(node)
             {
                 case id_path_v1_api_analog:
                     state.emplace<states::analog>(*this);
@@ -45,6 +59,7 @@ bool AppContext::on_notify(const event::option& e)
                     break;
             }
             break;
+        }
 
         case Option::UriQuery:
         {

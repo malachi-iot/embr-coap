@@ -88,6 +88,11 @@ struct UriPathMatcher
     {
         return parent_id;
     }
+
+    ESTD_CPP_CONSTEXPR_RET const UriPathMap* current() const
+    {
+        return _current;
+    }
 };
 
 }}}

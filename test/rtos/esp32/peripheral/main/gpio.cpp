@@ -120,7 +120,7 @@ void AppContext::states::gpio::on_payload(istream_type& in)
 
 Header::Code AppContext::states::gpio::completed(encoder_type& encoder)
 {
-    if(!context.uri_int.value()) return Header::Code::BadRequest;
+    if(!context.uri_int.has_value()) return Header::Code::BadRequest;
 
     int pin = *context.uri_int;
     Header::Code code = context.header().code();
@@ -133,7 +133,7 @@ Header::Code AppContext::states::gpio::completed(encoder_type& encoder)
         {
             int val = gpio.level();
 
-            ESP_LOGI(TAG, "gpio: pin=%d level=%d", pin, val);
+            ESP_LOGI(TAG, "read pin=%d: level=%d", pin, val);
 
             build_reply(context, encoder, Header::Code::Content);
 
@@ -148,6 +148,9 @@ Header::Code AppContext::states::gpio::completed(encoder_type& encoder)
             out << val;
 
             context.reply(encoder);
+
+            // DEBT: Indicates to not auto deduce return code and instead
+            // use code indicated by build_reply.  A little big sloppy and magical
             return Header::Code::Empty;
         }
 

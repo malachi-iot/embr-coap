@@ -18,6 +18,9 @@
 #include "features.h"
 #include "paths.h"
 
+extern const embr::coap::internal::UriPathMap uri_map[];
+
+
 template <class T>
 concept Subtate = requires(T s)
 {
@@ -58,10 +61,10 @@ struct AppContext :
 
         }   gpio;
         */
-
-        // (last) integer which appears on URI list
-        estd::layer1::optional<int16_t, -1> uri_int;
     };
+
+    // (last) integer which appears on URI list
+    estd::layer1::optional<int16_t, -1> uri_int;
 
     void populate_uri_int(const embr::coap::event::option&);
 

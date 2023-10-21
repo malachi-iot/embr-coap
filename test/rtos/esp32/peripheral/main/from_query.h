@@ -9,7 +9,8 @@
 //template <class Impl, class Int>
 //static estd::from_chars_result from_string(
 //    const estd::detail::basic_string<Impl>& s, Int& v)
-// DEBT: Consider placing this directly into estd, seems useful
+// DEBT: Consider placing this directly into estd, seems useful, though a more thorough
+// implementation of stoi and friends might be better
 // DEBT: Filter Int by numeric/int
 template <class Int>
 static estd::from_chars_result from_string(

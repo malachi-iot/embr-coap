@@ -72,7 +72,7 @@ struct Observer
 
     static void on_notify(event::option_start, AppContext& context)
     {
-        context.uri_int.reset();
+        //context.uri_int.reset();
     }
 
 
