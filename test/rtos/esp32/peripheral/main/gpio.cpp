@@ -12,6 +12,8 @@ using namespace embr::coap;
 
 //static const char* TAG = "AppContext::gpio";
 
+/*
+
 // NOTE: Expects to run at 'option' event.  Not 'option_completed' because we need
 // to extract the particular GPIO value when it appears
 void AppContext::select_gpio(const event::option& e)
@@ -105,7 +107,7 @@ void AppContext::completed_gpio(encoder_type& encoder)
         response_code = success ? Header::Code::Valid : Header::Code::BadRequest;
     }
 }
-
+*/
 
 void AppContext::states::gpio::on_payload(istream_type& in)
 {

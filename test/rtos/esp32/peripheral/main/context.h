@@ -1,5 +1,7 @@
 #pragma once
 
+#include <concepts>
+
 #include <esp_log.h>
 
 #include <estd/optional.h>
@@ -14,21 +16,23 @@
 #include <coap/decoder/observer/util.h>
 
 #include "features.h"
+#include "paths.h"
 
 template <class T>
 concept Subtate = requires(T s)
 {
     //using query = estd::pair<estd::string_view, estd::string_view>;
     s.on_option(estd::pair<estd::string_view, estd::string_view>{});
+    []<class Payload>(Payload& p) { std::declval<T>().on_payload(p); };
+    []<class Encoder>(Encoder& e) { std::declval<T>().completed(e); };
+    //s.id_path;
+    { T::id_path } -> std::convertible_to<int>;
 };
 
 // Looking into https://stackoverflow.com/questions/64694218/how-to-express-concepts-over-variadic-template
 // But this isn't quite there
 //template <class ...Args>
 //concept Substates = (Substate(Args) && ...)
-
-template <class ...Substates>
-using substates = estd::variant<Substates...>;
 
 struct AppContext : 
     embr::coap::LwipIncomingContext,
@@ -47,11 +51,13 @@ struct AppContext :
     // Gathered from option URI
     union
     {
+        /*
         struct
         {
             estd::layer1::optional<int16_t, -1> pin;
 
         }   gpio;
+        */
 
         // (last) integer which appears on URI list
         estd::layer1::optional<int16_t, -1> uri_int;
@@ -73,6 +79,11 @@ struct AppContext :
             }
         };
 
+        struct unknown : undefined
+        {
+            static constexpr int id_path = -1;
+        };
+
         struct base : undefined
         {
             AppContext& context;
@@ -80,11 +91,18 @@ struct AppContext :
             constexpr base(AppContext& c) : context{c} {}
         };
 
-        using analog = base;
+        struct analog : base
+        {
+            static constexpr int id_path = id_path_v1_api_analog;
+
+            constexpr analog(AppContext& c) : base{c} {}
+        };
 
         struct gpio : base
         {
             static constexpr const char* TAG = "states::gpio";
+
+            static constexpr int id_path = id_path_v1_api_gpio_value;
 
             constexpr gpio(AppContext& c) : base(c) {}
 
@@ -98,6 +116,8 @@ struct AppContext :
         {
             static constexpr const char* TAG = "states::ledc_timer";
 
+            static constexpr int id_path = id_path_v1_api_pwm;
+
             ledc_timer_config_t config;
 
             ledc_timer(AppContext&);
@@ -109,6 +129,8 @@ struct AppContext :
         struct ledc_channel : base
         {
             static constexpr const char* TAG = "states::ledc_channel";
+
+            static constexpr int id_path = id_path_v1_api_pwm_value;
 
             // DEBT: Use embr::esp_idf::ledc here
 
@@ -131,11 +153,14 @@ struct AppContext :
         };
     };
 
+    template <Subtate ...Substates>
+    using substates = estd::variant<Substates...>;
+
     // NOTE: This is likely a better job for variant_storage, since we know based on URI which particular
     // state we're interested in and additionally we'd prefer not to initialize *any* - so in other words
     // somewhere between a union and a variant, which is what variant_storage really is
     substates<
-        states::undefined,
+        states::unknown,
         states::analog,
         states::ledc_timer,
         states::gpio,
@@ -152,12 +177,12 @@ struct AppContext :
 
     estd::layer1::optional<uint16_t, 0xFFFF> pwm_value;
 
-    void select_gpio(const embr::coap::event::option& e);
+    //void select_gpio(const embr::coap::event::option& e);
     void select_pwm_channel(const embr::coap::event::option&);
-    void put_gpio(istreambuf_type& payload);
+    //void put_gpio(istreambuf_type& payload);
 
     //void put_pwm(istreambuf_type& payload);
-    void completed_gpio(encoder_type&);
+    //void completed_gpio(encoder_type&);
 
     void completed_analog(encoder_type&);
     //void completed_ledc_channel(encoder_type&);
@@ -174,20 +199,4 @@ void initialize_sntp();
 void initialize_mdns();
 void send_time_response(AppContext& context, AppContext::encoder_type& encoder);
 AppContext::query split(const embr::coap::event::option& e);
-
-enum
-{
-    id_path_v1 = 0,
-    id_path_v1_api,
-    id_path_v1_api_analog,
-    id_path_v1_api_gpio,
-    id_path_v1_api_time,
-    id_path_v1_api_gpio_value,
-    id_path_v1_api_pwm,
-    id_path_v1_api_pwm_value,
-
-    id_path_well_known,
-    id_path_well_known_core
-};
-
 
