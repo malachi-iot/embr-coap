@@ -20,16 +20,20 @@ void AppContext::states::gpio::on_payload(istream_type& in)
     if(in >> v) level = v;
 }
 
-Header::Code AppContext::states::gpio::completed(encoder_type& encoder)
+
+Header::Code AppContext::states::gpio::response() const
 {
-    if(!context.uri_int.has_value()) return Header::Code::BadRequest;
+    return context.uri_int.has_value() ?
+        Header::Code::Empty :
+        Header::Code::BadRequest;
+}
 
+bool AppContext::states::gpio::completed(encoder_type& encoder)
+{
     int pin = *context.uri_int;
-    Header::Code code = context.header().code();
     embr::esp_idf::gpio gpio((gpio_num_t) pin);
-    esp_err_t ret;
 
-    switch(code)
+    switch(header().code())
     {
         case Header::Code::Get:
         {
@@ -50,22 +54,25 @@ Header::Code AppContext::states::gpio::completed(encoder_type& encoder)
             out << val;
 
             context.reply(encoder);
-
-            // DEBT: Indicates to not auto deduce return code and instead
-            // use code indicated by build_reply.  A little big sloppy and magical
-            return Header::Code::Empty;
+            break;
         }
 
         case Header::Code::Put:
+        {
             // We could do most of this in 'payload' area, but that
             // makes it hard to handle response codes
             gpio.set_direction(GPIO_MODE_OUTPUT);
-            ret = gpio.level(*level);
+            esp_err_t ret = gpio.level(*level);
             ESP_LOGI(TAG, "write pin=%d: level=%d", pin, *level);
-            return ret == ESP_OK ?
+            int code = (ret == ESP_OK) ?
                 Header::Code::Changed :
                 Header::Code::InternalServerError;
+            build_reply(context, encoder, code);
+            break;
+        }
 
-        default:    return Header::Code::NotImplemented;
+        default:    return false;
     }
+
+    return true;
 }

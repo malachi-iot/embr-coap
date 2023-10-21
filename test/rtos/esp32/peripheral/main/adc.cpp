@@ -58,16 +58,25 @@ void initialize_adc()
     // being that ESP32 ADCs like to squish at the edges
 }
 
-Header::Code AppContext::states::analog::completed(encoder_type& encoder)
+Header::Code AppContext::states::analog::response() const
 {
     if(context.header().code() == Header::Code::Get)
+        return Header::Code::Empty;
+    else
+        return Header::Code::BadRequest;
+}
+
+bool AppContext::states::analog::completed(encoder_type& encoder)
+{
     {
         int raw;
-        esp_err_t ret;
+        esp_err_t ret = adc_oneshot_read(adc1_handle, ADC_CHANNEL, &raw);
 
-        ret = adc_oneshot_read(adc1_handle, ADC_CHANNEL, &raw);
-
-        if(ret != ESP_OK)   return Header::Code::InternalServerError;
+        if(ret != ESP_OK)
+        {
+            build_reply(context, encoder, Header::Code::InternalServerError);
+            return true;
+        }
 
         build_reply(context, encoder, Header::Code::Content);
 
@@ -82,13 +91,9 @@ Header::Code AppContext::states::analog::completed(encoder_type& encoder)
         out << raw;
 
         context.reply(encoder);
-
-        // DEBT: Signals to suppress auto-response-code and use
-        // what's in encoder.  Confusing.
-        return Header::Code::Empty;
     }
-    else
-        return Header::Code::BadRequest;
+
+    return true;
 }
 
 #else

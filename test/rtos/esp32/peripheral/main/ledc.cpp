@@ -109,7 +109,7 @@ void AppContext::states::ledc_timer::on_option(const query& q)
 }
 
 
-Header::Code AppContext::states::ledc_timer::completed(encoder_type& encoder) const
+Header::Code AppContext::states::ledc_timer::response() const
 {
     esp_err_t ret = ledc_timer_config(&config);
 
@@ -158,14 +158,14 @@ void AppContext::states::ledc_channel::on_payload(istream_type& in)
 }
 
 
-Header::Code AppContext::states::ledc_channel::completed(encoder_type& encoder)
+Header::Code AppContext::states::ledc_channel::response()
 {
     if(!context.uri_int.has_value())
     {
         return Header::Code::BadRequest;
     }
 
-    Header::Code code = context.header().code();
+    Header::Code code = header().code();
     esp_err_t ret;
 
     config.channel = (ledc_channel_t) *context.uri_int;

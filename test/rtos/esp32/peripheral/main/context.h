@@ -64,9 +64,13 @@ struct AppContext :
         {
             static bool constexpr on_option(const query&) { return {}; }
             static bool constexpr on_payload(istream_type&) { return {}; }
-            static constexpr code_type completed(encoder_type&)
+            static constexpr code_type response()
             {
-                return code_type::NotImplemented;
+                return code_type::Empty;
+            }
+            static constexpr bool completed(encoder_type&)
+            {
+                return {};
             }
         };
 
@@ -82,6 +86,17 @@ struct AppContext :
         {
             AppContext& context;
 
+            const embr::coap::Header& header() const
+            {
+                return context.header();
+            }
+
+            /*
+            void build_reply(encoder_type& e, code_type c)
+            {
+                embr::coap::build_reply(context, encoder, code);
+            }   */
+
             constexpr base(AppContext& c) : context{c} {}
         };
 
@@ -91,7 +106,8 @@ struct AppContext :
 
             constexpr analog(AppContext& c) : base{c} {}
 
-            code_type completed(encoder_type&);
+            code_type response() const;
+            bool completed(encoder_type&);
         };
 
         struct gpio : base
@@ -105,7 +121,8 @@ struct AppContext :
             estd::layer1::optional<bool> level;
 
             void on_payload(istream_type&);
-            code_type completed(encoder_type&);
+            code_type response() const;
+            bool completed(encoder_type&);
         };
 
         struct ledc_timer : base
@@ -119,7 +136,7 @@ struct AppContext :
             ledc_timer(AppContext&);
 
             void on_option(const query&);
-            code_type completed(encoder_type&) const;
+            code_type response() const;
         };
 
         struct ledc_channel : base
@@ -142,7 +159,7 @@ struct AppContext :
 
             void on_option(const query&);
             void on_payload(istream_type&);
-            code_type completed(encoder_type&);
+            code_type response();
         };
     };
 

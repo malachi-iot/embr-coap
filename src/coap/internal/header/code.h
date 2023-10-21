@@ -10,6 +10,11 @@ namespace internal { namespace header {
 
 class Code
 {
+    // DEBT: Why is this const?  We want to treat 'Code' more or less
+    // like a primitive/intrinsic in which case this would be freely
+    // assignable - perhaps I was thinking this indicates more of a
+    // gauruntee of assignment?  If so that's (obviously) covered
+    // by constructor arrangement
     const uint8_t code_;
 
 public:

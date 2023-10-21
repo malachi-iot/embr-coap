@@ -96,14 +96,19 @@ bool AppContext::on_notify(const event::option& e)
 
 bool AppContext::on_completed(encoder_type& encoder)
 {
-    /*
-     * Nearly there, need to sort out completed_analog & Header::Code::Empty
-    state.visit_index([&](auto i)
+    return state.visit_index([&](auto i)
     {
-        i->completed(encoder);
-        return true;
-    }); */
+        Header::Code code = i->response();
 
+        if(code == Header::Code::Empty)
+            return i->completed(encoder);
+        else
+            response_code = code;
+
+        return true;
+    });
+
+    /*
     switch(found_node())
     {
         case id_path_v1_api_analog:
@@ -134,7 +139,7 @@ bool AppContext::on_completed(encoder_type& encoder)
         default:    return false;
     }
 
-    return true;
+    return true; */
 }
 
 
