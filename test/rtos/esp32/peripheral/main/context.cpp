@@ -30,14 +30,12 @@ bool AppContext::on_notify(const event::option& e)
             if(node >= 0)
             {
                 const embr::coap::internal::UriPathMap* current = uri_matcher().current();
+                const char* match_uri = current->first.data();
 
-                ESP_LOGV(TAG, "on_notify(option)=uri-path matched=%s",
-                    current->first.data());
+                ESP_LOGV(TAG, "on_notify(option)=uri-path matched=%s", match_uri);
 
-                if(current->first[0] == '*')
-                {
+                if(match_uri[0] == '*')
                     populate_uri_int(e);
-                }
             }
 
             // DEBT: Not available, think we'd like to expose ::types - though
@@ -81,20 +79,12 @@ bool AppContext::on_notify(const event::option& e)
                 key.size(), key.data(),
                 value.size(), value.data());    */
 
-            switch(found_node())
+            state.visit_index([&]<estd::size_t I, class T>(estd::variadic::v2::instance<I, T> i)
             {
-                case id_path_v1_api_gpio_value:
-                    estd::get<states::gpio>(state).on_option(q);
-                    break;
+                i->on_option(q);
+                return true;
+            });
 
-                case id_path_v1_api_pwm:
-                    estd::get<states::ledc_timer>(state).on_option(q);
-                    break;
-
-                case id_path_v1_api_pwm_value:
-                    estd::get<states::ledc_channel>(state).on_option(q);
-                    break;
-            }
             break;
         }
 
@@ -107,12 +97,13 @@ bool AppContext::on_notify(const event::option& e)
 
 bool AppContext::on_completed(encoder_type& encoder)
 {
+    /*
+     * Nearly there, need to sort out completed_analog & Header::Code::Empty
     state.visit_index([&](auto i)
     {
-        // FIX: Mostly works, but always is a const
-        //return i->completed(encoder);
+        i->completed(encoder);
         return true;
-    });
+    }); */
 
     switch(found_node())
     {
@@ -145,22 +136,13 @@ bool AppContext::on_completed(encoder_type& encoder)
 }
 
 
-bool AppContext::on_payload(istreambuf_type& payload)
+void AppContext::on_payload(istreambuf_type& payload)
 {
     istream_type in(payload);
 
-    switch(found_node())
+    state.visit_index([&]<estd::size_t I, class T>(estd::variadic::v2::instance<I, T> i)
     {
-        case id_path_v1_api_gpio_value:
-            estd::get<states::gpio>(state).on_payload(in);
-            break;
-
-        case id_path_v1_api_pwm_value:
-            estd::get<states::ledc_channel>(state).on_payload(in);
-            break;
-
-        default:    return false;
-    }
-
-    return true;
+        i->on_payload(in);
+        return true;
+    });
 }

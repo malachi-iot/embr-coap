@@ -62,7 +62,7 @@ void initialize_ledc()
     ESP_ERROR_CHECK(ledc_fade_func_install(0));
 }
 
-
+/*
 void initialize_ledc_channel(ledc_channel_t channel, int gpio)
 {
     ledc_channel_config_t ledc_channel = {
@@ -85,7 +85,7 @@ void initialize_ledc_channel(ledc_channel_t channel, int gpio)
 
     ESP_ERROR_CHECK(ledc_channel_config(&ledc_channel));
 }
-
+*/
 
 AppContext::states::ledc_timer::ledc_timer(AppContext& context) : base{context}
 {

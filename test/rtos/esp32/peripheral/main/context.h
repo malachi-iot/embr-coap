@@ -90,6 +90,8 @@ struct AppContext :
             static constexpr int id_path = id_path_v1_api_analog;
 
             constexpr analog(AppContext& c) : base{c} {}
+
+            code_type completed(encoder_type&);
         };
 
         struct gpio : base
@@ -164,7 +166,7 @@ struct AppContext :
 
     // NOTE: These only coincidentally conform to subject/observer name convention
 
-    bool on_payload(istreambuf_type&);
+    void on_payload(istreambuf_type&);
     bool on_notify(const embr::coap::event::option&);
     bool on_completed(encoder_type&);
 };

@@ -58,6 +58,8 @@ void initialize_adc()
     // being that ESP32 ADCs like to squish at the edges
 }
 
+Header::Code AppContext::states::analog::completed(encoder_type&) { return Header::Code::NotImplemented; }
+
 void AppContext::completed_analog(encoder_type& encoder)
 {
     if(header().code() == Header::Code::Get)
