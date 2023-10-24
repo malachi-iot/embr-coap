@@ -49,7 +49,7 @@ struct CoapSubcontextBase
         unknown() = default;
 
         template <class Context>
-        constexpr unknown(Context&) {}   // dummy, just for factory to be satisfied
+        constexpr explicit unknown(Context&) {}   // dummy, just for factory to be satisfied
     };
 
     template <class Context>

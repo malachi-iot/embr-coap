@@ -87,7 +87,7 @@ bool CoapSubcontext<Substates...>::on_completed(Encoder& encoder, Context& conte
 {
     using C = embr::coap::Header::Code;
 
-    return state_.visit_index([&]<unsigned I, concepts::Substate T>(estd::variadic::instance<I, T> i)
+    return state_.visit_index([&]<std::size_t I, concepts::Substate T>(estd::variadic::instance<I, T> i)
     {
         C code = i->response();
 
