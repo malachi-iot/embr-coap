@@ -11,9 +11,12 @@ extern char synthetic_outbuf[128];
 
 }
 
+// 24OCT23 MB Is it time to make estd::internal::streambuf into estd::detail::streambuf?
 typedef estd::internal::streambuf<
     estd::internal::impl::out_span_streambuf<char> > out_span_streambuf_type;
 typedef embr::coap::StreambufEncoder<out_span_streambuf_type> span_encoder_type;
+typedef estd::internal::streambuf<
+    estd::internal::impl::in_span_streambuf<char> > in_span_streambuf_type;
 
 struct SyntheticBufferFactory
 {
@@ -35,6 +38,7 @@ struct SyntheticIncomingContext :
     typedef embr::coap::internal::EncoderFactory<
         estd::span<char>,
         SyntheticBufferFactory> encoder_factory;
+    typedef in_span_streambuf_type istreambuf_type;
 
     estd::span<char> out;
 

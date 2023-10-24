@@ -12,7 +12,7 @@ namespace embr { namespace coap { namespace esp_idf {
 inline namespace subcontext { inline namespace v1 {
 
 
-template <class Context, int id_path>
+template <ESTD_CPP_CONCEPT(concepts::IncomingContext) Context, int id_path>
 void gpio<Context, id_path>::on_payload(istream_type& in)
 {
     // Since layer1::optional bool is too specialized for
@@ -23,7 +23,7 @@ void gpio<Context, id_path>::on_payload(istream_type& in)
 }
 
 
-template <class Context, int id_path>
+template <ESTD_CPP_CONCEPT(concepts::IncomingContext) Context, int id_path>
 Header::Code gpio<Context, id_path>::response() const
 {
     // DEBT: Need to filter by Context that even *has* uri_int -OR- switch
@@ -34,7 +34,7 @@ Header::Code gpio<Context, id_path>::response() const
         Header::Code::BadRequest;
 }
 
-template <class Context, int id_path>
+template <ESTD_CPP_CONCEPT(concepts::IncomingContext) Context, int id_path>
 bool gpio<Context, id_path>::completed(encoder_type& encoder)
 {
     Context& c = base_type::context;

@@ -52,7 +52,7 @@ struct CoapSubcontextBase
         constexpr explicit unknown(Context&) {}   // dummy, just for factory to be satisfied
     };
 
-    template <class Context>
+    template <ESTD_CPP_CONCEPT(concepts::IncomingContext) Context>
     struct base : undefined
     {
         Context& context;
