@@ -1,6 +1,5 @@
-set(ROOT_DIR ${CMAKE_CURRENT_LIST_DIR}/../..)
+get_filename_component(ROOT_DIR ${CMAKE_CURRENT_LIST_DIR}/../.. ABSOLUTE)
 set(SRC_DIR ${ROOT_DIR}/src)
-get_filename_component(SRC_DIR ${SRC_DIR} ABSOLUTE)
 
 include(${SRC_DIR}/source.cmake)
 
@@ -11,10 +10,7 @@ set(COMPONENT_REQUIRES estdlib embr app_update)
 
 list(TRANSFORM SOURCE_FILES PREPEND ${SRC_DIR}/)
 
-set(COMPONENT_SRCS 
-    ${SOURCE_FILES}
-    ${SRC_DIR}/coap/platform/esp-idf/observer.cpp
-    )
+set(COMPONENT_SRCS ${SOURCE_FILES})
 
 set(COMPONENT_ADD_INCLUDEDIRS 
     ${ROOT_DIR}/src

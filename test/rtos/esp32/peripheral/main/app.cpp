@@ -23,6 +23,7 @@ using namespace embr::coap;
 #include <coap/platform/lwip/encoder.h>
 
 #include <coap/platform/api.hpp>
+#include <coap/platform/esp-idf/subcontext/gpio.hpp>
 
 
 using istreambuf_type = AppContext::istreambuf_type;

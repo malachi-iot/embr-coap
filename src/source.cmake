@@ -77,5 +77,10 @@ set(INCLUDE_FILES
         mc/encoder-base.h
         )
 
+if(ESP_PLATFORM)
+    set(SOURCE_FILES ${SOURCE_FILES}
+        coap/platform/esp-idf/observer.cpp)
+endif()
+
 set(DOC_FILES
         ${ROOT_DIR}/doc/references.md)

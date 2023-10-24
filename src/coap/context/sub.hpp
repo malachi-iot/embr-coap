@@ -1,3 +1,5 @@
+#pragma once
+
 #ifdef ESP_PLATFORM
 #include <esp_log.h>
 #endif
