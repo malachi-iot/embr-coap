@@ -46,7 +46,7 @@ struct AppContext :
     {
         using code_type = embr::coap::Header::Code;
 
-        using base = CoapSubcontextBase::base<AppContext>;
+        using base = embr::coap::internal::CoapSubcontextBase::base<AppContext>;
 
         struct analog : base
         {
@@ -111,10 +111,7 @@ struct AppContext :
         };
     };
 
-    // NOTE: This is likely a better job for variant_storage, since we know based on URI which particular
-    // state we're interested in and additionally we'd prefer not to initialize *any* - so in other words
-    // somewhere between a union and a variant, which is what variant_storage really is
-    CoapSubcontext<
+    embr::coap::CoapSubcontext<
         states::analog,
         states::ledc_timer,
         states::gpio,
