@@ -8,7 +8,9 @@ namespace embr { namespace coap { namespace esp_idf {
 
 inline namespace subcontext { inline namespace v1 {
 
-template <class Context>
+
+// DEBT: I'm thinking a wrapper to handle the id_path portion would be better
+template <class Context, int id_path_>
 struct gpio : coap::internal::v1::CoapSubcontextBase::base<Context>
 {
     using base_type = coap::internal::v1::CoapSubcontextBase::base<Context>;
@@ -16,11 +18,11 @@ struct gpio : coap::internal::v1::CoapSubcontextBase::base<Context>
     using encoder_type = typename Context::encoder_type;
     using istream_type = estd::detail::basic_istream<istreambuf_type&>;
 
-    static constexpr const char* TAG = "states::gpio";
+    static constexpr const char* TAG = "subcontext::gpio";
 
-    static constexpr int id_path = id_path_v1_api_gpio_value;
+    static constexpr int id_path = id_path_;
 
-    constexpr gpio(AppContext& c) : base_type(c) {}
+    constexpr gpio(Context& c) : base_type(c) {}
 
     estd::layer1::optional<bool> level;
 

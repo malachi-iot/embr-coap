@@ -5,6 +5,8 @@
 // fix this because we aren't even calling finalize here
 #include <coap/platform/lwip/encoder.h>
 
+#include <coap/platform/esp-idf/subcontext/gpio.hpp>
+
 
 using namespace embr::coap;
 

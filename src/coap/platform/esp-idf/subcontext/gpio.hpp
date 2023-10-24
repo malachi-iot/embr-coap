@@ -1,5 +1,7 @@
 #pragma once
 
+#include <esp_log.h>
+
 #include <embr/platform/esp-idf/gpio.h>
 
 #include "gpio.h"
@@ -10,8 +12,8 @@ namespace embr { namespace coap { namespace esp_idf {
 inline namespace subcontext { inline namespace v1 {
 
 
-template <class Context>
-void gpio<Context>::on_payload(istream_type& in)
+template <class Context, int id_path>
+void gpio<Context, id_path>::on_payload(istream_type& in)
 {
     // Since layer1::optional bool is too specialized for
     // >> to treat it well
@@ -21,8 +23,8 @@ void gpio<Context>::on_payload(istream_type& in)
 }
 
 
-template <class Context>
-Header::Code gpio<Context>::response() const
+template <class Context, int id_path>
+Header::Code gpio<Context, id_path>::response() const
 {
     // DEBT: Need to filter by Context that even *has* uri_int -OR- switch
     // arch over to placement-grow type of variant and track uri_int within intermediate
@@ -32,8 +34,8 @@ Header::Code gpio<Context>::response() const
         Header::Code::BadRequest;
 }
 
-template <class Context>
-bool gpio<Context>::completed(encoder_type& encoder)
+template <class Context, int id_path>
+bool gpio<Context, id_path>::completed(encoder_type& encoder)
 {
     Context& c = base_type::context;
 

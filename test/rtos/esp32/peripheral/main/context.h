@@ -10,6 +10,7 @@
 #include <embr/platform/esp-idf/ledc.h>
 
 #include <coap/platform/lwip/context.h>
+#include <coap/platform/esp-idf/subcontext/gpio.h>
 
 // TODO: We mainly include util.h for UriParserContext.  Include more obvious/cleaner include source once
 // the URI code base is cleaned up
@@ -58,20 +59,7 @@ struct AppContext :
             bool completed(encoder_type&);
         };
 
-        struct gpio : base
-        {
-            static constexpr const char* TAG = "states::gpio";
-
-            static constexpr int id_path = id_path_v1_api_gpio_value;
-
-            constexpr gpio(AppContext& c) : base(c) {}
-
-            estd::layer1::optional<bool> level;
-
-            void on_payload(istream_type&);
-            code_type response() const;
-            bool completed(encoder_type&);
-        };
+        using gpio = embr::coap::esp_idf::gpio<AppContext, id_path_v1_api_gpio_value>;
 
         struct ledc_timer : base
         {
