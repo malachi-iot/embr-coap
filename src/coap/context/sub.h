@@ -72,6 +72,10 @@ struct CoapSubcontextBase
     };
 };
 
+// DEBT: This feels clumsy floating around here, even though it's
+// internal
+embr::coap::internal::v1::CoapSubcontextBase::query split(const embr::coap::event::option& e);
+
 }}
 
 inline namespace subcontext { inline namespace v1 {
@@ -108,7 +112,3 @@ public:
 
 }}
 }}
-
-// FIX: Put this in internal namespace *and* bring in implementation from
-// 'peripheral' project (app.cpp)
-embr::coap::internal::v1::CoapSubcontextBase::query split(const embr::coap::event::option& e);

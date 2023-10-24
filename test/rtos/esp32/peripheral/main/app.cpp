@@ -50,22 +50,6 @@ const UriPathMap uri_map[] =
 };
 
 
-AppContext::query split(const event::option& e)
-{
-    const estd::string_view sv = e.string();
-    const estd::size_t split_pos = sv.find('=');
-
-    if(split_pos == estd::string_view::npos)
-        return { };
-
-    const estd::string_view key(sv.substr(0, split_pos)),
-        value(sv.substr(split_pos + 1));
-
-    return { key, value };
-}
-
-
-
 struct Observer
 {
     static constexpr const char* TAG = "Observer";

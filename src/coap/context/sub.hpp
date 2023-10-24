@@ -4,10 +4,13 @@
 
 #include "sub.h"
 
+// DEBT: It's possible to make this code c++11 compliant if we use
+// explicit full class functors
+
 namespace embr { namespace coap {
 inline namespace subcontext { inline namespace v1 {
 
-template <concepts::Substate ...Substates>
+template <ESTD_CPP_CONCEPT(concepts::Substate)... Substates>
 template <class F, class ...Args>
 inline void CoapSubcontext<Substates...>::visit(F&& f, Args&&...args)
 {
@@ -19,7 +22,7 @@ inline void CoapSubcontext<Substates...>::visit(F&& f, Args&&...args)
 }
 
 
-template <concepts::Substate ...Substates>
+template <ESTD_CPP_CONCEPT(concepts::Substate)... Substates>
 template <class Context>
 void CoapSubcontext<Substates...>::create(int id_path, Context& context)
 {
@@ -34,10 +37,11 @@ void CoapSubcontext<Substates...>::create(int id_path, Context& context)
 }
 
 template <ESTD_CPP_CONCEPT(concepts::Substate)... Substates>
+// DEBT: Use a concept here for 'Context'
 template <class Context>
 void CoapSubcontext<Substates...>::on_uri_query(const embr::coap::event::option& e, Context& context)
 {
-    const query q = split(e);
+    const query q = internal::v1::split(e);     // DEBT: Not *every* condition wants the key=value format for URIs, though most do
     const estd::string_view key = estd::get<0>(q);
 
     if(key.data() == nullptr)
@@ -75,7 +79,7 @@ void CoapSubcontext<Substates...>::on_payload(Streambuf& s)
 
 /// Returns whether or not subcontext picked up and processed request
 /// Note that populating auto response_code does count as a pickup
-template <concepts::Substate ...Substates>
+template <ESTD_CPP_CONCEPT(concepts::Substate)... Substates>
 template <class Encoder, class Context>
 bool CoapSubcontext<Substates...>::on_completed(Encoder& encoder, Context& context)
 {

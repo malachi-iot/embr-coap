@@ -1,5 +1,6 @@
 #include "coap.h"
 //#include "mc/memory.h"
+#include "coap/context/sub.h"
 
 namespace embr {
 namespace coap {
@@ -112,6 +113,24 @@ std::ostream& operator <<(std::ostream& out, Option::State state)
 
 }
 
+namespace internal { inline namespace v1 {
+// DEBT: this helper function doesn't feel like it belongs in this
+// catch-all coap.cpp
+internal::v1::CoapSubcontextBase::query split(const event::option& e)
+{
+    const estd::string_view sv = e.string();
+    const estd::size_t split_pos = sv.find('=');
+
+    if(split_pos == estd::string_view::npos)
+        return { };
+
+    const estd::string_view key(sv.substr(0, split_pos)),
+        value(sv.substr(split_pos + 1));
+
+    return { key, value };
+}
+
+}}
 
 }
 }
