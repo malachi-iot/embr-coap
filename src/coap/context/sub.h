@@ -18,12 +18,11 @@ namespace internal { inline namespace v1 {
 
 struct SubcontextBase
 {
-    using query = estd::pair<estd::string_view, estd::string_view>;
-
     static constexpr const char* TAG = "CoapSubcontext";
 
     struct undefined
     {
+        using query = estd::pair<estd::string_view, estd::string_view>;
         using code_type = embr::coap::Header::Code;
 
         static bool constexpr on_option(const query&) { return {}; }
@@ -42,6 +41,8 @@ struct SubcontextBase
             return {};
         }
     };
+
+    using query = undefined::query;
 
     struct unknown : undefined
     {

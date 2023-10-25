@@ -16,11 +16,15 @@ template <ESTD_CPP_CONCEPT(concepts::State)... Substates>
 template <ESTD_CPP_CONCEPT(concepts::StateFunctor) F, class ...Args>
 inline void Subcontext<Substates...>::visit(F&& f, Args&&...args)
 {
+#if __cpp_generic_lambdas >= 201707L
     state_.visit_index([&]<estd::size_t I, concepts::State T>(estd::variadic::v2::instance<I, T> i)
     {
         f(i.value, std::forward<Args>(args)...);
         return true;
     });
+#else
+#warning Subcontext requires c++20
+#endif
 }
 
 
@@ -28,6 +32,7 @@ template <ESTD_CPP_CONCEPT(concepts::State)... Substates>
 template <ESTD_CPP_CONCEPT(concepts::IncomingContext) Context>
 void Subcontext<Substates...>::create(int id_path, Context& context)
 {
+#if __cpp_generic_lambdas >= 201707L
     // Emplace factory!
     state_.visit([&]<unsigned I, concepts::State T>(estd::variadic::v2::type<I, T>)
     {
@@ -36,6 +41,7 @@ void Subcontext<Substates...>::create(int id_path, Context& context)
         state_.template emplace<T>(context);
         return true;
     });
+#endif
 }
 
 template <ESTD_CPP_CONCEPT(concepts::State)... Substates>
@@ -65,7 +71,9 @@ void Subcontext<Substates...>::on_uri_query(const embr::coap::event::option& e, 
         key.size(), key.data(),
         value.size(), value.data());    */
 
+#if __cpp_generic_lambdas >= 201707L
     visit([&]<concepts::State S>(S& s) { s.on_option(q); });
+#endif
 }
 
 
@@ -73,9 +81,11 @@ template <ESTD_CPP_CONCEPT(concepts::State)... Substates>
 template <class Streambuf>
 void Subcontext<Substates...>::on_payload(Streambuf& s)
 {
+#if __cpp_generic_lambdas >= 201707L
     estd::detail::basic_istream<Streambuf&> in(s);
 
     visit([&]<concepts::State S>(S &s) { s.on_payload(in); });
+#endif
 }
 
 
@@ -89,6 +99,7 @@ bool Subcontext<Substates...>::on_completed(Encoder& encoder, Context& context)
 {
     using C = embr::coap::Header::Code;
 
+#if __cpp_generic_lambdas >= 201707L
     return state_.visit_index([&]<std::size_t I, concepts::State T>(estd::variadic::instance<I, T> i)
     {
         C code = i->response();
@@ -100,6 +111,9 @@ bool Subcontext<Substates...>::on_completed(Encoder& encoder, Context& context)
 
         return true;
     }) != -1;
+#else
+    return false;
+#endif
 }
 
 }}

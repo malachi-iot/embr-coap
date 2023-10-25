@@ -30,9 +30,8 @@ struct AppContext :
 {
     static constexpr const char* TAG = "AppContext";
 
-    typedef embr::lwip::ipbuf_streambuf istreambuf_type;
     using istream_type = estd::detail::basic_istream<istreambuf_type&>;
-    using query = estd::pair<estd::string_view, estd::string_view>;
+    //using query = estd::pair<estd::string_view, estd::string_view>;
 
     AppContext(struct udp_pcb* pcb, 
         const ip_addr_t* addr,
@@ -45,8 +44,6 @@ struct AppContext :
 
     struct states
     {
-        using code_type = embr::coap::Header::Code;
-
         using base = embr::coap::internal::v1::SubcontextBase::base<AppContext>;
 
         struct analog : base

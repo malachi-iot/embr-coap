@@ -67,11 +67,13 @@ public:
 };
 
 
+#if __cpp_concepts
 template <concepts::Functor<bool> F>
 void functor_test(F f)
 {
     f();
 }
+#endif
 
 
 TEST_CASE("context tests", "[context]")
@@ -157,8 +159,11 @@ TEST_CASE("context tests", "[context]")
 
         sc.on_completed(encoder, context);
 
+#if __cpp_generic_lambdas >= 201707L
         REQUIRE(estd::get<2>(sc.state()).completed_);
+#endif
     }
+#if __cpp_concepts
     SECTION("experimental")
     {
         int val = 0;
@@ -167,4 +172,5 @@ TEST_CASE("context tests", "[context]")
 
         REQUIRE(val == 1);
     }
+#endif
 }

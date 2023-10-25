@@ -39,6 +39,7 @@ struct SyntheticIncomingContext :
         estd::span<char>,
         SyntheticBufferFactory> encoder_factory;
     typedef in_span_streambuf_type istreambuf_type;
+    typedef out_span_streambuf_type ostreambuf_type;
 
     estd::span<char> out;
 

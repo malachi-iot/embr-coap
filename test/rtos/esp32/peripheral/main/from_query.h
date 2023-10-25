@@ -21,7 +21,7 @@ static estd::from_chars_result from_string(
 
 template <class Int>
 static estd::from_chars_result from_query(
-    const AppContext::query& q, const char* key, Int& v)
+    const embr::coap::internal::v1::SubcontextBase::query& q, const char* key, Int& v)
 {
     static constexpr const char* TAG = "from_query";
     
