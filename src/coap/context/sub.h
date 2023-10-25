@@ -81,8 +81,8 @@ embr::coap::internal::v1::CoapSubcontextBase::query split(const embr::coap::even
 
 inline namespace subcontext { inline namespace v1 {
 
-template <ESTD_CPP_CONCEPT(concepts::Substate)... Substates>
-class CoapSubcontext : internal::v1::CoapSubcontextBase
+template <ESTD_CPP_CONCEPT(concepts::State)... Substates>
+class Subcontext : internal::v1::CoapSubcontextBase
 {
     // NOTE: This is likely a better job for variant_storage, since we know based on URI which particular
     // state we're interested in and additionally we'd prefer not to initialize *any* - so in other words
@@ -97,7 +97,7 @@ class CoapSubcontext : internal::v1::CoapSubcontextBase
 public:
     state_type& state() { return state_; }
 
-    template <class Context>
+    template <ESTD_CPP_CONCEPT(concepts::IncomingContext) Context>
     void create(int id_path, Context& context);
 
     template <class Context>

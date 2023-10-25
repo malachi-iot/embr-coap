@@ -12,11 +12,11 @@
 namespace embr { namespace coap {
 inline namespace subcontext { inline namespace v1 {
 
-template <ESTD_CPP_CONCEPT(concepts::Substate)... Substates>
+template <ESTD_CPP_CONCEPT(concepts::State)... Substates>
 template <class F, class ...Args>
-inline void CoapSubcontext<Substates...>::visit(F&& f, Args&&...args)
+inline void Subcontext<Substates...>::visit(F&& f, Args&&...args)
 {
-    state_.visit_index([&]<estd::size_t I, concepts::Substate T>(estd::variadic::v2::instance<I, T> i)
+    state_.visit_index([&]<estd::size_t I, concepts::State T>(estd::variadic::v2::instance<I, T> i)
     {
         f(i.value, std::forward<Args>(args)...);
         return true;
@@ -24,12 +24,12 @@ inline void CoapSubcontext<Substates...>::visit(F&& f, Args&&...args)
 }
 
 
-template <ESTD_CPP_CONCEPT(concepts::Substate)... Substates>
-template <class Context>
-void CoapSubcontext<Substates...>::create(int id_path, Context& context)
+template <ESTD_CPP_CONCEPT(concepts::State)... Substates>
+template <ESTD_CPP_CONCEPT(concepts::IncomingContext) Context>
+void Subcontext<Substates...>::create(int id_path, Context& context)
 {
     // Emplace factory!
-    state_.visit([&]<unsigned I, concepts::Substate T>(estd::variadic::v2::type<I, T>)
+    state_.visit([&]<unsigned I, concepts::State T>(estd::variadic::v2::type<I, T>)
     {
         if(id_path != T::id_path) return false;
 
@@ -38,10 +38,10 @@ void CoapSubcontext<Substates...>::create(int id_path, Context& context)
     });
 }
 
-template <ESTD_CPP_CONCEPT(concepts::Substate)... Substates>
+template <ESTD_CPP_CONCEPT(concepts::State)... Substates>
 // DEBT: Use a concept here for 'Context'
 template <class Context>
-void CoapSubcontext<Substates...>::on_uri_query(const embr::coap::event::option& e, Context& context)
+void Subcontext<Substates...>::on_uri_query(const embr::coap::event::option& e, Context& context)
 {
     const query q = internal::v1::split(e);     // DEBT: Not *every* condition wants the key=value format for URIs, though most do
     const estd::string_view key = estd::get<0>(q);
@@ -65,31 +65,31 @@ void CoapSubcontext<Substates...>::on_uri_query(const embr::coap::event::option&
         key.size(), key.data(),
         value.size(), value.data());    */
 
-    visit([&]<concepts::Substate S>(S& s) { s.on_option(q); });
+    visit([&]<concepts::State S>(S& s) { s.on_option(q); });
 }
 
 
-template <ESTD_CPP_CONCEPT(concepts::Substate)... Substates>
+template <ESTD_CPP_CONCEPT(concepts::State)... Substates>
 template <class Streambuf>
-void CoapSubcontext<Substates...>::on_payload(Streambuf& s)
+void Subcontext<Substates...>::on_payload(Streambuf& s)
 {
     estd::detail::basic_istream<Streambuf&> in(s);
 
-    visit([&]<concepts::Substate S>(S &s) { s.on_payload(in); });
+    visit([&]<concepts::State S>(S &s) { s.on_payload(in); });
 }
 
 
 /// Returns whether or not subcontext picked up and processed request
 /// Note that populating auto response_code does count as a pickup
-template <ESTD_CPP_CONCEPT(concepts::Substate)... Substates>
+template <ESTD_CPP_CONCEPT(concepts::State)... Substates>
 template <
     ESTD_CPP_CONCEPT(concepts::StreambufEncoder) Encoder,
     ESTD_CPP_CONCEPT(concepts::IncomingContext) Context>
-bool CoapSubcontext<Substates...>::on_completed(Encoder& encoder, Context& context)
+bool Subcontext<Substates...>::on_completed(Encoder& encoder, Context& context)
 {
     using C = embr::coap::Header::Code;
 
-    return state_.visit_index([&]<std::size_t I, concepts::Substate T>(estd::variadic::instance<I, T> i)
+    return state_.visit_index([&]<std::size_t I, concepts::State T>(estd::variadic::instance<I, T> i)
     {
         C code = i->response();
 

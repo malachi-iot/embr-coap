@@ -133,7 +133,7 @@ TEST_CASE("context tests", "[context]")
     }
     SECTION("subcontext")
     {
-        subcontext::CoapSubcontext<
+        subcontext::Subcontext<
             subcontext1,
             subcontext2<> > sc;
 
