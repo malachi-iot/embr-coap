@@ -16,7 +16,7 @@ namespace embr { namespace coap {
 // versioning distinctly for it
 namespace internal { inline namespace v1 {
 
-struct CoapSubcontextBase
+struct SubcontextBase
 {
     using query = estd::pair<estd::string_view, estd::string_view>;
 
@@ -69,20 +69,20 @@ struct CoapSubcontextBase
             embr::coap::build_reply(context, encoder, code);
         }   */
 
-        constexpr base(Context& c) : context{c} {}
+        constexpr explicit base(Context& c) : context{c} {}
     };
 };
 
 // DEBT: This feels clumsy floating around here, even though it's
 // internal
-embr::coap::internal::v1::CoapSubcontextBase::query split(const embr::coap::event::option& e);
+embr::coap::internal::v1::SubcontextBase::query split(const embr::coap::event::option& e);
 
 }}
 
 inline namespace subcontext { inline namespace v1 {
 
 template <ESTD_CPP_CONCEPT(concepts::State)... Substates>
-class Subcontext : internal::v1::CoapSubcontextBase
+class Subcontext : internal::v1::SubcontextBase
 {
     // NOTE: This is likely a better job for variant_storage, since we know based on URI which particular
     // state we're interested in and additionally we'd prefer not to initialize *any* - so in other words
@@ -91,7 +91,7 @@ class Subcontext : internal::v1::CoapSubcontextBase
 
     state_type state_;
 
-    template <class F, class ...Args>
+    template <ESTD_CPP_CONCEPT(concepts::StateFunctor) F, class ...Args>
     void visit(F&& f, Args&&...args);
 
 public:

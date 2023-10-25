@@ -47,7 +47,7 @@ struct AppContext :
     {
         using code_type = embr::coap::Header::Code;
 
-        using base = embr::coap::internal::CoapSubcontextBase::base<AppContext>;
+        using base = embr::coap::internal::v1::SubcontextBase::base<AppContext>;
 
         struct analog : base
         {
@@ -99,7 +99,7 @@ struct AppContext :
         };
     };
 
-    embr::coap::CoapSubcontext<
+    embr::coap::Subcontext<
         states::analog,
         states::ledc_timer,
         states::gpio,

@@ -13,7 +13,7 @@ namespace embr { namespace coap {
 inline namespace subcontext { inline namespace v1 {
 
 template <ESTD_CPP_CONCEPT(concepts::State)... Substates>
-template <class F, class ...Args>
+template <ESTD_CPP_CONCEPT(concepts::StateFunctor) F, class ...Args>
 inline void Subcontext<Substates...>::visit(F&& f, Args&&...args)
 {
     state_.visit_index([&]<estd::size_t I, concepts::State T>(estd::variadic::v2::instance<I, T> i)

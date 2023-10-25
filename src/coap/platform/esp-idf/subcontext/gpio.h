@@ -12,9 +12,9 @@ inline namespace subcontext { inline namespace v1 {
 // DEBT: I'm thinking a wrapper to handle the id_path portion would be better
 // DEBT: We want ReplyContext here not IncomingContext - somehow that fails though
 template <ESTD_CPP_CONCEPT(concepts::IncomingContext) Context, int id_path_>
-struct gpio : coap::internal::v1::CoapSubcontextBase::base<Context>
+struct gpio : coap::internal::v1::SubcontextBase::base<Context>
 {
-    using base_type = coap::internal::v1::CoapSubcontextBase::base<Context>;
+    using base_type = coap::internal::v1::SubcontextBase::base<Context>;
     using istreambuf_type = typename Context::istreambuf_type;
     using encoder_type = typename Context::encoder_type;
     using istream_type = estd::detail::basic_istream<istreambuf_type&>;

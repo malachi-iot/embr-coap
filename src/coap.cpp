@@ -116,7 +116,7 @@ std::ostream& operator <<(std::ostream& out, Option::State state)
 namespace internal { inline namespace v1 {
 // DEBT: this helper function doesn't feel like it belongs in this
 // catch-all coap.cpp
-internal::v1::CoapSubcontextBase::query split(const event::option& e)
+internal::v1::SubcontextBase::query split(const event::option& e)
 {
     const estd::string_view sv = e.string();
     const estd::size_t split_pos = sv.find('=');

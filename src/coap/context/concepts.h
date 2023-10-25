@@ -43,6 +43,18 @@ concept ReplyContext = IncomingContext<T> && OutgoingContext<T> && requires(T c)
 
 inline namespace subcontext { inline namespace v1 {
 
+
+// DEBT: Move this out elsewhere, though I find it hard to believe 'concepts'
+// library doesn't already have this.  It does have 'invocable' but that doesn't
+// check return type
+template <class F, typename R = void, class ...Args>
+concept Functor = requires(F f, Args&&... args)
+{
+    { f(args...) } -> std::convertible_to<R>;
+};
+
+
+
 // DEBT: We'd like this to be named 'Subcontext', however that name
 // collides at the moment with its container
 template <class T>
@@ -57,6 +69,14 @@ concept State = requires(T s)
     { T::id_path } -> std::convertible_to<int>;
     []<IncomingContext Context>(Context& c) { T ss(c); };
 };
+
+template <class F>
+concept StateFunctor = requires(F f)
+{
+    []<State S, class... Args>(S& s, Args&&...args)
+    { std::declval<F>(s, args...); };
+};
+
 
 }}
 
