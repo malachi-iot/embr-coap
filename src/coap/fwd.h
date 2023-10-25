@@ -3,6 +3,8 @@
 #include "internal/header/code.h"
 #include "internal/header/enum.h"
 
+#include "encoder/concepts.h"
+
 namespace embr { namespace coap {
 
 namespace impl {

@@ -3,6 +3,7 @@
 #include <estd/variant.h>
 
 #include "concepts.h"
+#include "../encoder/concepts.h"
 
 #include "../token.h"
 #include "../header.h"
@@ -105,7 +106,11 @@ public:
     template <class Streambuf>
     void on_payload(Streambuf&);
 
-    template <class Encoder, class Context>
+    // TODO: Look for 'ExtraContext' in all its terrible name glory here as part of
+    // concept
+    template <
+        ESTD_CPP_CONCEPT(concepts::StreambufEncoder) Encoder,
+        ESTD_CPP_CONCEPT(concepts::IncomingContext) Context>
     bool on_completed(Encoder&, Context&);
 };
 

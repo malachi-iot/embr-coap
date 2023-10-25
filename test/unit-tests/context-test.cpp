@@ -45,7 +45,7 @@ public:
 };
 
 
-template <ESTD_CPP_CONCEPT(concepts::IncomingContext) Context = sic_type>
+template <ESTD_CPP_CONCEPT(concepts::ReplyContext) Context = sic_type>
 class subcontext2 : public internal::v1::CoapSubcontextBase::base<Context>
 {
     using base_type = internal::v1::CoapSubcontextBase::base<Context>;

@@ -33,7 +33,7 @@ concept OutgoingContext = requires(T c)
 template <class T>
 concept ReplyContext = IncomingContext<T> && OutgoingContext<T> && requires(T c)
 {
-    c.reply(std::declval<T::encoder_type>());
+    c.reply(std::declval<typename T::encoder_type&>());
 };
 
 

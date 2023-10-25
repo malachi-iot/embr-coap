@@ -58,7 +58,8 @@ set(SOURCE_FILES
         uint-test.cpp
         )
 
-add_executable(mc-coap-test ${SOURCE_FILES})
+add_executable(${PROJECT_NAME} ${SOURCE_FILES})
 
-target_link_libraries(mc-coap-test mc-coap embr Catch2)
+target_link_libraries(${PROJECT_NAME} mc-coap embr Catch2)
 
+target_compile_options(${PROJECT_NAME} PUBLIC -fconcepts-diagnostics-depth=2)

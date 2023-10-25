@@ -82,7 +82,9 @@ void CoapSubcontext<Substates...>::on_payload(Streambuf& s)
 /// Returns whether or not subcontext picked up and processed request
 /// Note that populating auto response_code does count as a pickup
 template <ESTD_CPP_CONCEPT(concepts::Substate)... Substates>
-template <class Encoder, class Context>
+template <
+    ESTD_CPP_CONCEPT(concepts::StreambufEncoder) Encoder,
+    ESTD_CPP_CONCEPT(concepts::IncomingContext) Context>
 bool CoapSubcontext<Substates...>::on_completed(Encoder& encoder, Context& context)
 {
     using C = embr::coap::Header::Code;
