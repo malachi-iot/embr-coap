@@ -6,6 +6,7 @@
 #include <coap/platform/lwip/encoder.h>
 
 #include <coap/platform/esp-idf/subcontext/gpio.hpp>
+#include <coap/platform/esp-idf/subcontext/ledc.hpp>
 
 
 using namespace embr::coap;
