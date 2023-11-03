@@ -13,7 +13,6 @@ ledc_timer<Context, id_path_>::ledc_timer(Context& context, const ledc_timer_con
     base_type(context),
     config(def)
 {
-
 }
 
 }}
