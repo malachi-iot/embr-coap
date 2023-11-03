@@ -29,8 +29,8 @@ inline void Subcontext<Substates...>::visit(F&& f, Args&&...args)
 
 
 template <ESTD_CPP_CONCEPT(concepts::State)... Substates>
-template <ESTD_CPP_CONCEPT(concepts::IncomingContext) Context>
-void Subcontext<Substates...>::create(int id_path, Context& context)
+template <ESTD_CPP_CONCEPT(concepts::IncomingContext) Context, class F>
+void Subcontext<Substates...>::create(int id_path, Context& context, F&& f)
 {
 #if __cpp_generic_lambdas >= 201707L
     // Emplace factory!
@@ -38,7 +38,20 @@ void Subcontext<Substates...>::create(int id_path, Context& context)
     {
         if(id_path != T::id_path) return false;
 
-        state_.template emplace<T>(context);
+        auto v = f(estd::in_place_type_t<T>{});
+        constexpr bool v2 = estd::is_same_v<decltype(v), nullptr_t>;
+
+        static_assert(v2, "At the moment only nullptr_t is supported");
+
+        if constexpr(v2)
+        {
+            state_.template emplace<T>(context);
+        }
+        else
+        {
+            //state_.template emplace<T>(context, std::move(v));
+        }
+
         return true;
     });
 #endif

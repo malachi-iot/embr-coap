@@ -98,8 +98,16 @@ class Subcontext : internal::v1::SubcontextBase
 public:
     state_type& state() { return state_; }
 
+    template <ESTD_CPP_CONCEPT(concepts::IncomingContext) Context,
+        class F>
+    void create(int id_path, Context& context, F&& f);
+
     template <ESTD_CPP_CONCEPT(concepts::IncomingContext) Context>
-    void create(int id_path, Context& context);
+    void create(int id_path, Context& context)
+    {
+        create(id_path, context,
+            []<class T>(estd::in_place_type_t<T>){ return nullptr_t{}; });
+    }
 
     template <class Context>
     void on_uri_query(const embr::coap::event::option&, Context& context);
