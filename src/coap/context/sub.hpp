@@ -34,22 +34,30 @@ void Subcontext<Substates...>::create(int id_path, Context& context, F&& f)
 {
 #if __cpp_generic_lambdas >= 201707L
     // Emplace factory!
-    state_.visit([&]<unsigned I, concepts::State T>(estd::variadic::v2::type<I, T>)
+    state_.visit([&]<unsigned I, concepts::State T>(estd::variadic::v2::type<I, T> t)
     {
         if(id_path != T::id_path) return false;
 
-        auto v = f(estd::in_place_type_t<T>{});
+        auto v = f(t);
         constexpr bool v2 = estd::is_same_v<decltype(v), nullptr_t>;
 
-        static_assert(v2, "At the moment only nullptr_t is supported");
+        // DEBT: Need to detect a tuple and unwrap it
+        //constexpr bool is_tuple = estd::is_base_of_v<estd::internal::
+        constexpr bool is_tuple = false;
+
+        //static_assert(v2, "At the moment only nullptr_t is supported");
 
         if constexpr(v2)
         {
             state_.template emplace<T>(context);
         }
+        else if constexpr(is_tuple)
+        {
+            // TODO: do a std apply here
+        }
         else
         {
-            //state_.template emplace<T>(context, std::move(v));
+            state_.template emplace<T>(context, std::move(v));
         }
 
         return true;

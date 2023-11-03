@@ -67,6 +67,7 @@ struct AppContext :
             ledc_timer_config_t config;
 
             ledc_timer(AppContext&);
+            ledc_timer(AppContext& c, const ledc_timer_config_t&) : ledc_timer(c) {}
 
             void on_option(const query&);
             code_type response() const;

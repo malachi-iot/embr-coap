@@ -41,7 +41,21 @@ bool AppContext::on_notify(const event::option& e)
                     populate_uri_int(e);
             }
 
-            state.create(node, *this);
+            state.create(node, *this, []<class T>(estd::in_place_type_t<T>)
+            {
+                if constexpr(estd::is_same_v<T, estd::monostate>)
+                {
+                    return int {};
+                }
+                else if constexpr(estd::is_same_v<T, states::ledc_timer>)
+                {
+                    return ledc_timer_config_t {};
+                }
+                else
+                {
+                    return nullptr_t{};
+                }
+            });
 
             /*
             // DEBT: Not available, think we'd like to expose ::types - though

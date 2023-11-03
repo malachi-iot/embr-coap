@@ -1,5 +1,7 @@
 #pragma once
 
+#include <driver/ledc.h>
+
 #include <estd/istream.h>
 
 #include "../../../context/sub.h"
@@ -22,9 +24,11 @@ struct ledc_timer : coap::internal::v1::SubcontextBase::base<Context>
 
     static constexpr const char* TAG = "subcontext::ledc_timer";
 
+    static constexpr int id_path = id_path_;
+
     ledc_timer_config_t config;
 
-    ledc_timer(Context&);
+    ledc_timer(Context&, const ledc_timer_config_t&);
 
     void on_option(const query&);
     code_type response() const;
@@ -41,6 +45,8 @@ struct ledc_channel : coap::internal::v1::SubcontextBase::base<Context>
     using istream_type = estd::detail::basic_istream<istreambuf_type&>;
 
     static constexpr const char* TAG = "subcontext::ledc_channel";
+
+    static constexpr int id_path = id_path_;
 
     ledc_channel_config_t config;
 
