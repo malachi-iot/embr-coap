@@ -2,6 +2,11 @@
 
 #include <estd/variant.h>
 
+#include <embr/observer.h>
+
+// FIX: #ifdef (or similar) this out
+#include <esp_log.h>
+
 #include "concepts.h"
 #include "../encoder/concepts.h"
 
@@ -10,6 +15,53 @@
 #include "../decoder/events.h"
 
 namespace embr { namespace coap {
+
+namespace experimental {
+
+// Pipeline would be a combo of Context and Observer
+// probably tracked as a visited tuple within a context.  So, same
+// generally as 'Observer' chain but those gently imply stateless,
+// where this implies stateful.  
+template <class T, T nullvalue>
+struct UriValuePipeline
+{
+    static constexpr const char* TAG = "UriValuePipeline";
+
+    estd::layer1::optional<T, nullvalue> uri_int;
+   
+
+    void populate_uri_int(const event::option& e)
+    {
+        // DEBT: As is the case all over, 'string' is assumed to be complete
+        // data here
+        if(from_string(e.string(), *uri_int).ec == 0)
+            ESP_LOGV(TAG, "Found uri int=%d", *uri_int);
+        else
+            ESP_LOGD(TAG, "Was expecting uri int, but found none");
+    }
+
+    // DEBT: Use concept here
+    template <class Context>
+    void on_notify(const event::option& e, const Context& context)
+    {
+        const int node = context.found_node();
+    }
+};
+
+
+template <class ...Args>
+using Pipeline = embr::layer1::subject<Args...>;
+
+struct PipelineObserver
+{
+    template <class Event, class Context>
+    static void on_notify(const Event& e, Context& context)
+    {
+        context.pipeline.notify(e);
+    }
+};
+
+}
 
 // 'internal' namespace used all over the place and gets into
 // ambiguity if we put it under an inline namespace, so handling

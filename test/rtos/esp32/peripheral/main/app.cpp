@@ -104,6 +104,7 @@ struct Observer
 
 
 embr::layer0::subject<
+    embr::coap::experimental::PipelineObserver,
     HeaderContextObserver,
     TokenContextObserver,
     UriParserObserver,

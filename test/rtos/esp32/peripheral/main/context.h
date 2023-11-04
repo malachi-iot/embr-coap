@@ -37,6 +37,9 @@ struct AppContext :
         const ip_addr_t* addr,
         uint16_t port);
 
+    embr::coap::experimental::Pipeline<
+        embr::coap::experimental::UriValuePipeline<int, -1> > pipeline;
+
     // (last) integer which appears on URI list
     estd::layer1::optional<int16_t, -1> uri_int;
 
