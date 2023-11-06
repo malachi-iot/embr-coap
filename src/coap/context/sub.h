@@ -27,15 +27,15 @@ struct UriValuePipeline
 {
     static constexpr const char* TAG = "UriValuePipeline";
 
-    estd::layer1::optional<T, nullvalue> uri_int;
+    estd::layer1::optional<T, nullvalue> uri_value;
    
 
-    void populate_uri_int(const event::option& e)
+    void populate_uri_value(const event::option& e)
     {
         // DEBT: As is the case all over, 'string' is assumed to be complete
         // data here
-        if(from_string(e.string(), *uri_int).ec == 0)
-            ESP_LOGV(TAG, "Found uri int=%d", *uri_int);
+        if(from_string(e.string(), *uri_value).ec == 0)
+            ESP_LOGV(TAG, "Found uri int=%d", *uri_value);
         else
             ESP_LOGD(TAG, "Was expecting uri int, but found none");
     }

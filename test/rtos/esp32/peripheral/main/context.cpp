@@ -16,7 +16,7 @@ void AppContext::populate_uri_int(const event::option& e)
 {
     // DEBT: As is the case all over, 'string' is assumed to be complete
     // data here
-    if(from_string(e.string(), *uri_int).ec == 0)
+    if(internal::from_string(e.string(), *uri_int).ec == 0)
         ESP_LOGV(TAG, "Found uri int=%d", *uri_int);
     else
         ESP_LOGD(TAG, "Was expecting uri int, but found none");

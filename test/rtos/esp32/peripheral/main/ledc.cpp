@@ -96,11 +96,11 @@ void AppContext::states::ledc_timer::on_option(const query& q)
 {
     int v;
 
-    if(from_query(q, "freq_hz", v).ec == 0)
+    if(internal::from_query(q, "freq_hz", v).ec == 0)
     {
         config.freq_hz = v;
     }
-    else if(from_query(q, "duty_res", v).ec == 0)
+    else if(internal::from_query(q, "duty_res", v).ec == 0)
     {
         // DEBT: esp-idf the enum matches up, but I don't think
         // that's promised anywhere
@@ -138,12 +138,12 @@ void AppContext::states::ledc_channel::on_option(const query& q)
 {
     int v;
 
-    if(from_query(q, "pin", v).ec == 0)
+    if(internal::from_query(q, "pin", v).ec == 0)
     {
         config.gpio_num = v;
         has_config = true;
     }
-    else if(from_query(q, "timer_num", v).ec == 0)
+    else if(internal::from_query(q, "timer_num", v).ec == 0)
     {
         // DEBT: has_config mode we have to validate that 'pin' was specified
         config.timer_sel = (ledc_timer_t)v;
