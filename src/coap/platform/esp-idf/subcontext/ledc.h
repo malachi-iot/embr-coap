@@ -56,7 +56,8 @@ struct ledc_timer : coap::internal::v1::SubcontextBase::base<Context>,
 };
 
 template <ESTD_CPP_CONCEPT(concepts::IncomingContext) Context, int id_path_>
-struct ledc_channel : coap::internal::v1::SubcontextBase::base<Context>
+struct ledc_channel : coap::internal::v1::SubcontextBase::base<Context>,
+    coap::experimental::UriValuePipeline<int, -1>
 {
     using base_type = coap::internal::v1::SubcontextBase::base<Context>;
     using typename base_type::query;
@@ -77,8 +78,8 @@ struct ledc_channel : coap::internal::v1::SubcontextBase::base<Context>
 
     estd::layer1::optional<uint16_t, 0xFFFF> duty;
 
-    ledc_channel(Context&);
-    ledc_channel(Context&, const ledc_channel_config_t&);
+    ledc_channel(Context&, const event::option& e);
+    ledc_channel(Context&, const ledc_channel_config_t&, const event::option& e);
 
     void on_option(const query&);
     void on_payload(istream_type&);

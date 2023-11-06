@@ -28,6 +28,14 @@ inline void Subcontext<Substates...>::visit(F&& f, Args&&...args)
 }
 
 
+template <class T>
+struct is_tuple : estd::false_type {};
+
+template <class... Args>
+struct is_tuple<estd::tuple<Args...>> : estd::true_type {};
+
+
+
 template <ESTD_CPP_CONCEPT(concepts::State)... Substates>
 template <ESTD_CPP_CONCEPT(concepts::IncomingContext) Context, class F>
 void Subcontext<Substates...>::create(int id_path, Context& context, F&& f)
@@ -41,19 +49,18 @@ void Subcontext<Substates...>::create(int id_path, Context& context, F&& f)
         auto v = f(t);
         constexpr bool v2 = estd::is_same_v<decltype(v), nullptr_t>;
 
-        // DEBT: Need to detect a tuple and unwrap it
-        //constexpr bool is_tuple = estd::is_base_of_v<estd::internal::
-        constexpr bool is_tuple = false;
-
         //static_assert(v2, "At the moment only nullptr_t is supported");
 
         if constexpr(v2)
         {
             state_.template emplace<T>(context);
         }
-        else if constexpr(is_tuple)
+        else if constexpr(is_tuple<T>::value)
         {
-            // TODO: do a std apply here
+            estd::apply([&]<class ...Args>(Args const&... args)
+            {
+                state_.template emplace<T>(context, args...);
+            }, v);
         }
         else
         {

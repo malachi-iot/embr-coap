@@ -15,6 +15,17 @@ ledc_timer<Context, id_path_>::ledc_timer(Context& context, const ledc_timer_con
 {
 }
 
+
+template <ESTD_CPP_CONCEPT(concepts::IncomingContext) Context, int id_path_>
+ledc_channel<Context, id_path_>::ledc_channel(
+    Context& context,
+    const ledc_channel_config_t& def,
+    const event::option& e) :
+    base_type(context),
+    config(def)
+{
+}
+
 }}
 
 }}}

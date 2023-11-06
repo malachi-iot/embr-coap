@@ -4,8 +4,9 @@
 
 #include <embr/observer.h>
 
-// FIX: #ifdef (or similar) this out
+#ifdef ESP_PLATFORM
 #include <esp_log.h>
+#endif
 
 #include "concepts.h"
 #include "../encoder/concepts.h"
@@ -23,23 +24,32 @@ namespace experimental {
 // generally as 'Observer' chain but those gently imply stateless,
 // where this implies stateful.  
 template <class T, T nullvalue>
-struct UriValuePipeline
+class UriValuePipeline
 {
     static constexpr const char* TAG = "UriValuePipeline";
 
+protected:
     estd::layer1::optional<T, nullvalue> uri_value;
    
 
-    void populate_uri_value(const event::option& e)
+    bool populate_uri_value(const event::option& e)
     {
         // DEBT: As is the case all over, 'string' is assumed to be complete
         // data here
-        if(from_string(e.string(), *uri_value).ec == 0)
+
+        bool success = from_string(e.string(), *uri_value).ec == 0;
+
+#ifdef ESP_PLATFORM
+        if(success)
             ESP_LOGV(TAG, "Found uri int=%d", *uri_value);
         else
             ESP_LOGD(TAG, "Was expecting uri int, but found none");
+#endif
+
+        return success;
     }
 
+public:
     // DEBT: Use concept here
     template <class Context>
     void on_notify(const event::option& e, const Context& context)

@@ -8,16 +8,9 @@
 
 #include "context.h"
 #include "from_query.h"
+#include "ledc.h"
 
 using namespace embr::coap;
-
-// Lifted from ledc_fade example in esp-idf
-
-#define LEDC_LS_TIMER           LEDC_TIMER_1
-#define LEDC_LS_MODE            LEDC_LOW_SPEED_MODE
-#define LEDC_OUTPUT_IO          5
-#define LEDC_DUTY_RESOLUTION    LEDC_TIMER_13_BIT
-#define LEDC_FREQ_HZ            5000
 
 static constexpr ledc_timer_config_t timer_config_default = {
     .speed_mode = LEDC_LS_MODE,           // timer mode

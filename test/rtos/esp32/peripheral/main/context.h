@@ -11,6 +11,7 @@
 
 #include <coap/platform/lwip/context.h>
 #include <coap/platform/esp-idf/subcontext/gpio.h>
+#include <coap/platform/esp-idf/subcontext/ledc.h>
 
 // TODO: We mainly include util.h for UriParserContext.  Include more obvious/cleaner include source once
 // the URI code base is cleaned up
@@ -75,6 +76,10 @@ struct AppContext :
             void on_option(const query&);
             code_type response() const;
         };
+
+
+        using ledc_timer2 = embr::coap::esp_idf::subcontext::ledc_timer<AppContext, id_path_v1_api_pwm>;
+        using ledc_channel2 = embr::coap::esp_idf::subcontext::ledc_channel<AppContext, id_path_v1_api_pwm_value>;
 
         struct ledc_channel : base
         {
