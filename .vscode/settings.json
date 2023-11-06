@@ -90,6 +90,9 @@
         "optional": "cpp",
         "numbers": "cpp",
         "ranges": "cpp",
-        "span": "cpp"
+        "span": "cpp",
+        "complex": "cpp",
+        "list": "cpp",
+        "unordered_set": "cpp"
     }
 }
