@@ -109,7 +109,7 @@ struct AppContext :
         states::analog,
         states::ledc_timer,
         states::gpio,
-        states::ledc_channel> state;
+        states::ledc_channel2> state;
 
     // NOTE: These only coincidentally conform to subject/observer name convention
 

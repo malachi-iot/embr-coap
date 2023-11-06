@@ -159,6 +159,8 @@ Header::Code AppContext::states::ledc_channel::response()
 
     esp_err_t ret;
 
+    // NOTE: Yes, remember the uri value is channel#, gpio is specified
+    // as a query option
     config.channel = (ledc_channel_t) *context.uri_int;
     
     ESP_LOGI(TAG, "completed: got here: channel=%d duty=%d",

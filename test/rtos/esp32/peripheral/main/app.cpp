@@ -24,6 +24,7 @@ using namespace embr::coap;
 
 #include <coap/platform/api.hpp>
 #include <coap/platform/esp-idf/subcontext/gpio.hpp>
+#include <coap/platform/esp-idf/subcontext/ledc.hpp>
 
 
 using istreambuf_type = AppContext::istreambuf_type;

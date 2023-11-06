@@ -4,8 +4,10 @@
 
 namespace embr { namespace coap {
 
-namespace internal {
+namespace internal { inline namespace v1 {
 
+// DEBT: Vague name and doesn't conform to pascal convention
+using query = estd::pair<estd::string_view, estd::string_view>;
 
 // DEBT: This can work, but we'll need the internal from_chars which
 // takes iterators.  That likely comes with some kind of performance
@@ -25,8 +27,7 @@ static estd::from_chars_result from_string(
 }
 
 template <class Int>
-static estd::from_chars_result from_query(
-    const embr::coap::internal::v1::SubcontextBase::query& q, const char* key, Int& v)
+static estd::from_chars_result from_query(const query& q, const char* key, Int& v)
 {
     static constexpr const char* TAG = "from_query";
     
@@ -60,6 +61,6 @@ static estd::from_chars_result from_query(
 
 
 
-}
+}}
 
 }}

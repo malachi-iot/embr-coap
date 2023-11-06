@@ -15,6 +15,8 @@
 #include "../header.h"
 #include "../decoder/events.h"
 
+#include "from_query.h"
+
 namespace embr { namespace coap {
 
 namespace experimental {
@@ -37,7 +39,7 @@ protected:
         // DEBT: As is the case all over, 'string' is assumed to be complete
         // data here
 
-        bool success = from_string(e.string(), *uri_value).ec == 0;
+        bool success = coap::internal::from_string(e.string(), *uri_value).ec == 0;
 
 #ifdef ESP_PLATFORM
         if(success)
@@ -84,7 +86,7 @@ struct SubcontextBase
 
     struct undefined
     {
-        using query = estd::pair<estd::string_view, estd::string_view>;
+        using query = v1::query;
         using code_type = embr::coap::Header::Code;
 
         static bool constexpr on_option(const query&) { return {}; }
