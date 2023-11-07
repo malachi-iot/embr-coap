@@ -2,7 +2,6 @@
 #include <driver/ledc.h>
 
 #include "context.h"
-#include "from_query.h"
 
 // DEBT: Needed for encoder/streambuf.h finalize to compile -
 // fix this because we aren't even calling finalize here

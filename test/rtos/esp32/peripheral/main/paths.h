@@ -10,7 +10,4 @@ enum
     id_path_v1_api_gpio_value,
     id_path_v1_api_pwm,
     id_path_v1_api_pwm_value,
-
-    id_path_well_known,
-    id_path_well_known_core
 };

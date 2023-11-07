@@ -17,6 +17,25 @@ ledc_timer<Context, id_path_>::ledc_timer(Context& context, const ledc_timer_con
 
 
 template <ESTD_CPP_CONCEPT(concepts::IncomingContext) Context, int id_path_>
+void ledc_timer<Context, id_path_>::on_option(const query& q)
+{
+    int v;
+
+    if(internal::from_query(q, "freq_hz", v).ec == 0)
+    {
+        config.freq_hz = v;
+    }
+    else if(internal::from_query(q, "duty_res", v).ec == 0)
+    {
+        // DEBT: esp-idf the enum matches up, but I don't think
+        // that's promised anywhere
+        config.duty_resolution = (ledc_timer_bit_t)v;
+    }
+}
+
+
+
+template <ESTD_CPP_CONCEPT(concepts::IncomingContext) Context, int id_path_>
 ledc_channel<Context, id_path_>::ledc_channel(
     Context& context,
     const ledc_channel_config_t& def,

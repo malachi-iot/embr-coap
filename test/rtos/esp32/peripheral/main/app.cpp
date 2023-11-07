@@ -13,7 +13,6 @@
 using namespace embr::coap;
 
 #include "context.h"
-#include "from_query.h"
 
 #ifdef ESP_PLATFORM
 // This gets us 'build_version_response' which is indeed esp-idf specific
@@ -46,9 +45,7 @@ const UriPathMap uri_map[] =
     { "time",       id_path_v1_api_time,        id_path_v1_api },
 
     EMBR_COAP_V1_SYS_PATHS(id_path_v1),
-
-    { ".well-known",    id_path_well_known,         MCCOAP_URIPATH_NONE },
-    { "core",           id_path_well_known_core,    id_path_well_known }
+    EMBR_COAP_CoRE_PATHS()
 };
 
 
@@ -58,7 +55,6 @@ struct Observer
 
     static void on_notify(event::option_start, AppContext& context)
     {
-        //context.uri_int.reset();
     }
 
 
@@ -103,8 +99,9 @@ struct Observer
 
 
 
-
-embr::layer0::subject<
+// DEBT: It seems that we can fuse layer0 and layer1 together now that sparse
+// tuple is underneath
+embr::layer1::subject<
     embr::coap::experimental::PipelineObserver,
     HeaderContextObserver,
     TokenContextObserver,
@@ -146,9 +143,11 @@ void initialize_ledc();
 
 void app_init(void** arg)
 {
-#ifdef CONFIG_EMBR_COAP_RTC_RESTART_COUNTER
     const char* TAG = "app_init";
 
+    ESP_LOGD(TAG, "sizeof(app_subject)=%d", sizeof(app_subject));
+
+#ifdef CONFIG_EMBR_COAP_RTC_RESTART_COUNTER
     const esp_reset_reason_t reset_reason = esp_reset_reason();
 
     ESP_LOGD(TAG, "reset_reason=%d", reset_reason);

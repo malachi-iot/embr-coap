@@ -34,8 +34,8 @@ enum _paths
 
 // Not ready yet
 #define EMBR_COAP_CoRE_PATHS()  \
-    { ".well-known",    sys_paths::well_known,         MCCOAP_URIPATH_NONE },\
-    { "core",           sys_paths::well_known_core,    sys_paths::well_known }
+    { ".well-known",    embr::coap::sys_paths::v1::well_known,         MCCOAP_URIPATH_NONE },\
+    { "core",           embr::coap::sys_paths::v1::well_known_core,    embr::coap::sys_paths::v1::well_known }
 
 
 }}

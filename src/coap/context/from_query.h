@@ -1,5 +1,9 @@
 #pragma once
 
+#ifdef ESP_PLATFORM
+#include <esp_log.h>
+#endif
+
 #include <estd/string_view.h>
 
 namespace embr { namespace coap {

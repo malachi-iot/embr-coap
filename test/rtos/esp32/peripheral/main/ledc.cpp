@@ -1,13 +1,13 @@
 #include <driver/ledc.h>
 
 #include <coap/decoder/events.h>
+#include <coap/context/from_query.h>
 
 // DEBT: Needed for encoder/streambuf.h finalize to compile -
 // fix this because we aren't even calling finalize here
 #include <coap/platform/lwip/encoder.h>
 
 #include "context.h"
-#include "from_query.h"
 #include "ledc.h"
 
 using namespace embr::coap;
@@ -21,34 +21,14 @@ static constexpr ledc_timer_config_t timer_config_default = {
 };
 
 
-static constexpr ledc_channel_config_t ledc_channel_default = {
-    .gpio_num       = 0,
-    .speed_mode     = LEDC_LS_MODE,
-    .channel        = LEDC_CHANNEL_0,
-    .intr_type      = LEDC_INTR_DISABLE,
-    .timer_sel      = LEDC_LS_TIMER,
-    .duty           = 0, // Set duty to 0%
-    .hpoint         = 0,
-    .flags {
-        .output_invert = 0
-    }
-};
-
-
 void initialize_ledc()
 {
     /*
      * Prepare and set configuration of timers
      * that will be used by LED Controller
      */
-    ledc_timer_config_t ledc_timer = {
-        .speed_mode = LEDC_LS_MODE,           // timer mode
-        .duty_resolution = LEDC_DUTY_RESOLUTION, // resolution of PWM duty
-        .timer_num = LEDC_LS_TIMER,            // timer index
-        .freq_hz = LEDC_FREQ_HZ,                      // frequency of PWM signal
-        .clk_cfg = LEDC_AUTO_CLK,              // Auto select the source clock
-    };
-    
+    ledc_timer_config_t ledc_timer = timer_config_default;
+        
     ESP_ERROR_CHECK(ledc_timer_config(&ledc_timer));
 
     // Initialize fade service.
