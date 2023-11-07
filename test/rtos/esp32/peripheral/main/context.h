@@ -41,11 +41,6 @@ struct AppContext :
     embr::coap::experimental::Pipeline<
         embr::coap::experimental::UriValuePipeline<int, -1> > pipeline;
 
-    // (last) integer which appears on URI list
-    estd::layer1::optional<int16_t, -1> uri_int;
-
-    void populate_uri_int(const embr::coap::event::option&);
-
     struct states
     {
         using base = embr::coap::internal::v1::SubcontextBase::base<AppContext>;

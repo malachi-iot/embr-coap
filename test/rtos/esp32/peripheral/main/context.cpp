@@ -30,16 +30,6 @@ static constexpr ledc_channel_config_t ledc_channel_default = {
 };
 
 
-void AppContext::populate_uri_int(const event::option& e)
-{
-    // DEBT: As is the case all over, 'string' is assumed to be complete
-    // data here
-    if(internal::from_string(e.string(), *uri_int).ec == 0)
-        ESP_LOGV(TAG, "Found uri int=%d", *uri_int);
-    else
-        ESP_LOGD(TAG, "Was expecting uri int, but found none");
-}
-
 bool AppContext::on_notify(const event::option& e)
 {
     switch(e.option_number)
@@ -47,17 +37,6 @@ bool AppContext::on_notify(const event::option& e)
         case Option::UriPath:
         {
             const int node = found_node();
-
-            if(node >= 0)
-            {
-                const embr::coap::internal::UriPathMap* current = uri_matcher().current();
-                const char* match_uri = current->first.data();
-
-                ESP_LOGV(TAG, "on_notify(option)=uri-path matched=%s", match_uri);
-
-                if(match_uri[0] == '*')
-                    populate_uri_int(e);
-            }
 
             state.create(node, *this, [&]<class T>(estd::in_place_type_t<T>)
             {

@@ -31,10 +31,7 @@ void gpio<Context, id_path>::on_payload(istream_type& in)
 template <ESTD_CPP_CONCEPT(concepts::IncomingContext) Context, int id_path>
 Header::Code gpio<Context, id_path>::response() const
 {
-    // DEBT: Need to filter by Context that even *has* uri_int -OR- switch
-    // arch over to placement-grow type of variant and track uri_int within intermediate
-    // base class of this subcontext
-    return base_type::context.uri_int.has_value() ?
+    return uri_value.has_value() ?
         Header::Code::Empty :
         Header::Code::BadRequest;
 }
@@ -44,7 +41,7 @@ bool gpio<Context, id_path>::completed(encoder_type& encoder)
 {
     Context& c = base_type::context;
 
-    int pin = *c.uri_int;
+    int pin = *uri_value;
     embr::esp_idf::gpio gpio((gpio_num_t) pin);
 
     switch(c.header().code())
@@ -75,6 +72,7 @@ bool gpio<Context, id_path>::completed(encoder_type& encoder)
         {
             // We could do most of this in 'payload' area, but that
             // makes it hard to handle response codes
+            // We could also do this in 'response' area and perhaps should
             int code;
 
             if(level.has_value())
