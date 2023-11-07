@@ -20,24 +20,31 @@ using query = estd::pair<estd::string_view, estd::string_view>;
 // implementation of stoi and friends might be better
 // DEBT: Filter Int by numeric/int
 template <class Int>
-static estd::from_chars_result from_string(
+inline estd::from_chars_result from_string(
     const estd::string_view& s, Int& v)
 {
     return estd::from_chars(s.begin(), s.end(), v);
 }
 
-template <class Int>
-static estd::from_chars_result from_query(const query& q, const char* key, Int& v)
-{
-    static constexpr const char* TAG = "from_query";
-    
-    const estd::string_view value = estd::get<1>(q);
 
+/// @brief from_query retrieve a numeric from a query option
+/// @param q
+/// @param key only pull numeric if key matches
+/// @param v
+/// @return
+template <class Int>
+estd::from_chars_result from_query(const query& q, const char* key, Int& v)
+{
     if(estd::get<0>(q).compare(key) == 0)
     {
+        const estd::string_view& value = estd::get<1>(q);
+
         // DEBT: from_string treats invalid trailing characters as
         // termination, but in our case we probaably want to indicate an error
         const estd::from_chars_result r = from_string(value, v);
+
+#if ESP_PLATFORM
+        static constexpr const char* TAG = "from_query";
 
         if(r.ec != 0)
         {
@@ -49,6 +56,7 @@ static estd::from_chars_result from_query(const query& q, const char* key, Int& 
             long long debug_v = v;
             ESP_LOGD(TAG, "from_query: key=%s value=%lld", key, debug_v);
         }
+#endif
 
         return r;
     }

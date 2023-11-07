@@ -58,6 +58,16 @@ public:
 
     static constexpr int id_path = 2;
     bool completed_ = false;
+    int value_ = -1;
+
+    bool constexpr on_option(const internal::v1::query& q)
+    {
+        if(internal::v1::from_query(q, "key", value_).ec == 0)
+        {
+
+        }
+        return {};
+    }
 
     bool completed(encoder_type&)
     {
@@ -152,14 +162,25 @@ TEST_CASE("context tests", "[context]")
         REQUIRE(sc.state().index() == 0);
 
         // Remember, we have a 'dummy' unknown at position 0
+        // TODO: Do a 'create' here rather than peering inside with emplace
         sc.state().emplace<2>(context);
         REQUIRE(sc.state().index() == 2);
 
-        REQUIRE(!estd::get<2>(sc.state()).completed_);
+        const subcontext2<>& sub = estd::get<2>(sc.state());
 
+        REQUIRE(!sub.completed_);
+        REQUIRE(sub.value_ == -1);
+
+        constexpr char query[] = "key=123";
+        estd::span<const uint8_t> query_binary((const uint8_t*)query, sizeof(query));
+
+        event::option o(Option::UriPath, query_binary, true);
+
+        sc.on_uri_query(o, context);
         sc.on_completed(encoder, context);
 
 #if __cpp_generic_lambdas >= 201707L
+        REQUIRE(sub.value_ == 123);
         REQUIRE(estd::get<2>(sc.state()).completed_);
 #endif
     }

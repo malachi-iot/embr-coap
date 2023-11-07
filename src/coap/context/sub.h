@@ -161,6 +161,7 @@ class Subcontext : internal::v1::SubcontextBase
 
 public:
     state_type& state() { return state_; }
+    constexpr const state_type& state() const { return state_; }
 
     template <ESTD_CPP_CONCEPT(concepts::IncomingContext) Context,
         class F>
