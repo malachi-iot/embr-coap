@@ -79,42 +79,18 @@ struct AppContext :
 
 
         using ledc_timer2 = embr::coap::esp_idf::subcontext::ledc_timer<AppContext, id_path_v1_api_pwm>;
-        using ledc_channel2 = embr::coap::esp_idf::subcontext::ledc_channel<AppContext, id_path_v1_api_pwm_value>;
-
-        struct ledc_channel : base
-        {
-            static constexpr const char* TAG = "states::ledc_channel";
-
-            static constexpr int id_path = id_path_v1_api_pwm_value;
-
-            // DEBT: Use embr::esp_idf::ledc here
-
-            ledc_channel_config_t config;
-
-            // We always use above config, but if this is true it signals a call
-            // to channel configure itself vs a mere duty update
-            bool has_config = false;
-
-            estd::layer1::optional<uint16_t, 0xFFFF> duty;
-
-            ledc_channel(AppContext&);
-
-            void on_option(const query&);
-            void on_payload(istream_type&);
-            code_type response();
-        };
+        using ledc_channel = embr::coap::esp_idf::subcontext::ledc_channel<AppContext, id_path_v1_api_pwm_value>;
     };
 
     embr::coap::Subcontext<
         states::analog,
         states::ledc_timer,
         states::gpio,
-        states::ledc_channel2> state;
+        states::ledc_channel> state;
 
     // NOTE: These only coincidentally conform to subject/observer name convention
 
     bool on_notify(const embr::coap::event::option&);
-    bool on_completed(encoder_type&);
 };
 
 

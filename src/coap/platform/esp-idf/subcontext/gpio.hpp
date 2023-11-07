@@ -11,6 +11,11 @@ namespace embr { namespace coap { namespace esp_idf {
 
 inline namespace subcontext { inline namespace v1 {
 
+template <ESTD_CPP_CONCEPT(concepts::IncomingContext) Context, int id_path>
+gpio<Context, id_path>::gpio(Context& c, const event::option& e) : base_type(c)
+{
+    populate_uri_value(e);
+}
 
 template <ESTD_CPP_CONCEPT(concepts::IncomingContext) Context, int id_path>
 void gpio<Context, id_path>::on_payload(istream_type& in)

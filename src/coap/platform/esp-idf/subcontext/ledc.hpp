@@ -25,6 +25,7 @@ ledc_channel<Context, id_path_>::ledc_channel(
     config(def)
 {
     populate_uri_value(e);
+    config.gpio_num = -1;
 }
 
 

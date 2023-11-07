@@ -91,7 +91,7 @@ struct Observer
                 break;
                 
             default:
-                if(!context.on_completed(encoder))
+                if(!context.state.on_completed(encoder, context))
                     sys_paths::send_sys_reply(context, encoder);
 
                 break;

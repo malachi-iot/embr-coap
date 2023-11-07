@@ -61,15 +61,15 @@ bool AppContext::on_notify(const event::option& e)
 
             state.create(node, *this, [&]<class T>(estd::in_place_type_t<T>)
             {
-                if constexpr(estd::is_same_v<T, estd::monostate>)
+                if constexpr(estd::is_same_v<T, states::gpio>)
                 {
-                    return int {};
+                    return e;
                 }
                 else if constexpr(estd::is_same_v<T, states::ledc_timer>)
                 {
                     return ledc_timer_config_t {};
                 }
-                else if constexpr(estd::is_same_v<T, states::ledc_channel2>)
+                else if constexpr(estd::is_same_v<T, states::ledc_channel>)
                 {
                     return estd::make_tuple(ledc_channel_default, e);
                 }
@@ -106,23 +106,4 @@ bool AppContext::on_notify(const event::option& e)
     }
 
     return true;
-}
-
-
-bool AppContext::on_completed(encoder_type& encoder)
-{
-    return state.on_completed(encoder, *this);
-
-    /*
-    return state.state().visit_index([&](auto i)
-    {
-        Header::Code code = i->response();
-
-        if(code == Header::Code::Empty)
-            return i->completed(encoder);
-        else
-            response_code = code;
-
-        return true;
-    }); */
 }
