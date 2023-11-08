@@ -52,13 +52,13 @@ estd::from_chars_result from_query(const query& q, const char* key, Int& v)
 
         if(r.ec != 0)
         {
-            ESP_LOGI(TAG, "from_query: key=%s cannot parse value=%.*s",
+            ESP_LOGI(TAG, "key=%s cannot parse value=%.*s",
                 key, value.size(), value.data());
         }
         else
         {
             long long debug_v = v;
-            ESP_LOGD(TAG, "from_query: key=%s value=%lld", key, debug_v);
+            ESP_LOGD(TAG, "key=%s value=%lld", key, debug_v);
         }
 #endif
 

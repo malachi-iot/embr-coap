@@ -31,12 +31,16 @@ void ledc_timer<Context, id_path_>::on_option(const query& q)
         // that's promised anywhere
         config.duty_resolution = (ledc_timer_bit_t)v;
     }
+    else
+        bad_option = true;
 }
 
 
 template <ESTD_CPP_CONCEPT(concepts::IncomingContext) Context, int id_path_>
 auto ledc_timer<Context, id_path_>::response() const -> code_type
 {
+    if(bad_option) return Header::Code::BadOption;
+
     esp_err_t ret = ledc_timer_config(&config);
 
     ESP_LOGI(TAG, "completed: got here = ret=%d", ret);
@@ -87,9 +91,36 @@ void ledc_channel<Context, id_path_>::on_option(const query& q)
 template <ESTD_CPP_CONCEPT(concepts::IncomingContext) Context, int id_path_>
 void ledc_channel<Context, id_path_>::on_payload(istream_type& in)
 {
-    in >> *duty;
+    // DEBT: Feature flag this as an int for those very tight memory
+    // scenarios
+    float _duty;
 
-    if(in.fail()) duty.reset();
+    in >> _duty;
+    //in >> *duty;
+
+    if(in.fail())
+    {
+        duty.reset();
+    }
+    else
+    {
+        char c = 0;
+
+        //in >> c;      // FIX: looks like estd isn't able to read in a char this way
+        //in.get(c);    // FIX: looks like estd isn't able to read in a char this way
+        c = in.get();
+
+        if(in.good())
+        {
+            ESP_LOGD(TAG, "on_payload: got c=%c",c );
+            // TODO: In order to do percentage we need to know resolution, which
+            // isn't retained anywhere just yet
+        }
+        else
+        {
+            *duty = _duty;
+        }
+    }
 }
 
 template <ESTD_CPP_CONCEPT(concepts::IncomingContext) Context, int id_path_>

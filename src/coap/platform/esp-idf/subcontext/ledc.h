@@ -14,21 +14,6 @@ inline namespace subcontext { inline namespace v1 {
 
 struct ledc_timer_base
 {
-// DEBT: Grab these from Kconfig
-
-#define LEDC_LS_TIMER           LEDC_TIMER_1
-#define LEDC_LS_MODE            LEDC_LOW_SPEED_MODE
-#define LEDC_DUTY_RESOLUTION    LEDC_TIMER_13_BIT
-#define LEDC_FREQ_HZ            5000
-
-    static constexpr ledc_timer_config_t config_default =
-    {
-        .speed_mode = LEDC_LS_MODE,           // timer mode
-        .duty_resolution = LEDC_DUTY_RESOLUTION, // resolution of PWM duty
-        .timer_num = LEDC_LS_TIMER,            // timer index
-        .freq_hz = LEDC_FREQ_HZ,                      // frequency of PWM signal
-        .clk_cfg = LEDC_AUTO_CLK,              // Auto select the source clock
-    };
 };
 
 template <ESTD_CPP_CONCEPT(concepts::IncomingContext) Context, int id_path_>
@@ -46,10 +31,11 @@ struct ledc_timer : coap::internal::v1::SubcontextBase::base<Context>,
 
     static constexpr int id_path = id_path_;
 
+    bool bad_option = false;
+
     ledc_timer_config_t config;
 
     ledc_timer(Context&, const ledc_timer_config_t&);
-    ledc_timer(Context& context) : base_type(context, config_default) {}
 
     void on_option(const query&);
     code_type response() const;
