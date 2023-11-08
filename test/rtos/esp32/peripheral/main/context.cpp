@@ -1,7 +1,5 @@
-// DEBT: Just for default ledc channel config
-#include <driver/ledc.h>
-
 #include "context.h"
+#include "ledc.h"
 
 // DEBT: Needed for encoder/streambuf.h finalize to compile -
 // fix this because we aren't even calling finalize here
@@ -12,21 +10,6 @@
 
 
 using namespace embr::coap;
-
-// DEBT: Copy/paste from ledc code plus we'd rather not have this much
-// ledc specifics in context area
-static constexpr ledc_channel_config_t ledc_channel_default = {
-    .gpio_num       = 0,
-    .speed_mode     = LEDC_LS_MODE,
-    .channel        = LEDC_CHANNEL_0,
-    .intr_type      = LEDC_INTR_DISABLE,
-    .timer_sel      = LEDC_LS_TIMER,
-    .duty           = 0, // Set duty to 0%
-    .hpoint         = 0,
-    .flags {
-        .output_invert = 0
-    }
-};
 
 
 bool AppContext::on_notify(const event::option& e)
@@ -45,7 +28,7 @@ bool AppContext::on_notify(const event::option& e)
                 }
                 else if constexpr(estd::is_same_v<T, states::ledc_timer>)
                 {
-                    return ledc_timer_config_t {};
+                    return timer_config_default;
                 }
                 else if constexpr(estd::is_same_v<T, states::ledc_channel>)
                 {

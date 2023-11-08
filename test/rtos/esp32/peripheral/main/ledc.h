@@ -1,9 +1,7 @@
 #pragma once
 
-// Lifted from ledc_fade example in esp-idf
+// DEBT: Just for default ledc channel config
+#include <driver/ledc.h>
 
-#define LEDC_LS_TIMER           LEDC_TIMER_1
-#define LEDC_LS_MODE            LEDC_LOW_SPEED_MODE
-#define LEDC_OUTPUT_IO          5
-#define LEDC_DUTY_RESOLUTION    LEDC_TIMER_13_BIT
-#define LEDC_FREQ_HZ            5000
+extern const ledc_channel_config_t ledc_channel_default;
+extern const ledc_timer_config_t timer_config_default;

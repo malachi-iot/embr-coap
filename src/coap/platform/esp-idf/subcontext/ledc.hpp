@@ -34,6 +34,19 @@ void ledc_timer<Context, id_path_>::on_option(const query& q)
 }
 
 
+template <ESTD_CPP_CONCEPT(concepts::IncomingContext) Context, int id_path_>
+auto ledc_timer<Context, id_path_>::response() const -> code_type
+{
+    esp_err_t ret = ledc_timer_config(&config);
+
+    ESP_LOGI(TAG, "completed: got here = ret=%d", ret);
+
+    // TODO: Do BadRequest if we get INVALID_ARG
+
+    return ret == ESP_OK ? Header::Code::Valid : Header::Code::InternalServerError;
+}
+
+
 
 template <ESTD_CPP_CONCEPT(concepts::IncomingContext) Context, int id_path_>
 ledc_channel<Context, id_path_>::ledc_channel(
@@ -64,6 +77,10 @@ void ledc_channel<Context, id_path_>::on_option(const query& q)
         config.timer_sel = (ledc_timer_t)v;
         has_config = true;
     }
+    else
+    {
+        bad_option = true;
+    }
 }
 
 
@@ -71,6 +88,8 @@ template <ESTD_CPP_CONCEPT(concepts::IncomingContext) Context, int id_path_>
 void ledc_channel<Context, id_path_>::on_payload(istream_type& in)
 {
     in >> *duty;
+
+    if(in.fail()) duty.reset();
 }
 
 template <ESTD_CPP_CONCEPT(concepts::IncomingContext) Context, int id_path_>
@@ -78,7 +97,8 @@ auto ledc_channel<Context, id_path_>::response() -> code_type
 {
     using C = Header::Code;
 
-    if(!uri_value.has_value())    return C::BadRequest;
+    if(!uri_value.has_value())  return C::BadRequest;
+    if(bad_option)              return C::BadOption;
 
     // NOTE: Yes, remember the uri value is channel#, gpio is specified
     // as a query option
@@ -92,6 +112,8 @@ auto ledc_channel<Context, id_path_>::response() -> code_type
     {
         if(duty.has_value())
             config.duty = *duty;
+        else
+            ESP_LOGD(TAG, "warning: using default duty 0 since none was specified");
 
         esp_err_t ret = ledc_channel_config(&config);
 

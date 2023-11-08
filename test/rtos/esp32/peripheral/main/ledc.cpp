@@ -1,18 +1,31 @@
-#include <driver/ledc.h>
-
-#include <coap/decoder/events.h>
-#include <coap/context/from_query.h>
-
-// DEBT: Needed for encoder/streambuf.h finalize to compile -
-// fix this because we aren't even calling finalize here
-#include <coap/platform/lwip/encoder.h>
-
-#include "context.h"
 #include "ledc.h"
 
-using namespace embr::coap;
 
-static constexpr ledc_timer_config_t timer_config_default = {
+// Lifted from ledc_fade example in esp-idf
+
+#define LEDC_LS_TIMER           LEDC_TIMER_1
+#define LEDC_LS_MODE            LEDC_LOW_SPEED_MODE
+#define LEDC_OUTPUT_IO          5
+#define LEDC_DUTY_RESOLUTION    LEDC_TIMER_13_BIT
+#define LEDC_FREQ_HZ            5000
+
+
+
+const ledc_channel_config_t ledc_channel_default = {
+    .gpio_num       = 0,
+    .speed_mode     = LEDC_LS_MODE,
+    .channel        = LEDC_CHANNEL_0,
+    .intr_type      = LEDC_INTR_DISABLE,
+    .timer_sel      = LEDC_LS_TIMER,
+    .duty           = 0, // Set duty to 0%
+    .hpoint         = 0,
+    .flags {
+        .output_invert = 0
+    }
+};
+
+
+const ledc_timer_config_t timer_config_default = {
     .speed_mode = LEDC_LS_MODE,           // timer mode
     .duty_resolution = LEDC_DUTY_RESOLUTION, // resolution of PWM duty
     .timer_num = LEDC_LS_TIMER,            // timer index
@@ -59,38 +72,5 @@ void initialize_ledc_channel(ledc_channel_t channel, int gpio)
     ESP_ERROR_CHECK(ledc_channel_config(&ledc_channel));
 }
 */
-
-AppContext::states::ledc_timer::ledc_timer(AppContext& context) : base{context}
-{
-    config = timer_config_default;
-}
-
-void AppContext::states::ledc_timer::on_option(const query& q)
-{
-    int v;
-
-    if(internal::from_query(q, "freq_hz", v).ec == 0)
-    {
-        config.freq_hz = v;
-    }
-    else if(internal::from_query(q, "duty_res", v).ec == 0)
-    {
-        // DEBT: esp-idf the enum matches up, but I don't think
-        // that's promised anywhere
-        config.duty_resolution = (ledc_timer_bit_t)v;
-    }
-}
-
-
-Header::Code AppContext::states::ledc_timer::response() const
-{
-    esp_err_t ret = ledc_timer_config(&config);
-
-    ESP_LOGI(TAG, "completed: got here = ret=%d", ret);
-
-    // TODO: Do BadRequest if we get INVALID_ARG
-
-    return ret == ESP_OK ? Header::Code::Valid : Header::Code::InternalServerError;
-}
 
 

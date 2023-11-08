@@ -57,23 +57,7 @@ struct AppContext :
 
         using gpio = embr::coap::esp_idf::gpio<AppContext, id_path_v1_api_gpio_value>;
 
-        struct ledc_timer : base
-        {
-            static constexpr const char* TAG = "states::ledc_timer";
-
-            static constexpr int id_path = id_path_v1_api_pwm;
-
-            ledc_timer_config_t config;
-
-            ledc_timer(AppContext&);
-            ledc_timer(AppContext& c, const ledc_timer_config_t&) : ledc_timer(c) {}
-
-            void on_option(const query&);
-            code_type response() const;
-        };
-
-
-        using ledc_timer2 = embr::coap::esp_idf::subcontext::ledc_timer<AppContext, id_path_v1_api_pwm>;
+        using ledc_timer = embr::coap::esp_idf::subcontext::ledc_timer<AppContext, id_path_v1_api_pwm>;
         using ledc_channel = embr::coap::esp_idf::subcontext::ledc_channel<AppContext, id_path_v1_api_pwm_value>;
     };
 

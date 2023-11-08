@@ -75,6 +75,7 @@ struct ledc_channel : coap::internal::v1::SubcontextBase::base<Context>,
     // We always use above config, but if this is true it signals a call
     // to channel configure itself vs a mere duty update
     bool has_config = false;
+    bool bad_option = false;
 
     estd::layer1::optional<uint16_t, 0xFFFF> duty;
 
