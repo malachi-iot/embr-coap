@@ -8,6 +8,10 @@
 #include <embr/platform/lwip/udp.h>
 #include <coap/platform/ip.h>
 
+#ifndef FEATURE_IDF_DEFAULT_EVENT_LOOP
+#error
+#endif
+
 void udp_coap_recv(void *arg, 
     struct udp_pcb *pcb, struct pbuf *p,
     const ip_addr_t *addr, u16_t port);
@@ -49,7 +53,7 @@ void udp_coap_init(void* pcb_recv_arg)
     pcb.recv(udp_coap_recv, pcb_recv_arg);
 }
 
-
+esp_netif_t* wifi_netif;
 
 extern "C" void app_main()
 {
@@ -57,11 +61,7 @@ extern "C" void app_main()
 
     init_flash();
     
-#ifdef FEATURE_IDF_DEFAULT_EVENT_LOOP
-    wifi_init_sta();
-#else
-    wifi_init_sta(event_handler);
-#endif
+    wifi_netif = wifi_init_sta();
 
     void* pcb_recv_arg = nullptr;
 

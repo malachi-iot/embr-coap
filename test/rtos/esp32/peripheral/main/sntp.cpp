@@ -13,6 +13,8 @@ using namespace embr::coap;
 
 // NOTE: By default it seems RTC and high res timer are both used
 // to feed gettimeofday (which I presume feeds localtime_r)
+// DEBT: Looks like we now should use "esp_netif_sntp_init" as per
+// https://docs.espressif.com/projects/esp-idf/en/v5.1.2/esp32/api-reference/network/esp_netif.html
 void initialize_sntp()
 {
     esp_sntp_setoperatingmode(SNTP_OPMODE_POLL);
