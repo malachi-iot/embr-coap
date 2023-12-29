@@ -140,6 +140,7 @@ void udp_coap_recv(void *arg,
 
 void initialize_adc();
 void initialize_ledc();
+void initialize_ip_retry();
 
 void app_init(void** arg)
 {
@@ -176,8 +177,16 @@ void app_init(void** arg)
 
     initialize_adc();
     initialize_ledc();
+    initialize_ip_retry();
     initialize_sntp();
     initialize_mdns();
+}
+
+void app_loop()
+{
+    static constexpr const char* TAG = "app_loop";
+
+    ESP_LOGI(TAG, "come and gone");
 }
 
 
