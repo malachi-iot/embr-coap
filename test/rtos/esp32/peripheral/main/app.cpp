@@ -160,17 +160,35 @@ void app_init(void** arg)
         case ESP_RST_UNKNOWN:       // ESP32C3 starts after flash with this reason
         case ESP_RST_EXT:
         case ESP_RST_POWERON:
-            esp_idf::reboot_counter = 0;
+            esp_idf::brownout_reboot_counter = 0;
             esp_idf::panic_reboot_counter = 0;
+            esp_idf::wdt_reboot_counter = 0;
+            esp_idf::user_reboot_counter = 0;
+            esp_idf::other_reboot_counter = 0;
             ESP_LOGI(TAG, "Poweron");
             break;
 
         case ESP_RST_PANIC:
             ++esp_idf::panic_reboot_counter;
-            [[fallthrough]];
+            break;
+
+        case ESP_RST_BROWNOUT:
+            ++esp_idf::brownout_reboot_counter;
+            break;
+
+        case ESP_RST_INT_WDT:
+        case ESP_RST_TASK_WDT:
+        case ESP_RST_WDT:
+            ++esp_idf::wdt_reboot_counter;
+            break;
+
+        case ESP_RST_DEEPSLEEP:
+        case ESP_RST_SW:
+            ++esp_idf::user_reboot_counter;
+            break;
 
         default:
-            ++esp_idf::reboot_counter;
+            ++esp_idf::other_reboot_counter;
             break;
     }
 #endif

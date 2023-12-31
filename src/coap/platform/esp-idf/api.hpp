@@ -190,6 +190,27 @@ struct builder<TContext, estd::monostate,
         .end();
     }
 
+#ifdef CONFIG_EMBR_COAP_RTC_RESTART_COUNTER
+    void reboot_info()
+    {
+        prep_payload();
+        auto out = encoder.ostream();
+
+        embr::json::v1::encoder json;
+        auto j = make_fluent(json, out);
+
+        j.begin()
+
+        ("wdt", embr::coap::esp_idf::wdt_reboot_counter)
+        ("user", embr::coap::esp_idf::user_reboot_counter)
+        ("brownout", embr::coap::esp_idf::brownout_reboot_counter)
+        ("panic", embr::coap::esp_idf::panic_reboot_counter)
+        ("other", embr::coap::esp_idf::other_reboot_counter)
+
+        .end();
+    }
+#endif
+
     bool build_sys_reply()
     {
         switch(context.found_node())
@@ -224,14 +245,7 @@ struct builder<TContext, estd::monostate,
                 if(code == Header::Code::Get)
                 {
 #ifdef CONFIG_EMBR_COAP_RTC_RESTART_COUNTER
-                    build_reply(Header::Code::Content);
-
-                    encoder.option(Option::ContentFormat, Option::TextPlain);
-                    encoder.payload();
-
-                    auto out = encoder.ostream();
-
-                    out << embr::coap::esp_idf::reboot_counter;
+                    reboot_info();
 #else
                     build_reply(Header::Code::ServiceUnavailable);
 #endif
