@@ -12,7 +12,10 @@
 
 using namespace embr::coap;
 
+#define WIFI_POLL_TIMEOUT_S 30
+
 #include "context.h"
+#include "ip.h"
 
 #ifdef ESP_PLATFORM
 // This gets us 'build_version_response' which is indeed esp-idf specific
@@ -204,7 +207,15 @@ void app_loop()
 {
     static constexpr const char* TAG = "app_loop";
 
-    ESP_LOGI(TAG, "come and gone");
+    ESP_LOGI(TAG, "started");
+
+    for(;;)
+    {
+#if !FEATURE_WIFI_POLL_USE_RTOS_TIMER        
+        wifi_retry_poll();
+#endif
+        estd::this_thread::sleep_for(estd::chrono::seconds(60));
+    }
 }
 
 

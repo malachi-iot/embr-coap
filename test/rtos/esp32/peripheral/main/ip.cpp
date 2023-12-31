@@ -4,6 +4,8 @@
 
 #include <estd/port/freertos/timer.h>
 
+#include "ip.h"
+
 // This file is in service of https://github.com/malachi-iot/mc-coap/issues/9
 // NOTE: It's presumed that re-request of DHCP stops at a certain point, or
 // doesn't auto-start after it's lost
@@ -58,6 +60,13 @@ static void wifi_retry_callback(TimerHandle_t pxTimer)
     }
 }
 
+#if !FEATURE_WIFI_POLL_USE_RTOS_TIMER
+void wifi_retry_poll()
+{
+    wifi_retry_callback({});
+}
+#endif
+
 // EXPERIMENTAL, not used - the wifi_retry looks to be what we
 // really need
 /*
@@ -88,13 +97,15 @@ static estd::freertos::timer<true> dhcp_rety_timer(
     nullptr,
     dhcp_retry_callback);
 */
+#if FEATURE_WIFI_POLL_USE_RTOS_TIMER
 static estd::freertos::timer<true> wifi_rety_timer(
     "WiFi retry",
     //estd::chrono::seconds(60),
-    estd::chrono::seconds(600 * 5),
+    estd::chrono::seconds(WIFI_POLL_TIMEOUT_S),
     true,
     nullptr,
     wifi_retry_callback);
+#endif
 
 
 static constexpr estd::chrono::milliseconds timeout(50);
@@ -133,5 +144,7 @@ void initialize_ip_retry()
 
     //dhcp_rety_timer.reset(timeout);
     //dhcp_retry_callback(nullptr);
+#if FEATURE_WIFI_POLL_USE_RTOS_TIMER
     wifi_rety_timer.start(timeout);
+#endif
 }
