@@ -19,6 +19,7 @@ These tests are all for variants of Espressif ESP32
 | 26JAN23 | peripheral   | Wemos D1             | ESP32-WROOM-32 | v5.0.0   | Pass     | 
 | 17SEP23 | peripheral   | RejsaCAN v3.1        | ESP32S3        | v5.1.1   | Pass     |
 | 24OCT23 | peripheral   | Seeed Xiao           | ESP32C3        | v5.1.1   | Pass     |
+| 08JAN24 | peripheral   | Lilygo QT Pro        | ESP32S3        | v5.1.2   | Pass     |
 | 09DEC22 | retry        | ESP-WROVER-KIT v4.1  | ESP32-WROVER-E | v4.4.3   | Compiles | Doesn't do anything of interest yet
 | 11JAN23 | unity        | ESP-WROVER-KIT v4.1  | ESP32-WROVER-E | v4.4.3   | Pass     |
 | 02JAN23 | unity        | ESP32-C3-DevKitM-1   | ESP32C3        | v4.4.3   | Pass     |
