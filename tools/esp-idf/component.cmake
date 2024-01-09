@@ -3,7 +3,7 @@ set(SRC_DIR ${ROOT_DIR}/src)
 
 include(${SRC_DIR}/source.cmake)
 
-message(DEBUG "mc-coap: SRC_DIR=${SRC_DIR}")
+message(DEBUG "embr::coap: SRC_DIR=${SRC_DIR}")
 
 # app_update because we query runtime version in esp-idf/observer.h
 set(COMPONENT_REQUIRES estdlib embr app_update)

@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.6)
 
-project(mc-coap VERSION 0.9.0)
+project(embr-coap VERSION 0.9.1)
 
 #set(CMAKE_CXX_STANDARD 11)
 # NOTE: Need to make this set externally and well tested somehow
@@ -26,4 +26,5 @@ target_include_directories(${PROJECT_NAME} PUBLIC .)
 
 target_link_libraries(${PROJECT_NAME} estd embr)
 
-#add_library(embr::coap ALIAS mc-coap)
+add_library(embr::coap ALIAS ${PROJECT_NAME})
+add_library(mc-coap ALIAS ${PROJECT_NAME})

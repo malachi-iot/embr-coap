@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.6)
 
-project(mc-coap-test)
+project(embr-coap-test)
 
 if(NOT DEFINED CMAKE_CXX_STANDARD)
     set(CMAKE_CXX_STANDARD 11)
@@ -60,7 +60,7 @@ set(SOURCE_FILES
 
 add_executable(${PROJECT_NAME} ${SOURCE_FILES})
 
-target_link_libraries(${PROJECT_NAME} mc-coap embr Catch2)
+target_link_libraries(${PROJECT_NAME} embr::coap embr Catch2)
 
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     # Makes concepts-related failures easier to read

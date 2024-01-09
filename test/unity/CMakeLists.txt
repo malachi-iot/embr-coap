@@ -10,7 +10,7 @@ set(EMBR_DIR ${ROOT_DIR}/ext/embr)
 set(UNITY_DIR ${ESTDLIB_DIR}/ext/Unity)
 set(COAP_DIR ${ROOT_DIR}/src)
 
-if(NOT TARGET mc-coap)
+if(NOT TARGET embr::coap)
     add_subdirectory(${COAP_DIR} coap)
 endif()
 
@@ -27,8 +27,9 @@ add_library(${PROJECT_NAME}
     uri.cpp)
 
 add_library(mc-coap::unity-tests ALIAS ${PROJECT_NAME})
+#add_library(embr::coap::unity-tests ALIAS ${PROJECT_NAME})
 
-target_link_libraries(${PROJECT_NAME} unity embr mc-coap)
+target_link_libraries(${PROJECT_NAME} unity embr embr::coap)
 
 target_include_directories(${PROJECT_NAME} PUBLIC
     ${ESTDLIB_DIR}/src
