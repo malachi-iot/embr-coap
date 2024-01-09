@@ -18,6 +18,7 @@ add_subdirectory(${UNITY_DIR} unity)
 
 add_library(${PROJECT_NAME} 
     basic.cpp
+    context.cpp
     decoder.cpp
     encoder.cpp
     experimental.cpp

@@ -13,7 +13,9 @@
 
 #include <estd/span.h>
 
+#if FEATURE_EMBR_COAP_SUBCONTEXT
 #include "context/sub.hpp"
+#endif
 
 #include "internal/context.h"
 #include "internal/verify.hpp"

@@ -1,6 +1,8 @@
 #include "coap.h"
 //#include "mc/memory.h"
+#if FEATURE_EMBR_COAP_SUBCONTEXT
 #include "coap/context/sub.h"
+#endif
 
 namespace embr {
 namespace coap {
@@ -114,6 +116,8 @@ std::ostream& operator <<(std::ostream& out, Option::State state)
 }
 
 namespace internal { inline namespace v1 {
+
+#if FEATURE_EMBR_COAP_SUBCONTEXT
 // DEBT: this helper function doesn't feel like it belongs in this
 // catch-all coap.cpp
 internal::v1::SubcontextBase::query split(const event::option& e)
@@ -129,6 +133,7 @@ internal::v1::SubcontextBase::query split(const event::option& e)
 
     return { key, value };
 }
+#endif
 
 }}
 

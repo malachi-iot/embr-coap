@@ -6,6 +6,9 @@
 
 #include <estd/string_view.h>
 
+#include "features.h"
+#include "fwd.h"
+
 namespace embr { namespace coap {
 
 namespace internal { inline namespace v1 {

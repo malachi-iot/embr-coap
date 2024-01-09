@@ -104,7 +104,7 @@ struct Registrar : RegistrarBase,
 
         for(;i != observers.end(); ++i)
         {
-            const const_reference key = *i;
+            const_reference key = *i;
 
             if(key.endpoint == endpoint &&
                key.handle == handle &&

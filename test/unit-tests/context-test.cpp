@@ -29,53 +29,8 @@ enum uris : int
 
 internal::UriPathMap uri_map[] =
 {
-    "v1", uris::v1, MCCOAP_URIPATH_NONE
+    { "v1", uris::v1, MCCOAP_URIPATH_NONE }
 };
-
-using sic_type = SyntheticIncomingContext<true>;
-
-class subcontext1 : public internal::v1::SubcontextBase::base<sic_type>
-{
-    using base_type = internal::v1::SubcontextBase::base<sic_type>;
-
-public:
-    subcontext1(sic_type& c) : base_type(c) {}
-
-    static constexpr int id_path = 1;
-};
-
-
-template <ESTD_CPP_CONCEPT(concepts::ReplyContext) Context = sic_type>
-class subcontext2 : public internal::v1::SubcontextBase::base<Context>
-{
-    using base_type = internal::v1::SubcontextBase::base<Context>;
-    using encoder_type = typename Context::encoder_type;
-
-public:
-    using context_type = Context;
-
-    constexpr explicit subcontext2(Context& c) : base_type(c) {}
-
-    static constexpr int id_path = 2;
-    bool completed_ = false;
-    int value_ = -1;
-
-    bool constexpr on_option(const internal::v1::query& q)
-    {
-        if(internal::v1::from_query(q, "key", value_).ec == 0)
-        {
-
-        }
-        return {};
-    }
-
-    bool completed(encoder_type&)
-    {
-        completed_ = true;
-        return true;
-    }
-};
-
 
 #if __cpp_concepts
 template <concepts::Functor<bool> F>
@@ -150,11 +105,12 @@ TEST_CASE("context tests", "[context]")
             REQUIRE(decoder.header_decoder().code() == Header::Code::NotFound);
         }
     }
+#if FEATURE_EMBR_COAP_SUBCONTEXT
     SECTION("subcontext")
     {
         subcontext::Subcontext<
-            subcontext1,
-            subcontext2<> > sc;
+            test::subcontext1,
+            test::subcontext2<> > sc;
 
         auto encoder = make_encoder(context);
         sc.on_completed(encoder, context);
@@ -166,7 +122,7 @@ TEST_CASE("context tests", "[context]")
         sc.state().emplace<2>(context);
         REQUIRE(sc.state().index() == 2);
 
-        const subcontext2<>& sub = estd::get<2>(sc.state());
+        const test::subcontext2<>& sub = estd::get<2>(sc.state());
 
         REQUIRE(!sub.completed_);
         REQUIRE(sub.value_ == -1);
@@ -184,6 +140,7 @@ TEST_CASE("context tests", "[context]")
         REQUIRE(estd::get<2>(sc.state()).completed_);
 #endif
     }
+#endif
 #if __cpp_concepts
     SECTION("experimental")
     {

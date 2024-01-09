@@ -34,8 +34,11 @@ struct is_tuple : estd::false_type {};
 template <class... Args>
 struct is_tuple<estd::tuple<Args...>> : estd::true_type {};
 
+// DEBT: Filter by actual variable/constexpr feature flag
+#if __cplusplus >= 201703L
 template <class T>
 constexpr bool is_tuple_v = is_tuple<T>::value;
+#endif
 
 
 
@@ -51,7 +54,7 @@ void Subcontext<Substates...>::create(int id_path, Context& context, F&& f)
 
         auto v = f(t);
         using value_type = decltype(v);
-        constexpr bool v2 = estd::is_same_v<value_type, nullptr_t>;
+        constexpr bool v2 = estd::is_same_v<value_type, estd::nullptr_t>;
 
         //static_assert(v2, "At the moment only nullptr_t is supported");
 
