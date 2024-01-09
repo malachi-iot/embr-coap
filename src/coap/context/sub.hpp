@@ -81,6 +81,7 @@ void Subcontext<Substates...>::create(int id_path, Context& context, F&& f)
 
 template <ESTD_CPP_CONCEPT(concepts::State)... Substates>
 // DEBT: Use a concept here for 'Context'
+// DEBT: Shouldn't context itself get used too?
 template <class Context>
 void Subcontext<Substates...>::on_uri_query(const embr::coap::event::option& e, Context& context)
 {

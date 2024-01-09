@@ -25,6 +25,7 @@ struct triad
 
 //typedef estd::pair<const char*, int> UriPathMap;
 // uri part, id of this uri, id of parent uri
+// 09JAN24 I think we can liberate this guy from 'internal' soon
 typedef triad<estd::layer2::const_string, int, int> UriPathMap;
 
 

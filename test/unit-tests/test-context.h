@@ -3,9 +3,21 @@
 #include <estd/streambuf.h>
 
 #include <coap/context.h>
+// DEBT: A little confusing putting UriParserContext here, not TOO bad though
+#include <coap/decoder/observer/uri.h>
 #include <coap/encoder/streambuf.h>
 
 namespace test {
+
+namespace uris {
+
+// enum class disables auto cast to int :(
+enum uris : int
+{
+    v1
+};
+
+}
 
 extern char synthetic_outbuf[128];
 
@@ -87,7 +99,7 @@ public:
     bool completed_ = false;
     int value_ = -1;
 
-    bool on_option(const internal::v1::query& q) const
+    bool on_option(const internal::v1::query& q)
     {
         if(internal::v1::from_query(q, "key", value_).ec == 0)
         {

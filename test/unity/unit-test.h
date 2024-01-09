@@ -13,6 +13,7 @@
 #endif
 
 
+#include "../unit-tests/test-context.h"
 #include "../unit-tests/test-data.h"
 #include "../unit-tests/test-uri-data.h"
 

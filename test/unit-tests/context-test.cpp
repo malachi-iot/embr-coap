@@ -17,19 +17,9 @@ char synthetic_outbuf[128];
 }
 
 
-namespace uris {
-
-// enum class disables auto cast to int :(
-enum uris : int
-{
-    v1
-};
-
-}
-
 internal::UriPathMap uri_map[] =
 {
-    { "v1", uris::v1, MCCOAP_URIPATH_NONE }
+    { "v1", test::uris::v1, MCCOAP_URIPATH_NONE }
 };
 
 #if __cpp_concepts
