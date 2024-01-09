@@ -25,3 +25,5 @@ add_library(${PROJECT_NAME} ${SOURCE_FILES} ${DOC_FILES})
 target_include_directories(${PROJECT_NAME} PUBLIC .)
 
 target_link_libraries(${PROJECT_NAME} estd embr)
+
+#add_library(embr::coap ALIAS mc-coap)

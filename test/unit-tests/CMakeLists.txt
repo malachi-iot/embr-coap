@@ -62,4 +62,7 @@ add_executable(${PROJECT_NAME} ${SOURCE_FILES})
 
 target_link_libraries(${PROJECT_NAME} mc-coap embr Catch2)
 
-target_compile_options(${PROJECT_NAME} PUBLIC -fconcepts-diagnostics-depth=2)
+if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    # Makes concepts-related failures easier to read
+    target_compile_options(${PROJECT_NAME} PUBLIC -fconcepts-diagnostics-depth=2)
+endif()

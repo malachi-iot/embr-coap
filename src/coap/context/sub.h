@@ -17,6 +17,9 @@
 
 #include "from_query.h"
 
+// DEBT: Either filter out by c++20 or backport lambda behaviors below
+// for pre c++20 operation
+
 namespace embr { namespace coap {
 
 namespace experimental {
@@ -171,7 +174,7 @@ public:
     void create(int id_path, Context& context)
     {
         create(id_path, context,
-            []<class T>(estd::in_place_type_t<T>){ return nullptr_t{}; });
+            []<class T>(estd::in_place_type_t<T>){ return estd::nullptr_t{}; });
     }
 
     template <class Context>
