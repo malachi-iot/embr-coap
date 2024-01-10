@@ -21,9 +21,12 @@ static adc_oneshot_unit_handle_t adc1_handle;
 
 #ifdef CONFIG_IDF_TARGET_ESP32C3
 #define ADC_CHANNEL ADC_CHANNEL_0
+#elif defined(CONFIG_IDF_TARGET_ESP32C6)
+#define ADC_CHANNEL ADC_CHANNEL_0
 #elif defined(CONFIG_IDF_TARGET_ESP32)
 #define ADC_CHANNEL ADC_CHANNEL_0
 #else
+// DEBT: Document who this one is for
 #define ADC_CHANNEL ADC_CHANNEL_8
 #endif
 

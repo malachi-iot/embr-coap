@@ -23,6 +23,11 @@
 #include "../api.h"
 #include "rtc.h"
 
+// DEBT: Requires esp_helper which may or may not be present.  We need a feature flag
+// to know if it's linked in (but usually I do)
+#include <embr/platform/esp-idf/board.h>
+
+#include <embr/platform/esp-idf/traits.h>
 #include <embr/json/encoder.hpp>
 
 // DEBT: Really this all belongs under esp_idf namespace
@@ -159,12 +164,29 @@ struct builder<TContext, estd::monostate,
 
         ("s", "1.0.0")                // schema version
         ("app", app_desc->version)
+        ("estd", ESTD_VERSION_STR)
         ("embr", EMBR_VERSION_STR)
         ("embr::coap", EMBR_COAP_VER_STR)
         ("idf", app_desc->idf_ver)
 
         .end();
     }
+
+    void board_info()
+    {
+        prep_payload();
+        auto out = encoder.ostream();
+        auto j = embr::json::v1::make_fluent(out);
+
+        j.begin()
+
+        ("name", embr::esp_idf::board_traits::name)
+        ("vendor", embr::esp_idf::board_traits::vendor)
+        ("chip", embr::esp_idf::chip_traits<>::name())
+
+        .end();
+    }
+
 
     void firmware_info()
     {
@@ -222,6 +244,12 @@ struct builder<TContext, estd::monostate,
                 stats();
                 break;
             }
+
+            case v1::root_board:
+                if(!verify(context, Header::Code::Get)) return false;
+
+                board_info();
+                break;
 
             case v1::root_memory:
                 if(!verify(context, Header::Code::Get)) return false;

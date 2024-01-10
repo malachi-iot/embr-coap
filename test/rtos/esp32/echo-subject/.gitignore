@@ -1,0 +1,3 @@
+# Manually copy sdkconfig.template into this, so that we can
+# retain WiFi credentials
+sdkconfig.defaults

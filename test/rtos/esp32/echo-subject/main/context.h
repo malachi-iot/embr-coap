@@ -29,6 +29,7 @@ struct AppContext :
 
 
     // convenience method
+    // DEBT: Is this used?
     template <class TSubject>
     void do_notify(pbuf_pointer p, TSubject& subject)
     {
