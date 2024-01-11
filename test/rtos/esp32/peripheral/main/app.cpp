@@ -152,50 +152,12 @@ void app_init(void** arg)
     ESP_LOGD(TAG, "sizeof(app_subject)=%d", sizeof(app_subject));
 
 #ifdef CONFIG_EMBR_COAP_RTC_RESTART_COUNTER
-    // DEBT: Move this into framework
+    const esp_reset_reason_t reset_reason = esp_idf::track_reset_reason();
+#else
     const esp_reset_reason_t reset_reason = esp_reset_reason();
+#endif
 
     ESP_LOGD(TAG, "reset_reason=%d", reset_reason);
-
-    // As per
-    // https://stackoverflow.com/questions/69880289/c-int-undefined-behaviour-when-stored-as-rtc-noinit-attr-esp32
-    switch(reset_reason)
-    {
-        case ESP_RST_UNKNOWN:       // ESP32C3 starts after flash with this reason
-        case ESP_RST_EXT:
-        case ESP_RST_POWERON:
-            esp_idf::brownout_reboot_counter = 0;
-            esp_idf::panic_reboot_counter = 0;
-            esp_idf::wdt_reboot_counter = 0;
-            esp_idf::user_reboot_counter = 0;
-            esp_idf::other_reboot_counter = 0;
-            ESP_LOGI(TAG, "Poweron");
-            break;
-
-        case ESP_RST_PANIC:
-            ++esp_idf::panic_reboot_counter;
-            break;
-
-        case ESP_RST_BROWNOUT:
-            ++esp_idf::brownout_reboot_counter;
-            break;
-
-        case ESP_RST_INT_WDT:
-        case ESP_RST_TASK_WDT:
-        case ESP_RST_WDT:
-            ++esp_idf::wdt_reboot_counter;
-            break;
-
-        case ESP_RST_DEEPSLEEP:
-        case ESP_RST_SW:
-            ++esp_idf::user_reboot_counter;
-            break;
-
-        default:
-            ++esp_idf::other_reboot_counter;
-            break;
-    }
-#endif
 
     initialize_adc();
     initialize_ledc();
