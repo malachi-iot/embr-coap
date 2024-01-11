@@ -152,6 +152,7 @@ void app_init(void** arg)
     ESP_LOGD(TAG, "sizeof(app_subject)=%d", sizeof(app_subject));
 
 #ifdef CONFIG_EMBR_COAP_RTC_RESTART_COUNTER
+    // DEBT: Move this into framework
     const esp_reset_reason_t reset_reason = esp_reset_reason();
 
     ESP_LOGD(TAG, "reset_reason=%d", reset_reason);
