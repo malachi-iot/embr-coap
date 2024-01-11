@@ -66,11 +66,29 @@ ledc_channel<Context, id_path_>::ledc_channel(
 
 
 template <ESTD_CPP_CONCEPT(concepts::IncomingContext) Context, int id_path_>
+ledc_channel<Context, id_path_>::ledc_channel(
+    Context& context,
+    ledc_mode_t speed_mode,
+    ledc_timer_t timer_num,
+    const event::option& e) :
+    base_type(context),
+    config{}
+{
+    populate_uri_value(e);
+
+    config.speed_mode = speed_mode;
+    config.timer_sel = timer_num;
+    config.gpio_num = -1;
+}
+
+
+template <ESTD_CPP_CONCEPT(concepts::IncomingContext) Context, int id_path_>
 void ledc_channel<Context, id_path_>::on_option(const query& q)
 {
     int v;
 
-    if(internal::from_query(q, "pin", v).ec == 0)
+    if(internal::from_query(q, "pin", v).ec == 0 ||
+        internal::from_query(q, "gpio", v).ec == 0)
     {
         config.gpio_num = v;
         has_config = true;

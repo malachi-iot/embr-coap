@@ -65,7 +65,7 @@ struct ledc_channel : coap::internal::v1::SubcontextBase::base<Context>,
 
     estd::layer1::optional<uint16_t, 0xFFFF> duty;
 
-    ledc_channel(Context&, const event::option& e);
+    ledc_channel(Context&, ledc_mode_t speed_mode, ledc_timer_t timer_num, const event::option& e);
     ledc_channel(Context&, const ledc_channel_config_t&, const event::option& e);
 
     void on_option(const query&);
