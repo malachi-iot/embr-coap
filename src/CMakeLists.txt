@@ -10,7 +10,7 @@ include(source.cmake)
 
 # DEBT: Treating these basically as interface libraries.  Formalize that
 if(NOT TARGET estd)
-    add_subdirectory(${ESTDLIB_DIR}/src estd)
+    add_subdirectory(${ESTD_DIR}/src estd)
 endif()
 if(NOT TARGET embr)
     add_subdirectory(${EMBR_DIR}/src embr)

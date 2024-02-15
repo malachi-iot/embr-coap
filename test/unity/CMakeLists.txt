@@ -4,10 +4,10 @@ project(coap-unity-tests-lib)
 
 add_compile_definitions(FEATURE_MCCOAP_LEGACY_EVENTS=0)
 
-set(ROOT_DIR ${PROJECT_SOURCE_DIR}/../..)
-set(ESTDLIB_DIR ${ROOT_DIR}/ext/embr/ext/estdlib)
-set(EMBR_DIR ${ROOT_DIR}/ext/embr)
-set(UNITY_DIR ${ESTDLIB_DIR}/ext/Unity)
+include(../../tools/cmake/setvars.cmake)
+
+# FIX: Broken, we get this through fetchcontent now
+set(UNITY_DIR ${ESTD_DIR}/ext/Unity)
 set(COAP_DIR ${ROOT_DIR}/src)
 
 if(NOT TARGET embr::coap)
@@ -29,12 +29,6 @@ add_library(${PROJECT_NAME}
 add_library(mc-coap::unity-tests ALIAS ${PROJECT_NAME})
 #add_library(embr::coap::unity-tests ALIAS ${PROJECT_NAME})
 
-target_link_libraries(${PROJECT_NAME} unity embr embr::coap)
+target_link_libraries(${PROJECT_NAME} PUBLIC unity embr embr::coap)
 
-target_include_directories(${PROJECT_NAME} PUBLIC
-    ${ESTDLIB_DIR}/src
-    ${EMBR_DIR}/src
-    ${UNITY_DIR}
-    .
-    )
 target_include_directories(${PROJECT_NAME} PUBLIC ${COAP_DIR})
