@@ -1,5 +1,3 @@
-# DEBT: Only exists within test area
-
 menu "EMBR: CoAP"
 
     config EMBR_COAP_RTC_RESTART_COUNTER

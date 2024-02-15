@@ -7,6 +7,7 @@
 #include "../../../exp/uripath-repeater.h"   // brings in UriPathMatcher and friends
 
 #include "esp_log.h"
+// DEBT: Use the Espressif-provided version check here instead, this guy is deprecated
 #if ESTD_IDF_VER >= ESTD_IDF_VER_3_3_0
 #include "esp_ota_ops.h"
 #endif

@@ -1,4 +1,5 @@
-get_filename_component(ROOT_DIR ${CMAKE_CURRENT_LIST_DIR}/../.. ABSOLUTE)
+include(${CMAKE_CURRENT_LIST_DIR}/setvars.cmake)
+
 set(SRC_DIR ${ROOT_DIR}/src)
 
 include(${SRC_DIR}/source.cmake)
