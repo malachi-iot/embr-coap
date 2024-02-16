@@ -38,9 +38,13 @@ namespace internal {
 
 inline void pended_restart(TimerHandle_t)
 {
-    static constexpr const char* TAG = "pended_restart";
+#if CONFIG_FREERTOS_TIMER_TASK_STACK_DEPTH < 4096
+    puts("embr::coap Restarting by request");
+#else
+    static constexpr const char* TAG = "embr::coap";
 
     ESP_LOGI(TAG, "Restarting by request");
+#endif
 
     esp_restart();
 }
