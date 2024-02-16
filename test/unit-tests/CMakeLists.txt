@@ -40,6 +40,7 @@ set(SOURCE_FILES
         coap-header-test.cpp
         test-data.h coap-encoder-test.cpp
         coap-token-test.cpp
+        coap-core.cpp
         coap-observable-test.cpp
         blockwise-test.cpp
         context-test.cpp
