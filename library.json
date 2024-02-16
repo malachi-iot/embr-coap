@@ -1,8 +1,8 @@
 {
-    "name": "mc-coap",
+    "name": "embr-coap",
     "keywords": "CoAP",
     "description": "Constrained Object Access Protocol for embedded targets",
-    "version": "0.9.0",
+    "version": "0.9.1",
     "authors": 
     {
         "name": "Malachi Burke"
@@ -10,7 +10,7 @@
     "repository":
     {
         "type": "git",
-        "url": "https://github.com/malachi-iot/mc-coap.git"
+        "url": "https://github.com/malachi-iot/embr-coap.git"
     },
     "build": {
         "flags": "-Isrc  -Iext/estdlib/src",
