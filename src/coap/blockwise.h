@@ -2,6 +2,10 @@
 
 #include <estd/span.h>
 
+#if FEATURE_STD_ALGORITHM
+#include <cmath>
+#endif
+
 #include "uint.h"
 
 // Experimental primarily due to naming
@@ -10,14 +14,14 @@ namespace embr { namespace coap { namespace experimental {
 
 // internal call, push through least-significant-byte of option_value
 // through here
-uint16_t option_block_decode_szx(uint8_t value)
+inline uint16_t option_block_decode_szx(uint8_t value)
 {
     value &= 0x07;
     value += 4;
     return 1 << value;
 }
 
-uint16_t option_block_decode_szx(const estd::span<const uint8_t>& option_value)
+inline uint16_t option_block_decode_szx(const estd::span<const uint8_t>& option_value)
 {
     // FIX: const_buffer doesn't yet have a .back(), but it will
     return option_block_decode_szx(option_value[option_value.size() - 1]);
@@ -25,7 +29,7 @@ uint16_t option_block_decode_szx(const estd::span<const uint8_t>& option_value)
 
 // sequence #
 template <class TInt = uint32_t>
-TInt option_block_decode_num(const estd::span<const uint8_t>& option_value)
+inline TInt option_block_decode_num(const estd::span<const uint8_t>& option_value)
 {
     // NUM can be up to 20 bits in size.  If you really feel like using less,
     // you can
@@ -33,11 +37,10 @@ TInt option_block_decode_num(const estd::span<const uint8_t>& option_value)
 }
 
 
-bool option_block_decode_m(const estd::span<const uint8_t>& option_value)
+constexpr bool option_block_decode_m(const estd::span<const uint8_t>& option_value)
 {
     return (option_value[option_value.size() - 1] & 0x08) != 0;
 }
-
 
 // NOTE: remember szx needs some minor math to represent size
 template <typename TUInt>
@@ -65,5 +68,36 @@ uint8_t option_block_encode(uint8_t* option_value, TUInt num, bool m, uint8_t sz
 
     return *option_value == 0 ? 0 : 1;
 }
+
+
+template <class Int>
+struct OptionBlock
+{
+    static_assert(estd::numeric_limits<Int>::is_signed == false,
+        "Only unsigned integers supported 'num'");
+
+    Int sequence_num;
+    unsigned size : 11;
+    bool more : 1;
+
+// DEBT: Really needs a FEATURE_STD_MATH, but this will do
+#if FEATURE_STD_ALGORITHM
+    void encode(uint8_t* option_value)
+    {
+        unsigned v = std::log2(size);
+        uint8_t szx = v - 4;
+        option_block_encode(option_value, sequence_num, more, szx);
+    }
+#endif
+
+    void decode(const estd::span<const uint8_t>& option_value)
+    {
+        sequence_num = option_block_decode_num(option_value);
+        more = option_block_decode_m(option_value);
+        size = option_block_decode_szx(option_value);
+    }
+};
+
+
 
 }}}

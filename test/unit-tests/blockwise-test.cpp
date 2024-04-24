@@ -35,16 +35,33 @@ TEST_CASE("Blockwise option encoder/decoder tests", "[blockwise]")
             REQUIRE(option_block_decode_num(option_value) == 0x321);
             REQUIRE(option_block_decode_m(option_value));
         }
+        SECTION("helper struct")
+        {
+            uint8_t option_value[] = {0x32, 0x1A};
+            OptionBlock<uint16_t> decoded;
+
+            decoded.decode(option_value);
+
+            REQUIRE(decoded.size == 64);
+        }
     }
     SECTION("encoding")
     {
         uint8_t option_value[3]; // max size is 3
 
-        int size = option_block_encode(option_value, 0x321, true, 2);
+        SECTION("low level")
+        {
+            int szx = option_block_encode(option_value, 0x321, true, 2);
 
-        REQUIRE(option_value[0] == 0x32);
-        REQUIRE(option_value[1] == 0x1A);
-        REQUIRE(size == 2);
+            REQUIRE(option_value[0] == 0x32);
+            REQUIRE(option_value[1] == 0x1A);
+            REQUIRE(szx == 2);
+        }
+        SECTION("helper struct")
+        {
+            OptionBlock<uint16_t> encoded { 0x321, 64, true };
 
+            encoded.encode(option_value);
+        }
     }
 }
