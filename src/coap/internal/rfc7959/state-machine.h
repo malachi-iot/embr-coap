@@ -2,6 +2,7 @@
 
 #include "../../option.h"
 #include "decode.h"
+#include "helper.h"
 
 // Experimental primarily due to naming
 // from https://tools.ietf.org/html/rfc7959#section-2.1
@@ -39,38 +40,7 @@ class BlockwiseStateMachine
     States state_ = STATE_IDLE;
 
 public:
-    // DEBT: Combine this with OptionBlock
-    template <typename Int>
-    struct Transfer
-    {
-        using value_type = Int;
-
-        Option::ContentFormats content_format_;
-        Int total_size_;
-        Int current_block_ : (sizeof(Int) * 8) - 4;
-        bool more_ : 1;
-        Int szx_ : 3;
-
-        Int block_size() const { return 1 << (szx_ + 4); }
-        void block_size(Int size)
-        {
-            unsigned v = std::log2(size);
-            szx_ = v - 4;
-        }
-
-        // In context of REQUEST_RECEIVING, help determine if final payload size is correct
-        Int remaining() const
-        {
-            return total_size_ - (current_block_ * block_size());
-        }
-
-        uint8_t encode(uint8_t* output) const
-        {
-            return option_block_encode(output, current_block_, more_, szx_);
-        }
-    };
-
-    using transfer_type = Transfer<unsigned>;
+    using transfer_type = OptionBlock2<unsigned>;
 
 private:
     transfer_type request_, response_;

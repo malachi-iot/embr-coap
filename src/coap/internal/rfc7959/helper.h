@@ -1,5 +1,7 @@
 #pragma once
 
+#include "../../option.h"
+
 #include "decode.h"
 #include "encode.h"
 
@@ -36,6 +38,38 @@ struct OptionBlock
         size = option_block_decode_szx_to_size(option_value);
     }
 };
+
+// DEBT: Combine this with OptionBlock
+template <typename Unsigned>
+struct OptionBlock2
+{
+    using value_type = Unsigned;
+
+    Option::ContentFormats content_format_;
+    Unsigned total_size_;
+    Unsigned current_block_ : (sizeof(Unsigned) * 8) - 4;
+    bool more_ : 1;
+    Unsigned szx_ : 3;
+
+    Unsigned block_size() const { return 1 << (szx_ + 4); }
+    void block_size(Unsigned size)
+    {
+        unsigned v = std::log2(size);
+        szx_ = v - 4;
+    }
+
+    // In context of REQUEST_RECEIVING, help determine if final payload size is correct
+    Unsigned remaining() const
+    {
+        return total_size_ - (current_block_ * block_size());
+    }
+
+    uint8_t encode(uint8_t* output) const
+    {
+        return option_block_encode(output, current_block_, more_, szx_);
+    }
+};
+
 
 
 }}}
