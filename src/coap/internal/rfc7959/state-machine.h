@@ -78,7 +78,8 @@ private:
 public:
     const transfer_type& request() const { return request_; }
 
-    void initiate_send(unsigned total_size, Option::ContentFormats format)
+    void initiate_response(unsigned total_size,
+        Option::ContentFormats format = Option::ContentFormatNull)
     {
         response_.content_format_ = format;
         response_.total_size_ = total_size;
@@ -151,6 +152,9 @@ public:
     template <class Encoder>
     void encode_options(Encoder& encoder)
     {
+        if(response_.content_format_ != Option::ContentFormatNull)
+            encoder.option(Option::ContentFormat, response_.content_format_);
+
         encode_block2(encoder);
         encode_size2(encoder);
     }

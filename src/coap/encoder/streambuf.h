@@ -210,7 +210,9 @@ public:
     }
 
     //__attribute__ ((noinline))
-    bool option(option_number_type number, int option_value)
+    //bool option(option_number_type number, int option_value)
+    template <class Unsigned>
+    bool option_uint(option_number_type number, Unsigned option_value)
     {
         embr::coap::layer2::UInt<> v;
 
@@ -218,6 +220,17 @@ public:
 
         return option(number, v);
     }
+
+    bool option(option_number_type number, uint16_t v)
+    {
+        return option_uint(number, v);
+    }
+
+    bool option(option_number_type number, uint32_t v)
+    {
+        return option_uint(number, v);
+    }
+
 
     // returns false if chunking is needed
     // returns true if entire data was output

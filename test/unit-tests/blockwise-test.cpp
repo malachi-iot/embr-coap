@@ -88,9 +88,20 @@ TEST_CASE("Blockwise option encoder/decoder tests", "[blockwise]")
 
         t.block_size(1024);
         REQUIRE(t.szx_ == 6);
+        bsm.initiate_response(300, embr::coap::Option::ApplicationJson);
         bsm.encode_options(encoder);
+        encoder.payload();
         encoder.finalize();
         offset = encoder.rdbuf()->pubseekoff(0, estd::ios_base::cur);
-        REQUIRE(offset == 7);
+
+        // 4 - header
+        // 1 - content format
+        // 3 - size2
+        // 2 - block2
+        // 1 - payload marker
+        REQUIRE(offset == 11);
+        // DEBT: Special offset type, is there a way to do pointer-ish math directly on it?
+        uint8_t c = buffer[(int)offset - 1];
+        REQUIRE(c == 0xFF);
     }
 }

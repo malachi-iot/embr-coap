@@ -27,7 +27,7 @@ public:
         Reserved = 15
     };
 
-    enum ContentFormats
+    enum ContentFormats : uint16_t
     {
         // As per [1]
         ImageGif                = 21,
@@ -55,6 +55,12 @@ public:
         ApplicationCborSeq          = 63,
 
         ApplicationCoapGroupJson    = 256,      // RFC 7390
+
+        // As per RFC7252 Section 12.3, this
+        // "MUST NOT be used in operational deployments".  We use this
+        // in a limited capacity to indicate a null content format internally,
+        // never over the wire.
+        ContentFormatNull           = 0xFFFF
     };
 
     enum Numbers
