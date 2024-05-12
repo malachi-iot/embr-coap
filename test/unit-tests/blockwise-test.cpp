@@ -2,6 +2,8 @@
 
 #include <coap/blockwise.h>
 
+#include "test-context.h"
+
 using namespace embr::coap::experimental;
 
 TEST_CASE("Blockwise option encoder/decoder tests", "[blockwise]")
@@ -63,5 +65,32 @@ TEST_CASE("Blockwise option encoder/decoder tests", "[blockwise]")
 
             encoded.encode(option_value);
         }
+    }
+    SECTION("state machine")
+    {
+        char buffer[512];
+
+        span_encoder_type encoder(buffer);
+
+        embr::coap::Header header(
+            embr::coap::Header::Acknowledgement,
+            embr::coap::Header::Code::Continue);
+
+        header.message_id(0x1234);
+
+        encoder.header(header);
+
+        auto offset = encoder.rdbuf()->pubseekoff(0, estd::ios_base::cur);
+        REQUIRE(offset == 4);
+
+        BlockwiseStateMachine bsm;
+        BlockwiseStateMachine::transfer_type t;
+
+        t.block_size(1024);
+        REQUIRE(t.szx_ == 6);
+        bsm.encode_options(encoder);
+        encoder.finalize();
+        offset = encoder.rdbuf()->pubseekoff(0, estd::ios_base::cur);
+        REQUIRE(offset == 7);
     }
 }

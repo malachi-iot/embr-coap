@@ -263,10 +263,10 @@ public:
     }
 
 
-    template <class TImpl>
-    bool option(embr::coap::Option::Numbers number, estd::internal::allocated_array<TImpl>& a)
+    template <class Impl>
+    bool option(embr::coap::Option::Numbers number, estd::internal::allocated_array<Impl>& a)
     {
-        typedef typename estd::internal::allocated_array<TImpl>::value_type value_type;
+        typedef typename estd::internal::allocated_array<Impl>::value_type value_type;
 
         // TODO: ensure a.size() is size in bytes
         if(!option_raw(number, a.size())) return false;

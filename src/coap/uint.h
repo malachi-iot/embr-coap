@@ -63,25 +63,25 @@ public:
     }
 
 
-    template <class TReturn>
-    static TReturn get(const const_buffer& b)
+    template <class Return>
+    static Return get(const const_buffer& b)
     {
-        ASSERT_WARN(true, sizeof(TReturn) >= b.size(), "decoding integer size too small");
+        ASSERT_WARN(true, sizeof(Return) >= b.size(), "decoding integer size too small");
 
-        return internal::uint_get<TReturn>(b.data(), b.size());
+        return internal::uint_get<Return>(b.data(), b.size());
     }
 
 
-    template <class TReturn, size_t len>
-    static TReturn get(const uint8_t (&value) [len])
+    template <class Return, size_t len>
+    static Return get(const uint8_t (&value) [len])
     {
 #ifdef FEATURE_CPP_STATIC_ASSERT
-        static_assert(sizeof(TReturn) >= len, "decoding integer size too small");
+        static_assert(sizeof(Return) >= len, "decoding integer size too small");
 #else
         ASSERT_WARN(true, sizeof(TReturn) >= len, "decoding integer size too small");
 #endif
 
-        return internal::uint_get<TReturn>(value, len);
+        return internal::uint_get<Return>(value, len);
     }
 
 
