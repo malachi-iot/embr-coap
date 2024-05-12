@@ -50,7 +50,7 @@ public:
         Valid =             COAP_RESPONSE_CODE(Success, 03),
         Changed =           COAP_RESPONSE_CODE(Success, 04),
         Content =           COAP_RESPONSE_CODE(Success, 05),
-        Continue =          COAP_RESPONSE_CODE(Success, 31),
+        Continue =          COAP_RESPONSE_CODE(Success, 31),    // RFC7959 Section 2.9.1
 
         BadRequest =                COAP_RESPONSE_CODE(ClientError, 00),
         Unauthorized =              COAP_RESPONSE_CODE(ClientError, 01),
@@ -59,10 +59,10 @@ public:
         NotFound =                  COAP_RESPONSE_CODE(ClientError, 04),
         MethodNotAllowed =          COAP_RESPONSE_CODE(ClientError, 05),
         NotAcceptable =             COAP_RESPONSE_CODE(ClientError, 06),
-        RequestEntityIncomplete =   COAP_RESPONSE_CODE(ClientError,  8),
+        RequestEntityIncomplete =   COAP_RESPONSE_CODE(ClientError,  8),    // RFC7959 Section 2.9.2
         Conflict =                  COAP_RESPONSE_CODE(ClientError,  9),
         PreConditionFailed =        COAP_RESPONSE_CODE(ClientError, 12),
-        RequestEntityTooLarge =     COAP_RESPONSE_CODE(ClientError, 13),
+        RequestEntityTooLarge =     COAP_RESPONSE_CODE(ClientError, 13),    // Augmented by RFC7959 Section 2.9.3
         UnsupportedContentFormat =  COAP_RESPONSE_CODE(ClientError, 15),
         TooManyRequests =           COAP_RESPONSE_CODE(ClientError, 29),
 

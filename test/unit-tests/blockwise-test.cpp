@@ -13,7 +13,7 @@ TEST_CASE("Blockwise option encoder/decoder tests", "[blockwise]")
             // NUM of 0, M of 0 (false) and SZX of 1 == 32
             uint8_t option_value[] = {0x1};
 
-            REQUIRE(option_block_decode_szx(option_value) == 32);
+            REQUIRE(option_block_decode_szx_to_size(option_value) == 32);
             REQUIRE(option_block_decode_num(option_value) == 0);
             REQUIRE(!option_block_decode_m(option_value));
         }
@@ -22,7 +22,7 @@ TEST_CASE("Blockwise option encoder/decoder tests", "[blockwise]")
             // NUM of 1, M of 0 (false) and SZX of 0 == 16
             uint8_t option_value[] = {0x10};
 
-            REQUIRE(option_block_decode_szx(option_value) == 16);
+            REQUIRE(option_block_decode_szx_to_size(option_value) == 16);
             REQUIRE(option_block_decode_num(option_value) == 1);
             REQUIRE(!option_block_decode_m(option_value));
         }
@@ -31,7 +31,7 @@ TEST_CASE("Blockwise option encoder/decoder tests", "[blockwise]")
             // NUM of 0x321, M of 1 (true) and SZX of 2 == 64
             uint8_t option_value[] = {0x32, 0x1A};
 
-            REQUIRE(option_block_decode_szx(option_value) == 64);
+            REQUIRE(option_block_decode_szx_to_size(option_value) == 64);
             REQUIRE(option_block_decode_num(option_value) == 0x321);
             REQUIRE(option_block_decode_m(option_value));
         }

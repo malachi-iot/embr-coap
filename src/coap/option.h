@@ -81,12 +81,13 @@ public:
         LocationQuery = 20,
         // https://tools.ietf.org/html/rfc7959#section-2.1
         // request payload block-wise
-        Block1 = 23,
+        Block2 = 23,
         // response payload block-wise
-        Block2 = 27,
+        Block1 = 27,
+        Size2 = 28,         // https://datatracker.ietf.org/doc/html/rfc7959#section-4
         ProxyUri = 35,
         ProxyScheme = 39,
-        Size1 = 60,
+        Size1 = 60,         // https://datatracker.ietf.org/doc/html/rfc7959#section-4
 
         // https://www.rfc-editor.org/rfc/rfc9175.html
         Echo = 252,

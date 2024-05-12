@@ -8,43 +8,16 @@
 
 #include "uint.h"
 
+#include "internal/rfc7959/decode.h"
+#include "internal/rfc7959/state-machine.h"
+
 // Experimental primarily due to naming
 // from https://tools.ietf.org/html/rfc7959#section-2.1
 namespace embr { namespace coap { namespace experimental {
 
-// internal call, push through least-significant-byte of option_value
-// through here
-inline uint16_t option_block_decode_szx(uint8_t value)
-{
-    value &= 0x07;
-    value += 4;
-    return 1 << value;
-}
-
-inline uint16_t option_block_decode_szx(const estd::span<const uint8_t>& option_value)
-{
-    // FIX: const_buffer doesn't yet have a .back(), but it will
-    return option_block_decode_szx(option_value[option_value.size() - 1]);
-}
-
-// sequence #
-template <class TInt = uint32_t>
-inline TInt option_block_decode_num(const estd::span<const uint8_t>& option_value)
-{
-    // NUM can be up to 20 bits in size.  If you really feel like using less,
-    // you can
-    return UInt::get<TInt>(option_value) >> 4;
-}
-
-
-constexpr bool option_block_decode_m(const estd::span<const uint8_t>& option_value)
-{
-    return (option_value[option_value.size() - 1] & 0x08) != 0;
-}
-
 // NOTE: remember szx needs some minor math to represent size
-template <typename TUInt>
-uint8_t option_block_encode(uint8_t* option_value, TUInt num, bool m, uint8_t szx)
+template <typename Int>
+uint8_t option_block_encode(uint8_t* option_value, Int num, bool m, uint8_t szx)
 {
     // DEBT: Do this up with an estd simulated static_assert like in
     // https://gist.github.com/Bueddl/2e4dea884982c22718ceafbebbd75c5f
@@ -82,11 +55,11 @@ struct OptionBlock
 
 // DEBT: Really needs a FEATURE_STD_MATH, but this will do
 #if FEATURE_STD_ALGORITHM
-    void encode(uint8_t* option_value)
+    uint8_t encode(uint8_t* option_value)
     {
         unsigned v = std::log2(size);
         uint8_t szx = v - 4;
-        option_block_encode(option_value, sequence_num, more, szx);
+        return option_block_encode(option_value, sequence_num, more, szx);
     }
 #endif
 
@@ -94,7 +67,7 @@ struct OptionBlock
     {
         sequence_num = option_block_decode_num(option_value);
         more = option_block_decode_m(option_value);
-        size = option_block_decode_szx(option_value);
+        size = option_block_decode_szx_to_size(option_value);
     }
 };
 
