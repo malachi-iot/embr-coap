@@ -71,7 +71,8 @@ struct Manager : embr::internal::instance_or_reference_provider<TTransport>
     typedef Tracker<time_point, transport_type, item_type> tracker_type;
     //typedef typename tracker_type::item_type item_type;
 
-    typedef embr::internal::scheduler::impl::Function<time_point> scheduler_impl;
+    typedef embr::internal::scheduler::impl::Function<time_point,
+        estd::detail::impl::function_fnptr1> scheduler_impl;
 
     tracker_type tracker;
 
@@ -90,7 +91,8 @@ struct Manager : embr::internal::instance_or_reference_provider<TTransport>
         //time_point now = clock_type::now();   // TODO
         time_point due = time_sent + i->delta();
 
-        estd::detail::function<void(time_point*, time_point)> f(&i2->m);
+        estd::detail::v2::function<void(time_point*, time_point),
+            estd::detail::impl::function_fnptr1> f(&i2->m);
 
         // NOTE: Can only use thisafy and friends when 'this' pointer isn't getting moved around
         scheduler.schedule(due, f);
