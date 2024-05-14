@@ -173,6 +173,8 @@ public:
     {
         ack_received_ = value;
     }
+
+    time_point first_transmit() const { return first_transmit_; }
 };
 
 }}}}

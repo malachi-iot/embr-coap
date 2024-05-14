@@ -127,6 +127,15 @@ TEST_CASE("retry tests", "[retry]")
                 tracker.untrack(i);
             }
         }
+        SECTION("tracker2")
+        {
+            using endpoint_type = int;
+            retry::Tracker2<endpoint_type, buffer_type> tracker;
+            //decltype(tracker)::value_type v;
+
+            tracker.track(estd::chrono::milliseconds(10), 0, buffer_with_token);
+            tracker.ack_encountered(0, 0x123);
+        }
         SECTION("manager")
         {
             SyntheticTransport transport;

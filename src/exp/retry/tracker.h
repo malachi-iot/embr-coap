@@ -130,5 +130,67 @@ public:
     }
 };
 
+// 13MAY24 MB
+// Wholly different approach, a pseudo-state-machine with a baked in scheduler
+template <class Endpoint, class Buffer, unsigned N = 10,
+    class TimePoint = estd::chrono::duration<uint32_t, estd::milli> >
+struct Tracker2
+{
+    using time_point = TimePoint;
+
+    struct match_param
+    {
+        const unsigned mid;
+        const Endpoint endpoint;
+    };
+
+    struct SchedulerItem :
+        embr::internal::scheduler::impl::ReferenceBase<time_point>
+    {
+        struct value_type : Item<Endpoint, TimePoint, Buffer>
+        {
+            using base_type = Item<Endpoint, TimePoint, Buffer>;
+
+            explicit value_type(time_point t, const Endpoint& endpoint, Buffer buffer) :
+                base_type(endpoint, t, buffer)
+            {
+            }
+
+            bool match(match_param v) const
+            {
+                return
+                    v.endpoint == base_type::endpoint() &&
+                    v.mid == base_type::mid();
+            }
+        };
+
+        constexpr static time_point get_time_point(const value_type& v)
+        {
+            return v.first_transmit() + v.delta();
+        }
+    };
+
+    embr::internal::layer1::Scheduler<N, SchedulerItem> scheduler_;
+
+    using value_type = typename SchedulerItem::value_type;
+
+    void track(time_point t, const Endpoint& endpoint, const Buffer& b)
+    {
+        scheduler_.schedule(t, endpoint, b);
+    }
+
+    void ack_encountered(const Endpoint& endpoint, uint16_t mid)
+    {
+        // DEBT: Brute force search
+        value_type* matched = scheduler_.match(
+            match_param{mid, endpoint});
+
+        if(matched)
+        {
+            matched->ack_received(true);
+        }
+    }
+};
+
 
 }}}}
