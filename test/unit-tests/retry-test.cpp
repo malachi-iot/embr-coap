@@ -130,11 +130,39 @@ TEST_CASE("retry tests", "[retry]")
         SECTION("tracker2")
         {
             using endpoint_type = int;
-            retry::Tracker2<endpoint_type, buffer_type> tracker;
-            //decltype(tracker)::value_type v;
+            using ms_type = estd::chrono::milliseconds;
+            using tracker_type = retry::Tracker2<endpoint_type, buffer_type>;
+            bool b;
+            endpoint_type e1 = 0, e2 = 1;
+            tracker_type tracker;
+            tracker_type::value_type* tracked = nullptr;
+            //using value_type = decltype(tracker)::value_type;
 
-            tracker.track(estd::chrono::milliseconds(10), 0, buffer_with_token);
-            tracker.ack_encountered(0, 0x123);
+            SECTION("single")
+            {
+                tracker.track(ms_type{10}, e1, buffer_with_token);
+                b = tracker.ack_encountered(e1, 0x123);
+                REQUIRE(b);
+                // 2500ms x 2 - DEBT, need more tuning/work
+                tracker.mark_con_sent(ms_type{5020});
+                REQUIRE(tracker.empty());
+            }
+            SECTION("multiple")
+            {
+                Header header(Header::Acknowledgement);
+                header.message_id(0x1234);
+
+                tracker.track(ms_type{10}, e1, buffer_with_token);
+                tracker.track(ms_type{15}, e2, header.bytes);
+
+                tracked = tracker.ready(ms_type{20});
+
+                REQUIRE(tracked == nullptr);
+
+                tracked = tracker.ready(ms_type{2515});
+
+                REQUIRE(tracked != nullptr);
+            }
         }
         SECTION("manager")
         {

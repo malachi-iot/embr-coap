@@ -50,6 +50,11 @@ struct Metadata
         return milliseconds(initial_timeout_ms * multiplier);
     }
 
+    bool finished() const
+    {
+        return retransmission_counter == COAP_MAX_RETRANSMIT;
+    }
+
     // DEBT: Need an actual random factor here
     Metadata() : initial_timeout_ms{2500}
     {
@@ -128,6 +133,10 @@ public:
         // FIX: Although this works, it's too sloppy even to be debt.
         // this uses foreknowledge of decoder state machine behavior to
         // do exactly 2 iterations which results in a fully parsed Header
+        // 14MAY24 It's 90% likely we can make a specilized HeaderDecoder<buffer_type>
+        // or perhaps an intermediate BufferHelper<buffer_type> which gauruntees a certain
+        // amount of contiguous bytes - that would be handy for other scenarios too come
+        // to think of it
         decoder.process_iterate_streambuf();
         decoder.process_iterate_streambuf();
 

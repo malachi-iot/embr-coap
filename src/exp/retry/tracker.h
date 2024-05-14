@@ -168,18 +168,29 @@ struct Tracker2
         {
             return v.first_transmit() + v.delta();
         }
+
+        static bool process(value_type& value, time_point current_time)
+        {
+            bool reschedue_request = value.finished() == false &&
+                value.ack_received() == false;
+            // true = reschedule requested
+            // false = finished
+            return reschedue_request;
+        }
     };
 
     embr::internal::layer1::Scheduler<N, SchedulerItem> scheduler_;
 
     using value_type = typename SchedulerItem::value_type;
 
-    void track(time_point t, const Endpoint& endpoint, const Buffer& b)
+    bool track(time_point t, const Endpoint& endpoint, const Buffer& b)
     {
+        // DEBT: Return false if we can't schedule (full)
         scheduler_.schedule(t, endpoint, b);
+        return true;
     }
 
-    void ack_encountered(const Endpoint& endpoint, uint16_t mid)
+    bool ack_encountered(const Endpoint& endpoint, uint16_t mid)
     {
         // DEBT: Brute force search
         value_type* matched = scheduler_.match(
@@ -189,6 +200,32 @@ struct Tracker2
         {
             matched->ack_received(true);
         }
+
+        return matched;
+    }
+
+    bool empty() const { return scheduler_.empty(); }
+
+    value_type& top() { return scheduler_.top(); }
+
+    value_type* ready(time_point current)
+    {
+        if(current >= scheduler_.top_time())
+            return &top();
+        else
+            return nullptr;
+    }
+
+    // For a retry item at the ready position, mark it sent and reprocess
+    void mark_con_sent(time_point current)
+    {
+        // DEBT: Had to use an intermediate reference here
+        value_type& v = scheduler_.top();
+        v.con_helper_flag_bit = 1;
+        ++v.retransmission_counter;
+        // FIX: Need a 'process_one' here, otherwise we are gonna end up
+        // skipping same-timestamped but differing CON tracker
+        scheduler_.process(current);
     }
 };
 
