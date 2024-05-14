@@ -9,3 +9,6 @@
 #define COAP_MAX_RETRANSMIT     4
 #define COAP_NSTART             1
 #define COAP_PROBING_RATE       1   // in bytes per second
+
+// "ACK_RANDOM_FACTOR MUST NOT be decreased below 1.0"
+#define COAP_ACK_RANDOM_FACTOR_MINIMUM  1.0
