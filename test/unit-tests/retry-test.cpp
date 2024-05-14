@@ -143,8 +143,14 @@ TEST_CASE("retry tests", "[retry]")
                 tracker.track(ms_type{10}, e1, buffer_with_token);
                 b = tracker.ack_encountered(e1, 0x123);
                 REQUIRE(b);
+                REQUIRE(tracker.empty() == false);
+                auto top_time = tracker.top_time();
+                REQUIRE(top_time.count() == 2510);
+                tracked = &tracker.top();
                 // 2500ms x 2 - DEBT, need more tuning/work
-                tracker.mark_con_sent(ms_type{5020});
+                b = tracker.mark_con_sent(ms_type{5020});
+                //b = tracker.mark_con_sent(ms_type{2515});
+                REQUIRE(b == true);
                 REQUIRE(tracker.empty());
             }
             SECTION("multiple")

@@ -151,7 +151,8 @@ struct Tracker2
         {
             using base_type = Item<Endpoint, TimePoint, Buffer>;
 
-            explicit value_type(time_point t, const Endpoint& endpoint, Buffer buffer) :
+            explicit value_type(time_point t, time_point random,
+                const Endpoint& endpoint, Buffer buffer) :
                 base_type(endpoint, t, buffer)
             {
             }
@@ -183,12 +184,18 @@ struct Tracker2
 
     using value_type = typename SchedulerItem::value_type;
 
-    bool track(time_point t, const Endpoint& endpoint, const Buffer& b)
+    bool track(time_point t, time_point random, const Endpoint& endpoint, const Buffer& b)
     {
         // DEBT: Return false if we can't schedule (full)
-        scheduler_.schedule(t, endpoint, b);
+        scheduler_.schedule(t, random, endpoint, b);
         return true;
     }
+
+    bool track(time_point t, const Endpoint& endpoint, const Buffer& b)
+    {
+        return track(t, typename value_type::milliseconds(500), endpoint, b);
+    }
+
 
     bool ack_encountered(const Endpoint& endpoint, uint16_t mid)
     {
@@ -208,6 +215,8 @@ struct Tracker2
 
     value_type& top() { return scheduler_.top(); }
 
+    time_point top_time() const { return scheduler_.top_time(); }
+
     value_type* ready(time_point current)
     {
         if(current >= scheduler_.top_time())
@@ -217,8 +226,10 @@ struct Tracker2
     }
 
     // For a retry item at the ready position, mark it sent and reprocess
-    void mark_con_sent(time_point current)
+    bool mark_con_sent(time_point current)
     {
+        if(empty()) return false;
+
         // DEBT: Had to use an intermediate reference here
         value_type& v = scheduler_.top();
         v.con_helper_flag_bit = 1;
@@ -226,6 +237,7 @@ struct Tracker2
         // FIX: Need a 'process_one' here, otherwise we are gonna end up
         // skipping same-timestamped but differing CON tracker
         scheduler_.process(current);
+        return true;
     }
 };
 

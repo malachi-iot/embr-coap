@@ -55,13 +55,19 @@ struct Metadata
         return retransmission_counter == COAP_MAX_RETRANSMIT;
     }
 
-    // DEBT: Need a true default constructor for non-initialized scenarios
     // "the initial timeout is set to a random duration [...]
     //  between ACK_TIMEOUT and (ACK_TIMEOUT * ACK_RANDOM_FACTOR)"
+    // therefore, initial_random_ms is (ACK_TIMEOUT * ACK_RANDOM_FACTOR) - ACK_TIMEOUT
+    static constexpr uint16_t calculate_initial_timeout_ms(uint16_t initial_random_ms)
+    {
+        return COAP_ACK_TIMEOUT * 1000 + initial_random_ms;
+    }
+
+    // DEBT: Need a true default constructor for non-initialized scenarios
     constexpr explicit Metadata(uint16_t initial_random_ms =
         1000 * (COAP_ACK_RANDOM_FACTOR + COAP_ACK_RANDOM_FACTOR_MINIMUM) / 5) :
         retransmission_counter{0},
-        initial_timeout_ms{uint16_t(COAP_ACK_TIMEOUT * 1000 + initial_random_ms)},
+        initial_timeout_ms{calculate_initial_timeout_ms(initial_random_ms)},
         con_helper_flag_bit{0}
     {
 
