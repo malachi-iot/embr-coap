@@ -6,6 +6,8 @@
 #include <estd/forward_list.h>
 #include <estd/functional.h>
 
+#include <embr/scheduler.h>
+
 #include "metadata.h"
 
 namespace embr { namespace coap { namespace experimental { namespace retry {
