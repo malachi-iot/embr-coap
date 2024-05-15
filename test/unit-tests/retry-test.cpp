@@ -138,7 +138,7 @@ TEST_CASE("retry tests", "[retry]")
             tracker_type::value_type* tracked = nullptr;
             //using value_type = decltype(tracker)::value_type;
 
-            SECTION("single")
+            SECTION("single, ack received")
             {
                 tracker.track(ms_type{10}, e1, buffer_with_token);
                 b = tracker.ack_encountered(e1, 0x123);
@@ -147,11 +147,32 @@ TEST_CASE("retry tests", "[retry]")
                 auto top_time = tracker.top_time();
                 REQUIRE(top_time.count() == 2510);
                 tracked = &tracker.top();
+                REQUIRE(tracked->first_transmit() == ms_type{10});
+                REQUIRE(tracker.ready(ms_type{2505}) == nullptr);
+                REQUIRE(tracker.ready(ms_type{2510}) != nullptr);
                 // 2500ms x 2 - DEBT, need more tuning/work
                 b = tracker.mark_con_sent(ms_type{5020});
                 //b = tracker.mark_con_sent(ms_type{2515});
                 REQUIRE(b == true);
+
+                // Because of 'ack_encountered' and we finally process things at mark_con_sent
                 REQUIRE(tracker.empty());
+            }
+            SECTION("single, no ack")
+            {
+                tracker.track(ms_type{10}, e1, buffer_with_token);
+                REQUIRE(tracker.empty() == false);
+                auto top_time = tracker.top_time();
+                REQUIRE(top_time.count() == 2510);
+                REQUIRE(tracker.ready(ms_type{2505}) == nullptr);
+                REQUIRE(tracker.ready(ms_type{2510}) != nullptr);
+                // No ACK received, simulate resend right at resend time
+                b = tracker.mark_con_sent(ms_type{2510});
+                REQUIRE(b == true);
+                REQUIRE(tracker.top_time().count() == 5010);
+                REQUIRE(tracker.ready(ms_type{5005}) == nullptr);
+                b = tracker.mark_con_sent(ms_type{5010});
+                REQUIRE(b == true);
             }
             SECTION("multiple")
             {

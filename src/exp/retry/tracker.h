@@ -172,11 +172,11 @@ struct Tracker2
 
         static bool process(value_type& value, time_point current_time)
         {
-            bool reschedue_request = value.finished() == false &&
+            bool reschedule_request = value.finished() == false &&
                 value.ack_received() == false;
             // true = reschedule requested
             // false = finished
-            return reschedue_request;
+            return reschedule_request;
         }
     };
 
@@ -225,7 +225,9 @@ struct Tracker2
             return nullptr;
     }
 
-    // For a retry item at the ready position, mark it sent and reprocess
+    /// For a retry item at the ready position,
+    /// mark it sent, bump retry counter and reprocess
+    /// @return false if nothing present to process, true if we process 'ready'
     bool mark_con_sent(time_point current)
     {
         if(empty()) return false;
