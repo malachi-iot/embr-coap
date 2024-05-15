@@ -24,6 +24,22 @@ inline bool equal(const estd::span<TChar, Extent1>& lhs,
     return estd::equal(lhs.begin(), lhs.end(), rhs.begin());
 }
 
+// EXPERIMENTAL, zerocopy when possible, otherwise buffers up to sz bytes
+template <class Buffer, unsigned sz = 32>
+struct BufferIntermediary;
+
+// EXPERIMENTAL
+template <unsigned sz>
+struct BufferIntermediary<const_buffer, sz>
+{
+    uint8_t buffer_[sz];
+
+    const_buffer get(unsigned size)
+    {
+        return { buffer_, size };
+    }
+};
+
 }
 
 }}

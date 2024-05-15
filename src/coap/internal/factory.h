@@ -18,6 +18,10 @@ struct DecoderFactory;
 template <class TBuffer, class TBufferFactory = estd::monostate>
 struct EncoderFactory;
 
+// Simpler case just for header processing, EXPERIMENTAL
+template <class Buffer>
+struct HeaderFactory;
+
 // DEBT: This particular one wants to live in embr
 template <class TBuffer>
 struct StreambufProvider;
