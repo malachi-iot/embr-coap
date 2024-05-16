@@ -132,13 +132,24 @@ public:
     }
 };
 
+// Sparse ish clock with no now() and only provides a default time base
+struct PartialClock
+{
+    using duration = estd::chrono::duration<uint32_t, estd::milli>;
+    using time_point = estd::chrono::time_point<PartialClock>;
+};
+
 // 13MAY24 MB
 // Wholly different approach, a pseudo-state-machine with a baked in scheduler
 template <class Endpoint, class Buffer, unsigned N = 10,
-    class TimePoint = estd::chrono::duration<uint32_t, estd::milli> >
+    class Clock = PartialClock,
+          // FIX should be time_point needs work
+    class TimePoint = typename Clock::duration>
 struct Tracker2
 {
     using time_point = TimePoint;
+    using clock_type = Clock;
+    using duration = typename Clock::duration;
 
     struct match_param
     {

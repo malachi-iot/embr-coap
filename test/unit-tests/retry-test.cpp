@@ -132,6 +132,8 @@ TEST_CASE("retry tests", "[retry]")
             using endpoint_type = int;
             using ms_type = estd::chrono::milliseconds;
             using tracker_type = retry::Tracker2<endpoint_type, buffer_type>;
+            //using ms_type = tracker_type::clock_type::duration;
+            //using time_point = tracker_type::time_point;
             bool b;
             endpoint_type e1 = 0, e2 = 1;
             tracker_type tracker;
