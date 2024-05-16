@@ -131,7 +131,7 @@ TEST_CASE("retry tests", "[retry]")
         {
             using endpoint_type = int;
             using ms_type = estd::chrono::milliseconds;
-            using tracker_type = retry::Tracker2<endpoint_type, buffer_type>;
+            using tracker_type = retry::Tracker2<endpoint_type, buffer_type, 5>;
             //using ms_type = tracker_type::clock_type::duration;
             //using time_point = tracker_type::time_point;
             bool b;
@@ -173,6 +173,7 @@ TEST_CASE("retry tests", "[retry]")
                 REQUIRE(tracker.top_time().count() == 5010);
                 REQUIRE(tracker.ready(ms_type{5005}) == nullptr);
                 b = tracker.mark_con_sent(ms_type{5010});
+                // No ACK received, simulate resend right at resend time
                 REQUIRE(b == true);
             }
             SECTION("multiple")
@@ -190,6 +191,18 @@ TEST_CASE("retry tests", "[retry]")
                 tracked = tracker.ready(ms_type{2515});
 
                 REQUIRE(tracked != nullptr);
+            }
+            SECTION("misc")
+            {
+                tracker.track(ms_type{15}, e2, buffer_with_token);
+                tracker.track(ms_type{25}, e2, buffer_with_token);
+                tracker.track(ms_type{35}, e2, buffer_with_token);
+                tracker.track(ms_type{45}, e2, buffer_with_token);
+                REQUIRE(!tracker.full());
+
+                tracker.track(ms_type{55}, e2, buffer_with_token);
+
+                REQUIRE(tracker.full());
             }
         }
         SECTION("manager")

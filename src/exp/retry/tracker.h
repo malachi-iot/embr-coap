@@ -132,24 +132,13 @@ public:
     }
 };
 
-// Sparse ish clock with no now() and only provides a default time base
-struct PartialClock
-{
-    using duration = estd::chrono::duration<uint32_t, estd::milli>;
-    using time_point = estd::chrono::time_point<PartialClock>;
-};
-
 // 13MAY24 MB
 // Wholly different approach, a pseudo-state-machine with a baked in scheduler
 template <class Endpoint, class Buffer, unsigned N = 10,
-    class Clock = PartialClock,
-          // FIX should be time_point needs work
-    class TimePoint = typename Clock::duration>
+    class TimePoint = estd::chrono::duration<uint32_t, estd::milli> >
 struct Tracker2
 {
     using time_point = TimePoint;
-    using clock_type = Clock;
-    using duration = typename Clock::duration;
 
     struct match_param
     {
@@ -183,13 +172,15 @@ struct Tracker2
             return v.first_transmit() + v.delta();
         }
 
-        static bool process(value_type& value, time_point current_time)
+        // true = reschedule requested
+        // false = finished
+        static bool process(value_type& value, time_point)
         {
-            bool reschedule_request = value.finished() == false &&
-                value.ack_received() == false;
-            // true = reschedule requested
-            // false = finished
-            return reschedule_request;
+            // ACK received immediately queues us for deletion
+            if(value.ack_received())    return false;
+
+            ++value.retransmission_counter;
+            return value.finished() == false;
         }
     };
 
@@ -232,6 +223,12 @@ struct Tracker2
 
     bool empty() const { return scheduler_.empty(); }
 
+    // DEBT: (light debt) cascade this downward into estd::layer1::vector, embr::layer1::Scheduler, etc
+    bool full() const
+    {
+        return scheduler_.size() == N;
+    }
+
     value_type& top() { return scheduler_.top(); }
 
     time_point top_time() const { return scheduler_.top_time(); }
@@ -249,16 +246,18 @@ struct Tracker2
     /// @return false if nothing present to process, true if we process 'ready'
     bool mark_con_sent(time_point current)
     {
-        if(empty()) return false;
+        value_type* top = ready(current);
 
-        // DEBT: Had to use an intermediate reference here
-        value_type& v = scheduler_.top();
-        v.con_helper_flag_bit = 1;
-        ++v.retransmission_counter;
-        // FIX: Need a 'process_one' here, otherwise we are gonna end up
-        // skipping same-timestamped but differing CON tracker
-        scheduler_.process(current);
-        return true;
+        if(top == nullptr) return false;
+
+        top->con_helper_flag_bit = 1;
+
+        // Doing this inside "process" itself because that's the only appropriate place
+        // to specify a new time stamp for scheduler to pick it up
+        //++top->retransmission_counter;
+
+        // FIX: Still squirrely, coming along though
+        return scheduler_.process_one(current);
     }
 
     bool mark_con_sent()
@@ -269,15 +268,13 @@ struct Tracker2
 
     bool mark_ack_processed(time_point current)
     {
-        if(empty()) return false;
+        value_type* top = ready(current);
 
-        // DEBT: Had to use an intermediate reference here
-        value_type& v = scheduler_.top();
+        if(top == nullptr)  return false;
 
-        if(v.ack_received() == false)   return false;
+        if(top->ack_received() == false)   return false;
 
-        scheduler_.process(current);
-        return true;
+        return scheduler_.process_one(current);
     }
 
     bool mark_ack_processed()

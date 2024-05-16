@@ -50,6 +50,7 @@ struct Metadata
         return milliseconds(initial_timeout_ms * multiplier);
     }
 
+    /// Have we reached maximum retransmit count? (does not account for ACK)
     bool finished() const
     {
         return retransmission_counter == COAP_MAX_RETRANSMIT;
