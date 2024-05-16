@@ -199,6 +199,12 @@ struct Tracker2
     }
 
 
+    /// At the exact moment an ACK is encountered, brute force look it up
+    /// and mark the tracked item as such.  Later, when process time comes,
+    /// the item will be removed
+    /// \param endpoint
+    /// \param mid
+    /// \return
     bool ack_encountered(const Endpoint& endpoint, uint16_t mid)
     {
         // DEBT: Brute force search
@@ -242,6 +248,39 @@ struct Tracker2
         // skipping same-timestamped but differing CON tracker
         scheduler_.process(current);
         return true;
+    }
+
+    bool mark_con_sent()
+    {
+        return mark_con_sent(scheduler_.top_time());
+    }
+
+
+    bool mark_ack_processed(time_point current)
+    {
+        if(empty()) return false;
+
+        // DEBT: Had to use an intermediate reference here
+        value_type& v = scheduler_.top();
+
+        if(v.ack_received() == false)   return false;
+
+        scheduler_.process(current);
+        return true;
+    }
+
+    bool mark_ack_processed()
+    {
+        return mark_ack_processed(scheduler_.top_time());
+    }
+
+    // EXPERIMETNAL, don't think I like this one -- too implicit
+    bool mark()
+    {
+        return scheduler_.top().ack_received() ?
+            mark_ack_processed() :
+            mark_con_sent();
+
     }
 };
 
