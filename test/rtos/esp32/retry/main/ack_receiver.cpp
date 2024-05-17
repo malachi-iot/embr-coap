@@ -88,6 +88,8 @@ static void send_echo_with_con(embr::lwip::udp::Pcb pcb, embr::lwip::Pbuf& pbuf,
 
     if(header.type() == coap::Header::Reset)  return;
 
+    // One might think PBUF_RAW or PBUF_RAW_TX could be used here, since
+    // we're chaining here from PBUF_ROM.  One would be mistaken, it turns out
     coap::StreambufEncoder<opbuf_streambuf> encoder(32);
 
     header.type(coap::Header::Types::Confirmable);
@@ -110,8 +112,6 @@ static void send_echo_with_con(embr::lwip::udp::Pcb pcb, embr::lwip::Pbuf& pbuf,
         PBUF_ROM);
 
     pbuf_chain(p_rom, p);
-
-    r = 0;
 
     //struct pbuf workaround = *p;
 
@@ -144,7 +144,8 @@ static void send_echo_with_con(embr::lwip::udp::Pcb pcb, embr::lwip::Pbuf& pbuf,
     // https://stackoverflow.com/questions/71763904/lwip-when-to-deallocate-the-pbuf-after-calling-udp-sendto
     // https://lwip.fandom.com/wiki/Raw/UDP
 
-    ESP_LOGI(TAG, "exit: phase 2 ref count=%u, p=%p, tot_len=%u", p->ref, p, p->tot_len);
+    ESP_LOGI(TAG, "exit: phase 2 r=%d, ref count=%u, p=%p, tot_len=%u",
+        r, p->ref, p, p->tot_len);
 
     //encoder_pbuf.ref();
     tracker.track(t, endpoint, std::move(encoder_pbuf));

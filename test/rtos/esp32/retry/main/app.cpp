@@ -49,9 +49,11 @@ void app_loop()
                     0,
                     PBUF_ROM);
 
+                ESP_LOGI(TAG, "Retransmitting: phase 0 p_ram ref count=%u, tot_len=%u",
+                    p_ram->ref, p_ram->tot_len);
                 pbuf_chain(p, p_ram);
 
-                ESP_LOGI(TAG, "Retransmitting: p_ram ref count=%u, tot_len=%u",
+                ESP_LOGI(TAG, "Retransmitting: phase 0.1 p_ram ref count=%u, tot_len=%u",
                     p_ram->ref, p_ram->tot_len);
 
                 ESP_LOGI(TAG, "Retransmitting: counter %u, ref count=%u, p=%p, tot_len=%u",
@@ -61,25 +63,29 @@ void app_loop()
                     p->tot_len
                     );
 
-                // "ROM" send seems to work better, though there's a glitch
-                // where it fails 2nd send every time.  Feels like it happens
-                // when system is already trying to send from that RAM address.
-                // Maybe though it's due to our glitchy endpoint (0.0.0.0)
-                // DEBT: IIRC ipaddr pointers don't live much past the udp_recv
-                // event
                 err_t r = pcb.send_experimental(
                     p,
                     tracked->endpoint()
                     );
 
-                ESP_LOGI(TAG, "Retransmitting: phase 1 r=%d, ref count=%u",
-                    r, p->ref);
+                ESP_LOGI(TAG, "Retransmitting: phase 1 r=%d, p ref count=%u, pram ref count=%u",
+                    r, p->ref, p_ram->ref);
 
                 pbuf_free(p);
 
+                ESP_LOGI(TAG, "Retransmitting: phase 2 pram ref count=%u", p_ram->ref);
+
                 bool processed = tracker.mark_con_sent();
 
-                ESP_LOGI(TAG, "Retransmitting: processed=%u", processed);
+                // FIX: Feels like a glitch in priority_queue's && treatment,
+                // we're encountering some copy constructors (it seems) on our
+                // Pbuf wrapper
+                pbuf_free(p_ram);
+                pbuf_free(p_ram);
+
+                ESP_LOGI(TAG, "Retransmitting: processed=%u, pram ref_count=%u",
+                    processed,
+                    p_ram->ref);
             }
         }
     }

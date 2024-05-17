@@ -29,7 +29,7 @@ typedef embr::internal::layer1::Scheduler<8, embr::internal::scheduler::impl::Fu
 typedef embr::coap::experimental::retry::Manager<clock_type, transport_type> manager_type;
 
 #if FEATURE_RETRY_TRACKER_V2
-using endpoint_type = embr::lwip::internal::Endpoint<>;
+using endpoint_type = embr::lwip::internal::Endpoint<false>;
 using buffer_type = embr::lwip::v1::Pbuf;
 
 using tracker_type = embr::coap::experimental::retry::Tracker2<endpoint_type, buffer_type>;
