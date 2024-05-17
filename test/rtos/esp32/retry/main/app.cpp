@@ -43,13 +43,20 @@ void app_loop()
                 tracker.mark_ack_processed();
             else
             {
-                ESP_LOGI(TAG, "Retransmitting: %u",
-                    tracked->retransmission_counter);
+                struct pbuf* p = tracked->buffer();
 
-                pcb.send_experimental(
+                ESP_LOGI(TAG, "Retransmitting: counter %u, ref count=%u",
+                    tracked->retransmission_counter,
+                    p->ref
+                    );
+
+                err_t r = pcb.send_experimental(
                     tracked->buffer(),
                     tracked->endpoint()
                     );
+
+                ESP_LOGI(TAG, "Retransmitting: phase 1 %d", r);
+
                 tracker.mark_con_sent();
             }
         }

@@ -92,6 +92,8 @@ static void send_echo_with_con(embr::lwip::udp::Pcb pcb, embr::lwip::Pbuf& pbuf,
 
     header.type(coap::Header::Types::Confirmable);
     header.code(coap::Header::Code::Valid);
+    // DEBT: Pretty lousy way to generate a different message ID
+    header.message_id(header.message_id() + 1);
 
     encoder.header(header);
     encoder.token(token, header.token_length());
@@ -101,10 +103,11 @@ static void send_echo_with_con(embr::lwip::udp::Pcb pcb, embr::lwip::Pbuf& pbuf,
 
     ESP_LOGI(TAG, "about to output %d bytes", encoder_pbuf.total_length());
 
-    //pbuf_ref(encoder_pbuf.pbuf());
-    //pbuf_ref(encoder_pbuf.pbuf());
+    // "pbufs passed to IP must have a ref-count of 1 as their payload pointer
+    // gets altered as the packet is passed down the stack"
+    //encoder_pbuf.ref();
 
-    pcb.send_experimental(encoder_pbuf.pbuf(), endpoint);
+    pcb.send_experimental(encoder_pbuf, endpoint);
     auto now = estd::chrono::freertos_clock::now();
     auto t = now.time_since_epoch();
     
@@ -112,7 +115,14 @@ static void send_echo_with_con(embr::lwip::udp::Pcb pcb, embr::lwip::Pbuf& pbuf,
     // https://stackoverflow.com/questions/71763904/lwip-when-to-deallocate-the-pbuf-after-calling-udp-sendto
     // https://lwip.fandom.com/wiki/Raw/UDP
 
-    tracker.track(t, endpoint, encoder_pbuf);
+    const struct pbuf* p = encoder_pbuf;
+
+    ESP_LOGI(TAG, "exit: phase 1 ref count=%u", p->ref);
+
+    tracker.track(t, endpoint, std::move(encoder_pbuf));
+    //encoder_pbuf.ref();
+
+    ESP_LOGI(TAG, "exit: phase 2 ref count=%u", p->ref);
 }
 
 void udp_coap_recv(void *arg, 
@@ -128,15 +138,17 @@ void udp_coap_recv(void *arg,
     embr::lwip::udp::Pcb pcb(_pcb);
     embr::lwip::Pbuf pbuf(p);
     
+    embr::coap::Header header = embr::coap::experimental::get_header(pbuf);
+
+    ESP_LOGD(TAG, "mid=%x, type=%u", header.message_id(), header.type());
+
+    if(header.type() == coap::Header::Reset)    return;
+
     // First, send ACK
     send_ack(pcb, pbuf, endpoint);
 
     // Next, send actual CON message in other direction
     send_echo_with_con(pcb, pbuf, endpoint);
-
-    embr::coap::Header header = embr::coap::experimental::get_header(pbuf);
-
-    ESP_LOGD(TAG, "mid=%x", header.message_id());
 
 #if FEATURE_RETRY_MANAGER
     auto manager = (manager_type*) arg;

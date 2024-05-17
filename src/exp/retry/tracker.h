@@ -154,8 +154,14 @@ struct Tracker2
             using base_type = Item<Endpoint, TimePoint, Buffer>;
 
             explicit value_type(time_point t, time_point random,
-                const Endpoint& endpoint, Buffer buffer) :
+                const Endpoint& endpoint, const Buffer& buffer) :
                 base_type(endpoint, t, buffer)
+            {
+            }
+
+            explicit value_type(time_point t, time_point random,
+                const Endpoint& endpoint, Buffer&& buffer) :
+                base_type(endpoint, t, std::move(buffer))
             {
             }
 
@@ -188,16 +194,19 @@ struct Tracker2
 
     using value_type = typename SchedulerItem::value_type;
 
-    bool track(time_point t, time_point random, const Endpoint& endpoint, const Buffer& b)
+    bool track(time_point t, time_point random, const Endpoint& endpoint, Buffer&& b)
     {
-        // DEBT: Return false if we can't schedule (full)
-        scheduler_.schedule(t, random, endpoint, b);
+        // DEBT: Return false if we can't schedule (full) at 'schedule' level
+        if(full())  return false;
+
+        scheduler_.schedule(t, random, endpoint, std::forward<Buffer>(b));
         return true;
     }
 
-    bool track(time_point t, const Endpoint& endpoint, const Buffer& b)
+    bool track(time_point t, const Endpoint& endpoint, Buffer&& b)
     {
-        return track(t, typename value_type::milliseconds(500), endpoint, b);
+        return track(t, typename value_type::milliseconds(500), endpoint,
+            std::forward<Buffer>(b));
     }
 
 
@@ -256,7 +265,6 @@ struct Tracker2
         // to specify a new time stamp for scheduler to pick it up
         //++top->retransmission_counter;
 
-        // FIX: Still squirrely, coming along though
         return scheduler_.process_one(current);
     }
 
