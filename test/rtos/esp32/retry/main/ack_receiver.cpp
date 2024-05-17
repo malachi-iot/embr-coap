@@ -101,13 +101,18 @@ static void send_echo_with_con(embr::lwip::udp::Pcb pcb, embr::lwip::Pbuf& pbuf,
 
     auto& encoder_pbuf = encoder.rdbuf()->pbuf();
 
-    ESP_LOGI(TAG, "about to output %d bytes", encoder_pbuf.total_length());
+    struct pbuf* p = encoder_pbuf;
+
+    ESP_LOGI(TAG, "about to output %d bytes, ref count=%u",
+        encoder_pbuf.total_length(),
+        p->ref
+        );
 
     // "pbufs passed to IP must have a ref-count of 1 as their payload pointer
     // gets altered as the packet is passed down the stack"
     //encoder_pbuf.ref();
 
-    pcb.send_experimental(encoder_pbuf, endpoint);
+    pcb.send_experimental(p, endpoint);
     auto now = estd::chrono::freertos_clock::now();
     auto t = now.time_since_epoch();
     
@@ -115,14 +120,13 @@ static void send_echo_with_con(embr::lwip::udp::Pcb pcb, embr::lwip::Pbuf& pbuf,
     // https://stackoverflow.com/questions/71763904/lwip-when-to-deallocate-the-pbuf-after-calling-udp-sendto
     // https://lwip.fandom.com/wiki/Raw/UDP
 
-    const struct pbuf* p = encoder_pbuf;
+    ESP_LOGI(TAG, "exit: phase 2 ref count=%u, p=%p", p->ref, p);
 
-    ESP_LOGI(TAG, "exit: phase 1 ref count=%u", p->ref);
-
-    tracker.track(t, endpoint, std::move(encoder_pbuf));
     //encoder_pbuf.ref();
+    tracker.track(t, endpoint, std::move(encoder_pbuf));
+    //pbuf_ref(p);
 
-    ESP_LOGI(TAG, "exit: phase 2 ref count=%u", p->ref);
+    ESP_LOGI(TAG, "exit: phase 3 ref count=%u", p->ref);
 }
 
 void udp_coap_recv(void *arg, 
