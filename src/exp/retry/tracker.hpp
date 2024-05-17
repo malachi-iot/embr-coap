@@ -1,5 +1,7 @@
 #pragma once
 
+#include <embr/scheduler.hpp>
+
 #include "tracker.h"
 
 namespace embr { namespace coap { namespace experimental { namespace retry {

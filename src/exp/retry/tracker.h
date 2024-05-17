@@ -238,7 +238,7 @@ struct Tracker2
 
     value_type* ready(time_point current)
     {
-        if(current >= scheduler_.top_time())
+        if(!scheduler_.empty() && current >= scheduler_.top_time())
             return &top();
         else
             return nullptr;
