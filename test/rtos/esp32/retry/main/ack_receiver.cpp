@@ -31,5 +31,9 @@ void udp_coap_recv(void *arg,
 
     ESP_LOGD(TAG, "mid=%x", header.message_id());
 
+#if FEATURE_RETRY_MANAGER
     auto manager = (manager_type*) arg;
+#endif
+#if FEATURE_RETRY_TRACKER_V2
+#endif
 }

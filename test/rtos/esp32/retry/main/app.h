@@ -7,6 +7,9 @@
 
 #include <exp/retry.h>  // for get_header, manager
 
+#define FEATURE_RETRY_MANAGER       0
+#define FEATURE_RETRY_TRACKER_V2    1
+
 
 // DEBT: const_buffer_type still in flux.  Once that settles down,
 // push this up into TransportUdp itself
