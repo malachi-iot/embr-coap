@@ -135,7 +135,7 @@ TEST_CASE("retry tests", "[retry]")
             //using ms_type = tracker_type::clock_type::duration;
             //using time_point = tracker_type::time_point;
             bool b;
-            endpoint_type e1 = 0, e2 = 1;
+            const endpoint_type e1 = 0, e2 = 1;
             tracker_type tracker;
             tracker_type::value_type* tracked = nullptr;
             //using value_type = decltype(tracker)::value_type;
@@ -176,7 +176,7 @@ TEST_CASE("retry tests", "[retry]")
                 // No ACK received, simulate resend right at resend time
                 REQUIRE(b == true);
             }
-            SECTION("multiple")
+            SECTION("multiple, no ack")
             {
                 Header header(Header::Acknowledgement);
                 header.message_id(0x1234);
@@ -191,6 +191,23 @@ TEST_CASE("retry tests", "[retry]")
                 tracked = tracker.ready(ms_type{2515});
 
                 REQUIRE(tracked != nullptr);
+                REQUIRE(tracked->endpoint() == e1);
+                REQUIRE(tracked->buffer().data() == buffer_with_token);
+
+                tracker.mark_con_sent();
+
+                tracked = tracker.ready(ms_type{2515});
+                REQUIRE(tracked != nullptr);
+                REQUIRE(tracked->endpoint() == e2);
+                REQUIRE(tracked->buffer().data() == header.bytes);
+
+                tracker.mark_con_sent();
+
+                REQUIRE(tracker.ready(ms_type{5000}) == nullptr);
+                tracked = tracker.ready(ms_type{5010});
+                REQUIRE(tracked != nullptr);
+                REQUIRE(tracked->endpoint() == e1);
+                REQUIRE(tracked->buffer().data() == buffer_with_token);
             }
             SECTION("misc")
             {
