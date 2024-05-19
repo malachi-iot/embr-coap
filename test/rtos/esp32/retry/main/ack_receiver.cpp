@@ -21,6 +21,7 @@
 #include <coap/platform/lwip/encoder.h>
 
 #include "app.h"
+#include "senders.hpp"
 
 using namespace embr;
 using namespace embr::coap::experimental;
@@ -32,40 +33,15 @@ using embr::lwip::opbuf_streambuf;
 tracker_type tracker;
 #endif
 
-template <class Streambuf>
-bool until(coap::StreambufDecoder<Streambuf>& decoder, coap::Decoder::State state)
-{
-    coap::iterated::decode_result r;
-
-    do
-    {
-        r = decoder.process_iterate_streambuf();
-    }
-    while(decoder.state() != state && r.eof == false);
-
-    return r.eof == false;
-}
-
 static void send_ack(embr::lwip::udp::Pcb pcb, embr::lwip::Pbuf& pbuf,
     const endpoint_type& endpoint)
 {
     static const char* TAG = "send_ack";
 
     coap::StreambufDecoder<ipbuf_streambuf> decoder(pbuf);
-
-    until(decoder, coap::Decoder::HeaderDone);
-    coap::Header header = decoder.header_decoder();
-    until(decoder, coap::Decoder::TokenDone);
-    const uint8_t* token = decoder.token_decoder().data();
-
     coap::StreambufEncoder<opbuf_streambuf> encoder(32);
 
-    header.type(coap::Header::Types::Acknowledgement);
-    header.code(coap::Header::Code::Valid);
-
-    encoder.header(header);
-    encoder.token(token, header.token_length());
-    encoder.finalize();
+    build_ack(decoder, encoder);
 
     auto& encoder_pbuf = encoder.rdbuf()->pbuf();
 
@@ -80,26 +56,11 @@ static void send_echo_with_con(embr::lwip::udp::Pcb pcb, embr::lwip::Pbuf& pbuf,
     static const char* TAG = "send_con";
     
     coap::StreambufDecoder<ipbuf_streambuf> decoder(pbuf);
-
-    until(decoder, coap::Decoder::HeaderDone);
-    coap::Header header = decoder.header_decoder();
-    until(decoder, coap::Decoder::TokenDone);
-    const uint8_t* token = decoder.token_decoder().data();
-
-    if(header.type() == coap::Header::Reset)  return;
-
     // One might think PBUF_RAW or PBUF_RAW_TX could be used here, since
     // we're chaining here from PBUF_ROM.  One would be mistaken, it turns out
     coap::StreambufEncoder<opbuf_streambuf> encoder(32);
 
-    header.type(coap::Header::Types::Confirmable);
-    header.code(coap::Header::Code::Valid);
-    // DEBT: Pretty lousy way to generate a different message ID
-    header.message_id(header.message_id() + 1);
-
-    encoder.header(header);
-    encoder.token(token, header.token_length());
-    encoder.finalize();
+    if(build_con(decoder, encoder) == false)    return;
 
     auto& encoder_pbuf = encoder.rdbuf()->pbuf();
     err_t r;
