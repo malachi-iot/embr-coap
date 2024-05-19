@@ -1,5 +1,7 @@
 #pragma once
 
+#include <vector>
+
 #include <estd/chrono.h>
 
 #include <embr/platform/lwip/transport.h>
@@ -9,6 +11,10 @@
 
 #define FEATURE_RETRY_MANAGER       0
 #define FEATURE_RETRY_TRACKER_V2    1
+
+// DEBT: Eventually we'll support both at once, but for now that's undefined behavior
+#define CONFIG_UDP      1
+#define CONFIG_ESP_NOW  1
 
 
 // DEBT: const_buffer_type still in flux.  Once that settles down,
@@ -29,9 +35,24 @@ typedef embr::internal::layer1::Scheduler<8, embr::internal::scheduler::impl::Fu
 typedef embr::coap::experimental::retry::Manager<clock_type, transport_type> manager_type;
 
 #if FEATURE_RETRY_TRACKER_V2
+namespace app {
+using duration = estd::chrono::freertos_clock::duration;
+void loop();
+}
+namespace app::lwip {
 using endpoint_type = embr::lwip::internal::Endpoint<false>;
 using buffer_type = embr::lwip::v1::Pbuf;
 
 using tracker_type = embr::coap::experimental::retry::Tracker2<endpoint_type, buffer_type>;
 extern tracker_type tracker;
+}
+
+namespace app::esp_now {
+using endpoint_type = unsigned;
+using buffer_type = std::vector<uint8_t>;   // DEBT: Prefer from a pool, or, at a minimum, using psram_allocator
+
+using tracker_type = embr::coap::experimental::retry::Tracker2<endpoint_type, buffer_type>;
+extern tracker_type tracker;
+void init();
+}
 #endif

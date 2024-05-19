@@ -29,6 +29,7 @@ using namespace embr::coap::experimental;
 using embr::lwip::ipbuf_streambuf;
 using embr::lwip::opbuf_streambuf;
 
+namespace app::lwip {
 #if FEATURE_RETRY_TRACKER_V2
 tracker_type tracker;
 #endif
@@ -109,11 +110,14 @@ static void send_echo_with_con(embr::lwip::udp::Pcb pcb, embr::lwip::Pbuf& pbuf,
         r, p->ref, p, p->tot_len);
 
     //encoder_pbuf.ref();
-    tracker.track(t, endpoint, std::move(encoder_pbuf));
+    app::lwip::tracker.track(t, endpoint, std::move(encoder_pbuf));
     //pbuf_ref(p);
 
     ESP_LOGI(TAG, "exit: phase 3 ref count=%u, tot_len=%u", p->ref, p->tot_len);
 }
+
+}
+
 
 void udp_coap_recv(void *arg, 
     struct udp_pcb *_pcb, struct pbuf *p,
@@ -123,7 +127,7 @@ void udp_coap_recv(void *arg,
 
     ESP_LOGI(TAG, "entry");
 
-    const endpoint_type endpoint(addr, port);
+    const app::lwip::endpoint_type endpoint(addr, port);
 
     embr::lwip::udp::Pcb pcb(_pcb);
     embr::lwip::Pbuf pbuf(p);
@@ -135,10 +139,10 @@ void udp_coap_recv(void *arg,
     if(header.type() == coap::Header::Reset)    return;
 
     // First, send ACK
-    send_ack(pcb, pbuf, endpoint);
+    app::lwip::send_ack(pcb, pbuf, endpoint);
 
     // Next, send actual CON message in other direction
-    send_echo_with_con(pcb, pbuf, endpoint);
+    app::lwip::send_echo_with_con(pcb, pbuf, endpoint);
 
 #if FEATURE_RETRY_MANAGER
     auto manager = (manager_type*) arg;
@@ -146,7 +150,7 @@ void udp_coap_recv(void *arg,
 #if FEATURE_RETRY_TRACKER_V2
     if(header.type() == coap::Header::Acknowledgement)
     {
-        bool r = tracker.ack_encountered(endpoint, header.message_id());
+        bool r = app::lwip::tracker.ack_encountered(endpoint, header.message_id());
 
         ESP_LOGD(TAG, "ack_encountered found tracked=%u", r);
     }
