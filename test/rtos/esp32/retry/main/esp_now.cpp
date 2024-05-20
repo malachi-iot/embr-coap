@@ -43,20 +43,40 @@ static const char* TAG = "app::esp_now";
 
 namespace app::esp_now {
 
-// EXPERIMENTAL - I don't think I like it.  esp_now_add_peer wrapped as "add" would
-// feel like a huge side effect
 // https://docs.espressif.com/projects/esp-idf/en/v5.1.4/esp32/api-reference/network/esp_now.html#_CPPv417esp_now_peer_info
 class peer_info
 {
     esp_now_peer_info_t info_ {};
 
 public:
+    peer_info() = default;
+
     // DEBT: Use c++ specific array ref syntax here to really, really enforce len
     // may have double bonus of being constexpr'able
-    peer_info(const uint8_t mac[ESP_NOW_ETH_ALEN], wifi_interface_t ifidx)
+    peer_info(const uint8_t mac[ESP_NOW_ETH_ALEN], wifi_interface_t ifidx, uint8_t channel = 0)
     {
         info_.ifidx = ifidx;
-        //std::copy_n(mac, info_.peer_addr, ESP_NOW_ETH_ALEN);
+        info_.channel = channel;
+        std::copy_n(mac, ESP_NOW_ETH_ALEN, info_.peer_addr);
+    }
+
+    // EXPERIMENTAL - I don't think I like it.  esp_now_add_peer wrapped as "add" would
+    // feel like a huge side effect
+    esp_err_t add()
+    {
+        return esp_now_add_peer(&info_);
+    }
+
+    // EXPERIMENTAL
+    esp_err_t get(const uint8_t mac[ESP_NOW_ETH_ALEN])
+    {
+        return esp_now_get_peer(mac, &info_);
+    }
+
+    void lmk(uint8_t key[ESP_NOW_KEY_LEN])
+    {
+        info_.encrypt = true;
+        std::copy_n(key, ESP_NOW_KEY_LEN, info_.lmk);
     }
 };
 
@@ -134,8 +154,13 @@ const char* to_string(coap::Header::Code code)
 
     switch(code)
     {
-        case Code::Empty:   return "Empty";
-        case Code::Ping:    return "Ping";
+        case Code::BadRequest:  return "Bad Request";
+        case Code::Created:     return "Created";
+        case Code::Empty:       return "Empty";
+        case Code::Get:         return "Get";
+        case Code::Ping:        return "Ping";
+        case Code::Pong:        return "Pong";
+        case Code::Valid:       return "Valid";
 
         default:    return "N/A";
     }
@@ -150,11 +175,28 @@ static void recv_cb(const esp_now_recv_info_t *recv_info,
 
     std::copy_n(data, 4, header.bytes);
 
-    ESP_LOGI(TAG, "recv_cb: len=%d, mid=%" PRIx16 ", code=%s",
+    ESP_LOGI(TAG, "recv_cb: len=%d, mid=0x%" PRIx16 ", code=%s",
         len,
         header.message_id(),
         to_string(header.code())
         );
+
+    switch(header.code())
+    {
+        case coap::Header::Code::Ping:
+        {
+            if (esp_now_is_peer_exist(recv_info->src_addr) == false)
+            {
+                peer_info peer(recv_info->src_addr, WIFI_IF_STA, 0);
+
+                ESP_ERROR_CHECK(peer.add());
+            }
+
+            header.code(coap::Header::Code::Pong);
+            ESP_ERROR_CHECK(esp_now_send(recv_info->src_addr, header.bytes, 4));
+            break;
+        }
+    }
 }
 
 inline const char* to_string(esp_err_t code)
