@@ -22,7 +22,8 @@
 // Guidance from
 // https://github.com/espressif/esp-idf/tree/v5.1.4/examples/wifi/espnow/main
 
-#define CONFIG_ESPNOW_CHANNEL   1
+#define CONFIG_ESPNOW_CHANNEL           1
+#define CONFIG_ESPNOW_WIFI_MODE_STATION 1
 
 #if CONFIG_ESPNOW_WIFI_MODE_STATION
 #define ESPNOW_WIFI_MODE WIFI_MODE_STA
@@ -38,13 +39,54 @@
 using istreambuf = estd::detail::streambuf<estd::internal::impl::in_span_streambuf<char> >;
 using ostreambuf = estd::detail::streambuf<estd::internal::impl::out_span_streambuf<char> >;
 
+static const char* TAG = "app::esp_now";
+
 namespace app::esp_now {
+
+// EXPERIMENTAL - I don't think I like it.  esp_now_add_peer wrapped as "add" would
+// feel like a huge side effect
+// https://docs.espressif.com/projects/esp-idf/en/v5.1.4/esp32/api-reference/network/esp_now.html#_CPPv417esp_now_peer_info
+class peer_info
+{
+    esp_now_peer_info_t info_ {};
+
+public:
+    // DEBT: Use c++ specific array ref syntax here to really, really enforce len
+    // may have double bonus of being constexpr'able
+    peer_info(const uint8_t mac[ESP_NOW_ETH_ALEN], wifi_interface_t ifidx)
+    {
+        info_.ifidx = ifidx;
+        //std::copy_n(mac, info_.peer_addr, ESP_NOW_ETH_ALEN);
+    }
+};
+
+#define ESP_NOW_BROADCAST_MAC   0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF
+
+static constexpr uint8_t broadcast_mac[ESP_NOW_ETH_ALEN] { ESP_NOW_BROADCAST_MAC };
+
+// DEBT: Use true CoAP ping here instead
+const static uint8_t buffer_coap_ping[] =
+{
+    0x40, 0x00, 0x01, 0x23, // mid = 123, tkl = 0, GET, CON
+};
+
+enum Roles
+{
+    ROLE_TARGET,
+    ROLE_INITIATOR
+};
+
+static Roles role;
+
 tracker_type tracker;
 
 static void init_protocol();
 
 void init(void)
 {
+    // esp_helper does a lot of this already, thus the DEBT that we cannot
+    // activate UDP/IP and ESP-NOW at once
+    
     ESP_ERROR_CHECK(esp_netif_init());
     ESP_ERROR_CHECK(esp_event_loop_create_default());
     wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
@@ -90,7 +132,13 @@ static void recv_cb(const esp_now_recv_info_t *recv_info,
     const uint8_t *data, int len)
 {
     // See above DEBT
-    send_ack(estd::span<char>{(char*)data, (unsigned)len});
+    //send_ack(estd::span<char>{(char*)data, (unsigned)len});
+    ESP_LOGI(TAG, "recv_cb: len=%d", len);
+}
+
+inline const char* to_string(esp_err_t code)
+{
+    return esp_err_to_name(code);
 }
 
 
@@ -102,7 +150,23 @@ static void init_protocol()
 #if CONFIG_ESPNOW_ENABLE_POWER_SAVE
     ESP_ERROR_CHECK(esp_now_set_wake_window(CONFIG_ESPNOW_WAKE_WINDOW));
     ESP_ERROR_CHECK(esp_wifi_connectionless_module_set_wake_interval(CONFIG_ESPNOW_WAKE_INTERVAL));
-#endif    
+#endif
+
+    const esp_now_peer_info_t broadcast_peer
+    {
+        .peer_addr { ESP_NOW_BROADCAST_MAC },
+        .lmk {},
+        .channel = 0,
+        .ifidx = WIFI_IF_STA,
+        .encrypt = 0,
+        .priv = nullptr
+    };
+
+    ESP_ERROR_CHECK(esp_now_add_peer(&broadcast_peer));
+
+    esp_err_t r = esp_now_send(broadcast_mac, buffer_coap_ping, sizeof(buffer_coap_ping));
+
+    ESP_LOGI(TAG, "init_protocol: ping send result: %s", to_string(r));
 }
 
 

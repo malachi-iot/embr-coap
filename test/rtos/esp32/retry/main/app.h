@@ -13,7 +13,7 @@
 #define FEATURE_RETRY_TRACKER_V2    1
 
 // DEBT: Eventually we'll support both at once, but for now that's undefined behavior
-#define CONFIG_UDP      1
+#define CONFIG_UDP      0
 #define CONFIG_ESP_NOW  1
 
 
@@ -54,5 +54,6 @@ using buffer_type = std::vector<uint8_t>;   // DEBT: Prefer from a pool, or, at 
 using tracker_type = embr::coap::experimental::retry::Tracker2<endpoint_type, buffer_type>;
 extern tracker_type tracker;
 void init();
+void loop(duration);
 }
 #endif

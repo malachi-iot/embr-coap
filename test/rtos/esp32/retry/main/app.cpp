@@ -98,7 +98,12 @@ void loop()
         vTaskDelay(10);
         auto now = estd::chrono::freertos_clock::now();
         auto t = now.time_since_epoch();
+#if CONFIG_UDP
         app::lwip::loop(t);
+#endif
+#if CONFIG_ESP_NOW
+        app::esp_now::loop(t);
+#endif
     }
 }
 

@@ -22,13 +22,19 @@ extern "C" void app_main()
 {
     init_flash();
     
+#if CONFIG_UDP
     wifi_netif = wifi_init_sta();
 
     void* pcb_recv_arg = nullptr;
+#endif
 
     // Doesn't coexist at the moment
-    //app::esp_now::init();
+#if CONFIG_ESP_NOW
+    app::esp_now::init();
+#endif
+#if CONFIG_UDP
     udp_coap_init(pcb_recv_arg);
+#endif
 
     app::loop();
 }
