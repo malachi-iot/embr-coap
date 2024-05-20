@@ -69,6 +69,14 @@ public:
         Zeroed = 0,
         /// format: opaque
         IfMatch = 1,
+
+        // https://datatracker.ietf.org/doc/html/rfc8323#section-5.4.1
+        Custody = 2,
+
+        // https://datatracker.ietf.org/doc/html/rfc8323#section-5.5
+        AlternativeAddress = 2,
+        HoldOff = 4,
+
         // format: string
         UriHost = 3,
         // format: opaque

@@ -64,10 +64,10 @@ public:
 
 static constexpr uint8_t broadcast_mac[ESP_NOW_ETH_ALEN] { ESP_NOW_BROADCAST_MAC };
 
-// DEBT: Use true CoAP ping here instead
+// DEBT: Make a constexpr constructo for 'Header' and use that here
 const static uint8_t buffer_coap_ping[] =
 {
-    0x40, 0x00, 0x01, 0x23, // mid = 123, tkl = 0, GET, CON
+    0x40, coap::Header::Code::Ping, 0x01, 0x23, // mid = 123, tkl = 0, GET, CON
 };
 
 enum Roles
@@ -128,12 +128,33 @@ static void send_con(estd::span<char> in)
     if(build_con(decoder, encoder) == false) return;
 }
 
+const char* to_string(coap::Header::Code code)
+{
+    using Code = coap::Header::Code;
+
+    switch(code)
+    {
+        case Code::Empty:   return "Empty";
+        case Code::Ping:    return "Ping";
+
+        default:    return "N/A";
+    }
+}
+
 static void recv_cb(const esp_now_recv_info_t *recv_info,
     const uint8_t *data, int len)
 {
     // See above DEBT
     //send_ack(estd::span<char>{(char*)data, (unsigned)len});
-    ESP_LOGI(TAG, "recv_cb: len=%d", len);
+    coap::Header header;
+
+    std::copy_n(data, 4, header.bytes);
+
+    ESP_LOGI(TAG, "recv_cb: len=%d, mid=%" PRIx16 ", code=%s",
+        len,
+        header.message_id(),
+        to_string(header.code())
+        );
 }
 
 inline const char* to_string(esp_err_t code)

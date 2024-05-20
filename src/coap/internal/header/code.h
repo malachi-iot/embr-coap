@@ -72,6 +72,7 @@ public:
         GatewayTimeout =            COAP_RESPONSE_CODE(ServerError, 04),
         ProxyingNotSupported =      COAP_RESPONSE_CODE(ServerError, 05),
 
+        // https://datatracker.ietf.org/doc/html/rfc8323#section-5
         CSM =                       COAP_RESPONSE_CODE(Signaling, 01),
         Ping =                      COAP_RESPONSE_CODE(Signaling, 02),
         Pong =                      COAP_RESPONSE_CODE(Signaling, 03),
