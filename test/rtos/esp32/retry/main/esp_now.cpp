@@ -6,8 +6,12 @@
 #include <esp_now.h>
 #include <esp_crc.h>
 
+#include <estd/thread.h>
+
 #include <coap/decoder/streambuf.hpp>
 #include <coap/encoder/streambuf.h>
+
+#include <exp/retry/tracker.hpp>
 
 #include "app.h"
 #include "senders.hpp"
@@ -82,7 +86,7 @@ public:
 
 #define ESP_NOW_BROADCAST_MAC   0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF
 
-static constexpr uint8_t broadcast_mac[ESP_NOW_ETH_ALEN] { ESP_NOW_BROADCAST_MAC };
+static constexpr mac_type broadcast_mac { ESP_NOW_BROADCAST_MAC };
 
 // DEBT: Make a constexpr constructo for 'Header' and use that here
 const static uint8_t buffer_coap_ping[] =
@@ -96,7 +100,16 @@ enum Roles
     ROLE_INITIATOR
 };
 
+
+enum States
+{
+    ROLE_INITIATOR_IDLE,
+    ROLE_INITIATOR_SENDING,
+    ROLE_INITIATOR_SENT,
+};
+
 static Roles role;
+static States state = ROLE_INITIATOR_IDLE;
 
 tracker_type tracker;
 
@@ -134,18 +147,33 @@ static void send_ack(estd::span<char> in)
     coap::StreambufEncoder<ostreambuf> encoder(out);
 
     build_ack(decoder, encoder);
+
+    ESP_LOGD(TAG, "About to send");
 }
 
-static void send_con(estd::span<char> in)
+static void send_con(mac_type mac, estd::span<char> in)
 {
-    static const char* TAG = "send_ack";
+    static const char* TAG = "send_con";
 
-    estd::span<char> out;
+    endpoint_type mac2;
+    std::copy_n(mac, 6, mac2.begin());
+
+    char buffer[128];
+    estd::span<char> out(buffer);
 
     coap::StreambufDecoder<istreambuf> decoder(in);
-    coap::StreambufEncoder<ostreambuf> encoder(out);
+    coap::StreambufEncoder<ostreambuf> encoder(buffer);
 
     if(build_con(decoder, encoder) == false) return;
+
+    std::vector<uint8_t> v;
+    unsigned pos = encoder.rdbuf()->pos();  // DEBT: span streambuf specific
+
+    v.insert(v.end(), buffer, buffer + pos);
+    // DEBT: Use actual time points, not durations
+    tracker.track(clock_type::now().time_since_epoch(), mac2, std::move(v));
+
+    ESP_LOGD(TAG, "About to send");
 }
 
 const char* to_string(coap::Header::Code code)
@@ -183,6 +211,16 @@ static void recv_cb(const esp_now_recv_info_t *recv_info,
 
     switch(header.code())
     {
+        case coap::Header::Code::Pong:
+            if (esp_now_is_peer_exist(recv_info->src_addr) == false)
+            {
+                peer_info peer(recv_info->src_addr, WIFI_IF_STA, 0);
+
+                ESP_ERROR_CHECK(peer.add());
+            }
+            send_con(recv_info->src_addr, {(char*)data, (unsigned)len});
+            break;
+
         case coap::Header::Code::Ping:
         {
             if (esp_now_is_peer_exist(recv_info->src_addr) == false)
@@ -235,7 +273,18 @@ static void init_protocol()
 
 void loop(duration t)
 {
-    //send_ack();
+    auto now = clock_type::now().time_since_epoch();
+
+    tracker_type::value_type* ready = tracker.ready(now);
+
+    if(ready)
+    {
+        ESP_ERROR_CHECK(esp_now_send(
+            ready->endpoint().data(),
+            ready->buffer().data(),
+            ready->buffer().size()));
+        tracker.mark_con_sent();
+    }
 }
 
 }

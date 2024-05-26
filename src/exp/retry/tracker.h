@@ -165,6 +165,11 @@ struct Tracker2
             {
             }
 
+            ~value_type()
+            {
+                //printf("Got here: %u\n");
+            }
+
             bool match(match_param v) const
             {
                 return

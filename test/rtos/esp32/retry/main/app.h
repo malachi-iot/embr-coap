@@ -1,5 +1,6 @@
 #pragma once
 
+#include <array>
 #include <vector>
 
 #include <estd/chrono.h>
@@ -48,10 +49,14 @@ extern tracker_type tracker;
 }
 
 namespace app::esp_now {
-using endpoint_type = unsigned;
+using mac_type = uint8_t[6];
+//typedef uint8_t mac_type[6];
+//using endpoint_type = mac_type;
+using endpoint_type = std::array<uint8_t, 6>;
+
 using buffer_type = std::vector<uint8_t>;   // DEBT: Prefer from a pool, or, at a minimum, using psram_allocator
 
-using tracker_type = embr::coap::experimental::retry::Tracker2<endpoint_type, buffer_type>;
+using tracker_type = embr::coap::experimental::retry::Tracker2<endpoint_type, buffer_type, 5, time_point::duration>;
 extern tracker_type tracker;
 void init();
 void loop(duration);
