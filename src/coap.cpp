@@ -139,3 +139,24 @@ internal::v1::SubcontextBase::query split(const event::option& e)
 
 }
 }
+
+
+const char* to_string(embr::coap::Header::Code code)
+{
+    using Code = embr::coap::Header::Code;
+
+    switch(code)
+    {
+        case Code::BadRequest:  return "Bad Request";
+        case Code::Content:     return "Content";
+        case Code::Created:     return "Created";
+        case Code::Empty:       return "Empty";
+        case Code::Get:         return "Get";
+        case Code::Ping:        return "Ping";
+        case Code::Pong:        return "Pong";
+        case Code::Put:         return "Put";
+        case Code::Valid:       return "Valid";
+
+        default:    return "N/A";
+    }
+}

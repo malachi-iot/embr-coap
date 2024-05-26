@@ -17,6 +17,8 @@
 #define CONFIG_UDP      0
 #define CONFIG_ESP_NOW  1
 
+const char* to_string(embr::coap::Header::Code code);
+
 
 // DEBT: const_buffer_type still in flux.  Once that settles down,
 // push this up into TransportUdp itself

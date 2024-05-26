@@ -37,10 +37,7 @@
 #define ESPNOW_WIFI_IF   ESP_IF_WIFI_AP
 #endif
 
-// DEBT: const char support was baked into in_span_streambuf (even though std char_traits doesn't like it)
-// however looks like regressions crept in with InStreambuf concept
-// https://github.com/malachi-iot/estdlib/issues/40
-using istreambuf = estd::detail::streambuf<estd::internal::impl::in_span_streambuf<char> >;
+using istreambuf = estd::detail::streambuf<estd::internal::impl::in_span_streambuf<const char> >;
 using ostreambuf = estd::detail::streambuf<estd::internal::impl::out_span_streambuf<char> >;
 
 static const char* TAG = "app::esp_now";
@@ -65,20 +62,20 @@ struct DecoderFactory<std::vector<Char> >
     typedef typename estd::remove_cv<Char>::type char_type;
 
     typedef std::vector<Char> buffer_type;
-    typedef estd::internal::streambuf<estd::internal::impl::in_span_streambuf<const char_type> > streambuf_type;
+    typedef estd::detail::streambuf<estd::internal::impl::in_span_streambuf<const char_type> > streambuf_type;
     typedef StreambufDecoder<streambuf_type> decoder_type;
 
     inline static decoder_type create(const buffer_type& buffer)
     {
         // DEBT: Would be nice to not have to explicitly do span here, but combo
         // of crusty span_streambuf + ctor forwarding gives us ... this
-        return decoder_type(estd::span<const char_type>(buffer.data(), 0));
+        return decoder_type(estd::span<const char_type>(buffer.data(), buffer.size()));
     }
 };
 
 
-
 }}}
+
 namespace app::esp_now {
 
 // https://docs.espressif.com/projects/esp-idf/en/v5.1.4/esp32/api-reference/network/esp_now.html#_CPPv417esp_now_peer_info
@@ -171,27 +168,34 @@ void init(void)
 }
 
 
-static void send_ack(estd::span<char> in)
+static void send_ack(mac_type mac, estd::span<const char> in)
 {
     static const char* TAG = "send_ack";
 
-    estd::span<char> out;
+    char buffer[128];
 
     coap::StreambufDecoder<istreambuf> decoder(in);
-    coap::StreambufEncoder<ostreambuf> encoder(out);
+    coap::StreambufEncoder<ostreambuf> encoder(buffer);
 
     build_ack(decoder, encoder);
 
+    unsigned len = encoder.rdbuf()->pos();  // DEBT: span streambuf specific
+
     ESP_LOGD(TAG, "About to send");
+    ESP_ERROR_CHECK(esp_now_send(mac, (uint8_t*)buffer, len));
 }
 
-static void send_con(mac_type mac, estd::span<char> in)
+static void send_con(mac_type mac, estd::span<const char> in)
 {
     static const char* TAG = "send_con";
 
     endpoint_type mac2;
     std::copy_n(mac, 6, mac2.begin());
 
+    // DEBT: A kind of vector emplace would be nice.  Not doing so yet because I'm hoping
+    // to leave vector behind completely.  Either that or a streambuf that goes right to
+    // vector - IIRC there's a streambuf-iterator wrapper, but it's not aware of a push_back
+    // sensibility
     char buffer[128];
     estd::span<char> out(buffer);
 
@@ -210,26 +214,6 @@ static void send_con(mac_type mac, estd::span<char> in)
     ESP_LOGD(TAG, "About to send");
 }
 
-const char* to_string(coap::Header::Code code)
-{
-    using Code = coap::Header::Code;
-
-    switch(code)
-    {
-        case Code::BadRequest:  return "Bad Request";
-        case Code::Content:     return "Content";
-        case Code::Created:     return "Created";
-        case Code::Empty:       return "Empty";
-        case Code::Get:         return "Get";
-        case Code::Ping:        return "Ping";
-        case Code::Pong:        return "Pong";
-        case Code::Put:         return "Put";
-        case Code::Valid:       return "Valid";
-
-        default:    return "N/A";
-    }
-}
-
 static void recv_cb(const esp_now_recv_info_t *recv_info,
     const uint8_t *data, int len)
 {
@@ -245,6 +229,13 @@ static void recv_cb(const esp_now_recv_info_t *recv_info,
         to_string(header.code())
         );
 
+    if (esp_now_is_peer_exist(recv_info->src_addr) == false)
+    {
+        peer_info peer(recv_info->src_addr, WIFI_IF_STA, 0);
+
+        ESP_ERROR_CHECK(peer.add());
+    }
+
     if(header.type() == coap::Header::Acknowledgement)
     {
         endpoint_type mac2;
@@ -256,28 +247,17 @@ static void recv_cb(const esp_now_recv_info_t *recv_info,
     switch(header.code())
     {
         case coap::Header::Code::Get:
+            send_ack(recv_info->src_addr, {(char*)data, (unsigned)len});
             break;
 
         case coap::Header::Code::Pong:
-            if (esp_now_is_peer_exist(recv_info->src_addr) == false)
-            {
-                peer_info peer(recv_info->src_addr, WIFI_IF_STA, 0);
-
-                ESP_ERROR_CHECK(peer.add());
-            }
             send_con(recv_info->src_addr, {(char*)data, (unsigned)len});
             break;
 
         case coap::Header::Code::Ping:
         {
-            if (esp_now_is_peer_exist(recv_info->src_addr) == false)
-            {
-                peer_info peer(recv_info->src_addr, WIFI_IF_STA, 0);
-
-                ESP_ERROR_CHECK(peer.add());
-            }
-
             header.code(coap::Header::Code::Pong);
+            // DEBT: I think we want a new mid for pong?  Maybe not?  Document which
             ESP_ERROR_CHECK(esp_now_send(recv_info->src_addr, header.bytes, 4));
             break;
         }
