@@ -305,15 +305,22 @@ void loop(duration t)
 {
     auto now = clock_type::now().time_since_epoch();
 
+    // NOTE: Consider making 'ready' also process_one if it's
+    // in ack_received() state.
     tracker_type::value_type* ready = tracker.ready(now);
 
     if(ready)
     {
-        ESP_ERROR_CHECK(esp_now_send(
-            ready->endpoint().data(),
-            ready->buffer().data(),
-            ready->buffer().size()));
-        tracker.mark_con_sent();
+        if(ready->ack_received())
+            tracker.mark_ack_processed();
+        else
+        {
+            ESP_ERROR_CHECK(esp_now_send(
+                ready->endpoint().data(),
+                ready->buffer().data(),
+                ready->buffer().size()));
+            tracker.mark_con_sent();
+        }
     }
 }
 
