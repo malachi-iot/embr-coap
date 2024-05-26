@@ -37,6 +37,7 @@
 #define ESPNOW_WIFI_IF   ESP_IF_WIFI_AP
 #endif
 
+// TODO: Try moving these to uint8_t
 using istreambuf = estd::detail::streambuf<estd::internal::impl::in_span_streambuf<const char> >;
 using ostreambuf = estd::detail::streambuf<estd::internal::impl::out_span_streambuf<char> >;
 
@@ -55,7 +56,8 @@ struct StreambufProvider<std::vector<Char> >
 };  */
 
 
-// DEBT: Clumsiness of header decoder continues.  Not active yet
+// DEBT: Clumsiness of header decoder continues.  Try pursuing HeaderFactory which is also
+// clumsy, but at least is highly optimized
 template <class Char>
 struct DecoderFactory<std::vector<Char> >
 {
@@ -219,8 +221,6 @@ static void send_con(mac_type mac, estd::span<const char> in)
 static void recv_cb(const esp_now_recv_info_t *recv_info,
     const uint8_t *data, int len)
 {
-    // See above DEBT
-    //send_ack(estd::span<char>{(char*)data, (unsigned)len});
     coap::Header header;
 
     std::copy_n(data, 4, header.bytes);
@@ -303,22 +303,15 @@ static void init_protocol()
 
 void loop(time_point now)
 {
-    // NOTE: Consider making 'ready' also process_one if it's
-    // in ack_received() state.
-    tracker_type::value_type* ready = tracker.ready(now);
+    tracker_type::pointer ready = tracker.ready_exp(now);
 
     if(ready)
     {
-        if(ready->ack_received())
-            tracker.mark_ack_processed();
-        else
-        {
-            ESP_ERROR_CHECK(esp_now_send(
-                ready->endpoint().data(),
-                ready->buffer().data(),
-                ready->buffer().size()));
-            tracker.mark_con_sent();
-        }
+        ESP_ERROR_CHECK(esp_now_send(
+            ready->endpoint().data(),
+            ready->buffer().data(),
+            ready->buffer().size()));
+        tracker.mark_con_sent();
     }
 }
 
