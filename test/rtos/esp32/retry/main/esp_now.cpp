@@ -70,7 +70,9 @@ struct DecoderFactory<std::vector<Char> >
 
     inline static decoder_type create(const buffer_type& buffer)
     {
-        return decoder_type({buffer.data(), 0});
+        // DEBT: Would be nice to not have to explicitly do span here, but combo
+        // of crusty span_streambuf + ctor forwarding gives us ... this
+        return decoder_type(estd::span<const char_type>(buffer.data(), 0));
     }
 };
 
@@ -248,7 +250,7 @@ static void recv_cb(const esp_now_recv_info_t *recv_info,
         endpoint_type mac2;
         std::copy_n(recv_info->src_addr, 6, mac2.begin());
 
-        //tracker.ack_encountered(mac2, header.message_id());
+        tracker.ack_encountered(mac2, header.message_id());
     }
 
     switch(header.code())
