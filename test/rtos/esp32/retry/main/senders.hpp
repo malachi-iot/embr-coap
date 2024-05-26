@@ -68,3 +68,29 @@ bool build_con(
 
     return true;
 }
+
+
+template <class IStreambuf, class OStreambuf>
+bool build_con_get(
+    embr::coap::StreambufDecoder<IStreambuf>& decoder,
+    embr::coap::StreambufEncoder<OStreambuf>& encoder
+    )
+{
+    until(decoder, coap::Decoder::HeaderDone);
+    coap::Header header = decoder.header_decoder();
+    until(decoder, coap::Decoder::TokenDone);
+    const uint8_t* token = decoder.token_decoder().data();
+
+    if(header.type() == coap::Header::Reset)  return false;
+
+    header.type(coap::Header::Types::Confirmable);
+    header.code(coap::Header::Code::Get);
+    // DEBT: Pretty lousy way to generate a different message ID
+    header.message_id(header.message_id() + 1);
+
+    encoder.header(header);
+    encoder.token(token, header.token_length());
+    encoder.finalize();
+
+    return true;
+}

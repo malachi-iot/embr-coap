@@ -45,6 +45,38 @@ using ostreambuf = estd::detail::streambuf<estd::internal::impl::out_span_stream
 
 static const char* TAG = "app::esp_now";
 
+namespace embr { namespace coap { namespace internal {
+
+/*
+template <typename Char>
+struct StreambufProvider<std::vector<Char> >
+{
+    typedef typename estd::remove_cv<Char>::type char_type;
+
+    typedef estd::internal::streambuf<estd::internal::impl::in_span_streambuf<const char_type> > istreambuf_type;
+    typedef estd::internal::streambuf<estd::internal::impl::out_span_streambuf<char_type> > ostreambuf_type;
+};  */
+
+
+// DEBT: Clumsiness of header decoder continues.  Not active yet
+template <class Char>
+struct DecoderFactory<std::vector<Char> >
+{
+    typedef typename estd::remove_cv<Char>::type char_type;
+
+    typedef std::vector<Char> buffer_type;
+    typedef estd::internal::streambuf<estd::internal::impl::in_span_streambuf<const char_type> > streambuf_type;
+    typedef StreambufDecoder<streambuf_type> decoder_type;
+
+    inline static decoder_type create(const buffer_type& buffer)
+    {
+        return decoder_type({buffer.data(), 0});
+    }
+};
+
+
+
+}}}
 namespace app::esp_now {
 
 // https://docs.espressif.com/projects/esp-idf/en/v5.1.4/esp32/api-reference/network/esp_now.html#_CPPv417esp_now_peer_info
@@ -164,7 +196,7 @@ static void send_con(mac_type mac, estd::span<char> in)
     coap::StreambufDecoder<istreambuf> decoder(in);
     coap::StreambufEncoder<ostreambuf> encoder(buffer);
 
-    if(build_con(decoder, encoder) == false) return;
+    if(build_con_get(decoder, encoder) == false) return;
 
     std::vector<uint8_t> v;
     unsigned pos = encoder.rdbuf()->pos();  // DEBT: span streambuf specific
@@ -183,11 +215,13 @@ const char* to_string(coap::Header::Code code)
     switch(code)
     {
         case Code::BadRequest:  return "Bad Request";
+        case Code::Content:     return "Content";
         case Code::Created:     return "Created";
         case Code::Empty:       return "Empty";
         case Code::Get:         return "Get";
         case Code::Ping:        return "Ping";
         case Code::Pong:        return "Pong";
+        case Code::Put:         return "Put";
         case Code::Valid:       return "Valid";
 
         default:    return "N/A";
@@ -209,8 +243,19 @@ static void recv_cb(const esp_now_recv_info_t *recv_info,
         to_string(header.code())
         );
 
+    if(header.type() == coap::Header::Acknowledgement)
+    {
+        endpoint_type mac2;
+        std::copy_n(recv_info->src_addr, 6, mac2.begin());
+
+        //tracker.ack_encountered(mac2, header.message_id());
+    }
+
     switch(header.code())
     {
+        case coap::Header::Code::Get:
+            break;
+
         case coap::Header::Code::Pong:
             if (esp_now_is_peer_exist(recv_info->src_addr) == false)
             {
