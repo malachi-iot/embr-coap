@@ -160,3 +160,8 @@ const char* to_string(embr::coap::Header::Code code)
         default:    return "N/A";
     }
 }
+
+const char* to_string(embr::coap::header::Types type)
+{
+    return embr::coap::get_description(type);
+}

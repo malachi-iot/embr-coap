@@ -208,6 +208,8 @@ static void send_con(mac_type mac, estd::span<const char> in)
     unsigned pos = encoder.rdbuf()->pos();  // DEBT: span streambuf specific
 
     v.insert(v.end(), buffer, buffer + pos);
+    // DEBT: I think retry is sending out 1 too many.  We total 1 + 4 = 5 attempts
+    ESP_ERROR_CHECK(esp_now_send(mac, v.data(), v.size()));
     // DEBT: Use actual time points, not durations
     tracker.track(clock_type::now().time_since_epoch(), mac2, std::move(v));
 
@@ -223,9 +225,10 @@ static void recv_cb(const esp_now_recv_info_t *recv_info,
 
     std::copy_n(data, 4, header.bytes);
 
-    ESP_LOGI(TAG, "recv_cb: len=%d, mid=0x%" PRIx16 ", code=%s",
+    ESP_LOGI(TAG, "recv_cb: len=%d, mid=0x%" PRIx16 ", type=%s, code=%s",
         len,
         header.message_id(),
+        to_string(header.type()),
         to_string(header.code())
         );
 
