@@ -18,7 +18,7 @@ namespace embr { namespace coap { namespace experimental { namespace retry {
 struct Metadata
 {
     // Lower precision milliseconds
-    typedef estd::chrono::duration<uint32_t, estd::milli> milliseconds;
+    typedef estd::chrono::duration<uint16_t, estd::milli> milliseconds;
 
     // from 0-4 (COAP_MAX_RETRANSMIT)
     // NOTE: Technically at this time this actually represents *queued for transmit* and may
@@ -28,14 +28,21 @@ struct Metadata
     // represents in milliseconds initial timeout as described in [1] section 4.2.
     // This is  between COAP_ACK_TIMEOUT and COAP_ACK_TIMEOUT*COAP_ACK_RANDOM_FACTOR
     // which for this variable works out to be 2000-3000
+    // DEBT: Change this to initial_random_ms since that requires a lower precision,
+    // and consider 10ms precision instead of 1ms
     uint16_t initial_timeout_ms : 12;
 
     // helper bit to help us avoid decoding outgoing message to see if it's really
-    // a CON message.  Or, in otherwords, a cached value indicating outgoing message
+    // a CON message.  Or, in other words, a cached value indicating outgoing message
     // REALLY is CON.
     // value: 1 = definitely a CON message
     // value: 0 = maybe a CON message, decode required
-    uint16_t con_helper_flag_bit : 1;
+    // 25MAY24 MB This was useful for when retry was baked deeper into transport and all packets were flowing
+    // through it.  Now we curate the packets and track them more manually, so this bit isn't needed
+    //uint16_t con_helper_flag_bit : 1;
+
+    // "user" flag, though we likely will be using this always to tag that we got an ACK
+    bool flag1 : 1;
 
     /// Retrieve ms expected to elapse from last send to next retry
     /// @return
@@ -69,7 +76,8 @@ struct Metadata
         1000 * (COAP_ACK_RANDOM_FACTOR + COAP_ACK_RANDOM_FACTOR_MINIMUM) / 5) :
         retransmission_counter{0},
         initial_timeout_ms{calculate_initial_timeout_ms(initial_random_ms)},
-        con_helper_flag_bit{0}
+        //con_helper_flag_bit{0}
+        flag1{false}
     {
 
     }
@@ -77,39 +85,63 @@ struct Metadata
 
 
 ///
-/// @tparam TEndpoint - system specific full address of destination to send retries to
-/// @tparam TTimePoint - estd::chrono timepoint
-/// @tparam TBuffer - system specific buffer.  For LwIP it may be pbuf or netbuf
-template <class TEndpoint, class TTimePoint, class TBuffer>
+/// @tparam Endpoint - system specific full address of destination to send retries to
+/// @tparam TimePoint - estd::chrono timepoint
+/// @tparam Buffer - system specific buffer.  For LwIP it may be pbuf or netbuf
+template <class Endpoint, class TimePoint, class Buffer>
 struct Item : Metadata
 {
-    typedef TEndpoint endpoint_type;
+    using base_type = Metadata;
+
+    typedef Endpoint endpoint_type;
     // DEBT: Would be nice if timepoint didn't mandate estd::chrono
-    typedef TTimePoint time_point;
-    typedef TBuffer buffer_type;
+    typedef TimePoint time_point;
+    typedef Buffer buffer_type;
+
+    using duration = typename time_point::duration;
 
 // DEBT: Making protected while building things out
 //private:
 protected:
     const endpoint_type endpoint_;
-    buffer_type buffer_;
+    const buffer_type buffer_;
 
     // NOTE: Tracking way more than we need here while we hone down architecture
     time_point
-        first_transmit_,
-        last_transmit_;
+        first_transmit_;
+        //last_transmit_;
 
     // DEBT: This can likely be optimized into bit struct in parent class
     // DEBT: This does double duty to indicate this class should be deleted/garbage collected.
     // If possible, that would likely be better served as a unique_ptr/shared_ptr
-    bool ack_received_;
+    //bool ack_received_;
 
 public:
+    Item(const endpoint_type& endpoint, const time_point& time_sent, milliseconds rand, const buffer_type& buffer) :
+        base_type{rand.count()},
+        endpoint_{endpoint},
+        buffer_{buffer},
+        first_transmit_{time_sent}//,
+        //ack_received_{false}
+    {
+
+    }
+
+    Item(const endpoint_type& endpoint, const time_point& time_sent, milliseconds rand, buffer_type&& buffer) :
+        base_type{rand.count()},
+        endpoint_{endpoint},
+        buffer_(std::move(buffer)),
+        first_transmit_{time_sent}//,
+        //ack_received_{false}
+    {
+
+    }
+
     Item(const endpoint_type& endpoint, const time_point& time_sent, const buffer_type& buffer) :
         endpoint_{endpoint},
         buffer_{buffer},
-        first_transmit_{time_sent},
-        ack_received_{false}
+        first_transmit_{time_sent}//,
+        //ack_received_{false}
     {
 
     }
@@ -117,8 +149,8 @@ public:
     Item(const endpoint_type& endpoint, const time_point& time_sent, buffer_type&& buffer) :
         endpoint_{endpoint},
         buffer_(std::move(buffer)),
-        first_transmit_{time_sent},
-        ack_received_{false}
+        first_transmit_{time_sent}//,
+        //ack_received_{false}
     {
 
     }
@@ -187,13 +219,15 @@ public:
 
     ESTD_CPP_CONSTEXPR_RET bool ack_received() const
     {
-        return ack_received_;
+        return flag1;
+        //return ack_received_;
     }
 
     // DEBT: We'd prefer a friend class or some other less visible way of presenting this
     void ack_received(bool value)
     {
-        ack_received_ = value;
+        //ack_received_ = value;
+        flag1 = value;
     }
 
     time_point first_transmit() const { return first_transmit_; }

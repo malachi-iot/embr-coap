@@ -94,7 +94,6 @@ static void send_echo_with_con(embr::lwip::udp::Pcb pcb, embr::lwip::Pbuf& pbuf,
     r = pcb.send_experimental(p_rom, endpoint);
     pbuf_free(p_rom);
     auto now = estd::chrono::freertos_clock::now();
-    auto t = now.time_since_epoch();
 
     // https://stackoverflow.com/questions/68786784/is-it-possible-to-use-udp-sendto-to-resend-an-udp-packet
     // https://lwip-users.nongnu.narkive.com/bexfjxTs/udp-send-space-for-ip-header-is-not-being-allocated
@@ -110,7 +109,7 @@ static void send_echo_with_con(embr::lwip::udp::Pcb pcb, embr::lwip::Pbuf& pbuf,
         r, p->ref, p, p->tot_len);
 
     //encoder_pbuf.ref();
-    app::lwip::tracker.track(t, endpoint, std::move(encoder_pbuf));
+    app::lwip::tracker.track(now, endpoint, std::move(encoder_pbuf));
     //pbuf_ref(p);
 
     ESP_LOGI(TAG, "exit: phase 3 ref count=%u, tot_len=%u", p->ref, p->tot_len);

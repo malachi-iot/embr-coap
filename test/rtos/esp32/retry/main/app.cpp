@@ -24,7 +24,7 @@ void app_init(void** pcb_recv_arg, embr::lwip::udp::Pcb pcb)
 
 namespace app::lwip {
 
-static void loop(duration t)
+static void loop(time_point t)
 {
     const char* TAG = "app::lwip::loop";
 
@@ -97,12 +97,11 @@ void loop()
     {
         vTaskDelay(10);
         auto now = estd::chrono::freertos_clock::now();
-        auto t = now.time_since_epoch();
 #if CONFIG_UDP
-        app::lwip::loop(t);
+        app::lwip::loop(now);
 #endif
 #if CONFIG_ESP_NOW
-        app::esp_now::loop(t);
+        app::esp_now::loop(now);
 #endif
     }
 }

@@ -15,6 +15,7 @@ using namespace embr::coap::experimental;
 // using "native" literals makes compilers mad sometimes.
 // Using explicit seconds, milliseconds, etc
 //using namespace estd::chrono_literals;
+//using namespace std::chrono_literals;
 
 // NOTE: Remember, embr's Transport concept wants send with signature
 // 'buffer', 'endpoint' - lwip style.  In retrospect I would have preferred
@@ -139,20 +140,21 @@ TEST_CASE("retry tests", "[retry]")
             tracker_type tracker;
             tracker_type::value_type* tracked = nullptr;
             //using value_type = decltype(tracker)::value_type;
+            tracker_type::time_point time;
 
             SECTION("single, ack received")
             {
-                tracker.track(ms_type{10}, e1, buffer_with_token);
+                tracker.track(time + ms_type{10}, e1, buffer_with_token);
                 b = tracker.ack_encountered(e1, 0x123);
                 REQUIRE(b);
                 REQUIRE(tracker.empty() == false);
                 auto top_time = tracker.top_time();
-                REQUIRE(top_time.count() == 2510);
+                REQUIRE(top_time.time_since_epoch().count() == 2510);
                 tracked = &tracker.top();
                 REQUIRE(tracked->ack_received());
-                REQUIRE(tracked->first_transmit() == ms_type{10});
-                REQUIRE(tracker.ready(ms_type{2505}) == nullptr);
-                REQUIRE(tracker.ready(ms_type{2510}) != nullptr);
+                REQUIRE(tracked->first_transmit().time_since_epoch() == ms_type{10});
+                REQUIRE(tracker.ready(time + ms_type{2505}) == nullptr);
+                REQUIRE(tracker.ready(time + ms_type{2510}) != nullptr);
                 b = tracker.mark_ack_processed();
                 REQUIRE(b == true);
 
@@ -161,18 +163,18 @@ TEST_CASE("retry tests", "[retry]")
             }
             SECTION("single, no ack")
             {
-                tracker.track(ms_type{10}, e1, buffer_with_token);
+                tracker.track(time + ms_type{10}, e1, buffer_with_token);
                 REQUIRE(tracker.empty() == false);
                 auto top_time = tracker.top_time();
-                REQUIRE(top_time.count() == 2510);
-                REQUIRE(tracker.ready(ms_type{2505}) == nullptr);
-                REQUIRE(tracker.ready(ms_type{2510}) != nullptr);
+                REQUIRE(top_time.time_since_epoch().count() == 2510);
+                REQUIRE(tracker.ready(time + ms_type{2505}) == nullptr);
+                REQUIRE(tracker.ready(time + ms_type{2510}) != nullptr);
                 // No ACK received, simulate resend right at resend time
                 b = tracker.mark_con_sent();
                 REQUIRE(b == true);
-                REQUIRE(tracker.top_time().count() == 5010);
-                REQUIRE(tracker.ready(ms_type{5005}) == nullptr);
-                b = tracker.mark_con_sent(ms_type{5010});
+                REQUIRE(tracker.top_time().time_since_epoch().count() == 5010);
+                REQUIRE(tracker.ready(time + ms_type{5005}) == nullptr);
+                b = tracker.mark_con_sent(time + ms_type{5010});
                 // No ACK received, simulate resend right at resend time
                 REQUIRE(b == true);
             }
@@ -181,14 +183,14 @@ TEST_CASE("retry tests", "[retry]")
                 Header header(Header::Acknowledgement);
                 header.message_id(0x1234);
 
-                tracker.track(ms_type{10}, e1, buffer_with_token);
-                tracker.track(ms_type{15}, e2, header.bytes);
+                tracker.track(time + ms_type{10}, e1, buffer_with_token);
+                tracker.track(time + ms_type{15}, e2, header.bytes);
 
-                tracked = tracker.ready(ms_type{20});
+                tracked = tracker.ready(time + ms_type{20});
 
                 REQUIRE(tracked == nullptr);
 
-                tracked = tracker.ready(ms_type{2515});
+                tracked = tracker.ready(time + ms_type{2515});
 
                 REQUIRE(tracked != nullptr);
                 REQUIRE(tracked->endpoint() == e1);
@@ -196,28 +198,28 @@ TEST_CASE("retry tests", "[retry]")
 
                 tracker.mark_con_sent();
 
-                tracked = tracker.ready(ms_type{2515});
+                tracked = tracker.ready(time + ms_type{2515});
                 REQUIRE(tracked != nullptr);
                 REQUIRE(tracked->endpoint() == e2);
                 REQUIRE(tracked->buffer().data() == header.bytes);
 
                 tracker.mark_con_sent();
 
-                REQUIRE(tracker.ready(ms_type{5000}) == nullptr);
-                tracked = tracker.ready(ms_type{5010});
+                REQUIRE(tracker.ready(time + ms_type{5000}) == nullptr);
+                tracked = tracker.ready(time + ms_type{5010});
                 REQUIRE(tracked != nullptr);
                 REQUIRE(tracked->endpoint() == e1);
                 REQUIRE(tracked->buffer().data() == buffer_with_token);
             }
             SECTION("misc")
             {
-                tracker.track(ms_type{15}, e2, buffer_with_token);
-                tracker.track(ms_type{25}, e2, buffer_with_token);
-                tracker.track(ms_type{35}, e2, buffer_with_token);
-                tracker.track(ms_type{45}, e2, buffer_with_token);
+                tracker.track(time + ms_type{15}, e2, buffer_with_token);
+                tracker.track(time + ms_type{25}, e2, buffer_with_token);
+                tracker.track(time + ms_type{35}, e2, buffer_with_token);
+                tracker.track(time + ms_type{45}, e2, buffer_with_token);
                 REQUIRE(!tracker.full());
 
-                tracker.track(ms_type{55}, e2, buffer_with_token);
+                tracker.track(time + ms_type{55}, e2, buffer_with_token);
 
                 REQUIRE(tracker.full());
             }

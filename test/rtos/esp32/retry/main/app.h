@@ -46,7 +46,7 @@ namespace app::lwip {
 using endpoint_type = embr::lwip::internal::Endpoint<false>;
 using buffer_type = embr::lwip::v1::Pbuf;
 
-using tracker_type = embr::coap::experimental::retry::Tracker2<endpoint_type, buffer_type>;
+using tracker_type = embr::coap::experimental::retry::Tracker2<endpoint_type, buffer_type, 5, clock_type>;
 extern tracker_type tracker;
 }
 
@@ -58,9 +58,9 @@ using endpoint_type = std::array<uint8_t, 6>;
 
 using buffer_type = std::vector<uint8_t>;   // DEBT: Prefer from a pool, or, at a minimum, using psram_allocator
 
-using tracker_type = embr::coap::experimental::retry::Tracker2<endpoint_type, buffer_type, 5, time_point::duration>;
+using tracker_type = embr::coap::experimental::retry::Tracker2<endpoint_type, buffer_type, 5, clock_type>;
 extern tracker_type tracker;
 void init();
-void loop(duration);
+void loop(time_point);
 }
 #endif

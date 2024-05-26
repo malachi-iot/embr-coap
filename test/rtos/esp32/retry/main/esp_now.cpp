@@ -211,7 +211,7 @@ static void send_con(mac_type mac, estd::span<const char> in)
     // DEBT: I think retry is sending out 1 too many.  We total 1 + 4 = 5 attempts
     ESP_ERROR_CHECK(esp_now_send(mac, v.data(), v.size()));
     // DEBT: Use actual time points, not durations
-    tracker.track(clock_type::now().time_since_epoch(), mac2, std::move(v));
+    tracker.track(clock_type::now(), mac2, std::move(v));
 
     ESP_LOGD(TAG, "About to send");
 }
@@ -301,10 +301,8 @@ static void init_protocol()
 }
 
 
-void loop(duration t)
+void loop(time_point now)
 {
-    auto now = clock_type::now().time_since_epoch();
-
     // NOTE: Consider making 'ready' also process_one if it's
     // in ack_received() state.
     tracker_type::value_type* ready = tracker.ready(now);

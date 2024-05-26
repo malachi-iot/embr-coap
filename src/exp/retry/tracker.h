@@ -132,13 +132,28 @@ public:
     }
 };
 
+// DEBT: Combine this with estd's test clock, and include that here instead
+template <class Duration, bool is_steady_ = false>
+struct synthetic_clock
+{
+    using duration = Duration;
+    using time_point = estd::chrono::time_point<synthetic_clock<Duration>>;
+
+    static time_point now_;
+
+    static constexpr bool is_steady = is_steady_;
+
+    static time_point now() { return now_; }
+};
+
 // 13MAY24 MB
 // Wholly different approach, a pseudo-state-machine with a baked in scheduler
 template <class Endpoint, class Buffer, unsigned N = 10,
-    class TimePoint = estd::chrono::duration<uint32_t, estd::milli> >
+    class Clock = synthetic_clock<estd::chrono::duration<uint32_t, estd::milli> > >
 struct Tracker2
 {
-    using time_point = TimePoint;
+    using time_point = typename Clock::time_point;
+    using duration = typename Clock::duration;
 
     struct match_param
     {
@@ -149,19 +164,19 @@ struct Tracker2
     struct SchedulerItem :
         embr::internal::scheduler::impl::ReferenceBase<time_point>
     {
-        struct value_type : Item<Endpoint, TimePoint, Buffer>
+        struct value_type : Item<Endpoint, time_point, Buffer>
         {
-            using base_type = Item<Endpoint, TimePoint, Buffer>;
+            using base_type = Item<Endpoint, time_point, Buffer>;
 
-            explicit value_type(time_point t, time_point random,
+            explicit value_type(time_point t, duration random,
                 const Endpoint& endpoint, const Buffer& buffer) :
-                base_type(endpoint, t, buffer)
+                base_type(endpoint, t, random, buffer)
             {
             }
 
-            explicit value_type(time_point t, time_point random,
+            explicit value_type(time_point t, duration random,
                 const Endpoint& endpoint, Buffer&& buffer) :
-                base_type(endpoint, t, std::move(buffer))
+                base_type(endpoint, t, random, std::move(buffer))
             {
             }
 
@@ -198,8 +213,9 @@ struct Tracker2
     embr::internal::layer1::Scheduler<N, SchedulerItem> scheduler_;
 
     using value_type = typename SchedulerItem::value_type;
+    using pointer = value_type*;
 
-    bool track(time_point t, time_point random, const Endpoint& endpoint, Buffer&& b)
+    bool track(time_point t, duration random, const Endpoint& endpoint, Buffer&& b)
     {
         // DEBT: Return false if we can't schedule (full) at 'schedule' level
         if(full())  return false;
@@ -255,6 +271,22 @@ struct Tracker2
             return nullptr;
     }
 
+    // EXPERIMENTAL
+    // Silently processes ack_received, so you only get back a nullptr or
+    // a true ready to send
+    pointer ready_exp(time_point current)
+    {
+        while(pointer r = ready(current))
+        {
+            if(r->ack_received())
+                scheduler_.process_one(current);
+            else
+                return r;
+        }
+
+        return nullptr;
+    }
+
     /// For a retry item at the ready position,
     /// mark it sent, bump retry counter and reprocess
     /// @return false if nothing present to process, true if we process 'ready'
@@ -263,8 +295,6 @@ struct Tracker2
         value_type* top = ready(current);
 
         if(top == nullptr) return false;
-
-        top->con_helper_flag_bit = 1;
 
         // Doing this inside "process" itself because that's the only appropriate place
         // to specify a new time stamp for scheduler to pick it up
