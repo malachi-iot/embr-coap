@@ -8,10 +8,10 @@ These tests are all for variants of Espressif ESP32
 
 |   Date  | Project      | Board                | Chip           | esp-idf  | Result   | Notes
 | ------- | ------------ | -------------------- | -------------- | -------  | -------- | -----
-| 22APR22 | echo         |                      | ESP32S         | v4.4.0   | Pass     | 
+| 25SEP24 | echo         |                      | ESP32          | v5.3.1   | Compiles | 
 | 09DEC22 | echo         | ESP-WROVER-KIT v4.1  | ESP32-WROVER-E | v4.4.3   | Pass     | 
 | 02JAN23 | echo         | ESP32-C3-DevKitM-1   | ESP32C3        | v5.0.0   | Pass     |
-| 30DEC22 | echo-subject | ESP-WROVER-KIT v4.1  | ESP32-WROVER-E | v4.4.3   | Pass     | 
+| 25SEP24 | echo-subject | ESP-WROVER-KIT v4.1  | ESP32-WROVER-E | v5.3.1   | Fail     | breaking change in tuple it seems
 | 26JAN23 | echo-subject | Wemos D1             | ESP32-WROOM-32 | v5.0.0   | Pass     | 
 | 10JAN24 | echo-subject | WaveShare DevKit     | ESP32C6        | v5.1.2   | Pass     | 
 | 15JAN24 | echo-subject | Seeed Xiao           | ESP32S3        | v5.1.2   | Partial  | Gets IP.  Test paused for unrelated reasons

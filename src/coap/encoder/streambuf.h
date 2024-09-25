@@ -95,7 +95,7 @@ class StreambufEncoder
 public:
     typedef typename estd::remove_reference<TStreambuf>::type streambuf_type;
     typedef TStreambufEncoderImpl impl_type;
-    typedef estd::internal::basic_ostream<streambuf_type&> ostream_type;
+    typedef estd::detail::basic_ostream<streambuf_type&> ostream_type;
     typedef embr::coap::experimental::layer2::OptionBase option_type;
     typedef embr::coap::Option::Numbers option_number_type;
 
