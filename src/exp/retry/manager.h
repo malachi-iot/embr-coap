@@ -56,7 +56,8 @@ struct Manager : embr::internal::instance_or_reference_provider<TTransport>
         // If ack_received or retransmission counter passes threshold
         void resend(time_point* p, time_point p2);
 
-        typename estd::internal::thisify_function<void(time_point*, time_point)>::
+        typename estd::internal::thisify_function<
+            void(time_point*, time_point)>::
             template model<item_type, &item_type::resend> m;
 
         item_type(endpoint_type e, time_point t, const_buffer_type&& b, parent_type* parent) :
@@ -71,7 +72,12 @@ struct Manager : embr::internal::instance_or_reference_provider<TTransport>
     typedef Tracker<time_point, transport_type, item_type> tracker_type;
     //typedef typename tracker_type::item_type item_type;
 
-    typedef embr::internal::scheduler::impl::Function<time_point> scheduler_impl;
+    // 25SEP24 MB DEBT:
+    // 1. Shouldn't use a define here
+    // 2. artifact of 'thisify' not playing nice with new default of fnptr2
+    #define fnimpl estd::detail::impl::function_fnptr1
+
+    typedef embr::internal::scheduler::impl::Function<time_point, fnimpl> scheduler_impl;
 
     tracker_type tracker;
 
@@ -90,7 +96,8 @@ struct Manager : embr::internal::instance_or_reference_provider<TTransport>
         //time_point now = clock_type::now();   // TODO
         time_point due = time_sent + i->delta();
 
-        estd::detail::function<void(time_point*, time_point)> f(&i2->m);
+        // DEBT: Hard wired to fnptr1 approach because thisify kinda needs it
+        estd::detail::v2::function<void(time_point*, time_point), fnimpl> f(&i2->m);
 
         // NOTE: Can only use thisafy and friends when 'this' pointer isn't getting moved around
         scheduler.schedule(due, f);
