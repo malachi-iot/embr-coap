@@ -6,6 +6,9 @@
 #include <estd/forward_list.h>
 #include <estd/functional.h>
 
+// 05OCT24 Not fully ready, but close enough to try it out
+#include <estd/internal/container/unordered_set.h>
+
 #include <embr/scheduler.h>
 
 #include "metadata.h"
@@ -154,12 +157,48 @@ struct Tracker2
 {
     using time_point = typename Clock::time_point;
     using duration = typename Clock::duration;
+    using buffer_type = Buffer;
 
     struct match_param
     {
         const unsigned mid;
         const Endpoint endpoint;
     };
+
+    struct hash_value : match_param
+    {
+        // TODO: Store buffer here instead of in scheduler - that way we don't
+        // have to move it around
+        //buffer_type buffer;
+    };
+
+    struct hasher
+    {
+        using reference = const match_param&;
+
+        constexpr unsigned operator()(reference v) const
+        {
+            return v.mid ^ estd::hash<Endpoint>(v.endpoint)();
+        }
+
+        constexpr bool operator()(reference lhs, reference rhs) const
+        {
+            return lhs.mid == rhs.mid;
+        }
+    };
+
+    using set_container = estd::layer1::vector<hash_value, N>;
+
+    // Gonna be way better for mid/endpoint lookups AND solves the shuffle-the-buffer
+    // issue
+    /*
+    estd::internal::unordered_set<
+        set_container,
+        hash_value,
+        hasher,
+        hash_value{},
+        hasher
+        > hashset_; */
 
     struct SchedulerItem :
         embr::internal::scheduler::impl::ReferenceBase<time_point>
