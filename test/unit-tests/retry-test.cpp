@@ -74,8 +74,7 @@ TEST_CASE("retry tests", "[retry]")
 
         typedef estd::chrono::time_point<SyntheticClock, estd::chrono::milliseconds> time_point;
         typedef embr::internal::layer1::Scheduler<8,
-            embr::internal::scheduler::impl::Function<time_point,
-            estd::detail::impl::function_fnptr1> > scheduler_type;
+            embr::internal::scheduler::impl::Function<time_point, estd::detail::impl::function_fnptr1> > scheduler_type;
         typedef estd::span<const uint8_t> buffer_type;
         constexpr time_point zero_time;
 

@@ -107,8 +107,8 @@ template <class TStreambuf, class TBase>
 /// \param value
 /// \return
 ///
-estd::internal::basic_ostream<TStreambuf, TBase>& operator<<(
-        estd::internal::basic_ostream<TStreambuf, TBase>& out,
+estd::detail::basic_ostream<TStreambuf, TBase>& operator<<(
+        estd::detail::basic_ostream<TStreambuf, TBase>& out,
         const CoREData& value
         )
 {

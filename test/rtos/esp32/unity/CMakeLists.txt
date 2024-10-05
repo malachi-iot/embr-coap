@@ -3,8 +3,8 @@ cmake_minimum_required(VERSION 3.5)
 
 include(../setenv.cmake)
 
-set(MCCOAP_DIR ../../../..)
-get_filename_component(MCCOAP_DIR ${MCCOAP_DIR} ABSOLUTE)
+set(EMBR_COAP_DIR ../../../..)
+get_filename_component(EMBR_COAP_DIR ${EMBR_COAP_DIR} ABSOLUTE)
 
 # Set the components to include the tests for.
 # This can be overriden from CMake cache:
@@ -14,6 +14,6 @@ get_filename_component(MCCOAP_DIR ${MCCOAP_DIR} ABSOLUTE)
 set(TEST_COMPONENTS "testable" CACHE STRING "List of components to test")
 
 # NOTE: Can't make sense of "register_component" here.  Hmm.
-#include(${MCCOAP_DIR}/tools/esp-idf/component.cmake NO_POLICY_SCOPE)
+#include(${EMBR_COAP_DIR}/tools/esp-idf/component.cmake NO_POLICY_SCOPE)
 
 project(unit_test)
