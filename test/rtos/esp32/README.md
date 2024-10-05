@@ -26,6 +26,7 @@ These tests are all for variants of Espressif ESP32
 | 10JAN24 | peripheral   | WaveShare DevKit     | ESP32C6        | v5.1.2   | Pass     | 
 | 09DEC22 | retry        | ESP-WROVER-KIT v4.1  | ESP32-WROVER-E | v4.4.3   | Compiles | Doesn't do anything of interest yet
 | 11JAN23 | unity        | ESP-WROVER-KIT v4.1  | ESP32-WROVER-E | v4.4.3   | Pass     |
+| 04OCT24 | unity        | Seeed Xiao           | ESP32C3        | v5.2.3   | Pass     |
 | 02JAN23 | unity        | ESP32-C3-DevKitM-1   | ESP32C3        | v4.4.3   | Pass     |
 | 02JAN23 | unity        | ESP32-C3-DevKitM-1   | ESP32C3        | v5.0.0   | Fail     | Compiler requires LWIP_NETCONN_SEM_PER_THREAD configuration
 | 13MAR23 | unity        | Wemos D1             | ESP32-WROOM-32 | v5.0.1   | Pass     | 
