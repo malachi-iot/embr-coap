@@ -12,9 +12,6 @@
 // interim: eventually provide our own memory pool version of map
 #include <map>
 
-// temporary cleanup flag only
-#define CLEANUP_TRANSMISSION_CPP
-
 namespace embr {
 namespace coap {
 
