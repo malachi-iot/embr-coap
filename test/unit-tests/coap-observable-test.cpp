@@ -9,7 +9,6 @@
 #include "test-data.h"
 
 using namespace embr::coap;
-//using namespace moducom::pipeline;
 
 TEST_CASE("CoAP observable (RFC-7641) tests", "[coap-observer]")
 {

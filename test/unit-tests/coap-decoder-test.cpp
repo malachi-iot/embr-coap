@@ -6,7 +6,6 @@
 //#include "../mc/pipeline.h"
 
 using namespace embr::coap;
-//using namespace moducom::pipeline;
 
 // +++ EXPERIMENTAL
 template <class TStreambuf>

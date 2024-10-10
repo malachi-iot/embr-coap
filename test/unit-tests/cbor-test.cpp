@@ -12,8 +12,6 @@
 
 using namespace embr;
 
-//namespace pipeline = moducom::pipeline;
-
 static const uint8_t* cbor_assert(CBOR::Decoder& decoder, const uint8_t* v, std::string expected)
 {
     REQUIRE(decoder.type() == CBOR::String);
@@ -285,64 +283,6 @@ TEST_CASE("CBOR decoder tests", "[cbor-decoder]")
         REQUIRE(decoder.state() == cbor::Decoder::AdditionalDone);
         REQUIRE(decoder.integer<int32_t>() == -123456789);
     }
-    /*
-     * Disabled as part of mc-mem removal
-#if __cplusplus >= 201103L
-    SECTION("revamped netbuf encoder")
-    {
-        using namespace moducom::io::experimental;
-        using namespace embr::coap;
-        using namespace embr::cbor;
-
-        NetBufEncoder<moducom::coap::NetBufDynamicExperimental> encoder;
-
-        const char* _s = "Hello world";
-        estd::layer2::const_string s = _s;
-
-        encoder.string(s);
-        encoder.integer(-5);
-        encoder.integer(0x1234);
-        encoder.map(4);
-        encoder.string("Hi");
-#ifdef FEATURE_CPP_INITIALIZER_LIST
-        encoder.items({ 1, 2, 3 });
-#endif
-
-        const uint8_t* d = encoder.netbuf().processed();
-        int len = encoder.netbuf().length_processed();
-
-        REQUIRE(len == (11 + 1 + 1 + 3 + 1 + 3
-#ifdef FEATURE_CPP_INITIALIZER_LIST
-                + 4
-#endif
-                ));
-        REQUIRE(*d++ == 0x6B);
-
-        // wrap a layer3 around this buffer spot
-        estd::layer3::const_string s2((const char*)d, s.size());
-
-        REQUIRE(s2 == _s);
-        d += s.size();
-
-        REQUIRE(*d++ == 0x24); // -5
-        REQUIRE(*d++ == cbor::Root::header(cbor::Root::UnsignedInteger, cbor::Root::bits_16));
-        REQUIRE(*d++ == 0x12);
-        REQUIRE(*d++ == 0x34);
-        REQUIRE(*d++ == 0xA4); // map(4)
-
-        REQUIRE(*d++ == 0x62); // string of 2
-        REQUIRE(*d++ == 'H');
-        REQUIRE(*d++ == 'i');
-
-#ifdef FEATURE_CPP_INITIALIZER_LIST
-        REQUIRE(*d++ == 0x83);
-        REQUIRE(*d++ == 1);
-        REQUIRE(*d++ == 2);
-        REQUIRE(*d++ == 3);
-#endif
-    }
-#endif
-     */
     SECTION("experimental cbor decoder")
     {
         using namespace cbor::experimental;
@@ -408,29 +348,6 @@ TEST_CASE("CBOR decoder tests", "[cbor-decoder]")
         require_string(decoder, context, "pass");
         require_string(decoder, context, "secret");
     }
-    /*
-     * Disabled as part of mc-mem removal
-#if __cplusplus >= 201103L
-    SECTION("encoder: boolean and NULL")
-    {
-        using namespace moducom::io::experimental;
-        using namespace embr::coap;
-        using namespace embr::cbor;
-
-        NetBufEncoder<moducom::coap::NetBufDynamicExperimental> encoder;
-
-        encoder.boolean(true);
-        encoder.null();
-
-        const uint8_t* d = encoder.netbuf().processed();
-        int len = encoder.netbuf().length_processed();
-
-        REQUIRE(*d++ == 0xF5);  // simple value of TRUE
-        REQUIRE(*d++ == 0xF6);  // simple value of NULL
-        REQUIRE(len == 2);
-    }
-#endif
-     */
     SECTION("encoder+decoder: self-contained dogfooding")
     {
 

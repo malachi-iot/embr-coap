@@ -10,7 +10,6 @@
 #include "test-data.h"
 
 using namespace embr::coap;
-//using namespace moducom::pipeline;
 
 #include <stdio.h>
 
