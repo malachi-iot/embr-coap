@@ -1,5 +1,9 @@
 # CoAP library for embedded targets
 
+> -- WARNING --
+> This repository is deprecated.  [embr::coap v2](https://github.com/embr-iot/coap) is its replacement
+> -- WARNING --
+
 It may sound redundant to indicate this is a CoAP library for *embedded* targets, but 
 it is my finding most CoAP libraries make curious and liberal use of dynamic allocation.
 Last I checked, dynamic allocation was regarded as a practice to be avoided in most
